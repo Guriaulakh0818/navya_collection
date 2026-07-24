@@ -13,7 +13,7 @@ export function Testimonials({ items }: TestimonialsProps) {
       {items.map((item) => (
         <div key={item.name} className="rounded-xl bg-white p-4">
           <div className="font-semibold text-navy">{item.name}</div>
-          <p className="mt-1 text-sm text-slate-600">"{item.text}"</p>
+          <p className="mt-1 text-sm text-slate-600">&ldquo;{item.text}&rdquo;</p>
         </div>
       ))}
     </div>
