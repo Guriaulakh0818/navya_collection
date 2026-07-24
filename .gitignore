@@ -28,7 +28,7 @@ dist/
 next-env.d.ts
 
 # IDE
-.vscode/
+# .vscode/  <- intentionally tracked for shared settings
 .idea/
 
 # OS
