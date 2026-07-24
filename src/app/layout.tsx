@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import { Playfair_Display, Poppins } from 'next/font/google';
+
 import './globals.css';
-import { AuthProvider } from '@/providers/auth-provider';
-import { QueryProvider } from '@/providers/query-provider';
-import { ThemeProvider } from '@/providers/theme-provider';
+
+import SiteLayout from '@/components/layout';
+import { AppProvider } from '@/providers';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -26,14 +27,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${playfair.variable} ${poppins.variable}`}>
-      <body className="min-h-screen bg-bg font-body text-text antialiased">
-        <ThemeProvider>
-          <QueryProvider>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
-          </QueryProvider>
-        </ThemeProvider>
+      <body className="min-h-screen bg-background font-body text-foreground antialiased">
+        <AppProvider>
+          <SiteLayout>{children}</SiteLayout>
+        </AppProvider>
       </body>
     </html>
   );

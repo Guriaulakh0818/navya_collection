@@ -24,7 +24,16 @@ export interface Order {
   shipping: number;
   discount: number;
   total: number;
-  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'out_for_delivery' | 'delivered' | 'cancelled' | 'returned' | 'refunded';
+  status:
+    | 'pending'
+    | 'confirmed'
+    | 'processing'
+    | 'shipped'
+    | 'out_for_delivery'
+    | 'delivered'
+    | 'cancelled'
+    | 'returned'
+    | 'refunded';
   paymentStatus: 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
   paymentMethod: 'cod' | 'online';
   shippingAddress: Address;

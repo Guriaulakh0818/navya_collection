@@ -8,7 +8,7 @@ export async function uploadToCloudinary(file: File): Promise<string> {
     {
       method: 'POST',
       body: formData,
-    }
+    },
   );
 
   if (!response.ok) throw new Error('Cloudinary upload failed');

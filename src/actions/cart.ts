@@ -1,8 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { apiClient } from '@/services/api/client';
+
 import { MESSAGES } from '@/constants/messages';
+import { apiClient } from '@/services/api/client';
 
 export async function addToCart(productId: string, quantity = 1) {
   try {

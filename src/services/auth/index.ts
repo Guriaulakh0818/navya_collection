@@ -7,7 +7,10 @@ export async function sendOtp(mobile: string) {
 }
 
 export async function verifyOtp(mobile: string, otp: string) {
-  return authClient.post<{ success: boolean; token: string; user: object }>('/verify-otp', { mobile, otp });
+  return authClient.post<{ success: boolean; token: string; user: object }>('/verify-otp', {
+    mobile,
+    otp,
+  });
 }
 
 export async function logout() {

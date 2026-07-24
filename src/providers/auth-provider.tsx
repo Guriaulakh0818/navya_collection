@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useState } from 'react';
 
 type User = {
   id: string;
@@ -56,16 +56,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(async (mobile: string, _otp: string) => {
-    await verifyOtp(mobile, _otp);
-  }, [verifyOtp]);
+  const login = useCallback(
+    async (mobile: string, _otp: string) => {
+      await verifyOtp(mobile, _otp);
+    },
+    [verifyOtp],
+  );
 
   const logout = useCallback(() => {
     setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, verifyOtp, sendOtp }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated: !!user, isLoading, login, logout, verifyOtp, sendOtp }}
+    >
       {children}
     </AuthContext.Provider>
   );

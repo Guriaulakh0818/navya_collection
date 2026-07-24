@@ -1,14 +1,25 @@
 'use client';
 
-import { ReactNode, createContext, useContext } from 'react';
+import { ReactNode } from 'react';
 
-const StoreContext = createContext<Record<string, unknown>>({});
+import {
+  useAuthStore,
+  useCartStore,
+  useCheckoutStore,
+  useUiStore,
+  useWishlistStore,
+} from '@/stores';
 
-export function StoreProvider({ children, value }: { children: ReactNode; value: Record<string, unknown> }) {
-  return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
-}
+type StoreProviderProps = {
+  children: ReactNode;
+};
 
-export function useStore<T = Record<string, unknown>>() {
-  const context = useContext(StoreContext);
-  return context as T;
+export function StoreProvider({ children }: StoreProviderProps) {
+  useAuthStore();
+  useCartStore();
+  useWishlistStore();
+  useCheckoutStore();
+  useUiStore();
+
+  return <>{children}</>;
 }
