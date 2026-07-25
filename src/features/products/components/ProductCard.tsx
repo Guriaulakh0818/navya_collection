@@ -10,6 +10,7 @@ import { ProductBadge } from './ProductBadge';
 import { ProductPrice } from './ProductPrice';
 import { ProductQuickView } from './ProductQuickView';
 import { ProductRating } from './ProductRating';
+import { WishlistButton } from './WishlistButton';
 
 type ProductCardProps = {
   product: Product;
@@ -23,6 +24,9 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="relative aspect-[3/4] bg-gradient-to-br from-sky-50 to-orange-50">
         {discount ? <ProductBadge type="sale" text={`${discount}% OFF`} /> : null}
         {product.status === 'draft' ? <ProductBadge type="new" text="New" /> : null}
+        <div className="absolute top-2 right-2 z-10">
+          <WishlistButton product={product} />
+        </div>
         <ProductQuickView product={product} />
       </div>
       <div className="p-4">
