@@ -8,5 +8,9 @@ type ProductBadgeProps = {
 
 export function ProductBadge({ type, text, className }: ProductBadgeProps) {
   const variant = type === 'sale' ? 'destructive' : 'default';
-  return <Badge className={className}>{text}</Badge>;
+  return (
+    <Badge variant={variant} className={className}>
+      {text}
+    </Badge>
+  );
 }
