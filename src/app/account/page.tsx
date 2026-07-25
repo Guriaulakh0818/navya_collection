@@ -1,71 +1,85 @@
 'use client';
 
-import { useEffect } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ProtectedRoute } from '@/features/auth/components/protected-route';
 import { useAuthStore } from '@/stores';
 
 export default function AccountPage() {
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
+  const setUser = useAuthStore((s) => s.setUser);
   const router = useRouter();
 
-  const handleLogout = async () => {
-    logout();
-    router.push('/login');
+  const [name, setName] = useState(user?.name || '');
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setName(user?.name || '');
+  }, [user?.name]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setMessage(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const baseUser = user as { id: string; mobile: string; role: 'customer' | 'admin' } | null;
+      setUser(baseUser ? { ...baseUser, name } : null);
+      setMessage('Profile updated successfully');
+    } catch {
+      setMessage('Failed to update profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen">
-        <Breadcrumb
-          items={[{ label: 'Home', href: '/' }, { label: 'Account' }]}
-          className="mx-auto max-w-[1440px] px-4 md:px-6 py-4"
-        />
-        <div className="mx-auto max-w-6xl px-4 md:px-6 py-8">
-          <div className="flex items-center justify-between mb-6">
+      <Breadcrumb
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Account', href: '/account' },
+          { label: 'My Profile' },
+        ]}
+        className="mx-auto max-w-[1440px] px-4 md:px-6 py-4"
+      />
+      <div className="mx-auto max-w-3xl px-4 md:px-6 py-8">
+        <div className="rounded-2xl border border-border bg-white p-6 shadow-premium">
+          <h2 className="font-heading text-2xl text-navy mb-1">My Profile</h2>
+          <p className="text-sm text-slate-600 mb-6">
+            Manage your personal information and contact details.
+          </p>
+
+          <form onSubmit={handleSave} className="space-y-4">
             <div>
-              <h1 className="font-heading text-3xl text-navy">My Account</h1>
-              <p className="text-sm text-slate-600 mt-1">Welcome, {user?.name || 'Guest'}</p>
+              <label className="block text-sm font-medium text-navy mb-1">Full Name</label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+              />
             </div>
-            <Button variant="outline" className="rounded-full" onClick={handleLogout}>
-              Logout
-            </Button>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Link
-              href="/account/orders"
-              className="rounded-2xl border border-border bg-white p-6 shadow-premium hover:border-navy transition-colors"
-            >
-              <h3 className="font-heading text-xl text-navy">Orders</h3>
-              <p className="mt-1 text-sm text-slate-600">Track and manage orders</p>
-            </Link>
-            <Link
-              href="/account/addresses"
-              className="rounded-2xl border border-border bg-white p-6 shadow-premium hover:border-navy transition-colors"
-            >
-              <h3 className="font-heading text-xl text-navy">Addresses</h3>
-              <p className="mt-1 text-sm text-slate-600">Manage delivery addresses</p>
-            </Link>
-            <Link
-              href="/wishlist"
-              className="rounded-2xl border border-border bg-white p-6 shadow-premium hover:border-navy transition-colors"
-            >
-              <h3 className="font-heading text-xl text-navy">Wishlist</h3>
-              <p className="mt-1 text-sm text-slate-600">Saved items</p>
-            </Link>
-            <Link
-              href="/cart"
-              className="rounded-2xl border border-border bg-white p-6 shadow-premium hover:border-navy transition-colors"
-            >
-              <h3 className="font-heading text-xl text-navy">Cart</h3>
-              <p className="mt-1 text-sm text-slate-600">Review your cart</p>
-            </Link>
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-navy mb-1">Mobile Number</label>
+              <Input value={user?.mobile || ''} disabled className="bg-slate-50" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-navy mb-1">Email</label>
+              <Input placeholder="Enter your email" />
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <Button type="submit" disabled={isSaving} className="rounded-full">
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </Button>
+              {message && <span className="text-sm text-slate-600">{message}</span>}
+            </div>
+          </form>
         </div>
       </div>
     </ProtectedRoute>
