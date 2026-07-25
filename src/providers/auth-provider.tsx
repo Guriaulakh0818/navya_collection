@@ -1,5 +1,6 @@
 'use client';
 
+import { useClerk } from '@clerk/nextjs';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -16,7 +17,7 @@ type User = {
   mobile: string;
   name?: string;
   email?: string;
-  role: 'customer' | 'admin';
+  role: 'USER' | 'ADMIN' | 'SUPER_ADMIN' | 'customer' | 'admin';
 };
 
 type AuthContextType = {
@@ -27,7 +28,7 @@ type AuthContextType = {
     mobile: string,
     otp: string,
   ) => Promise<{ success: boolean; token?: string; user?: object; message?: string } | void>;
-  logout: () => Promise<void>;
+  logout: (redirectPath?: string) => Promise<void>;
   verifyOtp: (
     mobile: string,
     otp: string,
@@ -41,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { signOut } = useClerk();
   const { setUser: setStoreUser, setToken, logout: clearStore } = useAuthStore();
 
   useEffect(() => {
@@ -100,15 +102,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [verifyOtp],
   );
 
-  const logout = useCallback(async () => {
-    try {
-      await logoutService();
-    } finally {
-      setUser(null);
-      clearStore();
-      router.push('/login');
-    }
-  }, [clearStore, router]);
+  const logout = useCallback(
+    async (redirectPath?: string) => {
+      const userRole = user?.role?.toUpperCase();
+      const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
+
+      const targetRedirect = redirectPath || (isAdmin ? '/admin/login' : '/');
+
+      try {
+        await logoutService();
+        await signOut({ redirectUrl: targetRedirect });
+      } catch (err) {
+        console.warn('Clerk SignOut Note:', err);
+      } finally {
+        setUser(null);
+        clearStore();
+        router.push(targetRedirect);
+        router.refresh();
+      }
+    },
+    [user, signOut, clearStore, router],
+  );
 
   return (
     <AuthContext.Provider

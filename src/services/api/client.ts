@@ -9,8 +9,24 @@ export class ApiClient {
     };
   }
 
+  private formatUrl(endpoint: string): string {
+    const fullPath = `${this.baseUrl}${endpoint}`;
+    if (
+      typeof window !== 'undefined' ||
+      fullPath.startsWith('http://') ||
+      fullPath.startsWith('https://')
+    ) {
+      return fullPath;
+    }
+    const origin = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const cleanOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+    const cleanPath = fullPath.startsWith('/') ? fullPath : `/${fullPath}`;
+    return `${cleanOrigin}${cleanPath}`;
+  }
+
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+    const url = this.formatUrl(endpoint);
+    const response = await fetch(url, {
       ...options,
       headers: {
         ...this.defaultHeaders,

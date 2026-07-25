@@ -39,14 +39,14 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-1.5 text-white/80 hover:text-white hover:bg-white/10"
+            className="rounded-full p-1.5 text-white/80 hover:text-white hover:bg-white/10 transition-colors"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Search */}
+        {/* Search inside drawer */}
         <div className="p-4 border-b border-slate-100 bg-slate-50">
           <HeaderSearch className="w-full" />
         </div>
@@ -56,7 +56,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
           <Link
             href="/"
             onClick={onClose}
-            className="block py-2 text-sm font-bold text-slate-800 hover:text-navy"
+            className="block py-2 text-sm font-bold text-slate-800 hover:text-navy transition-colors"
           >
             Home
           </Link>
@@ -69,36 +69,38 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
             >
               <span>Gents Collection</span>
               <ChevronRight
-                className={`h-4 w-4 text-slate-400 transition-transform ${gentsOpen ? 'rotate-90 text-navy' : ''}`}
+                className={`h-4 w-4 text-slate-400 transition-transform ${
+                  gentsOpen ? 'rotate-90 text-navy' : ''
+                }`}
               />
             </button>
             {gentsOpen && (
-              <div className="pl-4 py-2 space-y-2 text-xs text-slate-600 bg-slate-50 rounded-xl">
+              <div className="pl-4 py-2 space-y-2 text-xs text-slate-600 bg-slate-50 rounded-xl mt-1">
                 <Link
                   href="/shop?category=gents&sub=Shirts"
                   onClick={onClose}
-                  className="block hover:text-orange"
+                  className="block hover:text-orange transition-colors"
                 >
                   Shirts (Casual & Formal)
                 </Link>
                 <Link
                   href="/shop?category=gents&sub=Kurtas"
                   onClick={onClose}
-                  className="block hover:text-orange"
+                  className="block hover:text-orange transition-colors"
                 >
                   Ethnic Kurtas
                 </Link>
                 <Link
                   href="/shop?category=gents&sub=Trousers"
                   onClick={onClose}
-                  className="block hover:text-orange"
+                  className="block hover:text-orange transition-colors"
                 >
                   Chinos & Trousers
                 </Link>
                 <Link
                   href="/shop?category=gents&sub=Blazers"
                   onClick={onClose}
-                  className="block hover:text-orange"
+                  className="block hover:text-orange transition-colors"
                 >
                   Blazers & Suits
                 </Link>
@@ -114,29 +116,31 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
             >
               <span>Kids Wear</span>
               <ChevronRight
-                className={`h-4 w-4 text-slate-400 transition-transform ${kidsOpen ? 'rotate-90 text-orange' : ''}`}
+                className={`h-4 w-4 text-slate-400 transition-transform ${
+                  kidsOpen ? 'rotate-90 text-orange' : ''
+                }`}
               />
             </button>
             {kidsOpen && (
-              <div className="pl-4 py-2 space-y-2 text-xs text-slate-600 bg-slate-50 rounded-xl">
+              <div className="pl-4 py-2 space-y-2 text-xs text-slate-600 bg-slate-50 rounded-xl mt-1">
                 <Link
                   href="/shop?category=kids&sub=Boys"
                   onClick={onClose}
-                  className="block hover:text-navy"
+                  className="block hover:text-navy transition-colors"
                 >
                   Boys Wear (T-Shirts, Sets)
                 </Link>
                 <Link
                   href="/shop?category=kids&sub=Girls"
                   onClick={onClose}
-                  className="block hover:text-navy"
+                  className="block hover:text-navy transition-colors"
                 >
                   Girls Wear (Dresses, Frocks)
                 </Link>
                 <Link
                   href="/shop?category=kids&sub=Infants"
                   onClick={onClose}
-                  className="block hover:text-navy"
+                  className="block hover:text-navy transition-colors"
                 >
                   Infant & Toddler Sets
                 </Link>
@@ -147,7 +151,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
           <Link
             href="/shop?filter=new"
             onClick={onClose}
-            className="flex items-center gap-2 py-2 text-sm font-bold text-slate-800 hover:text-navy"
+            className="flex items-center gap-2 py-2 text-sm font-bold text-slate-800 hover:text-navy transition-colors"
           >
             <Sparkles className="h-4 w-4 text-orange" /> New Arrivals
           </Link>
@@ -155,7 +159,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
           <Link
             href="/shop?filter=offers"
             onClick={onClose}
-            className="block py-2 text-sm font-bold text-orange hover:text-orange-hover"
+            className="block py-2 text-sm font-bold text-orange hover:text-orange-600 transition-colors"
           >
             Special Offers & Sales
           </Link>
@@ -163,9 +167,25 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
           <Link
             href="/shop"
             onClick={onClose}
-            className="block py-2 text-sm font-bold text-slate-800 hover:text-navy"
+            className="block py-2 text-sm font-bold text-slate-800 hover:text-navy transition-colors"
           >
             Browse Full Shop
+          </Link>
+
+          <Link
+            href="/about"
+            onClick={onClose}
+            className="block py-2 text-sm font-bold text-slate-800 hover:text-navy transition-colors"
+          >
+            About Us
+          </Link>
+
+          <Link
+            href="/contact"
+            onClick={onClose}
+            className="block py-2 text-sm font-bold text-slate-800 hover:text-navy transition-colors"
+          >
+            Contact Us
           </Link>
         </div>
 
@@ -174,7 +194,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
           <Link
             href={user ? '/account' : '/login'}
             onClick={onClose}
-            className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-800"
+            className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-800 shadow-sm"
           >
             <User className="h-4 w-4 text-navy" />
             <span>{user ? `Account (${user.name})` : 'Login / Register'}</span>
@@ -184,14 +204,14 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
             <Link
               href="/wishlist"
               onClick={onClose}
-              className="flex items-center justify-center gap-2 p-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700"
+              className="flex items-center justify-center gap-2 p-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-sm"
             >
               <Heart className="h-4 w-4 text-red-500" /> Wishlist ({wishlistItems.length})
             </Link>
             <Link
               href="/cart"
               onClick={onClose}
-              className="flex items-center justify-center gap-2 p-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700"
+              className="flex items-center justify-center gap-2 p-2 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 shadow-sm"
             >
               <ShoppingBag className="h-4 w-4 text-orange" /> Cart ({cartItems.length})
             </Link>

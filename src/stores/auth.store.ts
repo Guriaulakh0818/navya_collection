@@ -3,8 +3,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN' | 'customer' | 'admin';
+
 type AuthStore = {
-  user: { id: string; mobile: string; name?: string; role: 'customer' | 'admin' } | null;
+  user: { id: string; mobile?: string; name?: string; role: UserRole } | null;
   token: string | null;
   isAuthenticated: boolean;
   setUser: (user: AuthStore['user']) => void;

@@ -57,8 +57,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        heading: ['var(--font-heading)'],
-        body: ['var(--font-body)'],
+        sans: ['var(--font-dm-sans)', 'DM Sans', 'sans-serif'],
+        heading: ['var(--font-dm-sans)', 'DM Sans', 'sans-serif'],
+        body: ['var(--font-dm-sans)', 'DM Sans', 'sans-serif'],
       },
       fontSize: {
         h1: ['48px', { lineHeight: '1.1', fontWeight: '700' }],
@@ -71,19 +72,7 @@ const config: Config = {
         small: ['14px', { lineHeight: '1.5', fontWeight: '400' }],
         caption: ['12px', { lineHeight: '1.4', fontWeight: '400' }],
       },
-      spacing: {
-        '4': '4px',
-        '8': '8px',
-        '12': '12px',
-        '16': '16px',
-        '24': '24px',
-        '32': '32px',
-        '40': '40px',
-        '48': '48px',
-        '64': '64px',
-        '80': '80px',
-        '96': '96px',
-      },
+
       borderRadius: {
         sm: '8px',
         md: '12px',

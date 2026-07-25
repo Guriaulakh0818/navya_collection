@@ -25,8 +25,8 @@
     --ring: 214 82% 23%;
     --radius: 0.75rem;
 
-    --font-heading: 'Playfair Display', serif;
-    --font-body: 'Poppins', sans-serif;
+    --font-heading: var(--font-dm-sans), 'DM Sans', sans-serif;
+    --font-body: var(--font-dm-sans), 'DM Sans', sans-serif;
   }
 }
 
@@ -35,12 +35,14 @@
     @apply border-brand-border;
   }
   body {
-    @apply bg-brand-background font-body text-brand-foreground antialiased;
+    @apply bg-brand-background text-brand-foreground antialiased;
+    font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
     margin: 0;
     min-height: 100vh;
   }
   html {
     scroll-behavior: smooth;
+    font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
   }
 }
 
@@ -65,10 +67,10 @@
 
 @layer utilities {
   .font-heading {
-    font-family: var(--font-heading);
+    font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
   }
   .font-body {
-    font-family: var(--font-body);
+    font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
   }
 }
 

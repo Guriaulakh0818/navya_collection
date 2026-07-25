@@ -1,5 +1,6 @@
+import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
-import { Playfair_Display, Poppins } from 'next/font/google';
+import { DM_Sans } from 'next/font/google';
 
 import './globals.css';
 
@@ -9,16 +10,10 @@ import { AuthProvider } from '@/providers/auth-provider';
 import { QueryProvider } from '@/providers/query-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
 
-const playfair = Playfair_Display({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  weight: ['600', '700'],
-  variable: '--font-heading',
-});
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-body',
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-dm-sans',
 });
 
 export const metadata: Metadata = {
@@ -31,18 +26,39 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || '';
+  const isRealClerkKey =
+    Boolean(publishableKey) &&
+    publishableKey.startsWith('pk_') &&
+    !publishableKey.includes('placeholder') &&
+    !publishableKey.includes('navyacollection');
+
   return (
-    <html lang="en" className={`${playfair.variable} ${poppins.variable}`}>
-      <body className="min-h-screen bg-background font-body text-foreground antialiased">
-        <AuthProvider>
-          <QueryProvider>
-            <ThemeProvider>
-              <AppProvider>
-                <SiteLayout>{children}</SiteLayout>
-              </AppProvider>
-            </ThemeProvider>
-          </QueryProvider>
-        </AuthProvider>
+    <html lang="en" className={`${dmSans.variable} font-sans`}>
+      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
+        {isRealClerkKey ? (
+          <ClerkProvider publishableKey={publishableKey}>
+            <AuthProvider>
+              <QueryProvider>
+                <ThemeProvider>
+                  <AppProvider>
+                    <SiteLayout>{children}</SiteLayout>
+                  </AppProvider>
+                </ThemeProvider>
+              </QueryProvider>
+            </AuthProvider>
+          </ClerkProvider>
+        ) : (
+          <AuthProvider>
+            <QueryProvider>
+              <ThemeProvider>
+                <AppProvider>
+                  <SiteLayout>{children}</SiteLayout>
+                </AppProvider>
+              </ThemeProvider>
+            </QueryProvider>
+          </AuthProvider>
+        )}
       </body>
     </html>
   );

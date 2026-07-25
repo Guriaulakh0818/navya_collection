@@ -1,12 +1,12 @@
 'use client';
 
+import { useClerk } from '@clerk/nextjs';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { AdminRoute } from '@/features/admin/components/admin-route';
-import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores';
 
 const navigation = [
@@ -68,18 +68,27 @@ function NavIcon({ type }: { type: string }) {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { signOut } = useClerk();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
+  // Bypass layout for public admin auth routes
+  if (pathname === '/admin/login' || pathname === '/admin/unauthorized') {
+    return <>{children}</>;
+  }
+
   const handleLogout = async () => {
     logout();
-    window.location.href = '/login';
+    try {
+      await signOut({ redirectUrl: '/admin/login' });
+    } catch {
+      window.location.href = '/admin/login';
+    }
   };
 
   return (
     <AdminRoute>
       <div className="min-h-screen bg-slate-50">
-        {/* Mobile sidebar backdrop */}
         {sidebarOpen && (
           <div
             className="fixed inset-0 z-40 bg-black/50 lg:hidden"
@@ -87,14 +96,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           />
         )}
 
-        {/* Sidebar */}
         <aside
           className={`fixed inset-y-0 left-0 z-50 w-64 bg-navy text-white transition-transform duration-300 lg:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="flex h-16 items-center justify-center border-b border-white/10">
-            <h1 className="font-heading text-xl font-bold">Admin Panel</h1>
+            <h1 className="font-heading text-xl font-bold text-gold tracking-wide">Navya Admin</h1>
           </div>
 
           <nav className="mt-6 px-3 space-y-1">
@@ -106,7 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   href={item.href}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-white/10 text-white'
+                      ? 'bg-white/10 text-gold'
                       : 'text-white/70 hover:bg-white/5 hover:text-white'
                   }`}
                   onClick={() => setSidebarOpen(false)}
@@ -120,12 +128,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
             <div className="flex items-center gap-3 mb-3">
-              <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
-                <span className="text-sm font-semibold">{user?.name?.[0] || 'A'}</span>
+              <div className="h-8 w-8 rounded-full bg-gold/20 text-gold flex items-center justify-center font-bold">
+                <span className="text-sm">{user?.name?.[0] || 'A'}</span>
               </div>
-              <div>
-                <p className="text-sm font-medium">{user?.name || 'Admin'}</p>
-                <p className="text-xs text-white/60">{user?.mobile}</p>
+              <div className="overflow-hidden">
+                <p className="text-sm font-medium truncate">{user?.name || 'Admin User'}</p>
+                <p className="text-xs text-white/60 truncate">{user?.mobile}</p>
               </div>
             </div>
             <Button
@@ -133,14 +141,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="w-full rounded-full border-white/20 text-white hover:bg-white/10 hover:text-white text-sm"
               onClick={handleLogout}
             >
-              Logout
+              Sign out
             </Button>
           </div>
         </aside>
 
-        {/* Main content */}
         <div className="lg:ml-64">
-          {/* Top header */}
           <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-slate-200 bg-white px-6">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -156,13 +162,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </svg>
             </button>
             <div className="flex-1">
-              <h2 className="font-heading text-lg text-navy capitalize">
-                {pathname.replace('/admin/', '') || 'Dashboard'}
+              <h2 className="font-heading text-lg font-bold text-navy capitalize">
+                {pathname.replace('/admin/', '').replace('/', ' - ') || 'Dashboard'}
               </h2>
             </div>
           </header>
 
-          {/* Page content */}
           <main className="p-6">{children}</main>
         </div>
       </div>

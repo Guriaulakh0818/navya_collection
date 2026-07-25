@@ -240,85 +240,132 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-navy via-[#172e6e] to-[#0f1f4b] text-white overflow-hidden py-16 md:py-24 lg:py-28">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-orange/20 via-transparent to-transparent opacity-60" />
+      <section className="relative bg-gradient-to-br from-navy via-[#172e6e] to-[#0f1f4b] text-white overflow-hidden py-12 md:py-16 lg:py-20">
+        {/* Glowing Background Orbs */}
+        <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-orange/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-navy-500/30 blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-orange/15 via-transparent to-transparent opacity-70" />
 
         <div className="relative mx-auto max-w-[1440px] px-4 md:px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 border border-white/20 backdrop-blur-md">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Left Content Column (7 cols on lg) */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 border border-white/20 backdrop-blur-md text-orange-200">
                 <Sparkles className="h-4 w-4 text-orange animate-pulse" />
                 <span className="text-xs font-semibold tracking-wide">
                   New Season Collection 2026
                 </span>
               </div>
 
-              <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
-                Affordable Luxury Fashion for <span className="text-orange">Gents</span> &{' '}
-                <span className="text-orange">Kids</span>
+              <h1 className="font-heading text-3xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight">
+                Affordable Luxury Fashion for{' '}
+                <span className="text-orange underline decoration-orange/40 decoration-wavy decoration-2">
+                  Gents
+                </span>{' '}
+                &{' '}
+                <span className="text-orange underline decoration-orange/40 decoration-wavy decoration-2">
+                  Kids
+                </span>
               </h1>
 
-              <p className="text-base sm:text-lg text-white/80 max-w-xl leading-relaxed">
-                Elevate your style with India’s most trusted affordable fashion brand. Fine fabrics,
-                precision fit, and unbeatable value delivered to your doorstep.
+              <p className="text-sm sm:text-base lg:text-lg text-slate-200 max-w-xl leading-relaxed">
+                Elevate your daily style with India’s most trusted fashion collection. Handcrafted
+                fabrics, precision fits, and unbeatable direct-to-consumer prices.
               </p>
 
-              <div className="flex flex-wrap gap-4 pt-2">
-                <Link href="/shop">
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Link href="/shop?category=gents">
                   <Button
                     size="lg"
-                    className="rounded-full bg-orange hover:bg-orange-hover text-white font-bold px-8 shadow-lg shadow-orange/30"
+                    className="rounded-full bg-orange hover:bg-orange-600 text-white font-bold px-7 shadow-lg shadow-orange/30 transition-all hover:scale-[1.02]"
                   >
-                    Shop Now <ArrowRight className="ml-2 h-4 w-4" />
+                    Shop Gents <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
-                <Link href="/shop?filter=new">
+                <Link href="/shop?category=kids">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="rounded-full border-white/30 text-white hover:bg-white/10 hover:text-white font-bold px-8"
+                    className="rounded-full border-white/30 bg-white/10 hover:bg-white/20 text-white font-bold px-7 backdrop-blur-sm transition-all hover:scale-[1.02]"
                   >
-                    Explore New Arrivals
+                    Explore Kids Wear
                   </Button>
                 </Link>
               </div>
 
               {/* Quick Trust Highlights */}
-              <div className="pt-6 grid grid-cols-3 gap-4 border-t border-white/10">
-                <div>
-                  <h4 className="text-xl font-bold text-white">50k+</h4>
-                  <p className="text-xs text-white/70">Happy Indian Customers</p>
+              <div className="pt-6 grid grid-cols-3 gap-3 border-t border-white/15">
+                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <h4 className="text-lg lg:text-xl font-extrabold text-white">50k+</h4>
+                  <p className="text-[11px] text-slate-300">Happy Customers</p>
                 </div>
-                <div>
-                  <h4 className="text-xl font-bold text-white">4.9 ★</h4>
-                  <p className="text-xs text-white/70">Verified Reviews</p>
+                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <h4 className="text-lg lg:text-xl font-extrabold text-white">4.9 ★</h4>
+                  <p className="text-[11px] text-slate-300">5,000+ Reviews</p>
                 </div>
-                <div>
-                  <h4 className="text-xl font-bold text-white">Pan-India</h4>
-                  <p className="text-xs text-white/70">Express Delivery</p>
+                <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <h4 className="text-lg lg:text-xl font-extrabold text-white">Express</h4>
+                  <p className="text-[11px] text-slate-300">Pan-India Delivery</p>
                 </div>
               </div>
             </div>
 
-            {/* Hero Banner Feature Card */}
-            <div className="relative">
-              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 bg-slate-800">
-                <Image
-                  src="https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=1200"
-                  alt="Navya Collection Hero Look"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 p-6 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 text-white">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-orange bg-orange/20 px-2.5 py-1 rounded-full">
-                    Featured Craftsmanship
-                  </span>
-                  <h3 className="font-heading text-xl font-bold mt-2">
-                    100% Egyptian Cotton Shirts
-                  </h3>
-                  <p className="text-xs text-white/80 mt-1">Starting from just ₹899</p>
+            {/* Right Visual Image Composition (5 cols on lg) */}
+            <div className="lg:col-span-5 relative flex justify-end pl-0 lg:pl-8">
+              <div className="relative w-full max-w-md lg:max-w-[480px] ml-auto">
+                {/* Main Hero Card with max height constraint to match left text */}
+                <div className="relative aspect-[4/3] sm:aspect-[16/11] lg:aspect-[4/3] max-h-[440px] w-full rounded-3xl overflow-hidden shadow-2xl border-2 border-white/20 bg-slate-900 group">
+                  <Image
+                    src="https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=1200"
+                    alt="Navya Collection Hero Look"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                  {/* Card overlay content */}
+                  <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 text-white">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-orange bg-orange/20 px-2.5 py-0.5 rounded-full">
+                        Premium Egyptian Cotton
+                      </span>
+                      <span className="text-xs font-extrabold text-white bg-navy px-2 py-0.5 rounded-md">
+                        From ₹899
+                      </span>
+                    </div>
+                    <h3 className="font-heading text-base sm:text-lg font-bold mt-1.5">
+                      Tailored Royal Navy Shirt
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Floating Decorative Glass Badge 1 (Top Right) */}
+                <div className="absolute -top-4 -right-4 hidden sm:flex items-center gap-2.5 p-3 rounded-2xl bg-white/90 text-slate-900 shadow-xl border border-white/40 backdrop-blur-md">
+                  <div className="h-8 w-8 rounded-xl bg-orange/10 flex items-center justify-center text-orange font-bold text-sm">
+                    🔥
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      Trending Now
+                    </p>
+                    <p className="text-xs font-extrabold text-navy">Linen & Cotton Fits</p>
+                  </div>
+                </div>
+
+                {/* Floating Decorative Glass Badge 2 (Bottom Left) */}
+                <div className="absolute -bottom-4 -left-4 hidden sm:flex items-center gap-2.5 p-3 rounded-2xl bg-navy/90 text-white shadow-xl border border-white/20 backdrop-blur-md">
+                  <div className="h-8 w-8 rounded-xl bg-amber-400/20 flex items-center justify-center text-amber-400 font-bold text-sm">
+                    ★
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                      Verified Quality
+                    </p>
+                    <p className="text-xs font-extrabold text-white">100% Breathable Fabric</p>
+                  </div>
                 </div>
               </div>
             </div>

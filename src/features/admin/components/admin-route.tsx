@@ -17,15 +17,23 @@ export function AdminRoute({ children, fallback }: AdminRouteProps) {
   if (isLoading) {
     return (
       fallback || (
-        <div className="flex min-h-screen items-center justify-center">
-          <Loader text="Loading..." />
+        <div className="flex min-h-screen items-center justify-center bg-slate-900 text-white">
+          <Loader text="Verifying Admin Privileges..." />
         </div>
       )
     );
   }
 
-  if (!isAuthenticated || user?.role !== 'admin') {
-    router.push('/login');
+  if (!isAuthenticated) {
+    router.push('/admin/login');
+    return null;
+  }
+
+  const role = user?.role?.toUpperCase();
+  const isAdmin = role === 'ADMIN' || role === 'SUPER_ADMIN';
+
+  if (!isAdmin) {
+    router.push('/admin/unauthorized');
     return null;
   }
 
