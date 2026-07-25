@@ -289,7 +289,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                     <div className="flex items-center justify-between">
                       <p className="font-semibold text-navy">{review.userName}</p>
                       <span className="text-xs text-slate-500">
-                        {review.createdAt.toLocaleDateString('en-IN')}
+                        {`${String(review.createdAt.getDate()).padStart(2, '0')}/${String(review.createdAt.getMonth() + 1).padStart(2, '0')}/${review.createdAt.getFullYear()}`}
                       </span>
                     </div>
                     <ProductRating rating={review.rating} />
