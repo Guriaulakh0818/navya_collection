@@ -16,13 +16,13 @@ export function HeaderWrapper({ children }: HeaderWrapperProps) {
   const closeMobile = useCallback(() => setIsMobileOpen(false), []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-sm transition-all">
+    <header className="sticky top-0 z-40 border-b border-brand-border bg-white/95 backdrop-blur-md shadow-card transition-all">
       <div className="mx-auto max-w-[1440px] px-4 md:px-6 h-16 flex items-center justify-between gap-4">
         {children}
         <button
           type="button"
           onClick={openMobile}
-          className="lg:hidden inline-flex items-center justify-center rounded-full p-2 text-slate-700 hover:bg-slate-100 hover:text-navy transition-colors"
+          className="lg:hidden inline-flex items-center justify-center rounded-full p-2 text-brand-foreground hover:bg-brand-divider hover:text-navy transition-colors"
           aria-label="Open mobile menu"
         >
           <Menu className="h-6 w-6" />

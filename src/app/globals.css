@@ -4,52 +4,38 @@
 
 @layer base {
   :root {
-    /* Brand Colors: Primary #1E3A8A (224 64% 33%), Accent #FF6B00 (25 100% 50%) */
-    --background: 0 0% 98%; /* #FAFAFA */
-    --foreground: 222 47% 11%; /* #111827 */
-    --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 222 47% 11%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 224 64% 33%; /* #1E3A8A */
+    --popover-foreground: 0 0% 12%;
+    --primary: 214 82% 23%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 25 100% 50%; /* #FF6B00 */
+    --secondary: 16 94% 51%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 215 16% 47%; /* #6B7280 */
-    --muted-foreground: 215 16% 47%;
-    --accent: 25 100% 50%;
+    --muted: 215 14% 47%;
+    --muted-foreground: 215 14% 47%;
+    --accent: 16 94% 51%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%; /* #EF4444 */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 91%; /* #E5E7EB */
-    --input: 220 13% 91%;
-    --ring: 224 64% 33%;
+    --border: 214 14% 91%;
+    --input: 214 14% 91%;
+    --ring: 214 82% 23%;
     --radius: 0.75rem;
 
-    --color-background: #fafafa;
-    --color-surface: #ffffff;
-    --color-foreground: #111827;
-    --color-muted: #6b7280;
-    --color-border: #e5e7eb;
-    --color-primary: #1e3a8a;
-    --color-primary-foreground: #ffffff;
-    --color-secondary: #ff6b00;
-    --color-secondary-foreground: #ffffff;
-    --color-success: #22c55e;
-    --color-warning: #f59e0b;
-    --color-error: #ef4444;
-
     --font-heading: 'Playfair Display', serif;
-    --font-body: 'Inter', sans-serif;
+    --font-body: 'Poppins', sans-serif;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-brand-border;
   }
   body {
-    @apply bg-background font-body text-foreground antialiased;
+    @apply bg-brand-background font-body text-brand-foreground antialiased;
     margin: 0;
     min-height: 100vh;
   }
@@ -59,7 +45,7 @@
 }
 
 ::selection {
-  background-color: #1e3a8a;
+  background-color: #183a73;
   color: #ffffff;
 }
 
@@ -89,7 +75,7 @@
 /* Custom scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #1e3a8a #e5e7eb;
+  scrollbar-color: #183a73 #e5e7eb;
 }
 
 *::-webkit-scrollbar {
@@ -103,7 +89,7 @@
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #1e3a8a;
+  background: #183a73;
   border-radius: 9999px;
 }
 

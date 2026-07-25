@@ -42,7 +42,7 @@ export function HeaderNavigation() {
       <Link
         href="/"
         className={`text-sm font-semibold transition-colors ${
-          pathname === '/' ? 'text-navy font-bold' : 'text-slate-700 hover:text-navy'
+          pathname === '/' ? 'text-navy font-bold' : 'text-brand-foreground hover:text-navy'
         }`}
       >
         Home
@@ -56,20 +56,20 @@ export function HeaderNavigation() {
       >
         <Link
           href="/shop?category=gents"
-          className="inline-flex items-center gap-1 text-sm font-semibold text-slate-700 group-hover:text-navy transition-colors"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-brand-foreground group-hover:text-navy transition-colors"
         >
           Gents{' '}
-          <ChevronDown className="h-3.5 w-3.5 text-slate-400 group-hover:text-navy transition-transform group-hover:rotate-180" />
+          <ChevronDown className="h-3.5 w-3.5 text-brand-muted group-hover:text-navy transition-transform group-hover:rotate-180" />
         </Link>
 
         {activeMenu === 'gents' && (
-          <div className="absolute top-full left-0 w-[540px] bg-white rounded-2xl shadow-xl border border-slate-100 p-6 grid grid-cols-3 gap-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute top-full left-0 w-[540px] bg-white rounded-2xl shadow-dropdown border border-brand-border p-6 grid grid-cols-3 gap-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             {megaMenuData.gents.map((group) => (
               <div key={group.title}>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-navy mb-3">
                   {group.title}
                 </h4>
-                <ul className="space-y-2 text-xs text-slate-600">
+                <ul className="space-y-2 text-xs text-brand-muted">
                   {group.items.map((item) => (
                     <li key={item}>
                       <Link
@@ -95,20 +95,20 @@ export function HeaderNavigation() {
       >
         <Link
           href="/shop?category=kids"
-          className="inline-flex items-center gap-1 text-sm font-semibold text-slate-700 group-hover:text-navy transition-colors"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-brand-foreground group-hover:text-navy transition-colors"
         >
           Kids{' '}
-          <ChevronDown className="h-3.5 w-3.5 text-slate-400 group-hover:text-navy transition-transform group-hover:rotate-180" />
+          <ChevronDown className="h-3.5 w-3.5 text-brand-muted group-hover:text-navy transition-transform group-hover:rotate-180" />
         </Link>
 
         {activeMenu === 'kids' && (
-          <div className="absolute top-full left-0 w-[540px] bg-white rounded-2xl shadow-xl border border-slate-100 p-6 grid grid-cols-3 gap-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute top-full left-0 w-[540px] bg-white rounded-2xl shadow-dropdown border border-brand-border p-6 grid grid-cols-3 gap-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             {megaMenuData.kids.map((group) => (
               <div key={group.title}>
                 <h4 className="text-xs font-bold uppercase tracking-wider text-orange mb-3">
                   {group.title}
                 </h4>
-                <ul className="space-y-2 text-xs text-slate-600">
+                <ul className="space-y-2 text-xs text-brand-muted">
                   {group.items.map((item) => (
                     <li key={item}>
                       <Link
@@ -128,22 +128,22 @@ export function HeaderNavigation() {
 
       <Link
         href="/shop?filter=new"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-navy transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-foreground hover:text-navy transition-colors"
       >
-        <Sparkles className="h-3.5 w-3.5 text-orange animate-pulse" />
+        <Sparkles className="h-3.5 w-3.5 text-orange" />
         New Arrivals
       </Link>
 
       <Link
         href="/shop?filter=offers"
-        className="text-sm font-semibold text-orange hover:text-orange-hover transition-colors"
+        className="text-sm font-semibold text-orange hover:text-orange-600 transition-colors"
       >
         Offers
       </Link>
 
       <Link
         href="/shop"
-        className="text-sm font-semibold text-slate-700 hover:text-navy transition-colors"
+        className="text-sm font-semibold text-brand-foreground hover:text-navy transition-colors"
       >
         All Products
       </Link>
