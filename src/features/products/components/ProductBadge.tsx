@@ -7,9 +7,18 @@ type ProductBadgeProps = {
 };
 
 export function ProductBadge({ type, text, className }: ProductBadgeProps) {
-  const variant = type === 'sale' ? 'destructive' : 'default';
+  if (type === 'sale') {
+    return (
+      <Badge
+        variant="destructive"
+        className={`bg-orange text-white border-orange ${className || ''}`}
+      >
+        {text}
+      </Badge>
+    );
+  }
   return (
-    <Badge variant={variant} className={className}>
+    <Badge variant="default" className={`bg-navy text-white border-navy ${className || ''}`}>
       {text}
     </Badge>
   );

@@ -30,11 +30,11 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
     <Drawer open={open} onClose={onClose} title={`My Shopping Bag (${items.length})`} side="right">
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
+          <div className="h-16 w-16 rounded-full bg-brand-divider flex items-center justify-center text-brand-muted mb-4">
             <ShoppingBag className="h-8 w-8" />
           </div>
           <h3 className="font-heading text-xl font-bold text-navy">Your cart is empty</h3>
-          <p className="mt-1 text-xs text-slate-500 max-w-xs">
+          <p className="mt-1 text-xs text-brand-muted max-w-xs">
             Explore our Gents & Kids clothing collections and fill your bag with premium fashion!
           </p>
           <Button

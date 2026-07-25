@@ -20,9 +20,9 @@ export function ProductCard({ product }: ProductCardProps) {
   const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
 
   return (
-    <div className="group relative rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden">
+    <div className="group relative rounded-2xl bg-brand-surface border border-brand-border shadow-card hover:shadow-premium transition-all duration-300 flex flex-col overflow-hidden">
       {/* Product Image Container */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-brand-divider">
         {primaryImage ? (
           <Image
             src={primaryImage.url}
@@ -32,7 +32,7 @@ export function ProductCard({ product }: ProductCardProps) {
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-50 to-orange-50/30 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-divider via-brand-background to-orange/10 flex items-center justify-center p-4">
             <span className="font-heading text-xl font-bold text-navy/30 text-center uppercase tracking-wider">
               {product.name}
             </span>
@@ -54,11 +54,11 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Product Info */}
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-brand-muted mb-1">
             {product.category?.name || 'Garments'}
           </p>
           <Link href={`/product/${product.slug}`}>
-            <h3 className="font-heading text-base font-semibold text-slate-900 group-hover:text-orange transition-colors line-clamp-1">
+            <h3 className="font-heading text-base font-semibold text-brand-foreground group-hover:text-orange transition-colors line-clamp-1">
               {product.name}
             </h3>
           </Link>

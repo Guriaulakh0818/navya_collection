@@ -18,14 +18,14 @@ export function ProductImageGallery({ images, className }: ProductImageGalleryPr
       <div
         className={
           className ||
-          'relative aspect-[3/4] rounded-3xl overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-orange-50 flex items-center justify-center p-8 border border-slate-200'
+          'relative aspect-[3/4] rounded-3xl overflow-hidden bg-gradient-to-br from-brand-divider via-brand-background to-orange/10 flex items-center justify-center p-8 border border-brand-border'
         }
       >
         <div className="text-center space-y-2">
           <span className="font-heading text-2xl font-bold text-navy/40 uppercase tracking-widest block">
             NAVYA
           </span>
-          <span className="text-xs text-slate-400 font-medium">Premium Fashion Image</span>
+          <span className="text-xs text-brand-muted font-medium">Premium Fashion Image</span>
         </div>
       </div>
     );
@@ -39,7 +39,7 @@ export function ProductImageGallery({ images, className }: ProductImageGalleryPr
       <div
         className={
           className ||
-          'relative aspect-[3/4] w-full overflow-hidden rounded-3xl bg-slate-100 border border-slate-200/80 shadow-md group'
+          'relative aspect-[3/4] w-full overflow-hidden rounded-3xl bg-brand-divider border border-brand-border shadow-card group'
         }
       >
         <Image
@@ -61,8 +61,8 @@ export function ProductImageGallery({ images, className }: ProductImageGalleryPr
               onClick={() => setActiveIdx(idx)}
               className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 transition-all ${
                 activeIdx === idx
-                  ? 'border-navy shadow-md scale-95'
-                  : 'border-slate-200 opacity-70 hover:opacity-100'
+                  ? 'border-navy shadow-card scale-95'
+                  : 'border-brand-border opacity-70 hover:opacity-100'
               }`}
             >
               <Image

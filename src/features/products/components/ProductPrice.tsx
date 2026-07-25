@@ -11,7 +11,7 @@ export function ProductPrice({ price, compareAtPrice, className }: ProductPriceP
     <div className={className || 'flex items-center gap-2'}>
       <span className="font-semibold text-navy">{formatPriceUtil(price)}</span>
       {compareAtPrice && compareAtPrice > price && (
-        <span className="text-sm text-slate-500 line-through">
+        <span className="text-sm text-brand-muted line-through">
           {formatPriceUtil(compareAtPrice)}
         </span>
       )}

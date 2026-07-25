@@ -7,7 +7,7 @@ import { FooterNewsletter } from './FooterNewsletter';
 
 export function Footer() {
   return (
-    <footer className="bg-navy text-white pt-16 pb-8 border-t border-navy-light/20">
+    <footer className="bg-navy text-white pt-16 pb-8 border-t border-navy-500/20">
       <div className="mx-auto max-w-[1440px] px-4 md:px-6">
         {/* Brand Value Props Banner */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-12 mb-12 border-b border-white/10">
