@@ -2,17 +2,20 @@
 
 import { Heart, Minus, Plus, RotateCcw, Share2, Truck } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AddToCartButton } from '@/features/products/components/AddToCartButton';
 import { ProductBadge } from '@/features/products/components/ProductBadge';
 import { ProductGrid } from '@/features/products/components/ProductGrid';
 import { ProductImageGallery } from '@/features/products/components/ProductImageGallery';
 import { ProductPrice } from '@/features/products/components/ProductPrice';
 import { ProductRating } from '@/features/products/components/ProductRating';
 import type { Product } from '@/features/products/types/product.types';
+import { useCartStore } from '@/stores';
 
 const mockProduct: Product = {
   id: '1',
@@ -93,6 +96,8 @@ const recentlyViewed: Product[] = Array.from({ length: 4 }).map((_, i) => ({
 }));
 
 export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const router = useRouter();
+  const addItem = useCartStore((s) => s.addItem);
   const [selectedVariant, setSelectedVariant] = useState(mockProduct.variants?.[0]?.id || '');
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -218,13 +223,27 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
             </div>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Button
+              <AddToCartButton
+                product={mockProduct}
                 className="flex-1 rounded-full"
                 disabled={stockStatus.label === 'Out of Stock'}
+              />
+              <Button
+                variant="outline"
+                className="flex-1 rounded-full"
+                disabled={stockStatus.label === 'Out of Stock'}
+                onClick={() => {
+                  addItem({
+                    id: `${mockProduct.id}-${Date.now()}`,
+                    productId: mockProduct.id,
+                    name: mockProduct.name,
+                    price: activeVariant?.price ?? mockProduct.price,
+                    quantity,
+                    image: mockProduct.images[0]?.url,
+                  });
+                  router.push('/checkout');
+                }}
               >
-                Add to Cart
-              </Button>
-              <Button variant="outline" className="flex-1 rounded-full">
                 Buy Now
               </Button>
             </div>

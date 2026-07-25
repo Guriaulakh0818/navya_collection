@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 
+import { MiniCartDrawer } from '@/features/cart/components/MiniCartDrawer';
 import { useAuthStore, useCartStore, useWishlistStore } from '@/stores';
 
 type HeaderActionsProps = {
@@ -12,6 +14,9 @@ export function HeaderActions({ className }: HeaderActionsProps) {
   const cartItems = useCartStore((s) => s.items);
   const wishlistItems = useWishlistStore((s) => s.items);
   const user = useAuthStore((s) => s.user);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <div className={className || 'flex items-center gap-2'}>
@@ -30,7 +35,7 @@ export function HeaderActions({ className }: HeaderActionsProps) {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06 1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
         {wishlistItems.length > 0 && (
           <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-orange px-1 text-[10px] font-bold text-white">
@@ -39,8 +44,8 @@ export function HeaderActions({ className }: HeaderActionsProps) {
         )}
       </Link>
 
-      <Link
-        href="/cart"
+      <button
+        onClick={() => setIsCartOpen(true)}
         className="relative inline-flex items-center justify-center rounded-full p-2 text-slate-600 hover:text-navy"
         aria-label="Cart"
       >
@@ -58,12 +63,12 @@ export function HeaderActions({ className }: HeaderActionsProps) {
           <circle cx="20" cy="21" r="1" />
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
         </svg>
-        {cartItems.length > 0 && (
+        {cartCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-orange px-1 text-[10px] font-bold text-white">
-            {cartItems.reduce((sum, i) => sum + i.quantity, 0)}
+            {cartCount}
           </span>
         )}
-      </Link>
+      </button>
 
       <Link
         href={user ? '/account' : '/login'}
@@ -84,6 +89,8 @@ export function HeaderActions({ className }: HeaderActionsProps) {
           <circle cx="12" cy="7" r="4" />
         </svg>
       </Link>
+
+      <MiniCartDrawer open={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
 }

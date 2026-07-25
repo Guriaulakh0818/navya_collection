@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 
 import type { Product } from '../types/product.types';
 import { calculateDiscount } from '../utils/product.utils';
+import { AddToCartButton } from './AddToCartButton';
 import { ProductBadge } from './ProductBadge';
 import { ProductPrice } from './ProductPrice';
 import { ProductQuickView } from './ProductQuickView';
@@ -42,9 +43,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="mt-2">
           <ProductRating rating={product.rating ?? 0} reviewCount={product.reviewCount ?? 0} />
         </div>
-        <Button className="w-full mt-4 rounded-full" size="sm">
-          Add to Cart
-        </Button>
+        <AddToCartButton product={product} className="w-full mt-4 rounded-full" />
       </div>
     </Card>
   );
