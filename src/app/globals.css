@@ -27,7 +27,7 @@
     --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
     --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.18);
     --font-heading: 'Playfair Display', serif;
-    --font-body: 'Poppins', sans-serif;
+    --font-body: 'Inter', sans-serif;
     --duration-fast: 150ms;
     --duration-normal: 250ms;
     --duration-slow: 350ms;
