@@ -5,16 +5,15 @@ import Link from 'next/link';
 
 import { HeaderLogo } from '@/components/layout/header/HeaderLogo';
 import { Badge } from '@/components/ui/badge';
-import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { formatPrice } from '@/utils/format-price';
 
 const categories = [
-  { id: '1', name: 'Gents', slug: 'gents', image: '/images/categories/gents.jpg', count: 120 },
-  { id: '2', name: 'Kids', slug: 'kids', image: '/images/categories/kids.jpg', count: 85 },
-  { id: '3', name: 'New Arrivals', slug: 'new', image: '/images/categories/new.jpg', count: 45 },
-  { id: '4', name: 'Offers', slug: 'offers', image: '/images/categories/offers.jpg', count: 30 },
+  { id: '1', name: 'Gents', slug: 'gents', count: 120, accent: 'from-navy to-[#234b8f]' },
+  { id: '2', name: 'Kids', slug: 'kids', count: 85, accent: 'from-orange to-[#d94a1f]' },
+  { id: '3', name: 'New Arrivals', slug: 'new', count: 45, accent: 'from-[#0f2a52] to-navy' },
+  { id: '4', name: 'Offers', slug: 'offers', count: 30, accent: 'from-[#b84d1f] to-orange' },
 ];
 
 const products = [
@@ -25,7 +24,6 @@ const products = [
     compareAtPrice: 1299,
     tag: 'Best Seller',
     category: 'Gents',
-    image: '/images/products/shirt.jpg',
   },
   {
     id: '2',
@@ -34,7 +32,6 @@ const products = [
     compareAtPrice: 899,
     tag: 'New Arrival',
     category: 'Kids',
-    image: '/images/products/kids-summer.jpg',
   },
   {
     id: '3',
@@ -43,7 +40,6 @@ const products = [
     compareAtPrice: 1899,
     tag: 'Trending',
     category: 'Gents',
-    image: '/images/products/kurta.jpg',
   },
   {
     id: '4',
@@ -52,7 +48,6 @@ const products = [
     compareAtPrice: 1499,
     tag: 'Best Seller',
     category: 'Gents',
-    image: '/images/products/chinos.jpg',
   },
   {
     id: '5',
@@ -61,7 +56,6 @@ const products = [
     compareAtPrice: 1199,
     tag: 'New Arrival',
     category: 'Kids',
-    image: '/images/products/hoodie.jpg',
   },
   {
     id: '6',
@@ -70,25 +64,6 @@ const products = [
     compareAtPrice: 3299,
     tag: 'Trending',
     category: 'Gents',
-    image: '/images/products/blazer.jpg',
-  },
-  {
-    id: '7',
-    name: 'Casual Linen Shirt',
-    price: 799,
-    compareAtPrice: 1199,
-    tag: 'Best Seller',
-    category: 'Gents',
-    image: '/images/products/linen.jpg',
-  },
-  {
-    id: '8',
-    name: 'Kids Party Wear',
-    price: 999,
-    compareAtPrice: 1499,
-    tag: 'New Arrival',
-    category: 'Kids',
-    image: '/images/products/party.jpg',
   },
 ];
 
@@ -111,17 +86,10 @@ const offers = [
 
 export default function HomePage() {
   const newArrivals = products.filter((p) => p.tag === 'New Arrival');
-  const bestSellers = products.filter((p) => p.tag === 'Best Seller');
-  const trending = products.filter((p) => p.tag === 'Trending');
 
   return (
     <div className="min-h-screen">
-      <Breadcrumb
-        items={[{ label: 'Home' }]}
-        className="mx-auto max-w-[1440px] px-4 md:px-6 py-4"
-      />
-
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="relative bg-navy text-white">
         <div className="mx-auto max-w-[1440px] px-4 md:px-6 py-16 md:py-24">
           <div className="max-w-2xl">
@@ -192,7 +160,7 @@ export default function HomePage() {
               <Link
                 key={category.id}
                 href={`/shop?category=${category.slug}`}
-                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-slate-100"
+                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-gradient-to-br ${category.accent}"
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
@@ -215,11 +183,10 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {products.slice(0, 4).map((product) => (
               <Card key={product.id} className="group overflow-hidden border-0 shadow-sm">
-                <div className="aspect-[3/4] bg-slate-100 relative">
+                <div className="aspect-[3/4] bg-gradient-to-br from-sky-50 to-orange-50 relative">
                   {product.tag && (
                     <Badge className="absolute top-2 left-2 z-10">{product.tag}</Badge>
                   )}
-                  <div className="h-full w-full bg-gradient-to-br from-sky-50 to-orange-50" />
                 </div>
                 <div className="p-4">
                   <p className="text-xs text-slate-500 mb-1">{product.category}</p>
@@ -263,9 +230,8 @@ export default function HomePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {newArrivals.map((product) => (
                 <Card key={product.id} className="group overflow-hidden border-0 shadow-sm">
-                  <div className="aspect-[3/4] bg-slate-100 relative">
+                  <div className="aspect-[3/4] bg-gradient-to-br from-sky-50 to-orange-50 relative">
                     <Badge className="absolute top-2 left-2 z-10">{product.tag}</Badge>
-                    <div className="h-full w-full bg-gradient-to-br from-sky-50 to-orange-50" />
                   </div>
                   <div className="p-4">
                     <p className="text-xs text-slate-500 mb-1">{product.category}</p>
