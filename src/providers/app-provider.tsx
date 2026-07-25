@@ -2,10 +2,8 @@
 
 import { ReactNode } from 'react';
 
-import { AuthProvider } from './auth-provider';
-import { QueryProvider } from './query-provider';
 import { StoreProvider } from './store-provider';
-import { ThemeProvider } from './theme-provider';
+import { ToastProvider } from './toast-provider';
 
 type AppProviderProps = {
   children: ReactNode;
@@ -13,12 +11,8 @@ type AppProviderProps = {
 
 export function AppProvider({ children }: AppProviderProps) {
   return (
-    <ThemeProvider>
-      <QueryProvider>
-        <AuthProvider>
-          <StoreProvider>{children}</StoreProvider>
-        </AuthProvider>
-      </QueryProvider>
-    </ThemeProvider>
+    <StoreProvider>
+      <ToastProvider>{children}</ToastProvider>
+    </StoreProvider>
   );
 }
