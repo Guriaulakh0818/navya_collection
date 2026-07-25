@@ -23,7 +23,7 @@ const MOCK_ADDRESSES: Address[] = [
 ];
 
 export function AddressStep() {
-  const { address, setAddress, nextStep } = useCheckout();
+  const { address, setAddress, nextStep, prevStep } = useCheckout();
   const [addresses, setAddresses] = useState<Address[]>(MOCK_ADDRESSES);
   const [selectedId, setSelectedId] = useState<string>(address?.id || addresses[0]?.id || '');
   const [isCreating, setIsCreating] = useState(false);
@@ -187,7 +187,7 @@ export function AddressStep() {
       )}
 
       <div className="mt-6 flex justify-between">
-        <Button variant="outline" className="rounded-full">
+        <Button variant="outline" className="rounded-full" onClick={prevStep}>
           Back
         </Button>
         <Button className="rounded-full" onClick={nextStep} disabled={!address}>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Menu } from 'lucide-react';
 import { useCallback, useState, type ReactNode } from 'react';
 
 import { MobileMenu } from './MobileMenu';
@@ -15,29 +16,16 @@ export function HeaderWrapper({ children }: HeaderWrapperProps) {
   const closeMobile = useCallback(() => setIsMobileOpen(false), []);
 
   return (
-    <header className="border-b border-border bg-white">
+    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-sm transition-all">
       <div className="mx-auto max-w-[1440px] px-4 md:px-6 h-16 flex items-center justify-between gap-4">
         {children}
         <button
           type="button"
           onClick={openMobile}
-          className="md:hidden inline-flex items-center justify-center rounded-full p-2 text-slate-600 hover:text-navy"
-          aria-label="Toggle menu"
+          className="lg:hidden inline-flex items-center justify-center rounded-full p-2 text-slate-700 hover:bg-slate-100 hover:text-navy transition-colors"
+          aria-label="Open mobile menu"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="4" y1="6" x2="20" y2="6" />
-            <line x1="4" y1="12" x2="20" y2="12" />
-            <line x1="4" y1="18" x2="20" y2="18" />
-          </svg>
+          <Menu className="h-6 w-6" />
         </button>
       </div>
 

@@ -8,7 +8,7 @@ import { useCheckout } from '@/features/checkout/context/checkout-context';
 import { formatPrice } from '@/utils/format-price';
 
 export function ReviewStep({ onPlaceOrder }: { onPlaceOrder: () => void }) {
-  const { items, address, deliveryMethod, paymentMethod } = useCheckout();
+  const { items, address, deliveryMethod, paymentMethod, prevStep } = useCheckout();
   const [isPlacing, setIsPlacing] = useState(false);
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -135,7 +135,7 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder: () => void }) {
       </div>
 
       <div className="mt-6 flex justify-between">
-        <Button variant="outline" className="rounded-full">
+        <Button variant="outline" className="rounded-full" onClick={prevStep}>
           Back
         </Button>
         <Button className="rounded-full" onClick={handlePlaceOrder} disabled={isPlacing}>

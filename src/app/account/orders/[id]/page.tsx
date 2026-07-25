@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
@@ -140,32 +141,28 @@ const ORDERS: Order[] = [
   },
 ];
 
-type OrderDetailPageProps = {
-  params: Promise<{ id: string }>;
-};
-
-export default function OrderDetailPage({ params }: OrderDetailPageProps) {
+export default function OrderDetailPage() {
+  const params = useParams();
+  const orderId =
+    typeof params?.id === 'string' ? params.id : Array.isArray(params?.id) ? params.id[0] : '';
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
 
-  // In a real app, you would fetch the order by ID from an API
-  // For now, we'll find it from our mock data
-  const orderId = params instanceof Promise ? null : '';
-
-  if (orderId) {
-    const foundOrder = ORDERS.find((o) => o.id === orderId);
-    if (foundOrder) {
-      setOrder(foundOrder);
+  useEffect(() => {
+    if (!orderId) {
+      setIsLoading(false);
+      return;
     }
+    const found = ORDERS.find((o) => o.id === orderId);
+    setOrder(found || null);
     setIsLoading(false);
-  }
+  }, [orderId]);
 
   const handleCancelOrder = async () => {
     if (!order) return;
     const confirmed = window.confirm('Are you sure you want to cancel this order?');
     if (!confirmed) return;
-
     setIsCancelling(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));

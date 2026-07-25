@@ -13,6 +13,9 @@ export interface ProductVariant {
   compareAtPrice?: number;
   stock?: number;
   attributes?: Record<string, string>;
+  size?: string;
+  color?: string;
+  material?: string;
 }
 
 export interface ProductCategory {
@@ -51,6 +54,8 @@ export interface Product {
   rating?: number;
   reviewCount?: number;
   reviews?: ProductReview[];
+  isNewArrival?: boolean;
+  isFeatured?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

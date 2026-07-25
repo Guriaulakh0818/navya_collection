@@ -1,147 +1,364 @@
 'use client';
 
-import { ArrowRight, RefreshCw, Shield, Truck } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle2,
+  Copy,
+  Heart,
+  Image as ImageIcon,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Truck,
+} from 'lucide-react';
+import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { HeaderLogo } from '@/components/layout/header/HeaderLogo';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { formatPrice } from '@/utils/format-price';
+import { ProductCard } from '@/features/products/components/ProductCard';
+import type { Product } from '@/features/products/types/product.types';
 
 const categories = [
-  { id: '1', name: 'Gents', slug: 'gents', count: 120, accent: 'from-navy to-[#234b8f]' },
-  { id: '2', name: 'Kids', slug: 'kids', count: 85, accent: 'from-orange to-[#d94a1f]' },
-  { id: '3', name: 'New Arrivals', slug: 'new', count: 45, accent: 'from-[#0f2a52] to-navy' },
-  { id: '4', name: 'Offers', slug: 'offers', count: 30, accent: 'from-[#b84d1f] to-orange' },
-];
-
-const products = [
   {
     id: '1',
-    name: 'Classic Navy Shirt',
-    price: 899,
-    compareAtPrice: 1299,
-    tag: 'Best Seller',
-    category: 'Gents',
+    name: 'Gents Collection',
+    slug: 'gents',
+    count: 140,
+    desc: 'Casual Shirts, Formal Trousers, Ethnic Kurtas & Blazers',
+    accent: 'bg-slate-900 text-white',
   },
   {
     id: '2',
-    name: 'Kids Summer Set',
-    price: 649,
-    compareAtPrice: 899,
-    tag: 'New Arrival',
-    category: 'Kids',
+    name: 'Kids Wear',
+    slug: 'kids',
+    count: 95,
+    desc: 'Boys T-Shirts, Girls Dresses & Infant Cotton Sets',
+    accent: 'bg-orange text-white',
   },
   {
     id: '3',
-    name: 'Premium Cotton Kurta',
-    price: 1299,
-    compareAtPrice: 1899,
-    tag: 'Trending',
-    category: 'Gents',
+    name: 'New Season 2026',
+    slug: 'new',
+    count: 60,
+    desc: 'Fresh arrivals crafted for maximum comfort & luxury feel',
+    accent: 'bg-navy text-white',
   },
   {
     id: '4',
-    name: 'Slim Fit Chinos',
-    price: 1099,
-    compareAtPrice: 1499,
-    tag: 'Best Seller',
-    category: 'Gents',
-  },
-  {
-    id: '5',
-    name: 'Kids Hoodie Jacket',
-    price: 899,
-    compareAtPrice: 1199,
-    tag: 'New Arrival',
-    category: 'Kids',
-  },
-  {
-    id: '6',
-    name: 'Formal Blazer',
-    price: 2499,
-    compareAtPrice: 3299,
-    tag: 'Trending',
-    category: 'Gents',
+    name: 'Festive Deals',
+    slug: 'offers',
+    count: 40,
+    desc: 'Exclusive up to 50% OFF discounts on selected lines',
+    accent: 'bg-amber-600 text-white',
   },
 ];
 
-const offers = [
+const mockProducts: Product[] = [
   {
     id: '1',
-    title: 'Summer Sale',
-    description: 'Up to 50% off on selected items',
-    code: 'SUMMER50',
-    validUntil: '2026-08-31',
+    name: 'Classic Royal Navy Shirt',
+    slug: 'classic-royal-navy-shirt',
+    sku: 'NC-SHIRT-001',
+    description: '100% Breathable Cotton Royal Navy Slim-Fit Shirt.',
+    price: 899,
+    compareAtPrice: 1399,
+    images: [
+      {
+        id: '1',
+        url: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=800',
+        alt: 'Navy Shirt',
+        isPrimary: true,
+      },
+    ],
+    category: { id: '1', name: 'Gents', slug: 'gents' },
+    categoryId: '1',
+    status: 'active',
+    stock: 25,
+    rating: 4.8,
+    reviewCount: 142,
+    isNewArrival: true,
+    isFeatured: true,
   },
   {
     id: '2',
-    title: 'First Order Discount',
-    description: 'Get 20% off on your first order',
-    code: 'WELCOME20',
-    validUntil: '2026-12-31',
+    name: 'Kids Ethnic Kurta Set',
+    slug: 'kids-ethnic-kurta-set',
+    sku: 'NC-KIDS-002',
+    description: 'Soft Jacquard Kurta Set for festive celebrations.',
+    price: 749,
+    compareAtPrice: 1099,
+    images: [
+      {
+        id: '2',
+        url: 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&q=80&w=800',
+        alt: 'Kids Kurta',
+        isPrimary: true,
+      },
+    ],
+    category: { id: '2', name: 'Kids', slug: 'kids' },
+    categoryId: '2',
+    status: 'active',
+    stock: 18,
+    rating: 4.9,
+    reviewCount: 88,
+    isNewArrival: true,
+  },
+  {
+    id: '3',
+    name: 'Festive Embroidered Silk Kurta',
+    slug: 'festive-embroidered-silk-kurta',
+    sku: 'NC-GENTS-003',
+    description: 'Traditional handcrafted silk kurta with mandarin collar.',
+    price: 1499,
+    compareAtPrice: 2199,
+    images: [
+      {
+        id: '3',
+        url: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=800',
+        alt: 'Silk Kurta',
+        isPrimary: true,
+      },
+    ],
+    category: { id: '1', name: 'Gents', slug: 'gents' },
+    categoryId: '1',
+    status: 'active',
+    stock: 12,
+    rating: 4.7,
+    reviewCount: 95,
+  },
+  {
+    id: '4',
+    name: 'Slim Fit Stretch Chinos',
+    slug: 'slim-fit-stretch-chinos',
+    sku: 'NC-GENTS-004',
+    description: 'Versatile stretch cotton chinos for modern work and leisure.',
+    price: 1199,
+    compareAtPrice: 1699,
+    images: [
+      {
+        id: '4',
+        url: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&q=80&w=800',
+        alt: 'Chinos',
+        isPrimary: true,
+      },
+    ],
+    category: { id: '1', name: 'Gents', slug: 'gents' },
+    categoryId: '1',
+    status: 'active',
+    stock: 30,
+    rating: 4.6,
+    reviewCount: 210,
+  },
+  {
+    id: '5',
+    name: 'Boys Cotton Graphic T-Shirt',
+    slug: 'boys-cotton-graphic-tshirt',
+    sku: 'NC-KIDS-005',
+    description: 'Ultra-soft bio-washed cotton T-shirt.',
+    price: 499,
+    compareAtPrice: 799,
+    images: [
+      {
+        id: '5',
+        url: 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&q=80&w=800',
+        alt: 'Boys T-shirt',
+        isPrimary: true,
+      },
+    ],
+    category: { id: '2', name: 'Kids', slug: 'kids' },
+    categoryId: '2',
+    status: 'active',
+    stock: 45,
+    rating: 4.8,
+    reviewCount: 64,
+  },
+  {
+    id: '6',
+    name: 'Tailored Italian Fit Blazer',
+    slug: 'tailored-italian-fit-blazer',
+    sku: 'NC-GENTS-006',
+    description: 'Premium blazer suited for weddings and formal events.',
+    price: 2999,
+    compareAtPrice: 4499,
+    images: [
+      {
+        id: '6',
+        url: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=800',
+        alt: 'Formal Blazer',
+        isPrimary: true,
+      },
+    ],
+    category: { id: '1', name: 'Gents', slug: 'gents' },
+    categoryId: '1',
+    status: 'active',
+    stock: 8,
+    rating: 4.9,
+    reviewCount: 175,
+  },
+];
+
+const customerReviews = [
+  {
+    id: '1',
+    name: 'Rajesh Kumar',
+    city: 'Bengaluru',
+    rating: 5,
+    comment:
+      'The quality of the Navy Linen Shirt is unbelievable for ₹899! Perfect fit and stitch details. Will order again.',
+    product: 'Classic Royal Navy Shirt',
+  },
+  {
+    id: '2',
+    name: 'Sneha Sharma',
+    city: 'Mumbai',
+    rating: 5,
+    comment:
+      'Bought kids kurta set for Diwali. The fabric is super soft, zero irritation for my 5-year-old son!',
+    product: 'Kids Ethnic Kurta Set',
+  },
+  {
+    id: '3',
+    name: 'Amit Vikram',
+    city: 'Delhi NCR',
+    rating: 5,
+    comment: 'Fast delivery within 3 days. Premium packaging and exact sizing as per size chart.',
+    product: 'Slim Fit Stretch Chinos',
   },
 ];
 
 export default function HomePage() {
-  const newArrivals = products.filter((p) => p.tag === 'New Arrival');
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  const handleCopy = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 3000);
+  };
 
   return (
-    <div className="min-h-screen">
-      {/* Hero */}
-      <section className="relative bg-navy text-white">
-        <div className="mx-auto max-w-[1440px] px-4 md:px-6 py-16 md:py-24">
-          <div className="max-w-2xl">
-            <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">
-              New Collection 2026
-            </Badge>
-            <h1 className="font-heading text-4xl md:text-6xl font-bold leading-tight">
-              Affordable Premium Fashion for <span className="text-orange">Gents</span> &{' '}
-              <span className="text-orange">Kids</span>
-            </h1>
-            <p className="mt-4 text-lg text-white/80">
-              Discover the latest trends in fashion. Quality meets affordability.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Button size="lg" className="bg-white text-navy hover:bg-white/90">
-                Shop Now <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white/10"
-              >
-                Explore Collection
-              </Button>
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-navy via-[#172e6e] to-[#0f1f4b] text-white overflow-hidden py-16 md:py-24 lg:py-28">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-orange/20 via-transparent to-transparent opacity-60" />
+
+        <div className="relative mx-auto max-w-[1440px] px-4 md:px-6">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 border border-white/20 backdrop-blur-md">
+                <Sparkles className="h-4 w-4 text-orange animate-pulse" />
+                <span className="text-xs font-semibold tracking-wide">
+                  New Season Collection 2026
+                </span>
+              </div>
+
+              <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+                Affordable Luxury Fashion for <span className="text-orange">Gents</span> &{' '}
+                <span className="text-orange">Kids</span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-white/80 max-w-xl leading-relaxed">
+                Elevate your style with India’s most trusted affordable fashion brand. Fine fabrics,
+                precision fit, and unbeatable value delivered to your doorstep.
+              </p>
+
+              <div className="flex flex-wrap gap-4 pt-2">
+                <Link href="/shop">
+                  <Button
+                    size="lg"
+                    className="rounded-full bg-orange hover:bg-orange-hover text-white font-bold px-8 shadow-lg shadow-orange/30"
+                  >
+                    Shop Now <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/shop?filter=new">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="rounded-full border-white/30 text-white hover:bg-white/10 hover:text-white font-bold px-8"
+                  >
+                    Explore New Arrivals
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Quick Trust Highlights */}
+              <div className="pt-6 grid grid-cols-3 gap-4 border-t border-white/10">
+                <div>
+                  <h4 className="text-xl font-bold text-white">50k+</h4>
+                  <p className="text-xs text-white/70">Happy Indian Customers</p>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-white">4.9 ★</h4>
+                  <p className="text-xs text-white/70">Verified Reviews</p>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-white">Pan-India</h4>
+                  <p className="text-xs text-white/70">Express Delivery</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Hero Banner Feature Card */}
+            <div className="relative">
+              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 bg-slate-800">
+                <Image
+                  src="https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=1200"
+                  alt="Navya Collection Hero Look"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6 p-6 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 text-white">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-orange bg-orange/20 px-2.5 py-1 rounded-full">
+                    Featured Craftsmanship
+                  </span>
+                  <h3 className="font-heading text-xl font-bold mt-2">
+                    100% Egyptian Cotton Shirts
+                  </h3>
+                  <p className="text-xs text-white/80 mt-1">Starting from just ₹899</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="border-b border-border bg-white">
-        <div className="mx-auto max-w-[1440px] px-4 md:px-6 py-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-center gap-3">
-              <Truck className="h-6 w-6 text-orange" />
+      {/* Why Choose Us */}
+      <section className="py-10 bg-white border-b border-slate-100 shadow-sm">
+        <div className="mx-auto max-w-[1440px] px-4 md:px-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+              <Truck className="h-8 w-8 text-orange shrink-0" />
               <div>
-                <p className="font-semibold text-navy">Free Shipping</p>
-                <p className="text-sm text-slate-600">On orders above ₹999</p>
+                <h4 className="font-bold text-sm text-slate-900">FREE Express Shipping</h4>
+                <p className="text-xs text-slate-500">On all orders above ₹999</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Shield className="h-6 w-6 text-orange" />
+
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+              <ShieldCheck className="h-8 w-8 text-orange shrink-0" />
               <div>
-                <p className="font-semibold text-navy">Secure Payments</p>
-                <p className="text-sm text-slate-600">100% secure checkout</p>
+                <h4 className="font-bold text-sm text-slate-900">100% Premium Quality</h4>
+                <p className="text-xs text-slate-500">Durable fabric & color lock</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <RefreshCw className="h-6 w-6 text-orange" />
+
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+              <RefreshCw className="h-8 w-8 text-orange shrink-0" />
               <div>
-                <p className="font-semibold text-navy">Easy Returns</p>
-                <p className="text-sm text-slate-600">7-day return policy</p>
+                <h4 className="font-bold text-sm text-slate-900">Easy 7-Day Returns</h4>
+                <p className="text-xs text-slate-500">Hassle-free exchange policy</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+              <CheckCircle2 className="h-8 w-8 text-orange shrink-0" />
+              <div>
+                <h4 className="font-bold text-sm text-slate-900">Cash on Delivery</h4>
+                <p className="text-xs text-slate-500">Available across all PIN codes</p>
               </div>
             </div>
           </div>
@@ -151,21 +368,39 @@ export default function HomePage() {
       {/* Featured Categories */}
       <section className="py-16">
         <div className="mx-auto max-w-[1440px] px-4 md:px-6">
-          <div className="mb-8">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange">Categories</p>
-            <h2 className="mt-2 font-heading text-3xl text-navy">Featured Categories</h2>
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-orange">
+              Curated Lineup
+            </span>
+            <h2 className="mt-2 font-heading text-3xl md:text-4xl font-bold text-navy">
+              Featured Categories
+            </h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Discover handpicked styles tailored for Gents and Kids.
+            </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {categories.map((category) => (
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((cat) => (
               <Link
-                key={category.id}
-                href={`/shop?category=${category.slug}`}
-                className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-gradient-to-br ${category.accent}"
+                key={cat.id}
+                href={`/shop?category=${cat.slug}`}
+                className="group relative overflow-hidden rounded-3xl p-6 h-64 flex flex-col justify-between shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                  <h3 className="font-heading text-xl">{category.name}</h3>
-                  <p className="text-sm text-white/80">{category.count} items</p>
+                <div
+                  className={`absolute inset-0 ${cat.accent} opacity-95 transition-opacity group-hover:opacity-100`}
+                />
+                <div className="relative z-10">
+                  <span className="text-xs font-bold uppercase tracking-widest text-white/70">
+                    {cat.count}+ Styles
+                  </span>
+                  <h3 className="font-heading text-2xl font-bold text-white mt-1">{cat.name}</h3>
+                </div>
+                <div className="relative z-10 flex items-center justify-between">
+                  <p className="text-xs text-white/80 max-w-[180px] line-clamp-2">{cat.desc}</p>
+                  <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:bg-white group-hover:text-navy transition-all">
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
                 </div>
               </Link>
             ))}
@@ -173,132 +408,206 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Product Grid Section */}
+      {/* Best Sellers & Trending */}
       <section className="py-16 bg-white">
         <div className="mx-auto max-w-[1440px] px-4 md:px-6">
-          <div className="mb-8">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange">Shop</p>
-            <h2 className="mt-2 font-heading text-3xl text-navy">Our Collection</h2>
+          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-orange">
+                Popular Choices
+              </span>
+              <h2 className="mt-1 font-heading text-3xl md:text-4xl font-bold text-navy">
+                Best Sellers
+              </h2>
+            </div>
+            <Link
+              href="/shop"
+              className="inline-flex items-center text-xs font-bold text-navy hover:text-orange transition-colors"
+            >
+              View Full Collection →
+            </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {products.slice(0, 4).map((product) => (
-              <Card key={product.id} className="group overflow-hidden border-0 shadow-sm">
-                <div className="aspect-[3/4] bg-gradient-to-br from-sky-50 to-orange-50 relative">
-                  {product.tag && (
-                    <Badge className="absolute top-2 left-2 z-10">{product.tag}</Badge>
-                  )}
-                </div>
-                <div className="p-4">
-                  <p className="text-xs text-slate-500 mb-1">{product.category}</p>
-                  <h3 className="font-heading text-lg text-navy group-hover:text-orange transition-colors">
-                    {product.name}
-                  </h3>
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="font-semibold text-navy">{formatPrice(product.price)}</span>
-                    {product.compareAtPrice && (
-                      <span className="text-sm text-slate-500 line-through">
-                        {formatPrice(product.compareAtPrice)}
-                      </span>
-                    )}
-                  </div>
-                  <Button className="w-full mt-4 rounded-full" size="sm">
-                    Add to Cart
-                  </Button>
-                </div>
-              </Card>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {mockProducts.slice(0, 4).map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* New Arrivals */}
-      {newArrivals.length > 0 && (
-        <section className="py-16">
-          <div className="mx-auto max-w-[1440px] px-4 md:px-6">
-            <div className="mb-8 flex items-end justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange">Just In</p>
-                <h2 className="mt-2 font-heading text-3xl text-navy">New Arrivals</h2>
-              </div>
-              <Link
-                href="/shop?filter=new"
-                className="text-sm font-medium text-navy hover:text-orange flex items-center"
-              >
-                View All <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {newArrivals.map((product) => (
-                <Card key={product.id} className="group overflow-hidden border-0 shadow-sm">
-                  <div className="aspect-[3/4] bg-gradient-to-br from-sky-50 to-orange-50 relative">
-                    <Badge className="absolute top-2 left-2 z-10">{product.tag}</Badge>
-                  </div>
-                  <div className="p-4">
-                    <p className="text-xs text-slate-500 mb-1">{product.category}</p>
-                    <h3 className="font-heading text-lg text-navy group-hover:text-orange transition-colors">
-                      {product.name}
-                    </h3>
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="font-semibold text-navy">{formatPrice(product.price)}</span>
-                      {product.compareAtPrice && (
-                        <span className="text-sm text-slate-500 line-through">
-                          {formatPrice(product.compareAtPrice)}
-                        </span>
-                      )}
-                    </div>
-                    <Button className="w-full mt-4 rounded-full" size="sm">
-                      Add to Cart
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Offers */}
-      <section className="py-16 bg-navy text-white">
-        <div className="mx-auto max-w-[1440px] px-4 md:px-6">
-          <div className="mb-8">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange">Deals</p>
-            <h2 className="mt-2 font-heading text-3xl">Special Offers</h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            {offers.map((offer) => (
-              <Card key={offer.id} className="bg-white/10 border-white/20 text-white p-6">
-                <h3 className="font-heading text-2xl">{offer.title}</h3>
-                <p className="mt-2 text-white/80">{offer.description}</p>
-                <div className="mt-4 flex items-center justify-between">
-                  <code className="rounded-full bg-white/20 px-4 py-1 text-sm font-mono">
-                    {offer.code}
-                  </code>
-                  <span className="text-xs text-white/60">Valid until {offer.validUntil}</span>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Newsletter */}
+      {/* New Arrivals Banner */}
       <section className="py-16 bg-slate-50">
-        <div className="mx-auto max-w-2xl px-4 md:px-6 text-center">
-          <h2 className="font-heading text-3xl text-navy">Stay Updated</h2>
-          <p className="mt-2 text-slate-600">
-            Subscribe to our newsletter for exclusive offers and updates.
-          </p>
-          <form className="mt-6 flex gap-2">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 rounded-full border border-border px-4 py-3 text-sm text-slate-900 outline-none focus:border-navy focus:ring-2 focus:ring-navy/20"
-              required
-            />
-            <Button type="submit" className="rounded-full">
-              Subscribe
-            </Button>
-          </form>
+        <div className="mx-auto max-w-[1440px] px-4 md:px-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-10 gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-orange">
+                Just Arrived
+              </span>
+              <h2 className="mt-1 font-heading text-3xl md:text-4xl font-bold text-navy">
+                New Arrivals 2026
+              </h2>
+            </div>
+            <Link
+              href="/shop?filter=new"
+              className="inline-flex items-center text-xs font-bold text-navy hover:text-orange transition-colors"
+            >
+              Explore All New →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {mockProducts.slice(2, 6).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Special Offers Section */}
+      <section className="py-16 bg-navy text-white relative overflow-hidden">
+        <div className="mx-auto max-w-[1440px] px-4 md:px-6">
+          <div className="text-center max-w-xl mx-auto mb-10">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-orange">
+              Special Coupons
+            </span>
+            <h2 className="mt-2 font-heading text-3xl md:text-4xl font-bold">
+              Exclusive Discount Deals
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className="rounded-3xl bg-white/10 border border-white/15 p-6 backdrop-blur-md flex flex-col justify-between">
+              <div>
+                <span className="bg-orange text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+                  FESTIVAL SPECIAL
+                </span>
+                <h3 className="font-heading text-2xl font-bold mt-3">Flat 15% Off Your Order</h3>
+                <p className="text-xs text-white/70 mt-1">
+                  Valid on all Gents & Kids wear purchases above ₹1,299.
+                </p>
+              </div>
+              <div className="mt-6 flex items-center justify-between pt-4 border-t border-white/10">
+                <span className="font-mono text-sm font-bold text-orange tracking-widest bg-white/10 px-4 py-1.5 rounded-xl">
+                  NAVYA15
+                </span>
+                <button
+                  onClick={() => handleCopy('NAVYA15')}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white hover:text-orange transition-colors"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  {copiedCode === 'NAVYA15' ? 'Copied!' : 'Copy Code'}
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl bg-white/10 border border-white/15 p-6 backdrop-blur-md flex flex-col justify-between">
+              <div>
+                <span className="bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
+                  NEW CUSTOMER
+                </span>
+                <h3 className="font-heading text-2xl font-bold mt-3">Flat ₹200 Off First Order</h3>
+                <p className="text-xs text-white/70 mt-1">
+                  Applicable for new users on cart value above ₹999.
+                </p>
+              </div>
+              <div className="mt-6 flex items-center justify-between pt-4 border-t border-white/10">
+                <span className="font-mono text-sm font-bold text-orange tracking-widest bg-white/10 px-4 py-1.5 rounded-xl">
+                  FIRST200
+                </span>
+                <button
+                  onClick={() => handleCopy('FIRST200')}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white hover:text-orange transition-colors"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  {copiedCode === 'FIRST200' ? 'Copied!' : 'Copy Code'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Customer Reviews Section */}
+      <section className="py-16 bg-white">
+        <div className="mx-auto max-w-[1440px] px-4 md:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-orange">
+              Customer Love
+            </span>
+            <h2 className="mt-2 font-heading text-3xl md:text-4xl font-bold text-navy">
+              What Our Buyers Say
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {customerReviews.map((rev) => (
+              <div
+                key={rev.id}
+                className="p-6 rounded-3xl bg-slate-50 border border-slate-100 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center gap-1 text-amber-500 mb-3">
+                    {Array.from({ length: rev.rating }).map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-amber-500" />
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                    &quot;{rev.comment}&quot;
+                  </p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-slate-200/60 flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-xs text-navy">{rev.name}</h4>
+                    <span className="text-[10px] text-slate-500">
+                      {rev.city} • Verified Purchase
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-semibold text-orange bg-orange/10 px-2 py-1 rounded">
+                    {rev.product}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Instagram Feed / Lookbook */}
+      <section className="py-16 bg-slate-50 border-t border-slate-100">
+        <div className="mx-auto max-w-[1440px] px-4 md:px-6 text-center">
+          <ImageIcon className="h-8 w-8 text-orange mx-auto mb-2" aria-hidden="true" />
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+            #NavyaStyle Lookbook
+          </span>
+          <h2 className="mt-1 font-heading text-3xl font-bold text-navy mb-8">
+            Follow Us On Instagram
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=600',
+              'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&q=80&w=600',
+              'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=600',
+              'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=600',
+            ].map((url, idx) => (
+              <div
+                key={idx}
+                className="group relative aspect-square rounded-2xl overflow-hidden bg-slate-200"
+              >
+                <Image
+                  src={url}
+                  alt={`Navya Collection lookbook ${idx + 1}`}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                  <ImageIcon className="h-8 w-8" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>
