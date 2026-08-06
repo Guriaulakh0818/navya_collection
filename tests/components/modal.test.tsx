@@ -11,7 +11,7 @@ describe('UI Modal Component', () => {
         <div>Modal Content</div>
       </Modal>,
     );
-    expect(screen.queryByText('Modal Content')).not.toBeInDOM();
+    expect(screen.queryByText('Modal Content')).not.toBeInTheDocument();
   });
 
   it('renders title and content when open is true', () => {
@@ -21,9 +21,9 @@ describe('UI Modal Component', () => {
       </Modal>,
     );
 
-    expect(screen.getByRole('dialog')).toBeInDOM();
-    expect(screen.getByText('Select Address')).toBeInDOM();
-    expect(screen.getByText('Modal Content Body')).toBeInDOM();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Select Address')).toBeInTheDocument();
+    expect(screen.getByText('Modal Content Body')).toBeInTheDocument();
   });
 
   it('triggers onClose when close button is clicked', () => {

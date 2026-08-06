@@ -7,7 +7,7 @@ import { fireEvent, render, screen } from '../helpers/test-utils';
 describe('UI Button Component', () => {
   it('renders button with children text', () => {
     render(<Button>Add to Cart</Button>);
-    expect(screen.getByRole('button', { name: /add to cart/i })).toBeInDOM();
+    expect(screen.getByRole('button', { name: /add to cart/i })).toBeInTheDocument();
   });
 
   it('triggers onClick event handler when clicked', () => {

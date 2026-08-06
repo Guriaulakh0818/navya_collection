@@ -7,11 +7,11 @@ import { render, screen } from '../helpers/test-utils';
 describe('UI Loader Component', () => {
   it('renders spinner element', () => {
     const { container } = render(<Loader />);
-    expect(container.querySelector('.animate-spin')).toBeInDOM();
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
   it('renders optional text label when provided', () => {
     render(<Loader text="Loading cart details..." />);
-    expect(screen.getByText('Loading cart details...')).toBeInDOM();
+    expect(screen.getByText('Loading cart details...')).toBeInTheDocument();
   });
 });

@@ -7,7 +7,7 @@ import { fireEvent, render, screen } from '../helpers/test-utils';
 describe('UI Input Component', () => {
   it('renders input with placeholder text', () => {
     render(<Input placeholder="Enter mobile number" />);
-    expect(screen.getByPlaceholderText(/enter mobile number/i)).toBeInDOM();
+    expect(screen.getByPlaceholderText(/enter mobile number/i)).toBeInTheDocument();
   });
 
   it('handles onChange text input events', () => {
