@@ -10,35 +10,81 @@ export function Footer() {
   return (
     <footer className="bg-navy text-white pt-12 sm:pt-16 pb-8 border-t border-navy-500/20 overflow-hidden">
       <div className="mx-auto max-w-[1440px] px-4 md:px-6">
-        {/* Brand Value Props Banner */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 pb-10 sm:pb-12 mb-10 sm:mb-12 border-b border-white/10">
-          <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/10">
-            <div className="h-11 w-11 rounded-xl bg-orange/20 flex items-center justify-center text-orange shrink-0">
-              <Truck className="h-5 w-5" />
+        {/* Brand Value Props Banner (Desktop: 3 Columns Row, Mobile: Horizontal Swipe Slider with Arrows) */}
+        <div className="relative pb-8 mb-8 border-b border-white/10">
+          <div className="hidden md:grid md:grid-cols-3 gap-6">
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/10">
+              <div className="h-11 w-11 rounded-xl bg-orange/20 flex items-center justify-center text-orange shrink-0">
+                <Truck className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-sm">Pan-India Express Shipping</h4>
+                <p className="text-xs text-white/70">Free shipping on orders above ₹999</p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-semibold text-xs sm:text-sm">Pan-India Express Shipping</h4>
-              <p className="text-[11px] sm:text-xs text-white/70">
-                Free shipping on orders above ₹999
-              </p>
+
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/10">
+              <div className="h-11 w-11 rounded-xl bg-orange/20 flex items-center justify-center text-orange shrink-0">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-sm">100% Guaranteed Quality</h4>
+                <p className="text-xs text-white/70">Directly sourced & verified</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/10">
+              <div className="h-11 w-11 rounded-xl bg-orange/20 flex items-center justify-center text-orange shrink-0">
+                <RefreshCw className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-extrabold text-sm">7-Day Easy Returns</h4>
+                <p className="text-xs text-white/70">Hassle-free exchange & refund</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/10">
-            <div className="h-11 w-11 rounded-xl bg-orange/20 flex items-center justify-center text-orange shrink-0">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-xs sm:text-sm">100% Guaranteed Quality</h4>
-              <p className="text-[11px] sm:text-xs text-white/70">Directly sourced & verified</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/10 sm:col-span-2 lg:col-span-1">
-            <div className="h-11 w-11 rounded-xl bg-orange/20 flex items-center justify-center text-orange shrink-0">
-              <RefreshCw className="h-5 w-5" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-xs sm:text-sm">7-Day Easy Returns</h4>
-              <p className="text-[11px] sm:text-xs text-white/70">Hassle-free exchange & refund</p>
+
+          {/* Mobile Horizontal Swipe Slider with Left/Right Arrows */}
+          <div className="block md:hidden">
+            <div
+              className="flex items-center justify-between gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 scroll-smooth"
+              style={{ scrollbarWidth: 'none' }}
+            >
+              <div className="w-full shrink-0 snap-center flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/10">
+                <div className="h-11 w-11 rounded-xl bg-orange/20 flex items-center justify-center text-orange shrink-0">
+                  <Truck className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-xs sm:text-sm">Pan-India Express Shipping</h4>
+                  <p className="text-[11px] sm:text-xs text-white/70">
+                    Free shipping on orders above ₹999
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-full shrink-0 snap-center flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/10">
+                <div className="h-11 w-11 rounded-xl bg-orange/20 flex items-center justify-center text-orange shrink-0">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-xs sm:text-sm">100% Guaranteed Quality</h4>
+                  <p className="text-[11px] sm:text-xs text-white/70">
+                    Directly sourced & verified
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-full shrink-0 snap-center flex items-center gap-3.5 p-4 rounded-2xl bg-white/5 border border-white/10">
+                <div className="h-11 w-11 rounded-xl bg-orange/20 flex items-center justify-center text-orange shrink-0">
+                  <RefreshCw className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-xs sm:text-sm">7-Day Easy Returns</h4>
+                  <p className="text-[11px] sm:text-xs text-white/70">
+                    Hassle-free exchange & refund
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
