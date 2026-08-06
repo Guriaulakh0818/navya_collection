@@ -30,8 +30,23 @@ jobs:
       - name: Execute Vitest Unit & Integration Suite
         run: npx vitest run --coverage
 
+      - name: Build Application for Playwright E2E
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_ENV: production
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/test'
+          DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/test'
+          JWT_SECRET: 'ci-testing-secret-key-32-characters-minimum!'
+          NEXTAUTH_SECRET: 'ci-testing-secret-key-32-characters-minimum!'
+
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
 
       - name: Execute Playwright E2E Suite
-        run: npx playwright test
+        run: npx playwright test --project="Mobile Chrome (375px)"
+        env:
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/test'
+          DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/test'
+          JWT_SECRET: 'ci-testing-secret-key-32-characters-minimum!'
+          NEXTAUTH_SECRET: 'ci-testing-secret-key-32-characters-minimum!'
