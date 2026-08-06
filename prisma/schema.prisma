@@ -14,8 +14,35 @@ datasource db {
 
 enum Role {
   USER
+  CUSTOMER
+  SUPERVISOR
   ADMIN
+  OWNER
   SUPER_ADMIN
+  SELLER
+}
+
+enum ShopStatus {
+  PENDING_VERIFICATION
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+  INACTIVE
+}
+
+enum VerificationBadge {
+  NONE
+  VERIFIED_SELLER
+  TRUSTED_SELLER
+  TOP_RATED
+  PREMIUM_STORE
+}
+
+enum SubscriptionTier {
+  STARTER
+  GROWTH
+  PREMIUM
 }
 
 enum OrderStatus {
@@ -48,11 +75,13 @@ enum PaymentMethod {
 
 enum ShippingStatus {
   PENDING
+  PACKED
   PICKUP_SCHEDULED
   IN_TRANSIT
   OUT_FOR_DELIVERY
   DELIVERED
   RTO
+  CANCELLED
   FAILED
 }
 
@@ -73,6 +102,21 @@ enum ReturnStatus {
 }
 
 enum NotificationType {
+  OTP
+  ORDER_PLACED
+  ORDER_CONFIRMED
+  ORDER_PACKED
+  ORDER_SHIPPED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  ORDER_CANCELLED
+  WELCOME
+  INVOICE
+  RETURN_APPROVED
+  ADMIN_NEW_ORDER
+  ADMIN_PAYMENT_FAILURE
+  ADMIN_LOW_STOCK
+  ADMIN_OUT_OF_STOCK
   ORDER_UPDATE
   PAYMENT_UPDATE
   PROMOTION
@@ -80,24 +124,47 @@ enum NotificationType {
   RETURN_UPDATE
 }
 
+enum NotificationChannel {
+  SMS
+  EMAIL
+  WHATSAPP
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  QUEUED
+  SENT
+  FAILED
+}
+
 // ==========================================
 // USER & AUTHENTICATION MODELS
 // ===================================
 
 model User {
-  id        String    @id @default(cuid())
-  clerkId   String?   @unique
-  name      String?
+  id                 String    @id @default(cuid())
+  name               String?
   email     String?   @unique
-  mobile    String?   @unique
-  role      Role      @default(USER)
-  avatar    String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  mobile             String?   @unique
+  role               Role      @default(USER)
+  avatar             String?
+  password           String?
+  loginAttempts      Int       @default(0)
+  lockUntil          DateTime?
+  mustChangePassword Boolean   @default(false)
+  approvalStatus     String?   @default("APPROVED") // APPROVED, PENDING_APPROVAL, PENDING_PASSWORD, REJECTED
+  inviteToken        String?
+  inviteTokenExpiry  DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
 
+  profile        CustomerProfile?
   accounts       Account[]
   sessions       Session[]
+  userSessions   UserSession[]
   addresses      Address[]
   orders         Order[]
   reviews        Review[]
@@ -106,8 +173,44 @@ model User {
   notifications  Notification[]
   returnRequests ReturnRequest[]
   auditLogs      AuditLog[]
+  ownedShops     Shop[]           @relation("UserShops")
+  sellerProfile  SellerProfile?
+  shopReviews    ShopReview[]
 
   @@map("users")
+}
+
+model UserSession {
+  id           String   @id @default(cuid())
+  userId       String
+  tokenHash    String   @unique
+  device       String?
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("user_sessions")
+}
+
+model CustomerProfile {
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  name      String?
+  gender    String?
+  dob       DateTime?
+  avatar    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("customer_profiles")
 }
 
 model Account {
@@ -175,15 +278,24 @@ model Address {
 // ===================================
 
 model Category {
-  id          String    @id @default(cuid())
-  name        String
-  slug        String    @unique
-  description String?
-  image       String?
-  parentId    String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+  id              String    @id @default(cuid())
+  name            String
+  slug            String    @unique
+  description     String?
+  image           String?
+  icon            String?
+  parentId        String?
+  displayOrder    Int       @default(0)
+  isFeatured      Boolean   @default(false)
+  status          String    @default("active") // active, inactive
+  metaTitle       String?
+  metaDescription String?
+  metaKeywords    String?
+  canonicalUrl     String?
+  bannerAlt        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
 
   parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: SetNull)
   children Category[] @relation("CategoryToCategory")
@@ -191,6 +303,10 @@ model Category {
 
   @@index([parentId])
   @@index([slug])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([displayOrder])
+  @@index([deletedAt])
   @@map("categories")
 }
 
@@ -199,6 +315,10 @@ model Product {
   name              String
   slug              String    @unique
   sku               String    @unique
+  brand             String?
+  gender            String?   // men, women, unisex, kids
+  ageGroup          String?   // adults, kids, toddlers
+  fabric            String?   // silk, cotton, chiffon, georgette, velvet
   description       String    @db.Text
   price             Decimal   @db.Decimal(10, 2)
   compareAtPrice    Decimal?  @db.Decimal(10, 2)
@@ -211,11 +331,30 @@ model Product {
   categoryId        String
   rating            Float     @default(0)
   reviewCount       Int       @default(0)
+
+  // Enterprise SEO & Extended Attributes
+  metaTitle       String?
+  metaDescription String?   @db.Text
+  metaKeywords    String?
+  canonicalUrl     String?
+  ogImage         String?
+  robots           String?   // e.g. "index, follow" or "noindex, nofollow"
+  schemaEnabled   Boolean   @default(true)
+  focusKeyword    String?
+  color           String?
+  fit             String?   // slim, regular, relaxed, oversized
+  occasion        String?   // casual, formal, party, festive, ethnic
+
+  brandId         String?
+
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   deletedAt         DateTime?
 
   category   Category         @relation(fields: [categoryId], references: [id])
+  brandRef   Brand?           @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  shopId     String?
+  shop       Shop?            @relation(fields: [shopId], references: [id], onDelete: Cascade)
   images     ProductImage[]
   variants   ProductVariant[]
   reviews    Review[]
@@ -224,47 +363,105 @@ model Product {
   orderItems OrderItem[]
 
   @@index([categoryId])
+  @@index([brandId])
+  @@index([shopId])
   @@index([slug])
+  @@index([brand])
+  @@index([gender])
+  @@index([price])
   @@index([status])
   @@index([isFeatured])
   @@index([isNewArrival])
+  @@index([deletedAt])
+  @@index([status, deletedAt, rating])
+  @@index([status, deletedAt, createdAt])
+  @@index([status, deletedAt, isFeatured])
+  @@index([shopId, status, deletedAt])
+  @@index([categoryId, status, deletedAt])
   @@map("products")
 }
 
+model Brand {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  slug            String    @unique
+  logo            String?
+  description     String?   @db.Text
+  metaTitle       String?
+  metaDescription String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  products Product[]
+
+  @@index([slug])
+  @@map("brands")
+}
+
 model ProductImage {
-  id        String   @id @default(cuid())
-  productId String
-  url       String
-  alt       String?
-  isPrimary Boolean  @default(false)
-  sortOrder Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  productId          String
+  cloudinaryPublicId String?
+  imageUrl           String
+  secureUrl          String?
+  altText            String?
+  sortOrder          Int       @default(0)
+  isPrimary          Boolean   @default(false)
+  width              Int?
+  height             Int?
+  fileSize           Int?
+  format             String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([productId])
+  @@index([isPrimary])
+  @@index([sortOrder])
+  @@index([deletedAt])
   @@map("product_images")
 }
 
 model ProductVariant {
-  id        String    @id @default(cuid())
-  productId String
-  name      String
-  sku       String    @unique
-  price     Decimal   @db.Decimal(10, 2)
-  stock     Int       @default(0)
-  size      String?
-  color     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id                String    @id @default(cuid())
+  productId         String
+  name              String
+  sku               String    @unique
+  barcode           String?
+  price             Decimal   @db.Decimal(10, 2)
+  compareAtPrice    Decimal?  @db.Decimal(10, 2)
+  stock             Int       @default(0) // Legacy stock field mapped to availableStock
+  availableStock    Int       @default(0)
+  reservedStock     Int       @default(0)
+  soldStock         Int       @default(0)
+  minimumStockLevel Int       @default(5)
+  maximumStockLevel Int?
+  stockStatus       String    @default("IN_STOCK") // IN_STOCK, LOW_STOCK, OUT_OF_STOCK
+  lastRestockedAt   DateTime?
+  size              String?
+  color             String?
+  weight            Float?
+  dimensions        String?
+  attributes        Json?     // Flexible JSON structure for future attributes (fabric, fit, season, pattern, etc.)
+  status            String    @default("active") // active, inactive
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
 
   product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   cartItems  CartItem[]
   orderItems OrderItem[]
 
   @@index([productId])
+  @@index([size])
+  @@index([color])
+  @@index([status])
+  @@index([stockStatus])
+  @@index([availableStock])
+  @@index([deletedAt])
   @@map("product_variants")
 }
 
@@ -347,10 +544,16 @@ model Order {
   shiprocketShipmentId String?
   awbCode              String?
   courierName          String?
+  pickupRequestId      String?
+  pickupScheduledDate  DateTime?
+  pickupTokenNumber    String?
+  pickupLocation       String?
   shippingStatus       ShippingStatus @default(PENDING)
   estimatedDelivery    DateTime?
 
   trackingNumber String?
+  trackingUrl    String?
+  labelUrl       String?
   notes          String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -359,6 +562,7 @@ model Order {
   user                User                 @relation(fields: [userId], references: [id])
   address             Address              @relation(fields: [addressId], references: [id])
   items               OrderItem[]
+  vendorOrders        VendorOrder[]
   paymentTransactions PaymentTransaction[]
   returnRequests      ReturnRequest[]
 
@@ -374,26 +578,32 @@ model Order {
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
-  orderId   String
-  productId String
-  variantId String?
-  name      String
-  sku       String
-  price     Decimal  @db.Decimal(10, 2)
-  quantity  Int
-  total     Decimal  @db.Decimal(10, 2)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  orderId       String
+  productId     String
+  variantId     String?
+  shopId        String?
+  vendorOrderId String?
+  name          String
+  sku           String
+  price         Decimal  @db.Decimal(10, 2)
+  quantity      Int
+  total         Decimal  @db.Decimal(10, 2)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   order       Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product     Product         @relation(fields: [productId], references: [id])
   variant     ProductVariant? @relation(fields: [variantId], references: [id])
+  shop        Shop?           @relation(fields: [shopId], references: [id], onDelete: SetNull)
+  vendorOrder VendorOrder?    @relation(fields: [vendorOrderId], references: [id], onDelete: SetNull)
   returnItems ReturnItem[]
 
   @@index([orderId])
   @@index([productId])
   @@index([variantId])
+  @@index([shopId])
+  @@index([vendorOrderId])
   @@map("order_items")
 }
 
@@ -466,21 +676,29 @@ model ReturnItem {
 }
 
 model Review {
-  id        String    @id @default(cuid())
-  userId    String
-  productId String
-  rating    Int
-  comment   String    @db.Text
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id                 String    @id @default(cuid())
+  userId             String
+  productId          String
+  shopId             String?
+  rating             Int
+  comment            String    @db.Text
+  isVerifiedPurchase Boolean   @default(false)
+  sellerReply        String?   @db.Text
+  sellerRepliedAt    DateTime?
+  status             String    @default("APPROVED") // APPROVED, PENDING_MODERATION, REJECTED
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  shop    Shop?   @relation("ShopReviewsRelation", fields: [shopId], references: [id], onDelete: SetNull)
 
   @@unique([userId, productId])
   @@index([userId])
   @@index([productId])
+  @@index([shopId])
+  @@index([status])
   @@map("reviews")
 }
 
@@ -491,6 +709,7 @@ model Review {
 model Coupon {
   id             String    @id @default(cuid())
   code           String    @unique
+  shopId         String?
   discountType   String // PERCENTAGE, FLAT
   discountValue  Decimal   @db.Decimal(10, 2)
   minOrderAmount Decimal   @default(0) @db.Decimal(10, 2)
@@ -501,25 +720,38 @@ model Coupon {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
 
+  shop Shop? @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
   @@index([code])
+  @@index([shopId])
   @@index([isActive])
   @@map("coupons")
 }
 
 model Notification {
-  id        String           @id @default(cuid())
-  userId    String
-  title     String
-  message   String           @db.Text
-  type      NotificationType @default(SYSTEM)
-  isRead    Boolean          @default(false)
-  link      String?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  id               String              @id @default(cuid())
+  userId           String?
+  channel          NotificationChannel @default(IN_APP)
+  type             NotificationType    @default(SYSTEM)
+  title            String
+  message          String              @db.Text
+  status           NotificationStatus  @default(PENDING)
+  provider         String?
+  providerResponse Json?
+  metadata         Json?
+  recipient        String?
+  link             String?
+  isRead           Boolean             @default(false)
+  sentAt           DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([channel])
+  @@index([type])
+  @@index([status])
   @@index([isRead])
   @@map("notifications")
 }
@@ -545,3 +777,254 @@ model AuditLog {
   @@index([entity])
   @@map("audit_logs")
 }
+
+// ==========================================
+// OTP AUTHENTICATION TOKENS
+// ===================================
+
+model OtpVerification {
+  id          String   @id @default(cuid())
+  phone       String   @unique
+  otpHash     String
+  purpose     String   @default("AUTHENTICATION")
+  expiresAt   DateTime
+  attempts    Int      @default(0)
+  resendCount Int      @default(0)
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([phone])
+  @@map("otp_verifications")
+}
+
+model OtpToken {
+  id          String   @id @default(cuid())
+  mobile      String   @unique
+  hashedOtp   String
+  attempts    Int      @default(0)
+  resendCount Int      @default(0)
+  expiresAt   DateTime
+  lastSentAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([mobile])
+  @@map("otp_tokens")
+}
+
+// ==========================================
+// MULTI-VENDOR MARKETPLACE & SAAS MODELS
+// ===================================
+
+model SellerProfile {
+  id                   String            @id @default(cuid())
+  userId               String            @unique
+  businessName         String
+  legalName            String?
+  gstin                String?
+  panNumber            String?
+  city                 String
+  state                String
+  pincode              String
+  businessAddress      String            @db.Text
+  bankAccountHolder    String?
+  bankAccountNumber    String?
+  bankIfscCode         String?
+  bankName             String?
+  status               ShopStatus        @default(PENDING_VERIFICATION)
+  verificationBadge    VerificationBadge @default(NONE)
+  commissionRate       Decimal           @default(10.00) @db.Decimal(5, 2)
+  subscriptionTier     SubscriptionTier  @default(STARTER)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  deletedAt            DateTime?
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shops Shop[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("seller_profiles")
+}
+
+model Shop {
+  id                   String            @id @default(cuid())
+  name                 String
+  slug                 String            @unique
+  logo                 String?
+  banner               String?
+  description          String?           @db.Text
+  phone                String
+  email                String
+  gstin                String?
+  panNumber            String?
+  city                 String
+  state                String
+  pincode              String
+  fullAddress          String            @db.Text
+  returnPolicy         String?           @db.Text
+  shippingPolicy       String?           @db.Text
+  metaTitle            String?
+  metaDescription      String?
+  bankAccountHolder    String?
+  bankAccountNumber    String?
+  bankIfscCode         String?
+  bankName             String?
+  shiprocketPickupName String?
+  status               ShopStatus        @default(PENDING_VERIFICATION)
+  verificationBadge    VerificationBadge @default(NONE)
+  rating               Float             @default(0)
+  reviewCount          Int               @default(0)
+  commissionRate       Decimal           @default(10.00) @db.Decimal(5, 2)
+  subscriptionTier     SubscriptionTier  @default(STARTER)
+  subscriptionEndsAt   DateTime?
+  isSubscriptionActive Boolean           @default(true)
+  isClosed             Boolean           @default(false)
+  closedReason         String?
+  closedUntil          DateTime?
+  vacationMessage      String?           @db.Text
+
+  ownerId         String
+  owner           User           @relation("UserShops", fields: [ownerId], references: [id], onDelete: Cascade)
+  sellerProfileId String?
+  sellerProfile   SellerProfile? @relation(fields: [sellerProfileId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  addresses    ShopAddress[]
+  products     Product[]
+  vendorOrders VendorOrder[]
+  shopReviews  ShopReview[]
+  documents    SellerDocument[]
+  coupons      Coupon[]
+  payouts        VendorPayout[]
+  orderItems     OrderItem[]
+  productReviews Review[]         @relation("ShopReviewsRelation")
+
+  @@index([slug])
+  @@index([ownerId])
+  @@index([sellerProfileId])
+  @@index([status])
+  @@index([city])
+  @@index([status, deletedAt, rating])
+  @@index([status, deletedAt, createdAt])
+  @@map("shops")
+}
+
+model ShopAddress {
+  id           String    @id @default(cuid())
+  shopId       String
+  title        String    @default("Primary Address")
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  pincode      String
+  country      String    @default("India")
+  contactPhone String?
+  isPrimary    Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@index([isPrimary])
+  @@map("shop_addresses")
+}
+
+model SellerDocument {
+  id              String   @id @default(cuid())
+  shopId          String
+  documentType    String // GST_CERTIFICATE, PAN_CARD, AADHAR, CANCELLED_CHEQUE, SHOP_PHOTO
+  fileUrl         String
+  status          String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  rejectionReason String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@map("seller_documents")
+}
+
+model VendorOrder {
+  id                   String         @id @default(cuid())
+  masterOrderId        String
+  shopId               String
+  vendorOrderNumber    String         @unique
+  totalAmount          Decimal        @db.Decimal(10, 2)
+  commissionAmount     Decimal        @db.Decimal(10, 2)
+  vendorPayoutAmount   Decimal        @db.Decimal(10, 2)
+  status               OrderStatus    @default(PENDING)
+  shippingStatus       ShippingStatus @default(PENDING)
+  shiprocketOrderId    String?
+  shiprocketShipmentId String?
+  awbCode              String?
+  courierName          String?
+  labelUrl             String?
+  manifestUrl          String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  masterOrder Order       @relation(fields: [masterOrderId], references: [id], onDelete: Cascade)
+  shop        Shop        @relation(fields: [shopId], references: [id])
+  items       OrderItem[]
+
+  @@index([masterOrderId])
+  @@index([shopId])
+  @@index([status])
+  @@map("vendor_orders")
+}
+
+model VendorPayout {
+  id              String    @id @default(cuid())
+  shopId          String
+  amount          Decimal   @db.Decimal(10, 2)
+  status          String    @default("PENDING") // PENDING, PROCESSING, PAID, FAILED
+  referenceNumber String?
+  periodStart     DateTime
+  periodEnd       DateTime
+  paidAt          DateTime?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  shop Shop @relation(fields: [shopId], references: [id])
+
+  @@index([shopId])
+  @@index([status])
+  @@map("vendor_payouts")
+}
+
+model ShopReview {
+  id                 String    @id @default(cuid())
+  userId             String
+  shopId             String
+  rating             Int
+  comment            String    @db.Text
+  isVerifiedPurchase Boolean   @default(false)
+  sellerReply        String?   @db.Text
+  sellerRepliedAt    DateTime?
+  status             String    @default("APPROVED") // APPROVED, PENDING_MODERATION, REJECTED
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, shopId])
+  @@index([userId])
+  @@index([shopId])
+  @@index([status])
+  @@map("shop_reviews")
+}
+
+
+

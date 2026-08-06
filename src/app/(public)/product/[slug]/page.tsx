@@ -5,6 +5,7 @@ import {
   Heart,
   HelpCircle,
   Minus,
+  Palette,
   Plus,
   RotateCcw,
   Share2,
@@ -12,7 +13,7 @@ import {
   Star,
   Truck,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,12 @@ import { ProductImageGallery } from '@/features/products/components/ProductImage
 import { ProductPrice } from '@/features/products/components/ProductPrice';
 import { ProductRating } from '@/features/products/components/ProductRating';
 import type { Product } from '@/features/products/types/product.types';
+import {
+  generateBreadcrumbSchema,
+  generateProductJsonLdSchemas,
+  generateProductSchema,
+  JsonLd,
+} from '@/features/seo';
 import { useCartStore, useWishlistStore } from '@/stores';
 
 const sampleProduct: Product = {
@@ -123,10 +130,16 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
   const { toggleItem: toggleWishlist, isInWishlist } = useWishlistStore();
-  const [selectedVariant, setSelectedVariant] = useState(sampleProduct.variants?.[1]?.id || '');
+  const [selectedVariant, setSelectedVariant] = useState('');
+  const [selectedColor, setSelectedColor] = useState<string>('Red');
   const [quantity, setQuantity] = useState(1);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Dynamic Product Fetch State from DB
+  const [resolvedSlug, setResolvedSlug] = useState<string>('');
+  const [fetchedProduct, setFetchedProduct] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Review Form state
   const [newRating, setNewRating] = useState(5);
@@ -134,29 +147,120 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
   const [newName, setNewName] = useState('');
   const [reviewsList, setReviewsList] = useState(sampleProduct.reviews || []);
 
+  useEffect(() => {
+    let isMounted = true;
+    Promise.resolve(params).then((p: any) => {
+      if (isMounted && p?.slug) setResolvedSlug(p.slug);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [params]);
+
+  useEffect(() => {
+    if (!resolvedSlug) return;
+    setIsLoading(true);
+    fetch(`/api/v1/products/${resolvedSlug}`)
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success && resData.data) {
+          const dbProd = resData.data;
+          const formatted = {
+            id: dbProd.id,
+            name: dbProd.name,
+            slug: dbProd.slug,
+            sku: dbProd.sku,
+            description: dbProd.description,
+            price: Number(dbProd.price || 0),
+            compareAtPrice: dbProd.compareAtPrice ? Number(dbProd.compareAtPrice) : null,
+            stock: dbProd.stock || 0,
+            lowStockThreshold: dbProd.lowStockThreshold || 5,
+            rating: dbProd.rating || 4.8,
+            category: dbProd.category || {
+              id: 'c1',
+              name: 'Boutique Collection',
+              slug: 'boutique',
+            },
+            images:
+              dbProd.images && dbProd.images.length > 0
+                ? dbProd.images.map((img: any) => ({
+                    id: img.id,
+                    url: img.imageUrl,
+                    alt: img.altText || dbProd.name,
+                    isPrimary: img.isPrimary,
+                  }))
+                : sampleProduct.images,
+            variants:
+              dbProd.variants && dbProd.variants.length > 0
+                ? dbProd.variants.map((v: any) => ({
+                    id: v.id,
+                    sku: v.sku,
+                    name: `${v.size || 'Size'} ${v.color ? `(${v.color})` : ''}`,
+                    price: Number(v.price || dbProd.price),
+                    stock: v.stock,
+                    size: v.size,
+                    color: v.color,
+                  }))
+                : sampleProduct.variants,
+            reviews:
+              dbProd.reviews && dbProd.reviews.length > 0
+                ? dbProd.reviews.map((r: any) => ({
+                    id: r.id,
+                    userId: r.userId,
+                    userName: r.user?.name || r.userName || 'Customer',
+                    rating: r.rating,
+                    comment: r.comment,
+                    createdAt: new Date(r.createdAt),
+                  }))
+                : sampleProduct.reviews,
+            color: dbProd.color || '',
+            shop: dbProd.shop || null,
+          };
+
+          setFetchedProduct(formatted);
+          setReviewsList(formatted.reviews);
+          if (formatted.variants?.[0]?.id) {
+            setSelectedVariant(formatted.variants[0].id);
+          }
+          if (dbProd.color) {
+            setSelectedColor(dbProd.color);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch real product by slug:', err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [resolvedSlug]);
+
+  const activeProduct = fetchedProduct || sampleProduct;
+
   const activeVariant = useMemo(
     () =>
-      sampleProduct.variants?.find((v) => v.id === selectedVariant) || sampleProduct.variants?.[0],
-    [selectedVariant],
+      activeProduct.variants?.find((v: any) => v.id === selectedVariant) ||
+      activeProduct.variants?.[0],
+    [selectedVariant, activeProduct],
   );
 
-  const isWishlisted = isInWishlist(sampleProduct.id);
+  const isWishlisted = isInWishlist(activeProduct.id);
 
   const stockStatus = useMemo(() => {
     if (!activeVariant) return { label: 'Out of Stock', color: 'bg-rose-500' };
     if ((activeVariant.stock || 0) <= 0) return { label: 'Out of Stock', color: 'bg-rose-500' };
-    if ((activeVariant.stock || 0) <= (sampleProduct.lowStockThreshold ?? 5))
+    if ((activeVariant.stock || 0) <= (activeProduct.lowStockThreshold ?? 5))
       return { label: 'Low Stock Alert', color: 'bg-amber-500' };
     return { label: 'In Stock', color: 'bg-emerald-500' };
-  }, [activeVariant]);
+  }, [activeVariant, activeProduct]);
 
   const discount = useMemo(() => {
-    const price = activeVariant?.price ?? sampleProduct.price;
-    if (!sampleProduct.compareAtPrice || sampleProduct.compareAtPrice <= price) return null;
+    const price = activeVariant?.price ?? activeProduct.price;
+    if (!activeProduct.compareAtPrice || activeProduct.compareAtPrice <= price) return null;
     return Math.round(
-      ((sampleProduct.compareAtPrice - price) / sampleProduct.compareAtPrice) * 100,
+      ((activeProduct.compareAtPrice - price) / activeProduct.compareAtPrice) * 100,
     );
-  }, [activeVariant]);
+  }, [activeVariant, activeProduct]);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -181,13 +285,37 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
     }
   };
 
+  const schemas = generateProductJsonLdSchemas({
+    id: activeProduct.id,
+    name: activeProduct.name,
+    slug: activeProduct.slug,
+    sku: activeVariant?.sku || activeProduct.sku || 'NC-SKU',
+    description: activeProduct.description,
+    price: activeVariant?.price ?? activeProduct.price,
+    stock: activeVariant?.stock ?? activeProduct.stock,
+    brand: 'Navya Collection',
+    category: {
+      id: activeProduct.category.id,
+      name: activeProduct.category.name,
+      slug: activeProduct.category.slug,
+    },
+    images: activeProduct.images.map((img: any) => ({
+      url: img.url,
+      alt: img.alt,
+      isPrimary: img.isPrimary,
+    })),
+    rating: activeProduct.rating,
+    reviewCount: reviewsList.length,
+  });
+
   return (
     <div className="min-h-screen bg-slate-50/50 pb-16">
+      <JsonLd data={schemas} />
       <Breadcrumb
         items={[
           { label: 'Home', href: '/' },
           { label: 'Shop', href: '/shop' },
-          { label: sampleProduct.name },
+          { label: activeProduct.name },
         ]}
         className="mx-auto max-w-[1440px] px-4 md:px-6 py-4"
       />
@@ -196,14 +324,14 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
         {/* Main Product Container */}
         <div className="grid gap-10 lg:grid-cols-2 bg-white p-6 md:p-10 rounded-3xl border border-slate-200/80 shadow-sm">
           {/* Gallery */}
-          <ProductImageGallery images={sampleProduct.images} />
+          <ProductImageGallery images={activeProduct.images} selectedColor={selectedColor} />
 
           {/* Details Column */}
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Badge className="bg-navy text-white text-[10px] uppercase font-bold tracking-wider">
-                  {sampleProduct.category.name}
+                  {activeProduct.category?.name || 'Boutique'}
                 </Badge>
                 {discount && <ProductBadge type="sale" text={`${discount}% OFF`} />}
                 <span
@@ -214,31 +342,74 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
               </div>
 
               <h1 className="font-heading text-2xl md:text-3xl font-bold text-slate-900 leading-tight">
-                {sampleProduct.name}
+                {activeProduct.name}
               </h1>
               <p className="mt-1 text-xs text-slate-400 font-mono">
-                SKU: {activeVariant?.sku || sampleProduct.sku}
+                SKU: {activeVariant?.sku || activeProduct.sku}
               </p>
             </div>
 
             {/* Price & Rating */}
             <div className="flex items-center justify-between border-y border-slate-100 py-3">
               <ProductPrice
-                price={activeVariant?.price ?? sampleProduct.price}
-                compareAtPrice={sampleProduct.compareAtPrice}
+                price={activeVariant?.price ?? activeProduct.price}
+                compareAtPrice={activeProduct.compareAtPrice}
               />
               <ProductRating
-                rating={sampleProduct.rating ?? 4.8}
+                rating={activeProduct.rating ?? 4.8}
                 reviewCount={reviewsList.length}
               />
             </div>
 
             <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-              {sampleProduct.description}
+              {activeProduct.description}
             </p>
 
+            {/* Color Shade Selection (Interactive Fabric Color Transformation) */}
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <Palette className="w-3.5 h-3.5 text-navy" /> Select Color Shade:{' '}
+                  <span className="text-navy font-extrabold">{selectedColor}</span>
+                </h3>
+                <span className="text-[11px] text-slate-400 font-medium">
+                  ✨ Real-time Outfit Color Preview
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { name: 'Red', hex: '#EF4444' },
+                  { name: 'Royal Blue', hex: '#2563EB' },
+                  { name: 'Emerald Green', hex: '#10B981' },
+                  { name: 'Mustard Gold', hex: '#D97706' },
+                  { name: 'Magenta Pink', hex: '#EC4899' },
+                  { name: 'Deep Purple', hex: '#A855F7' },
+                  { name: 'Maroon', hex: '#881337' },
+                  { name: 'Jet Black', hex: '#111827' },
+                  { name: 'Pure White', hex: '#F9FAFB' },
+                ].map((color) => (
+                  <button
+                    key={color.name}
+                    type="button"
+                    onClick={() => setSelectedColor(color.name)}
+                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                      selectedColor === color.name
+                        ? 'border-navy bg-navy text-white shadow-md ring-2 ring-navy/20 scale-105'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-xs shrink-0"
+                      style={{ backgroundColor: color.hex }}
+                    />
+                    <span>{color.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Variants Picker */}
-            {sampleProduct.variants && sampleProduct.variants.length > 0 && (
+            {activeProduct.variants && activeProduct.variants.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
@@ -252,7 +423,7 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2.5">
-                  {sampleProduct.variants.map((v) => (
+                  {activeProduct.variants.map((v: any) => (
                     <button
                       key={v.id}
                       onClick={() => setSelectedVariant(v.id)}
@@ -294,30 +465,100 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
               </div>
             </div>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <AddToCartButton
-                product={sampleProduct}
-                className="flex-1 rounded-full py-3.5 text-xs font-bold bg-navy hover:bg-navy-hover shadow-md"
-                disabled={stockStatus.label === 'Out of Stock'}
-              />
-              <Button
-                className="flex-1 rounded-full py-3.5 text-xs font-bold bg-orange hover:bg-orange-hover text-white shadow-md"
-                disabled={stockStatus.label === 'Out of Stock'}
-                onClick={() => {
-                  addItem({
-                    id: `${sampleProduct.id}-${selectedVariant}`,
-                    productId: sampleProduct.id,
-                    name: `${sampleProduct.name} (${activeVariant?.name || 'Standard'})`,
-                    price: activeVariant?.price ?? sampleProduct.price,
-                    quantity,
-                    image: sampleProduct.images[0]?.url,
-                  });
-                  router.push('/checkout');
-                }}
-              >
-                Buy Now (Fast Checkout)
-              </Button>
+            {/* VACATION MODE NOTICE & PROTECTED CTAS */}
+            {(activeProduct as any).shop?.isClosed ? (
+              <div className="space-y-3 pt-2">
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 space-y-1">
+                  <div className="flex items-center gap-2 text-amber-900 font-extrabold text-xs">
+                    <span>🌴</span> Shop is Temporarily Closed (Vacation Mode)
+                  </div>
+                  <p className="text-[11px] text-slate-700 font-medium leading-relaxed">
+                    {(activeProduct as any).shop?.vacationMessage ||
+                      'This seller is currently on vacation. Orders are temporarily paused and will resume upon store reopening.'}
+                  </p>
+                  {(activeProduct as any).shop?.closedUntil && (
+                    <p className="text-[10px] text-amber-800 font-bold pt-1">
+                      🗓️ Expected Reopening:{' '}
+                      {new Date((activeProduct as any).shop.closedUntil).toLocaleDateString(
+                        'en-IN',
+                        { day: 'numeric', month: 'short', year: 'numeric' },
+                      )}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    disabled
+                    className="w-full rounded-full py-3.5 text-xs font-extrabold bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300"
+                  >
+                    🔒 Orders Paused (Boutique on Vacation)
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              /* CTAs */
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <AddToCartButton
+                  product={activeProduct}
+                  className="flex-1 rounded-full py-3.5 text-xs font-bold bg-navy hover:bg-navy-hover shadow-md"
+                  disabled={stockStatus.label === 'Out of Stock'}
+                />
+                <Button
+                  className="flex-1 rounded-full py-3.5 text-xs font-bold bg-orange hover:bg-orange-hover text-white shadow-md"
+                  disabled={stockStatus.label === 'Out of Stock'}
+                  onClick={() => {
+                    addItem({
+                      id: `${activeProduct.id}-${selectedVariant}`,
+                      productId: activeProduct.id,
+                      name: `${activeProduct.name} (${activeVariant?.name || 'Standard'})`,
+                      price: activeVariant?.price ?? activeProduct.price,
+                      quantity,
+                      image: activeProduct.images[0]?.url,
+                    });
+                    router.push('/checkout');
+                  }}
+                >
+                  Buy Now (Fast Checkout)
+                </Button>
+              </div>
+            )}
+
+            {/* Sticky Bottom Mobile Bar (< md) */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 shadow-2xl flex items-center gap-2">
+              {(activeProduct as any).shop?.isClosed ? (
+                <Button
+                  disabled
+                  className="w-full rounded-full py-3 text-xs font-extrabold bg-slate-200 text-slate-500 cursor-not-allowed border border-slate-300"
+                >
+                  🔒 Orders Paused (Shop on Vacation)
+                </Button>
+              ) : (
+                <>
+                  <AddToCartButton
+                    product={activeProduct}
+                    className="flex-1 rounded-full py-3 text-xs font-bold bg-navy hover:bg-navy-hover text-white"
+                    disabled={stockStatus.label === 'Out of Stock'}
+                  />
+                  <Button
+                    className="flex-1 rounded-full py-3 text-xs font-bold bg-orange hover:bg-orange-hover text-white"
+                    disabled={stockStatus.label === 'Out of Stock'}
+                    onClick={() => {
+                      addItem({
+                        id: `${activeProduct.id}-${selectedVariant}`,
+                        productId: activeProduct.id,
+                        name: `${activeProduct.name} (${activeVariant?.name || 'Standard'})`,
+                        price: activeVariant?.price ?? activeProduct.price,
+                        quantity,
+                        image: activeProduct.images[0]?.url,
+                      });
+                      router.push('/checkout');
+                    }}
+                  >
+                    Buy Now
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Wishlist & Share */}
@@ -325,11 +566,11 @@ export default function ProductPage({ params }: { params: Promise<{ slug: string
               <button
                 onClick={() =>
                   toggleWishlist({
-                    productId: sampleProduct.id,
-                    name: sampleProduct.name,
-                    price: activeVariant?.price ?? sampleProduct.price,
-                    image: sampleProduct.images[0]?.url,
-                    slug: sampleProduct.slug,
+                    productId: activeProduct.id,
+                    name: activeProduct.name,
+                    price: activeVariant?.price ?? activeProduct.price,
+                    image: activeProduct.images[0]?.url,
+                    slug: activeProduct.slug,
                   })
                 }
                 className={`inline-flex items-center gap-2 text-xs font-bold transition-colors ${

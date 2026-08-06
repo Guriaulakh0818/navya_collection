@@ -10,7 +10,13 @@ import {
   ShippingStatus,
 } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+    },
+  },
+});
 
 async function main() {
   console.log('🚀 Starting Navya Collection database seeding...');
@@ -38,18 +44,29 @@ async function main() {
   await prisma.returnRequest.deleteMany();
   await prisma.paymentTransaction.deleteMany();
   await prisma.orderItem.deleteMany();
+  await prisma.vendorOrder.deleteMany();
   await prisma.order.deleteMany();
   await prisma.cartItem.deleteMany();
   await prisma.cart.deleteMany();
   await prisma.wishlist.deleteMany();
+  await prisma.shopReview.deleteMany();
   await prisma.review.deleteMany();
   await prisma.coupon.deleteMany();
   await prisma.productImage.deleteMany();
   await prisma.productVariant.deleteMany();
   await prisma.product.deleteMany();
+  console.log('🧹 Remaining products count in DB:', await prisma.product.count());
+  await prisma.category.updateMany({ data: { parentId: null } });
   await prisma.category.deleteMany();
+  await prisma.sellerDocument.deleteMany();
+  await prisma.vendorPayout.deleteMany();
+  await prisma.shopAddress.deleteMany();
+  await prisma.shop.deleteMany();
+  await prisma.sellerProfile.deleteMany();
   await prisma.address.deleteMany();
+  await prisma.customerProfile.deleteMany();
   await prisma.session.deleteMany();
+  await prisma.userSession.deleteMany();
   await prisma.account.deleteMany();
   await prisma.user.deleteMany();
 
@@ -58,32 +75,218 @@ async function main() {
   // ==========================================
   console.log('👤 Seeding Users & Admins...');
 
-  const superAdmin = await prisma.user.create({
-    data: {
+  const bcrypt = await import('bcryptjs');
+  const initialAdminPassword = process.env.ADMIN_INITIAL_PASSWORD || 'ChangeMe@123';
+  const defaultAdminPasswordHash = await bcrypt.default.hash(initialAdminPassword, 10);
+
+  const ownerEmail = 'gurvindersingh0218@gmail.com';
+  const ownerPassword = 'SaniyaBatra@68182';
+  const ownerPasswordHash = await bcrypt.default.hash(ownerPassword, 10);
+
+  // Default Owner Account per Spec
+  const ownerUser = await prisma.user.upsert({
+    where: { email: ownerEmail },
+    update: {
+      name: 'Gurvinder Singh (Owner)',
+      password: ownerPasswordHash,
+      role: Role.OWNER,
+      approvalStatus: 'APPROVED',
+    },
+    create: {
+      name: 'Gurvinder Singh (Owner)',
+      email: ownerEmail,
+      mobile: '+919878543210',
+      password: ownerPasswordHash,
+      role: Role.OWNER,
+      approvalStatus: 'APPROVED',
+      mustChangePassword: false,
+      loginAttempts: 0,
+      lockUntil: null,
+    },
+  });
+
+  // Default Admin per Task 4.2.5 spec
+  await prisma.user.upsert({
+    where: { email: 'admin@navyacollection.store' },
+    update: {
+      name: 'Navya Collection Admin',
+      password: defaultAdminPasswordHash,
+      role: Role.ADMIN,
+      approvalStatus: 'APPROVED',
+    },
+    create: {
+      name: 'Navya Collection Admin',
+      email: 'admin@navyacollection.store',
+      mobile: '+919999000000',
+      password: defaultAdminPasswordHash,
+      role: Role.ADMIN,
+      approvalStatus: 'APPROVED',
+      mustChangePassword: false,
+    },
+  });
+
+  const superAdmin = await prisma.user.upsert({
+    where: { email: 'superadmin@navyacollection.com' },
+    update: {
+      name: 'Navya Collection SuperAdmin',
+      password: defaultAdminPasswordHash,
+      role: Role.SUPER_ADMIN,
+    },
+    create: {
       name: 'Navya Collection SuperAdmin',
       email: 'superadmin@navyacollection.com',
       mobile: '+919999000001',
       role: Role.SUPER_ADMIN,
+      password: defaultAdminPasswordHash,
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
     },
   });
 
-  await prisma.user.create({
-    data: {
+  // ==========================================
+  // 1.5 MULTI-VENDOR SHOPS SEEDING
+  // ==========================================
+  console.log('🏪 Seeding Multi-Vendor Shops...');
+
+  const defaultShop = await prisma.shop.upsert({
+    where: { slug: 'navya-collection' },
+    update: {
+      name: 'Navya Collection',
+      ownerId: ownerUser.id,
+      subscriptionTier: 'PREMIUM',
+    },
+    create: {
+      name: 'Navya Collection',
+      slug: 'navya-collection',
+      description:
+        'Navya Collection Flagship Store in Hisar. Luxury Indian ethnic couture, handcrafted sarees, anarkalis and lehengas.',
+      phone: '+919878543210',
+      email: ownerEmail,
+      city: 'Hisar',
+      state: 'Haryana',
+      pincode: '125001',
+      fullAddress: 'Shop No. 12, Main Cloth Market, Hisar, Haryana - 125001',
+      status: 'APPROVED',
+      verificationBadge: 'PREMIUM_STORE',
+      commissionRate: 10.0,
+      subscriptionTier: 'PREMIUM',
+      ownerId: ownerUser.id,
+      rating: 4.8,
+      reviewCount: 120,
+    },
+  });
+  console.log('✅ Created Flagship Shop:', defaultShop.id, defaultShop.name);
+
+  const sellerUser1 = await prisma.user.upsert({
+    where: { email: 'ramesh.fashionhub@gmail.com' },
+    update: { name: 'Ramesh Kumar (Fashion Hub)', role: Role.SELLER },
+    create: {
+      name: 'Ramesh Kumar (Fashion Hub)',
+      email: 'ramesh.fashionhub@gmail.com',
+      mobile: '+919812345678',
+      role: Role.SELLER,
+      approvalStatus: 'APPROVED',
+      password: ownerPasswordHash,
+    },
+  });
+
+  const shopFashionHub = await prisma.shop.upsert({
+    where: { slug: 'fashion-hub' },
+    update: {
+      name: 'Fashion Hub',
+      subscriptionTier: 'GROWTH',
+      ownerId: sellerUser1.id,
+    },
+    create: {
+      name: 'Fashion Hub',
+      slug: 'fashion-hub',
+      description: 'Premier ethnic and designer daily wear boutique based in Hisar.',
+      phone: '+919812345678',
+      email: 'contact@fashionhub.com',
+      city: 'Hisar',
+      state: 'Haryana',
+      pincode: '125001',
+      fullAddress: 'Shop 45, Rajguru Market, Hisar, Haryana',
+      status: 'APPROVED',
+      verificationBadge: 'VERIFIED_SELLER',
+      commissionRate: 12.5,
+      subscriptionTier: 'GROWTH',
+      ownerId: sellerUser1.id,
+      rating: 4.6,
+      reviewCount: 45,
+    },
+  });
+  console.log('✅ Created Shop 1:', shopFashionHub.id, shopFashionHub.name);
+
+  const sellerUser2 = await prisma.user.upsert({
+    where: { email: 'vikram.stylezone@gmail.com' },
+    update: { name: 'Vikram Verma (Style Zone)', role: Role.SELLER },
+    create: {
+      name: 'Vikram Verma (Style Zone)',
+      email: 'vikram.stylezone@gmail.com',
+      mobile: '+919876543219',
+      role: Role.SELLER,
+      approvalStatus: 'APPROVED',
+      password: ownerPasswordHash,
+    },
+  });
+
+  const shopStyleZone = await prisma.shop.upsert({
+    where: { slug: 'style-zone' },
+    update: {
+      name: 'Style Zone',
+      subscriptionTier: 'STARTER',
+      ownerId: sellerUser2.id,
+    },
+    create: {
+      name: 'Style Zone',
+      slug: 'style-zone',
+      description: 'Exclusive party wear and wedding collection shop in Sirsa.',
+      phone: '+919876543219',
+      email: 'vikram.stylezone@gmail.com',
+      gstin: '06XYZAB5678G2Z1',
+      city: 'Sirsa',
+      state: 'Haryana',
+      pincode: '125055',
+      fullAddress: 'Main Bazaar, Near City Clock Tower, Sirsa, Haryana - 125055',
+      status: 'APPROVED',
+      verificationBadge: 'TRUSTED_SELLER',
+      commissionRate: 12.0,
+      subscriptionTier: 'STARTER',
+      ownerId: sellerUser2.id,
+      rating: 4.7,
+      reviewCount: 32,
+    },
+  });
+  console.log('✅ Created Shop 2:', shopStyleZone.id, shopStyleZone.name);
+
+  await prisma.user.upsert({
+    where: { email: 'admin.rajesh@navyacollection.com' },
+    update: {
+      name: 'Rajesh Sharma (Admin)',
+      role: Role.ADMIN,
+    },
+    create: {
       name: 'Rajesh Sharma (Admin)',
       email: 'admin.rajesh@navyacollection.com',
       mobile: '+919999000002',
       role: Role.ADMIN,
+      password: defaultAdminPasswordHash,
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
     },
   });
 
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email: 'pooja.ops@navyacollection.com' },
+    update: {
+      name: 'Pooja Verma (Store Operations)',
+      role: Role.ADMIN,
+    },
+    create: {
       name: 'Pooja Verma (Store Operations)',
       email: 'pooja.ops@navyacollection.com',
       mobile: '+919999000003',
       role: Role.ADMIN,
+      password: defaultAdminPasswordHash,
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
     },
   });
@@ -94,31 +297,6 @@ async function main() {
     { name: 'Aarav Sharma', city: 'New Delhi', state: 'Delhi', pincode: '110001' },
     { name: 'Rohan Kapoor', city: 'Chandigarh', state: 'Punjab', pincode: '160017' },
     { name: 'Kavya Reddy', city: 'Hyderabad', state: 'Telangana', pincode: '500001' },
-    { name: 'Meera Nair', city: 'Kochi', state: 'Kerala', pincode: '682001' },
-    { name: 'Priya Sundaram', city: 'Chennai', state: 'Tamil Nadu', pincode: '600001' },
-    { name: 'Vikrant Singh', city: 'Jaipur', state: 'Rajasthan', pincode: '302001' },
-    { name: 'Sanya Mukherjee', city: 'Kolkata', state: 'West Bengal', pincode: '700001' },
-    { name: 'Aditya Gupta', city: 'Lucknow', state: 'Uttar Pradesh', pincode: '226001' },
-    { name: 'Neha Deshmukh', city: 'Pune', state: 'Maharashtra', pincode: '411001' },
-    { name: 'Ishaan Malhotra', city: 'Ludhiana', state: 'Punjab', pincode: '141001' },
-    { name: 'Tanvi Joshi', city: 'Indore', state: 'Madhya Pradesh', pincode: '452001' },
-    { name: 'Rishi Banerji', city: 'Kolkata', state: 'West Bengal', pincode: '700019' },
-    { name: 'Simran Kaur', city: 'Amritsar', state: 'Punjab', pincode: '143001' },
-    { name: 'Tarun Saxena', city: 'Noida', state: 'Uttar Pradesh', pincode: '201301' },
-    { name: 'Aakriti Mehta', city: 'Surat', state: 'Gujarat', pincode: '395001' },
-    { name: 'Devansh Bhardwaj', city: 'Dehradun', state: 'Uttarakhand', pincode: '248001' },
-    { name: 'Rhea Sengupta', city: 'Guwahati', state: 'Assam', pincode: '781001' },
-    { name: 'Nikhil Agarwal', city: 'Bengaluru', state: 'Karnataka', pincode: '560001' },
-    { name: 'Vani Bhatia', city: 'Gurugram', state: 'Haryana', pincode: '122001' },
-    { name: 'Shreyas Kulkarni', city: 'Nagpur', state: 'Maharashtra', pincode: '440001' },
-    { name: 'Avani Choudhury', city: 'Bhubaneswar', state: 'Odisha', pincode: '751001' },
-    { name: 'Kabir Thapar', city: 'Jaipur', state: 'Rajasthan', pincode: '302004' },
-    { name: 'Shruti Hegde', city: 'Mangaluru', state: 'Karnataka', pincode: '575001' },
-    { name: 'Manish Rawat', city: 'Shimla', state: 'Himachal Pradesh', pincode: '171001' },
-    { name: 'Gauri Rao', city: 'Mysuru', state: 'Karnataka', pincode: '570001' },
-    { name: 'Harsh Vardhan', city: 'Patna', state: 'Bihar', pincode: '800001' },
-    { name: 'Isha Khurana', city: 'Jalandhar', state: 'Punjab', pincode: '144001' },
-    { name: 'Yashwardhan Singhania', city: 'Udaipur', state: 'Rajasthan', pincode: '313001' },
   ];
 
   const customerUsers = [];
@@ -131,8 +309,13 @@ async function main() {
     const email = `${firstName}.${lastName}${i + 1}@gmail.com`;
     const mobile = `+9198765${(10000 + i).toString()}`;
 
-    const user = await prisma.user.create({
-      data: {
+    const user = await prisma.user.upsert({
+      where: { email },
+      update: {
+        name: item.name,
+        mobile,
+      },
+      create: {
         name: item.name,
         email,
         mobile,
@@ -197,20 +380,30 @@ async function main() {
       name: 'Indo-Western & Fusion',
       slug: 'indo-western-fusion',
       description: 'Modern silhouettes blended with traditional Indian craftsmanship.',
-      image: 'https://images.unsplash.com/photo-1596783074918-c84cb2583584?w=600',
+      image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
     },
     {
-      name: 'Jewellery & Accessories',
-      slug: 'jewellery-accessories',
-      description: 'Kundan, Polki, Zircon, and statement handcrafted ethnic jewellery.',
-      image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600',
+      name: 'Gents & Mens Couture',
+      slug: 'gents-mens-couture',
+      description: 'Handcrafted designer sherwanis, kurta pajamas, and waistcoats for men.',
+      image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600',
+    },
+    {
+      name: 'Dupattas & Stoles',
+      slug: 'dupattas-stoles',
+      description: 'Heavy embroidered Banarasi, Phulkari, and Silk designer dupattas.',
+      image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
     },
   ];
 
   const categoriesMap: Record<string, string> = {};
 
   for (const catData of parentCategoriesData) {
-    const cat = await prisma.category.create({ data: catData });
+    const cat = await prisma.category.upsert({
+      where: { slug: catData.slug },
+      update: catData,
+      create: catData,
+    });
     categoriesMap[cat.slug] = cat.id;
   }
 
@@ -222,28 +415,28 @@ async function main() {
       image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
     },
     {
-      name: 'Kanjeevaram Silk',
-      slug: 'kanjeevaram-silk',
+      name: 'Kanjeevaram Silk Sarees',
+      slug: 'kanjeevaram-silk-sarees',
       parentSlug: 'sarees',
       image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600',
     },
     {
-      name: 'Organza & Chiffon',
-      slug: 'organza-chiffon',
+      name: 'Chanderi Sarees',
+      slug: 'chanderi-sarees',
       parentSlug: 'sarees',
-      image: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?w=600',
+      image: 'https://images.unsplash.com/photo-1610030469668-98e550d6193c?w=600',
     },
     {
       name: 'Bridal Lehengas',
       slug: 'bridal-lehengas',
       parentSlug: 'lehengas',
-      image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
+      image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600',
     },
     {
       name: 'Partywear Lehengas',
       slug: 'partywear-lehengas',
       parentSlug: 'lehengas',
-      image: 'https://images.unsplash.com/photo-1596783074918-c84cb2583584?w=600',
+      image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
     },
     {
       name: 'Silk Anarkali Sets',
@@ -252,31 +445,37 @@ async function main() {
       image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
     },
     {
-      name: 'Kundan Necklaces',
-      slug: 'kundan-necklaces',
-      parentSlug: 'jewellery-accessories',
-      image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600',
+      name: 'Designer Kurta Pajamas',
+      slug: 'designer-kurta-pajamas',
+      parentSlug: 'gents-mens-couture',
+      image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600',
     },
     {
-      name: 'Jhumkas & Earrings',
-      slug: 'jhumkas-earrings',
-      parentSlug: 'jewellery-accessories',
-      image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=600',
+      name: 'Phulkari Dupattas',
+      slug: 'phulkari-dupattas',
+      parentSlug: 'dupattas-stoles',
+      image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
     },
   ];
 
   for (const subCat of subCategoriesData) {
     const parentId = categoriesMap[subCat.parentSlug];
-    const cat = await prisma.category.create({
-      data: {
+    const cat = await prisma.category.upsert({
+      where: { slug: subCat.slug },
+      update: {
+        name: subCat.name,
+        image: subCat.image,
+        ...(parentId ? { parent: { connect: { id: parentId } } } : {}),
+      },
+      create: {
         name: subCat.name,
         slug: subCat.slug,
         description: `Premium handpicked collection of ${subCat.name}.`,
         image: subCat.image,
-        parentId,
+        ...(parentId ? { parent: { connect: { id: parentId } } } : {}),
       },
     });
-    categoriesMap[cat.slug] = cat.id;
+    categoriesMap[subCat.slug] = cat.id;
   }
 
   console.log(`✅ Created ${Object.keys(categoriesMap).length} Categories & Subcategories.`);
@@ -284,7 +483,7 @@ async function main() {
   // ==========================================
   // 3. PRODUCTS & VARIANTS
   // ==========================================
-  console.log('🛍️ Seeding Products & Variants (90 Products)...');
+  console.log('🛍️ Seeding Products & Variants (12 Products)...');
 
   const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
   const colors = [
@@ -325,7 +524,7 @@ async function main() {
       name: 'Sequin Embellished Georgette Lehenga',
       price: 18999,
       categorySlug: 'partywear-lehengas',
-      image: 'https://images.unsplash.com/photo-1596783074918-c84cb2583584?w=800',
+      image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800',
     },
     {
       name: 'Raw Silk Floor Length Anarkali Suit',
@@ -334,16 +533,16 @@ async function main() {
       image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800',
     },
     {
-      name: 'Handcrafted Kundan Choker Necklace Set',
-      price: 8999,
-      categorySlug: 'kundan-necklaces',
-      image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800',
+      name: 'Designer Royal Velvet Sherwani Set',
+      price: 28999,
+      categorySlug: 'designer-kurta-pajamas',
+      image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800',
     },
     {
-      name: 'Traditional Meenakari Pearl Jhumkas',
-      price: 2499,
-      categorySlug: 'jhumkas-earrings',
-      image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=800',
+      name: 'Embroidered Heavy Banarasi Silk Dupatta',
+      price: 3499,
+      categorySlug: 'phulkari-dupattas',
+      image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
     },
     {
       name: 'Chanderi Silk Embroidered Kurti Set',
@@ -355,7 +554,7 @@ async function main() {
       name: 'Indo-Western Draped Saree Gown',
       price: 15999,
       categorySlug: 'indo-western-fusion',
-      image: 'https://images.unsplash.com/photo-1596783074918-c84cb2583584?w=800',
+      image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800',
     },
   ];
 
@@ -364,7 +563,16 @@ async function main() {
 
   let skuCounter = 1000;
 
-  for (let i = 1; i <= 90; i++) {
+  const dbShops = await prisma.shop.findMany();
+  const shopMap: Record<string, string> = {};
+  for (const s of dbShops) {
+    shopMap[s.slug] = s.id;
+  }
+  const flagshipShopId = shopMap['navya-collection'] || defaultShop.id;
+  const fashionHubShopId = shopMap['fashion-hub'] || shopFashionHub.id;
+  const styleZoneShopId = shopMap['style-zone'] || shopStyleZone.id;
+
+  for (let i = 1; i <= 12; i++) {
     const template = productTemplates[(i - 1) % productTemplates.length];
     const prefix = template.name.split(' ')[0].toUpperCase();
     const productName = `${template.name} - Vol. ${Math.ceil(i / 10)}`;
@@ -374,6 +582,7 @@ async function main() {
     const compareAtPrice = price + 2500;
     const costPrice = Math.round(price * 0.55);
     const categoryId = categoriesMap[template.categorySlug] || categoriesMap['sarees'];
+    const shopId = i % 10 === 0 ? styleZoneShopId : i % 5 === 0 ? fashionHubShopId : flagshipShopId;
 
     const product = await prisma.product.create({
       data: {
@@ -390,6 +599,7 @@ async function main() {
         isFeatured: i % 4 === 0,
         isNewArrival: i % 3 === 0,
         categoryId,
+        shopId,
         rating: 4.2 + (i % 8) * 0.1,
         reviewCount: 5 + (i % 25),
       },
@@ -401,15 +611,15 @@ async function main() {
       data: [
         {
           productId: product.id,
-          url: template.image,
-          alt: `${productName} Front View`,
+          imageUrl: template.image,
+          altText: `${productName} Front View`,
           isPrimary: true,
           sortOrder: 1,
         },
         {
           productId: product.id,
-          url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-          alt: `${productName} Detail Embroidery`,
+          imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
+          altText: `${productName} Detail Embroidery`,
           isPrimary: false,
           sortOrder: 2,
         },
@@ -506,7 +716,7 @@ async function main() {
   ];
 
   let reviewCount = 0;
-  for (let r = 0; r < 40; r++) {
+  for (let r = 0; r < 10; r++) {
     const user = customerUsers[r % customerUsers.length];
     const product = createdProducts[r % createdProducts.length];
 
@@ -523,15 +733,15 @@ async function main() {
     await prisma.wishlist.create({
       data: {
         userId: user.id,
-        productId: createdProducts[(r + 5) % createdProducts.length].id,
+        productId: createdProducts[(r + 2) % createdProducts.length].id,
       },
     });
   }
 
-  for (let c = 0; c < 10; c++) {
+  for (let c = 0; c < customerUsers.length; c++) {
     const user = customerUsers[c];
-    const product = createdProducts[c];
-    const variant = createdVariants[c * 3];
+    const product = createdProducts[c % createdProducts.length];
+    const variant = createdVariants[(c * 2) % createdVariants.length];
 
     const cart = await prisma.cart.create({
       data: {
@@ -549,7 +759,9 @@ async function main() {
     });
   }
 
-  console.log(`✅ Created ${reviewCount} Reviews, 40 Wishlist items, and 10 Active Carts.`);
+  console.log(
+    `✅ Created ${reviewCount} Reviews, 10 Wishlist items, and ${customerUsers.length} Active Carts.`,
+  );
 
   // ==========================================
   // 6. ORDERS, ORDER ITEMS, & PAYMENTS
@@ -579,7 +791,7 @@ async function main() {
           : PaymentStatus.PAID;
 
     const product1 = createdProducts[o % createdProducts.length];
-    const variant1 = createdVariants[o * 3];
+    const variant1 = createdVariants[(o * 2) % createdVariants.length];
     const qty1 = 1;
     const price1 = Number(product1.price);
     const lineTotal1 = price1 * qty1;
@@ -625,11 +837,38 @@ async function main() {
 
     createdOrders.push(order);
 
+    const itemShopId = product1.shopId || defaultShop.id;
+    const commissionRate = 10.0;
+    const commissionAmt = (lineTotal1 * commissionRate) / 100;
+    const vendorPayoutAmt = lineTotal1 - commissionAmt;
+
+    const vendorOrder = await prisma.vendorOrder.create({
+      data: {
+        masterOrderId: order.id,
+        shopId: itemShopId,
+        vendorOrderNumber: `${orderNumber}-V1`,
+        totalAmount: lineTotal1,
+        commissionAmount: commissionAmt,
+        vendorPayoutAmount: vendorPayoutAmt,
+        status: status,
+        shippingStatus:
+          status === OrderStatus.DELIVERED
+            ? ShippingStatus.DELIVERED
+            : status === OrderStatus.SHIPPED
+              ? ShippingStatus.IN_TRANSIT
+              : ShippingStatus.PENDING,
+        awbCode: order.awbCode,
+        courierName: order.courierName,
+      },
+    });
+
     const orderItem = await prisma.orderItem.create({
       data: {
         orderId: order.id,
         productId: product1.id,
         variantId: variant1.id,
+        shopId: itemShopId,
+        vendorOrderId: vendorOrder.id,
         name: product1.name,
         sku: variant1.sku,
         price: price1,

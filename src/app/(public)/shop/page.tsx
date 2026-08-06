@@ -1,397 +1,550 @@
 'use client';
 
-import { Filter, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import {
+  Building2,
+  Filter,
+  MapPin,
+  Package,
+  Search,
+  ShieldCheck,
+  ShoppingBag,
+  Star,
+  Store,
+  X,
+} from 'lucide-react';
+import { Suspense, useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
+import { Badge } from '@/components/ui/badge';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { Drawer } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
-import { Pagination } from '@/components/ui/pagination';
-import { ProductGrid } from '@/features/products/components/ProductGrid';
-import { DEFAULT_PAGE_SIZE, SORT_OPTIONS } from '@/features/products/constants/product.constants';
-import type { Product } from '@/features/products/types/product.types';
 
-const imageUrls = [
-  'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=800',
-  'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&q=80&w=800',
-  'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&q=80&w=800',
-  'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&q=80&w=800',
-  'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=800',
-];
+function MarketplaceCatalogContent() {
+  const searchParams = useSearchParams();
+  const [isMounted, setIsMounted] = useState<boolean>(false);
 
-const allProducts: Product[] = Array.from({ length: 36 }).map((_, i) => {
-  const catIdx = i % 4;
-  const catNames = ['Gents', 'Kids', 'New Arrivals', 'Offers'];
-  const catSlugs = ['gents', 'kids', 'new', 'offers'];
-  const names = [
-    'Classic Royal Navy Cotton Shirt',
-    'Kids Festive Kurta Pyjama Set',
-    'Handcrafted Silk Ethnic Kurta',
-    'Slim Fit Stretch Cotton Chinos',
-    'Italian Fit Formal Blazer',
-    'Boys Bio-Washed Graphic T-Shirt',
-    'Linen Blend Casual Shirt',
-    'Girls Floral Summer Party Dress',
-  ];
+  const [activeView, setActiveView] = useState<'products' | 'shops'>('products');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedShop, setSelectedShop] = useState<string>('all');
+  const [selectedCity, setSelectedCity] = useState<string>('all');
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('newest');
 
-  return {
-    id: String(i + 1),
-    name: `${names[i % names.length]} ${i > 7 ? `#${i + 1}` : ''}`.trim(),
-    slug: `product-${i + 1}`,
-    sku: `NC-PROD-${String(i + 1).padStart(3, '0')}`,
-    description: 'Crafted with premium cotton fabric, tailored for elegance and lasting comfort.',
-    price: 699 + (i % 8) * 250,
-    compareAtPrice: 1199 + (i % 8) * 350,
-    images: [
-      {
-        id: `img-${i}`,
-        url: imageUrls[i % imageUrls.length],
-        alt: names[i % names.length],
-        isPrimary: true,
-      },
-    ],
-    category: {
-      id: String(catIdx + 1),
-      name: catNames[catIdx],
-      slug: catSlugs[catIdx],
-    },
-    categoryId: String(catIdx + 1),
-    status: 'active',
-    stock: 15,
-    rating: 4.5 + (i % 5) * 0.1,
-    reviewCount: 24 + i * 7,
-    isNewArrival: i % 3 === 0,
-  };
-});
+  const [shops, setShops] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-const categories = [
-  { id: '1', name: 'Gents Collection', slug: 'gents' },
-  { id: '2', name: 'Kids Wear', slug: 'kids' },
-  { id: '3', name: 'New Season 2026', slug: 'new' },
-  { id: '4', name: 'Special Offers', slug: 'offers' },
-];
+  // 1. Prevent hydration mismatch by confirming client mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
-const availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
-
-export default function ShopPage() {
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [sort, setSort] = useState('newest');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-
-  const filtered = useMemo(() => {
-    let result = [...allProducts];
-
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (p) => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q),
-      );
+  // 2. Sync search query & view state from URL parameters
+  useEffect(() => {
+    if (!isMounted) return;
+    const q = searchParams.get('q') || searchParams.get('search') || '';
+    const cat = searchParams.get('category') || 'all';
+    const view = searchParams.get('view') || searchParams.get('tab');
+    if (q) setSearchQuery(q);
+    if (cat !== 'all') setSelectedCategory(cat);
+    if (view === 'shops' || view === 'shops-grid' || view === 'shops_grid') {
+      setActiveView('shops');
+    } else if (view === 'products') {
+      setActiveView('products');
     }
+  }, [searchParams, isMounted]);
 
-    if (selectedCategory) {
-      const cat = categories.find((c) => c.slug === selectedCategory);
-      if (cat) result = result.filter((p) => p.categoryId === cat.id);
-    }
+  // 3. Fetch Marketplace Shops, Products & Categories
+  useEffect(() => {
+    if (!isMounted) return;
+    setIsLoading(true);
+    fetch('/api/v1/marketplace/catalog')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success && resData.data) {
+          const fetchedShops = resData.data.shops || [];
+          const fetchedProducts = resData.data.products || [];
 
-    const min = Number(priceRange.min);
-    const max = Number(priceRange.max);
-    if (!Number.isNaN(min) && priceRange.min !== '') result = result.filter((p) => p.price >= min);
-    if (!Number.isNaN(max) && priceRange.max !== '') result = result.filter((p) => p.price <= max);
+          setShops(fetchedShops);
+          setProducts(fetchedProducts);
+          setCategories(resData.data.categories || []);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load marketplace catalog data:', err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [isMounted]);
 
-    switch (sort) {
-      case 'price-asc':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        result.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-        break;
-      default:
-        break;
-    }
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-slate-50 py-12 px-4 text-center">
+        <div className="max-w-7xl mx-auto space-y-6 animate-pulse">
+          <div className="h-44 bg-slate-200 rounded-3xl" />
+          <div className="h-64 bg-slate-200 rounded-3xl" />
+        </div>
+      </div>
+    );
+  }
 
-    return result;
-  }, [search, selectedCategory, sort, priceRange]);
+  // Filter Products
+  const filteredProducts = products.filter((prod) => {
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch =
+      q === '' ||
+      prod.name.toLowerCase().includes(q) ||
+      (prod.shop?.name && prod.shop.name.toLowerCase().includes(q)) ||
+      (prod.category?.name && prod.category.name.toLowerCase().includes(q));
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / DEFAULT_PAGE_SIZE));
-  const safePage = Math.min(currentPage, totalPages);
-  const paginated = filtered.slice(
-    (safePage - 1) * DEFAULT_PAGE_SIZE,
-    safePage * DEFAULT_PAGE_SIZE,
-  );
+    const matchesCat =
+      selectedCategory === 'all' ||
+      prod.categoryId === selectedCategory ||
+      prod.category?.id === selectedCategory ||
+      prod.category?.slug === selectedCategory;
 
-  const resetFilters = () => {
-    setSearch('');
-    setSelectedCategory(null);
-    setSelectedSize(null);
-    setSort('newest');
-    setPriceRange({ min: '', max: '' });
-    setCurrentPage(1);
+    const matchesShop =
+      selectedShop === 'all' ||
+      prod.shopId === selectedShop ||
+      prod.shop?.id === selectedShop ||
+      prod.shop?.slug === selectedShop;
+
+    const pPrice = Number(prod.price || 0);
+    const minP = minPrice !== '' ? Number(minPrice) : 0;
+    const maxP = maxPrice !== '' ? Number(maxPrice) : Infinity;
+    const matchesPrice = pPrice >= minP && pPrice <= maxP;
+
+    return matchesSearch && matchesCat && matchesShop && matchesPrice;
+  });
+
+  // Sort Products
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortBy === 'price_asc') return Number(a.price) - Number(b.price);
+    if (sortBy === 'price_desc') return Number(b.price) - Number(a.price);
+    if (sortBy === 'rating') return Number(b.rating || 0) - Number(a.rating || 0);
+    return 0; // Default newest
+  });
+
+  // Filter Shops
+  const filteredShops = shops.filter((shop) => {
+    const q = searchQuery.toLowerCase().trim();
+    const matchesSearch =
+      q === '' ||
+      shop.name.toLowerCase().includes(q) ||
+      (shop.city && shop.city.toLowerCase().includes(q)) ||
+      (shop.state && shop.state.toLowerCase().includes(q));
+
+    const matchesCity =
+      selectedCity === 'all' ||
+      (shop.city && shop.city.toLowerCase() === selectedCity.toLowerCase());
+
+    return matchesSearch && matchesCity;
+  });
+
+  const resetAllFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('all');
+    setSelectedShop('all');
+    setSelectedCity('all');
+    setMinPrice('');
+    setMaxPrice('');
+    setSortBy('newest');
   };
 
   const hasActiveFilters = Boolean(
-    selectedCategory || selectedSize || priceRange.min || priceRange.max || search,
+    searchQuery ||
+    selectedCategory !== 'all' ||
+    selectedShop !== 'all' ||
+    selectedCity !== 'all' ||
+    minPrice ||
+    maxPrice,
   );
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-16">
+    <div className="min-h-screen bg-slate-50 pb-20 font-sans">
       <Breadcrumb
-        items={[{ label: 'Home', href: '/' }, { label: 'Shop Catalog' }]}
-        className="mx-auto max-w-[1440px] px-4 md:px-6 py-4"
+        items={[
+          { label: 'Home', href: '/' },
+          { label: activeView === 'shops' ? 'Featured & Verified Shops' : 'Marketplace Catalogue' },
+        ]}
+        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4"
       />
 
-      <div className="mx-auto max-w-[1440px] px-4 md:px-6 py-4">
-        {/* Page Header */}
-        <div className="mb-8 p-6 md:p-8 rounded-3xl bg-navy text-white relative overflow-hidden">
-          <div className="relative z-10 max-w-xl">
-            <span className="text-xs font-bold uppercase tracking-widest text-orange">
-              Premium Fashion
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* HERO HEADER */}
+        <div className="relative rounded-3xl bg-gradient-to-r from-navy via-slate-900 to-navy text-white p-8 sm:p-10 shadow-xl overflow-hidden">
+          <div className="relative z-10 max-w-2xl space-y-3">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-widest text-amber-400 bg-amber-400/10 border border-amber-400/20 px-3 py-1 rounded-full">
+              <ShieldCheck className="w-3.5 h-3.5" /> Pan-India Multi-Vendor Marketplace
             </span>
-            <h1 className="font-heading text-3xl md:text-4xl font-bold mt-1">
-              Explore Navya Collection
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+              {activeView === 'shops'
+                ? 'Featured & Verified Merchant Shops'
+                : 'Marketplace Store Catalogue'}
             </h1>
-            <p className="mt-2 text-xs md:text-sm text-white/80">
-              Browse our complete range of Gents & Kids clothing. Affordable luxury delivered
-              pan-India.
+            <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
+              {activeView === 'shops'
+                ? 'Discover handcrafted luxury boutiques, verified merchant stores, and exclusive fashion collections.'
+                : 'Explore thousands of designer sarees, bridal lehengas, suits, gents & kids wear from verified local shops and boutiques across India.'}
             </p>
+          </div>
+
+          <Store className="w-64 h-64 text-white/5 absolute -right-10 -bottom-10 pointer-events-none" />
+        </div>
+
+        {/* TOP CONTROL BAR: SEARCH, VIEW SWITCHER & SORT */}
+        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* View Mode Switcher */}
+            <div className="flex items-center bg-slate-100 p-1.5 rounded-2xl w-full md:w-auto">
+              <button
+                onClick={() => setActiveView('products')}
+                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  activeView === 'products'
+                    ? 'bg-navy text-white shadow-md'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Package className="w-4 h-4" />
+                <span>Products Catalogue ({sortedProducts.length})</span>
+              </button>
+
+              <button
+                onClick={() => setActiveView('shops')}
+                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  activeView === 'shops'
+                    ? 'bg-navy text-white shadow-md'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Store className="w-4 h-4" />
+                <span>Verified Shops ({filteredShops.length})</span>
+              </button>
+            </div>
+
+            {/* Live Search */}
+            <div className="relative w-full md:w-96">
+              <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Input
+                type="text"
+                placeholder={
+                  activeView === 'products'
+                    ? 'Search products by title, category or shop...'
+                    : 'Search shops by store name or city...'
+                }
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-11 rounded-2xl bg-slate-50 border-slate-200 text-xs font-medium focus:bg-white focus:ring-2 focus:ring-navy"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Mobile filter bar */}
-        <div className="mb-6 flex items-center justify-between lg:hidden gap-3">
-          <Button
-            variant="outline"
-            className="rounded-full flex-1"
-            onClick={() => setIsFilterOpen(true)}
-          >
-            <Filter className="mr-2 h-4 w-4 text-orange" /> Filters {hasActiveFilters && '(Active)'}
-          </Button>
-          <select
-            value={sort}
-            onChange={(e) => {
-              setSort(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-800"
-          >
-            {SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* MAIN CATALOGUE CONTENT WITH SIDEBAR */}
+        {activeView === 'products' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* SIDEBAR FILTERS */}
+            <div className="space-y-6 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm h-fit">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="font-extrabold text-navy text-sm flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-amber-600" /> Catalog Filters
+                </h3>
+                {hasActiveFilters && (
+                  <button
+                    onClick={resetAllFilters}
+                    className="text-[11px] font-bold text-rose-600 hover:underline cursor-pointer"
+                  >
+                    Reset All
+                  </button>
+                )}
+              </div>
 
-        <div className="grid gap-8 lg:grid-cols-4">
-          {/* Desktop Filter Sidebar */}
-          <aside className="hidden lg:block lg:col-span-1 space-y-6 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm h-fit">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h2 className="font-heading text-lg font-bold text-navy">Filters</h2>
-              {hasActiveFilters && (
-                <button
-                  onClick={resetFilters}
-                  className="text-xs font-bold text-orange hover:underline"
-                >
-                  Reset All
-                </button>
-              )}
-            </div>
-
-            {/* Category Filter */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                Categories
-              </h3>
+              {/* Filter 1: Shop / Seller */}
               <div className="space-y-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => {
-                      setSelectedCategory(selectedCategory === cat.slug ? null : cat.slug);
-                      setCurrentPage(1);
-                    }}
-                    className={`flex items-center justify-between w-full text-left text-xs font-semibold py-1.5 px-3 rounded-xl transition-all ${
-                      selectedCategory === cat.slug
-                        ? 'bg-navy text-white'
-                        : 'text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span>{cat.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Size Filter */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                Size
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {availableSizes.map((sz) => (
-                  <button
-                    key={sz}
-                    onClick={() => setSelectedSize(selectedSize === sz ? null : sz)}
-                    className={`h-9 w-9 rounded-full text-xs font-bold border transition-all ${
-                      selectedSize === sz
-                        ? 'border-navy bg-navy text-white'
-                        : 'border-slate-200 text-slate-700 hover:border-navy'
-                    }`}
-                  >
-                    {sz}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Price Range */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
-                Price (₹)
-              </h3>
-              <div className="flex gap-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={priceRange.min}
-                  onChange={(e) => setPriceRange((prev) => ({ ...prev, min: e.target.value }))}
-                  className="rounded-xl text-xs"
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={priceRange.max}
-                  onChange={(e) => setPriceRange((prev) => ({ ...prev, max: e.target.value }))}
-                  className="rounded-xl text-xs"
-                />
-              </div>
-            </div>
-          </aside>
-
-          {/* Product Grid Area */}
-          <div className="lg:col-span-3">
-            {/* Header controls & active filter badges */}
-            <div className="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xs font-bold text-slate-600">
-                  Showing {filtered.length} products
-                </p>
-                {selectedCategory && (
-                  <span className="inline-flex items-center gap-1 bg-navy/10 text-navy text-xs font-semibold px-2.5 py-1 rounded-full">
-                    {categories.find((c) => c.slug === selectedCategory)?.name}
-                    <X
-                      className="h-3 w-3 cursor-pointer"
-                      onClick={() => setSelectedCategory(null)}
-                    />
-                  </span>
-                )}
-                {selectedSize && (
-                  <span className="inline-flex items-center gap-1 bg-orange/10 text-orange text-xs font-semibold px-2.5 py-1 rounded-full">
-                    Size: {selectedSize}
-                    <X className="h-3 w-3 cursor-pointer" onClick={() => setSelectedSize(null)} />
-                  </span>
-                )}
-              </div>
-
-              <div className="hidden lg:flex items-center gap-2">
-                <label className="text-xs font-bold text-slate-600">Sort by:</label>
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  Filter By Shop
+                </label>
                 <select
-                  value={sort}
-                  onChange={(e) => {
-                    setSort(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-xs font-semibold text-slate-800 outline-none"
+                  value={selectedShop}
+                  onChange={(e) => setSelectedShop(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 font-bold text-xs rounded-xl px-3 py-2.5 focus:border-navy focus:bg-white focus:outline-none cursor-pointer"
                 >
-                  {SORT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
+                  <option value="all">All Verified Shops ({shops.length})</option>
+                  {shops.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
                     </option>
                   ))}
                 </select>
               </div>
+
+              {/* Filter 2: Category */}
+              <div className="space-y-2">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  Category
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 font-bold text-xs rounded-xl px-3 py-2.5 focus:border-navy focus:bg-white focus:outline-none cursor-pointer"
+                >
+                  <option value="all">All Categories</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Filter 3: Price Range */}
+              <div className="space-y-2">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  Price Range (₹)
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Min ₹"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="bg-slate-50 text-xs rounded-xl h-9"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Max ₹"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="bg-slate-50 text-xs rounded-xl h-9"
+                  />
+                </div>
+              </div>
+
+              {/* Filter 4: Sort */}
+              <div className="space-y-2">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  Sort Order
+                </label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 font-bold text-xs rounded-xl px-3 py-2.5 focus:border-navy focus:bg-white focus:outline-none cursor-pointer"
+                >
+                  <option value="newest">Newest Arrivals</option>
+                  <option value="price_asc">Price: Low to High</option>
+                  <option value="price_desc">Price: High to Low</option>
+                  <option value="rating">Highest Rated</option>
+                </select>
+              </div>
             </div>
 
-            {/* Grid */}
-            {filtered.length === 0 ? (
-              <div className="py-16 text-center bg-white rounded-3xl border border-slate-200">
-                <p className="text-base font-semibold text-slate-700">
-                  No products match your filters.
-                </p>
-                <Button className="mt-4 rounded-full bg-navy" onClick={resetFilters}>
-                  Clear All Filters
-                </Button>
+            {/* PRODUCTS GRID */}
+            <div className="lg:col-span-3 space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-extrabold text-navy tracking-tight flex items-center gap-2">
+                  <Package className="w-5 h-5 text-amber-600" />
+                  Catalogue Items ({sortedProducts.length})
+                </h2>
+              </div>
+
+              {isLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="aspect-[3/4] bg-slate-200 rounded-3xl animate-pulse" />
+                  ))}
+                </div>
+              ) : sortedProducts.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                  {sortedProducts.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={`/product/${p.slug}`}
+                      className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-navy hover:shadow-xl transition-all flex flex-col justify-between"
+                    >
+                      <div className="relative aspect-[3/4] bg-slate-100 overflow-hidden">
+                        {p.images && p.images[0]?.imageUrl ? (
+                          <Image
+                            src={p.images[0].imageUrl}
+                            alt={p.name}
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-xs p-4 text-center">
+                            {p.name}
+                          </div>
+                        )}
+
+                        {p.shop?.name && (
+                          <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-navy shadow-xs border border-slate-100">
+                            by {p.shop.name}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="p-4 space-y-2">
+                        <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm group-hover:text-navy transition-colors line-clamp-1">
+                          {p.name}
+                        </h3>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="text-sm font-black text-navy">
+                              ₹{Number(p.price).toLocaleString('en-IN')}
+                            </span>
+                            {p.compareAtPrice && Number(p.compareAtPrice) > Number(p.price) && (
+                              <span className="text-[11px] text-slate-400 line-through">
+                                ₹{Number(p.compareAtPrice).toLocaleString('en-IN')}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                            In Stock
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4">
+                  <Package className="w-12 h-12 text-slate-300 mx-auto" />
+                  <h3 className="text-base font-bold text-slate-800">
+                    No products match active filters
+                  </h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    Try adjusting your category, price range, or shop filters.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="rounded-full text-xs font-bold border-slate-300"
+                    onClick={resetAllFilters}
+                  >
+                    Clear All Filters
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* SHOPS GRID VIEW */
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-extrabold text-navy tracking-tight flex items-center gap-2">
+                <Store className="w-5 h-5 text-amber-600" />
+                Verified Merchant Shops ({filteredShops.length})
+              </h2>
+            </div>
+
+            {filteredShops.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredShops.map((shop, index) => {
+                  const productCount = shop._count?.products || 0;
+
+                  return (
+                    <Link
+                      key={shop.id}
+                      href={`/shop/${shop.slug}`}
+                      className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-navy hover:shadow-2xl transition-all shadow-sm flex flex-col justify-between"
+                    >
+                      {/* Cover Banner */}
+                      <div className="h-32 bg-slate-900 relative overflow-hidden">
+                        <Image
+                          src="/images/default-shop-banner.png"
+                          alt={shop.name}
+                          fill
+                          priority={index < 2}
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+                      </div>
+
+                      {/* Profile Overlay & Info */}
+                      <div className="p-6 -mt-10 relative z-10 space-y-4">
+                        <div className="flex items-end justify-between gap-3">
+                          <div className="w-16 h-16 rounded-2xl bg-white border-2 border-amber-500/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-lg">
+                            {shop.logo ? (
+                              <Image
+                                src={shop.logo}
+                                alt={shop.name}
+                                fill
+                                sizes="64px"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <Building2 className="w-8 h-8 text-amber-600" />
+                            )}
+                          </div>
+
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                            VERIFIED SHOP
+                          </span>
+                        </div>
+
+                        <div>
+                          <h3 className="font-extrabold text-navy text-base group-hover:text-amber-600 transition-colors line-clamp-1">
+                            {shop.name}
+                          </h3>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+                          <span className="flex items-center gap-1 font-semibold text-amber-600">
+                            <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                            {shop.rating || 4.9} ({shop.reviewCount || 38})
+                          </span>
+
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                            {shop.city || 'Hisar'}, {shop.state || 'HR'}
+                          </span>
+
+                          <span className="flex items-center gap-1 font-bold text-slate-900">
+                            <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
+                            {productCount} Items
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
-              <>
-                <ProductGrid products={paginated} />
-                {totalPages > 1 && (
-                  <div className="mt-12 flex justify-center">
-                    <Pagination
-                      page={safePage}
-                      totalPages={totalPages}
-                      onPageChange={setCurrentPage}
-                    />
-                  </div>
-                )}
-              </>
+              <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4">
+                <Store className="w-12 h-12 text-slate-300 mx-auto" />
+                <h3 className="text-base font-bold text-slate-800">
+                  No shops found matching your search
+                </h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Try searching for another store or city.
+                </p>
+              </div>
             )}
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Mobile Drawer */}
-      <Drawer
-        open={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-        title="Filter Products"
-        side="left"
-      >
-        <div className="space-y-6 p-2">
-          <div>
-            <h3 className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-3">
-              Categories
-            </h3>
-            <div className="space-y-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    setSelectedCategory(selectedCategory === cat.slug ? null : cat.slug);
-                    setCurrentPage(1);
-                  }}
-                  className={`block w-full text-left text-xs font-semibold py-2 px-3 rounded-xl ${
-                    selectedCategory === cat.slug
-                      ? 'bg-navy text-white'
-                      : 'text-slate-700 bg-slate-50'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-2 pt-4">
-            <Button
-              className="flex-1 rounded-full bg-orange"
-              onClick={() => setIsFilterOpen(false)}
-            >
-              Apply Filters
-            </Button>
-            <Button className="flex-1 rounded-full" variant="outline" onClick={resetFilters}>
-              Reset
-            </Button>
-          </div>
-        </div>
-      </Drawer>
     </div>
+  );
+}
+
+export default function MarketplaceShopsCatalogPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 p-12 text-center text-slate-500 font-bold text-xs">
+          Loading Marketplace Stores...
+        </div>
+      }
+    >
+      <MarketplaceCatalogContent />
+    </Suspense>
   );
 }

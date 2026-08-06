@@ -1,54 +1,25 @@
-'use client';
+import { Suspense } from 'react';
+import { Metadata } from 'next';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { MarketplaceSearchResults } from '@/frontend/features/search/components/MarketplaceSearchResults';
 
-import { Breadcrumb } from '@/components/ui/breadcrumb';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ProductGrid } from '@/features/products/components/ProductGrid';
-import type { Product } from '@/features/products/types/product.types';
+export const metadata: Metadata = {
+  title: 'Marketplace Search Engine | Navya Collection',
+  description:
+    'Search luxury ethnic couture, sarees, lehengas, gents garments, and verified boutique partner shops on Navya Collection.',
+};
 
-const mockProducts: Product[] = Array.from({ length: 8 }).map((_, i) => ({
-  id: String(i + 1),
-  name: `Search Result ${i + 1}`,
-  slug: `search-result-${i + 1}`,
-  description: 'Premium quality product.',
-  price: 899 + i * 100,
-  images: [],
-  category: { id: '1', name: 'Gents', slug: 'gents' },
-  categoryId: '1',
-  status: 'active',
-  stock: 10,
-  rating: 4,
-  reviewCount: 20,
-}));
-
-export default function SearchPage() {
-  const [query, setQuery] = useState('');
-
+export default function PublicSearchPage() {
   return (
-    <div className="min-h-screen">
-      <Breadcrumb
-        items={[{ label: 'Home', href: '/' }, { label: 'Search' }]}
-        className="mx-auto max-w-[1440px] px-4 md:px-6 py-4"
-      />
-      <div className="mx-auto max-w-6xl px-4 md:px-6 py-8">
-        <h1 className="font-heading text-3xl text-navy mb-6">Search</h1>
-        <div className="mb-6">
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search products..."
-            className="w-full"
-          />
+    <Suspense
+      fallback={
+        <div className="p-12 text-center text-slate-400 flex items-center justify-center gap-2 bg-slate-950 min-h-screen">
+          <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <span>Loading Marketplace Search Engine...</span>
         </div>
-        {query ? (
-          <ProductGrid products={mockProducts} />
-        ) : (
-          <p className="text-sm text-slate-600">Enter a search term to see results.</p>
-        )}
-      </div>
-    </div>
+      }
+    >
+      <MarketplaceSearchResults />
+    </Suspense>
   );
 }

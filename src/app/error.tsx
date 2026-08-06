@@ -1,40 +1,50 @@
 'use client';
 
+import { AlertCircle, RefreshCw, ShieldAlert } from 'lucide-react';
 import { useEffect } from 'react';
 import Link from 'next/link';
 
-import { useToast } from '@/providers';
-
-export default function Error({
+export default function GlobalErrorPage({
   error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  const { toast } = useToast();
-
   useEffect(() => {
-    toast(error.message || 'Something went wrong', 'error');
-  }, [error, toast]);
+    console.error('❌ Application Unhandled Error:', error);
+  }, [error]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-24 text-center">
-      <h1 className="font-heading text-6xl text-navy">Something went wrong</h1>
-      <p className="mt-4 text-lg text-slate-600">We apologize for the inconvenience.</p>
-      <div className="mt-6 flex items-center justify-center gap-3">
-        <button
-          onClick={() => reset()}
-          className="rounded-full bg-navy px-5 py-3 text-sm font-semibold text-white hover:bg-[#234b8f]"
-        >
-          Try again
-        </button>
-        <Link
-          href="/"
-          className="rounded-full border border-border bg-white px-5 py-3 text-sm font-semibold text-navy hover:bg-slate-50"
-        >
-          Back to Home
-        </Link>
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-6 font-sans">
+      <div className="bg-white border border-slate-200 rounded-3xl p-8 max-w-lg w-full text-center space-y-6 shadow-xl">
+        <div className="w-16 h-16 bg-amber-50 border border-amber-200 rounded-3xl flex items-center justify-center mx-auto text-amber-600">
+          <AlertCircle className="w-8 h-8" />
+        </div>
+
+        <div className="space-y-2">
+          <h1 className="text-2xl font-extrabold text-navy tracking-tight">Something Went Wrong</h1>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            An unexpected error occurred while loading this page. Our team has been automatically
+            notified.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+          <button
+            onClick={() => reset()}
+            className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <RefreshCw className="w-4 h-4" /> Try Again
+          </button>
+
+          <Link
+            href="/"
+            className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center justify-center"
+          >
+            Return to Homepage
+          </Link>
+        </div>
       </div>
     </div>
   );

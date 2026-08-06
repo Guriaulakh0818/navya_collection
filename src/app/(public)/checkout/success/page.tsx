@@ -8,8 +8,13 @@ export const metadata: Metadata = {
   description: 'Your order has been placed successfully.',
 };
 
-export default function CheckoutSuccessPage() {
-  const orderNumber = `ORD${Date.now().toString(36).toUpperCase()}`;
+interface PageProps {
+  searchParams: { orderNumber?: string };
+}
+
+export default function CheckoutSuccessPage({ searchParams }: PageProps) {
+  const displayOrderNumber =
+    searchParams?.orderNumber || `NC-2026-${Date.now().toString().slice(-6)}`;
   const estimatedDelivery = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString(
     'en-IN',
     {
@@ -47,7 +52,7 @@ export default function CheckoutSuccessPage() {
           <div className="space-y-3 text-sm text-slate-600">
             <div className="flex justify-between">
               <span>Order Number</span>
-              <span className="font-semibold text-navy">{orderNumber}</span>
+              <span className="font-semibold text-navy">{displayOrderNumber}</span>
             </div>
             <div className="flex justify-between">
               <span>Estimated Delivery</span>

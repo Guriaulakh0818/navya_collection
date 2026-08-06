@@ -154,9 +154,25 @@ export default function OrderDetailPage() {
       setIsLoading(false);
       return;
     }
-    const found = ORDERS.find((o) => o.id === orderId);
-    setOrder(found || null);
-    setIsLoading(false);
+
+    async function fetchOrderDetail() {
+      try {
+        const res = await fetch(`/api/v1/orders/${orderId}`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          setOrder(json.data);
+        } else {
+          setOrder(null);
+        }
+      } catch (err) {
+        console.error('Failed to fetch order detail:', err);
+        setOrder(null);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchOrderDetail();
   }, [orderId]);
 
   const handleCancelOrder = async () => {

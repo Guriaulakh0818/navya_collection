@@ -1,22 +1,39 @@
 'use client';
 
-import { useClerk } from '@clerk/nextjs';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { AdminRoute } from '@/features/admin/components/admin-route';
-import { useAuthStore } from '@/stores';
+import { useAdminAuthStore } from '@/stores';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: 'dashboard' },
-  { name: 'Products', href: '/admin/products', icon: 'products' },
+  { name: 'Seller Approvals', href: '/admin/sellers', icon: 'sellers' },
+  { name: 'Product Approvals', href: '/admin/products/approvals', icon: 'products' },
+  { name: 'Products Catalog', href: '/admin/products', icon: 'products' },
+  { name: 'Commission Revenue', href: '/admin/finance/commission', icon: 'dashboard' },
+  { name: 'Manual Settlements', href: '/admin/finance/settlements', icon: 'sellers' },
+  { name: 'Review Moderation', href: '/admin/reviews', icon: 'products' },
   { name: 'Categories', href: '/admin/categories', icon: 'categories' },
   { name: 'Orders', href: '/admin/orders', icon: 'orders' },
+  { name: 'Team Governance', href: '/admin/team', icon: 'categories' },
 ];
 
 function NavIcon({ type }: { type: string }) {
+  if (type === 'sellers') {
+    return (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12"
+        />
+      </svg>
+    );
+  }
   if (type === 'dashboard') {
     return (
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,22 +85,16 @@ function NavIcon({ type }: { type: string }) {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { signOut } = useClerk();
-  const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
+  const user = useAdminAuthStore((s) => s.user);
+  const logout = useAdminAuthStore((s) => s.logout);
 
-  // Bypass layout for public admin auth routes
   if (pathname === '/admin/login' || pathname === '/admin/unauthorized') {
     return <>{children}</>;
   }
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     logout();
-    try {
-      await signOut({ redirectUrl: '/admin/login' });
-    } catch {
-      window.location.href = '/admin/login';
-    }
+    window.location.href = '/admin/login';
   };
 
   return (
@@ -133,7 +144,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className="overflow-hidden">
                 <p className="text-sm font-medium truncate">{user?.name || 'Admin User'}</p>
-                <p className="text-xs text-white/60 truncate">{user?.mobile}</p>
+                <p className="text-xs text-white/60 truncate">
+                  {user?.email || user?.role || 'Admin'}
+                </p>
               </div>
             </div>
             <Button
@@ -166,6 +179,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {pathname.replace('/admin/', '').replace('/', ' - ') || 'Dashboard'}
               </h2>
             </div>
+            <Link
+              href="/"
+              target="_blank"
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:text-navy transition-colors"
+            >
+              <span>View Live Store ↗</span>
+            </Link>
           </header>
 
           <main className="p-6">{children}</main>

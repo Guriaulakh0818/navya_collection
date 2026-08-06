@@ -1,0 +1,36 @@
+export const SEO_CONSTANTS = {
+  SITE_NAME: 'Navya Collection',
+  DEFAULT_TITLE: 'Navya Collection | Gents & Kids Fashion',
+  TITLE_TEMPLATE: '%s | Navya Collection',
+  DEFAULT_DESCRIPTION:
+    'Navya Collection is an affordable premium fashion brand for gents and kids, offering modern shirts, trousers, ethnic wear, and kids clothing built on trust and superior quality.',
+  SITE_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.in',
+  DEFAULT_OG_IMAGE: 'https://navyacollection.in/og-image.jpg',
+  TWITTER_HANDLE: '@navyacollection',
+  THEME_COLOR: '#183A73',
+  ORGANIZATION: {
+    NAME: 'Navya Collection',
+    LEGAL_NAME: 'Navya Collection Fashion LLP',
+    URL: 'https://navyacollection.in',
+    LOGO: 'https://navyacollection.in/logo.png',
+    FOUNDING_DATE: '2022',
+    TELEPHONE: '+91-9991983125',
+    EMAIL: 'support@navyacollection.in',
+    SAME_AS: [
+      'https://facebook.com/navyacollection',
+      'https://instagram.com/navyacollection',
+      'https://twitter.com/navyacollection',
+    ],
+  },
+  DEFAULT_KEYWORDS: [
+    'Navya Collection',
+    'gents fashion',
+    'kids fashion',
+    'menswear India',
+    'casual shirts',
+    'cotton trousers',
+    'ethnic wear for boys',
+    'affordable luxury clothes',
+    'online fashion store',
+  ],
+};

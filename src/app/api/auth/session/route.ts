@@ -1,23 +1,26 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+
+import { getCurrentUser } from '@/lib/session';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth-token')?.value;
+    const user = await getCurrentUser();
 
-    if (!token) {
+    if (!user) {
       return NextResponse.json({ authenticated: false, user: null });
     }
 
-    const mockUser = {
-      id: 'user_123',
-      mobile: '9876543210',
-      name: 'Test User',
-      role: 'customer',
-    };
-
-    return NextResponse.json({ authenticated: true, user: mockUser });
+    return NextResponse.json({
+      authenticated: true,
+      user: {
+        id: user.id,
+        mobile: user.phone,
+        name: user.name || null,
+        email: user.email,
+        role: user.role,
+        shopName: user.shopName || null,
+      },
+    });
   } catch {
     return NextResponse.json({ authenticated: false, user: null });
   }

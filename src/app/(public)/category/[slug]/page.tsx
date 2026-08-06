@@ -77,7 +77,26 @@ export default async function CategoryPage({ params }: Props) {
     notFound();
   }
 
-  const allProducts = generateMockProducts(category);
+  let dbProducts: any[] = [];
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    dbProducts = await prisma.product.findMany({
+      where: {
+        deletedAt: null,
+        OR: [{ categoryId: category.id }, { category: { slug } }],
+      },
+      include: {
+        images: { select: { imageUrl: true }, take: 1 },
+        shop: { select: { id: true, name: true, slug: true } },
+        category: { select: { id: true, name: true, slug: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch (err) {
+    console.error('Failed to query category products:', err);
+  }
+
+  const allProducts = dbProducts.length > 0 ? dbProducts : generateMockProducts(category);
   const totalPages = Math.max(1, Math.ceil(allProducts.length / DEFAULT_PAGE_SIZE));
 
   return (

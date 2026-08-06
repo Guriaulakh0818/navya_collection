@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
@@ -11,6 +12,8 @@ import { DeliveryStep } from '@/features/checkout/components/delivery-step';
 import { PaymentStep } from '@/features/checkout/components/payment-step';
 import { ReviewStep } from '@/features/checkout/components/review-step';
 import { CheckoutProvider, useCheckout } from '@/features/checkout/context/checkout-context';
+import { CouponInputCard } from '@/features/coupons/components/CouponInputCard';
+import { ShippingSummaryCard } from '@/features/shipping/components/ShippingSummaryCard';
 import { useCartStore } from '@/stores';
 
 const STEP_LABELS = [
@@ -22,7 +25,13 @@ const STEP_LABELS = [
 ];
 
 function CheckoutSteps() {
-  const { step, prevStep } = useCheckout();
+  const { step } = useCheckout();
+
+  useEffect(() => {
+    try {
+      useCartStore.getState().mergeGuestCart();
+    } catch {}
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -37,7 +46,28 @@ function CheckoutSteps() {
       <div className="mx-auto max-w-6xl px-4 md:px-6 py-8">
         <h1 className="font-heading text-3xl text-navy mb-6">Checkout</h1>
 
-        <div className="mb-8">
+        {/* Mobile Compact Step Progress (< md) */}
+        <div className="md:hidden bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6 space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold">
+            <span className="text-orange font-extrabold uppercase tracking-wider">
+              Step {STEP_LABELS.findIndex((s) => s.key === step) + 1} of 5
+            </span>
+            <span className="text-navy font-black text-sm">
+              {STEP_LABELS.find((s) => s.key === step)?.label}
+            </span>
+          </div>
+          <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+            <div
+              className="bg-orange h-full transition-all duration-500 rounded-full"
+              style={{
+                width: `${((STEP_LABELS.findIndex((s) => s.key === step) + 1) / 5) * 100}%`,
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Desktop Step Indicator (>= md) */}
+        <div className="hidden md:block mb-8">
           <div className="flex items-center justify-between">
             {STEP_LABELS.map((item, index) => {
               const isActive = step === item.key;
@@ -92,8 +122,8 @@ function CheckoutSteps() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-border bg-white p-6 shadow-premium h-fit">
-            <h3 className="font-heading text-xl text-navy mb-4">Order Summary</h3>
+          <div className="rounded-2xl border border-border bg-white p-6 shadow-premium h-fit space-y-4">
+            <h3 className="font-heading text-xl text-navy">Order Summary</h3>
             <OrderSummary />
           </div>
         </div>
@@ -103,31 +133,103 @@ function CheckoutSteps() {
 }
 
 function OrderSummary() {
-  const { items } = useCheckout();
+  const {
+    items,
+    deliveryMethod,
+    appliedCoupon,
+    setAppliedCoupon,
+    shippingData,
+    isShippingLoading,
+    taxData,
+    isTaxLoading,
+  } = useCheckout();
 
+  const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = subtotal > 999 ? 0 : 49;
-  const total = subtotal + (subtotal > 999 ? 0 : shipping);
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const netSubtotal = Math.max(0, subtotal - discountAmount);
+
+  // Dynamic Shipping & Tax Calculations
+  const shippingCharge = shippingData
+    ? shippingData.shippingCharge
+    : netSubtotal >= 999 || netSubtotal === 0
+      ? 0
+      : 99;
+
+  // Validate that server taxData matches current subtotal to prevent stale calculations
+  const isTaxDataValid = taxData && taxData.subtotal === subtotal;
+
+  const taxRate = isTaxDataValid ? taxData.taxBreakdown.gst : 18;
+  const taxAmount = isTaxDataValid
+    ? taxData.tax
+    : Math.round(((netSubtotal * taxRate) / 100) * 100) / 100;
+
+  const grandTotal = isTaxDataValid
+    ? taxData.grandTotal
+    : Math.round((netSubtotal + shippingCharge + taxAmount) * 100) / 100;
 
   return (
-    <div className="space-y-3 text-sm text-slate-600">
-      <div className="flex justify-between">
-        <span>Subtotal ({items.length} items)</span>
-        <span>₹{subtotal.toLocaleString('en-IN')}</span>
+    <div className="space-y-4 text-sm text-slate-600">
+      <div className="space-y-2.5">
+        <div className="flex justify-between">
+          <span>
+            Subtotal ({totalQuantity} {totalQuantity === 1 ? 'item' : 'items'})
+          </span>
+          <span>₹{subtotal.toLocaleString('en-IN')}</span>
+        </div>
+
+        {appliedCoupon && (
+          <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
+            <span>Discount ({appliedCoupon.code})</span>
+            <span>- ₹{discountAmount.toLocaleString('en-IN')}</span>
+          </div>
+        )}
+
+        <div className="flex justify-between">
+          <span>Shipping</span>
+          <span>{shippingCharge === 0 ? 'FREE' : `₹${shippingCharge}`}</span>
+        </div>
+
+        <div className="flex justify-between items-center text-slate-600">
+          <span className="flex items-center gap-1.5 font-medium">
+            GST ({taxRate}%)
+            {taxData?.taxBreakdown?.taxType && (
+              <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-navy border border-slate-200">
+                {taxData.taxBreakdown.taxType === 'CGST_SGST' ? 'CGST + SGST' : 'IGST'}
+              </span>
+            )}
+          </span>
+          <span className="font-bold text-navy">
+            ₹{taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          </span>
+        </div>
+
+        <div className="border-t border-border pt-3 flex justify-between font-semibold text-navy text-base">
+          <span>Grand Total</span>
+          <span>₹{grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+        </div>
       </div>
-      <div className="flex justify-between">
-        <span>Shipping</span>
-        <span>{shipping === 0 ? 'Free' : `₹${shipping}`}</span>
+
+      {/* Shipping Calculation Summary Card */}
+      <div className="border-t border-border pt-4">
+        <ShippingSummaryCard
+          shippingData={shippingData}
+          deliveryMethod={deliveryMethod}
+          subtotal={subtotal}
+          isLoading={isShippingLoading || isTaxLoading}
+        />
       </div>
-      {shipping > 0 && (
-        <p className="text-xs text-slate-500">
-          Add ₹{(999 - subtotal).toLocaleString('en-IN')} more for free shipping
-        </p>
-      )}
-      <div className="border-t border-border pt-3 flex justify-between font-semibold text-navy text-base">
-        <span>Total</span>
-        <span>₹{total.toLocaleString('en-IN')}</span>
+
+      {/* Coupon Input Integration */}
+      <div className="border-t border-border pt-4">
+        <CouponInputCard
+          cartAmount={subtotal}
+          appliedCoupon={appliedCoupon}
+          onApplySuccess={(coupon) => setAppliedCoupon(coupon)}
+          onRemoveCoupon={() => setAppliedCoupon(null)}
+        />
       </div>
+
       {items.length === 0 && (
         <p className="text-xs text-slate-500 mt-2">
           Your cart is empty.{' '}

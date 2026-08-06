@@ -1,11 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { ProtectedRoute } from '@/features/auth/components/protected-route';
-import { ORDERS } from '@/features/orders/constants/orders.constants';
 import type { Order } from '@/features/orders/types/orders.types';
 
 const STATUS_STYLE: Record<Order['status'], string> = {
@@ -17,6 +17,26 @@ const STATUS_STYLE: Record<Order['status'], string> = {
 };
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchOrders() {
+      try {
+        const res = await fetch('/api/v1/orders');
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+          setOrders(json.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch orders:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchOrders();
+  }, []);
+
   return (
     <ProtectedRoute>
       <Breadcrumb
@@ -30,7 +50,11 @@ export default function OrdersPage() {
       <div className="mx-auto max-w-6xl px-4 md:px-6 py-8">
         <h2 className="font-heading text-2xl text-navy mb-6">My Orders</h2>
 
-        {ORDERS.length === 0 ? (
+        {isLoading ? (
+          <div className="rounded-2xl border border-border bg-white p-8 text-center shadow-premium">
+            <p className="text-sm text-slate-600">Loading your orders...</p>
+          </div>
+        ) : orders.length === 0 ? (
           <div className="rounded-2xl border border-border bg-white p-6 shadow-premium">
             <p className="text-sm text-slate-600">
               No orders yet. Start shopping to see your orders here.
@@ -41,7 +65,7 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {ORDERS.map((order) => (
+            {orders.map((order) => (
               <div
                 key={order.id}
                 className="flex flex-col gap-4 rounded-2xl border border-border bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between"
@@ -55,19 +79,21 @@ export default function OrdersPage() {
                       year: 'numeric',
                     })}
                   </p>
-                  <p className="text-sm text-slate-600">{order.items.length} item(s)</p>
+                  <p className="text-sm text-slate-600">{order.items?.length || 0} item(s)</p>
                 </div>
 
                 <div className="flex items-center gap-6">
                   <div className="text-right">
                     <p className="text-sm font-semibold text-navy">
-                      ₹{order.total.toLocaleString('en-IN')}
+                      ₹{(order.total || 0).toLocaleString('en-IN')}
                     </p>
-                    <span className={STATUS_STYLE[order.status]}>{order.status}</span>
+                    <span className={STATUS_STYLE[order.status] || STATUS_STYLE.Processing}>
+                      {order.status}
+                    </span>
                   </div>
 
                   <Button variant="outline" className="rounded-full" asChild>
-                    <Link href={`/account/orders/${order.id}`}>View Details</Link>
+                    <Link href={`/account/orders/${order.orderNumber}`}>View Details</Link>
                   </Button>
                 </div>
               </div>
