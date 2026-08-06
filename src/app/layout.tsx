@@ -3,6 +3,8 @@ import { DM_Sans } from 'next/font/google';
 
 import './globals.css';
 
+import { Analytics } from '@vercel/analytics/next';
+
 import SiteLayout from '@/components/layout';
 import {
   generateOrganizationSchema,
@@ -120,6 +122,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </ThemeProvider>
           </QueryProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
