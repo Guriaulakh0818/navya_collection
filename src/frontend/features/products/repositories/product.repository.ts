@@ -111,6 +111,7 @@ export class ProductRepository {
     try {
       return await prisma.product.findMany({
         where: {
+          status: 'active',
           ...where,
           deletedAt: null,
         },
@@ -144,6 +145,8 @@ export class ProductRepository {
 
       if (where.status) {
         items = items.filter((p) => p.status === where.status);
+      } else {
+        items = items.filter((p) => p.status === 'active');
       }
       if (where.isFeatured !== undefined) {
         items = items.filter((p) => p.isFeatured === where.isFeatured);
@@ -163,23 +166,27 @@ export class ProductRepository {
     try {
       return await prisma.product.count({
         where: {
+          status: 'active',
           ...where,
           deletedAt: null,
         },
       });
     } catch {
-      return Array.from(mockProductStore.values()).filter((p) => p.deletedAt === null).length;
+      return Array.from(mockProductStore.values()).filter(
+        (p) => p.deletedAt === null && p.status === 'active',
+      ).length;
     }
   }
 
   /**
    * Finds a single product by ID or Slug.
    */
-  static async findByIdOrSlug(idOrSlug: string) {
+  static async findByIdOrSlug(idOrSlug: string, allowPending = false) {
     try {
       return await prisma.product.findFirst({
         where: {
           OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+          ...(allowPending ? {} : { status: 'active' }),
           deletedAt: null,
         },
         include: {

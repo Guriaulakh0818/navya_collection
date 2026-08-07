@@ -220,7 +220,7 @@ export class ProductService {
    */
   static async updateProduct(id: string, input: UpdateProductInput): Promise<ServiceResponse> {
     try {
-      const existingProduct = await ProductRepository.findByIdOrSlug(id);
+      const existingProduct = await ProductRepository.findByIdOrSlug(id, true);
 
       if (!existingProduct) {
         return {

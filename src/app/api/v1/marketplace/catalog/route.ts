@@ -193,14 +193,15 @@ export async function GET() {
             status: true,
             createdAt: true,
             _count: {
-              select: { products: { where: { deletedAt: null } } },
+              select: { products: { where: { deletedAt: null, status: 'active' } } },
             },
           },
         }),
 
-        // 2. Fetch ALL non-deleted products across all shops & sellers
+        // 2. Fetch ALL active non-deleted products across all shops & sellers
         prisma.product.findMany({
           where: {
+            status: 'active',
             deletedAt: null,
           },
           orderBy: { createdAt: 'desc' },

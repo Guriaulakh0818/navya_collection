@@ -87,6 +87,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // 2. Build product filter conditions - 100% Strict Multi-Tenant Isolation by shopId
     const productWhere: any = {
       shopId: shop.id,
+      status: 'active',
       deletedAt: null,
     };
 
@@ -129,6 +130,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           products: {
             some: {
               shopId: shop.id,
+              status: 'active',
               deletedAt: null,
             },
           },
@@ -142,6 +144,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       prisma.product.findMany({
         where: {
           shopId: shop.id,
+          status: 'active',
           deletedAt: null,
         },
         take: 4,

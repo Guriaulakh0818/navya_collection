@@ -82,6 +82,7 @@ export default async function CategoryPage({ params }: Props) {
     const { prisma } = await import('@/lib/prisma');
     dbProducts = await prisma.product.findMany({
       where: {
+        status: 'active',
         deletedAt: null,
         OR: [{ categoryId: category.id }, { category: { slug } }],
       },
