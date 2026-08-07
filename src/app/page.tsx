@@ -122,14 +122,14 @@ export default async function MultiVendorMarketplaceHomePage() {
                 href={`/product/${p.slug}`}
                 className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-amber-500/50 hover:shadow-md transition-all flex flex-col shadow-xs w-[200px] xs:w-[225px] sm:w-[250px] shrink-0 snap-start"
               >
-                <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden">
+                <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
                   {p.images?.[0]?.imageUrl ? (
                     <Image
                       src={p.images[0].imageUrl}
                       alt={p.name}
                       fill
                       sizes="(max-width: 640px) 220px, 250px"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-400">
@@ -183,14 +183,14 @@ export default async function MultiVendorMarketplaceHomePage() {
                 href={`/product/${p.slug}`}
                 className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-amber-500/50 hover:shadow-md transition-all flex flex-col shadow-xs w-[200px] xs:w-[225px] sm:w-[250px] shrink-0 snap-start"
               >
-                <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden">
+                <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
                   {p.images?.[0]?.imageUrl ? (
                     <Image
                       src={p.images[0].imageUrl}
                       alt={p.name}
                       fill
                       sizes="(max-width: 640px) 220px, 250px"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-400">

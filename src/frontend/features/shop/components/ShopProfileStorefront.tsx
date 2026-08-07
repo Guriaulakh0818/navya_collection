@@ -97,9 +97,13 @@ export function ShopProfileStorefront({ initialData, slug }: ShopProfileStorefro
       </div>
 
       {/* 2. STORE COVER BANNER */}
-      <div className="relative w-full h-48 sm:h-64 lg:h-80 bg-slate-900 border-b border-slate-800 overflow-hidden">
+      <div className="relative w-full h-48 sm:h-64 lg:h-80 bg-slate-900 border-b border-slate-800 overflow-hidden select-none">
         {shop.banner ? (
-          <img src={shop.banner} alt={shop.name} className="w-full h-full object-cover" />
+          <img
+            src={shop.banner}
+            alt={shop.name}
+            className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
+          />
         ) : (
           <div className="w-full h-full bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 flex items-center justify-center">
             <Store className="w-16 h-16 text-amber-500/20" />
@@ -113,9 +117,13 @@ export function ShopProfileStorefront({ initialData, slug }: ShopProfileStorefro
         <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-950 border-2 border-amber-500/40 overflow-hidden shrink-0 flex items-center justify-center shadow-xl">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-slate-950 border-2 border-amber-500/40 overflow-hidden shrink-0 flex items-center justify-center shadow-xl select-none">
                 {shop.logo ? (
-                  <img src={shop.logo} alt={shop.name} className="w-full h-full object-cover" />
+                  <img
+                    src={shop.logo}
+                    alt={shop.name}
+                    className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
+                  />
                 ) : (
                   <Building2 className="w-10 h-10 text-amber-400" />
                 )}
@@ -297,12 +305,12 @@ export function ShopProfileStorefront({ initialData, slug }: ShopProfileStorefro
                     href={`/product/${product.slug}`}
                     className="group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-amber-500/40 transition-all flex flex-col shadow-lg"
                   >
-                    <div className="aspect-[3/4] bg-slate-950 relative overflow-hidden">
+                    <div className="aspect-[3/4] bg-slate-950 relative overflow-hidden select-none">
                       {product.images?.[0]?.imageUrl ? (
                         <img
                           src={product.images[0].imageUrl}
                           alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-700">

@@ -116,12 +116,12 @@ export function ProductInspectionModal({
               <span className="font-extrabold text-navy block uppercase tracking-wider text-[11px]">
                 Product Gallery ({product.images?.length || 0})
               </span>
-              <div className="aspect-[3/4] bg-slate-100 border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
+              <div className="aspect-[3/4] bg-slate-100 border border-slate-200 rounded-2xl overflow-hidden shadow-2xs select-none">
                 {primaryImg?.imageUrl ? (
                   <img
                     src={primaryImg.imageUrl}
                     alt={product.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">
@@ -129,13 +129,17 @@ export function ProductInspectionModal({
                   </div>
                 )}
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
+              <div className="flex gap-2 overflow-x-auto pb-1 select-none">
                 {product.images?.map((img: any) => (
                   <div
                     key={img.id}
-                    className="w-14 h-14 bg-slate-100 border border-slate-200 rounded-xl overflow-hidden shrink-0"
+                    className="w-14 h-14 bg-slate-100 border border-slate-200 rounded-xl overflow-hidden shrink-0 select-none"
                   >
-                    <img src={img.imageUrl} alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={img.imageUrl}
+                      alt={product.name || ''}
+                      className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
+                    />
                   </div>
                 ))}
               </div>

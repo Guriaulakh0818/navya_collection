@@ -134,12 +134,12 @@ export function HeaderSearch({ className }: HeaderSearchProps) {
                         onClick={() => setIsOpen(false)}
                         className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-all group"
                       >
-                        <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-400">
+                        <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-400 select-none">
                           {p.images?.[0]?.imageUrl ? (
                             <img
                               src={p.images[0].imageUrl}
                               alt={p.name}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
                             />
                           ) : (
                             <ShoppingBag className="w-5 h-5" />
@@ -176,9 +176,13 @@ export function HeaderSearch({ className }: HeaderSearchProps) {
                         onClick={() => setIsOpen(false)}
                         className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-all group"
                       >
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-amber-500">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-amber-500 select-none">
                           {s.logo ? (
-                            <img src={s.logo} alt={s.name} className="w-full h-full object-cover" />
+                            <img
+                              src={s.logo}
+                              alt={s.name}
+                              className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
+                            />
                           ) : (
                             <Building2 className="w-4 h-4" />
                           )}

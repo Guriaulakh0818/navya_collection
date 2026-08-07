@@ -279,13 +279,13 @@ export default function AdminProductsPage() {
                     <tr key={product.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="relative h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-400">
+                          <div className="relative h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-400 select-none">
                             {primaryImg?.imageUrl ? (
                               <Image
                                 src={primaryImg.imageUrl}
                                 alt={product.name}
                                 fill
-                                className="object-cover"
+                                className="object-cover select-none overflow-hidden [text-indent:-9999px]"
                               />
                             ) : (
                               <Tag className="h-4 w-4" />

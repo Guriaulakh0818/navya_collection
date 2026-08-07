@@ -30,14 +30,14 @@ export const RecentlyAddedShops = React.memo(function RecentlyAddedShops({
           className="p-3.5 sm:p-4 bg-slate-50/80 border border-slate-200 hover:border-amber-500/50 hover:bg-white rounded-2xl transition-all flex items-center justify-between gap-3 group shadow-xs hover:shadow-md w-[240px] xs:w-[270px] sm:w-[300px] shrink-0 snap-start"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 shrink-0 relative overflow-hidden flex items-center justify-center text-amber-700 shadow-xs">
+            <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 shrink-0 relative overflow-hidden flex items-center justify-center text-amber-700 shadow-xs select-none">
               {shop.logo ? (
                 <Image
                   src={shop.logo}
                   alt={shop.name}
                   fill
                   sizes="44px"
-                  className="w-full h-full object-cover rounded-xl"
+                  className="w-full h-full object-cover rounded-xl select-none overflow-hidden [text-indent:-9999px]"
                 />
               ) : (
                 <Building2 className="w-5 h-5" />

@@ -86,7 +86,7 @@ export function ProductImageGallery({ images, className }: ProductImageGalleryPr
           src={activeImg.url}
           alt={activeImg.alt || 'Product image'}
           fill
-          className="object-cover transition-all duration-500 group-hover:scale-105"
+          className="object-cover transition-all duration-500 group-hover:scale-105 select-none overflow-hidden [text-indent:-9999px]"
           sizes="(min-width: 1024px) 40vw, 100vw"
           priority
         />
@@ -148,7 +148,7 @@ export function ProductImageGallery({ images, className }: ProductImageGalleryPr
                   src={img.url}
                   alt={img.alt || `Thumbnail ${idx + 1}`}
                   fill
-                  className="object-cover transition-all duration-300"
+                  className="object-cover transition-all duration-300 select-none overflow-hidden [text-indent:-9999px]"
                 />
               </button>
             ))}

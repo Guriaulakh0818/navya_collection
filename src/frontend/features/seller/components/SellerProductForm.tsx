@@ -596,8 +596,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               >
                 <img
                   src={img.imageUrl}
-                  alt={`Product ${idx}`}
-                  className="w-full h-full object-cover"
+                  alt=""
+                  className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
                 />
 
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-between p-3 transition-all">
@@ -628,12 +628,12 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             {uploadingQueue.map((item) => (
               <div
                 key={item.id}
-                className="relative aspect-[3/4] bg-slate-100 border-2 border-dashed border-navy/40 rounded-xl overflow-hidden shadow-sm animate-pulse"
+                className="relative aspect-[3/4] bg-slate-100 border-2 border-dashed border-navy/40 rounded-xl overflow-hidden shadow-sm animate-pulse select-none"
               >
                 <img
                   src={item.previewUrl}
-                  alt={item.file.name}
-                  className="w-full h-full object-cover opacity-50 blur-[1px]"
+                  alt=""
+                  className="w-full h-full object-cover opacity-50 blur-[1px] select-none overflow-hidden [text-indent:-9999px]"
                 />
 
                 <div className="absolute inset-0 bg-navy/30 backdrop-blur-[2px] flex flex-col items-center justify-center p-3 text-center">

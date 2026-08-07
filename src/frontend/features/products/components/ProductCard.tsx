@@ -24,14 +24,14 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Product Image Container */}
       <Link
         href={`/product/${product.slug}`}
-        className="relative aspect-[3/4] w-full overflow-hidden bg-brand-divider block cursor-pointer"
+        className="relative aspect-[3/4] w-full overflow-hidden bg-brand-divider block cursor-pointer select-none"
       >
         {primaryImage ? (
           <Image
             src={primaryImage.url}
             alt={primaryImage.alt || product.name}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
           />
         ) : (

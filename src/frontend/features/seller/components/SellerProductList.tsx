@@ -307,13 +307,13 @@ export function SellerProductList() {
                       </td>
 
                       <td className="py-4 px-6 font-bold text-slate-900 flex items-center gap-3">
-                        <div className="relative w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-navy font-bold">
+                        <div className="relative w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-navy font-bold select-none">
                           {primaryImg?.imageUrl ? (
                             <Image
                               src={primaryImg.imageUrl}
                               alt={p.name}
                               fill
-                              className="object-cover"
+                              className="object-cover select-none overflow-hidden [text-indent:-9999px]"
                             />
                           ) : (
                             <Tag className="w-5 h-5 text-slate-400" />

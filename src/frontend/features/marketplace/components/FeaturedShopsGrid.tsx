@@ -33,14 +33,14 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
             className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-amber-500/50 hover:shadow-xl transition-all shadow-xs flex flex-col justify-between w-[260px] xs:w-[285px] sm:w-[320px] shrink-0 snap-start"
           >
             {/* Cover Banner */}
-            <div className="h-28 sm:h-32 bg-slate-900 relative overflow-hidden">
+            <div className="h-28 sm:h-32 bg-slate-900 relative overflow-hidden select-none">
               <Image
                 src="/images/default-shop-banner.png"
                 alt={shop.name}
                 fill
                 priority={index < 2}
                 sizes="(max-width: 640px) 280px, 320px"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
             </div>
@@ -48,14 +48,14 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
             {/* Profile Overlay & Info */}
             <div className="p-4 sm:p-5 -mt-8 relative z-10 space-y-3">
               <div className="flex items-end justify-between gap-2">
-                <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-500/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-md">
+                <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-500/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-md select-none">
                   {shop.logo ? (
                     <Image
                       src={shop.logo}
                       alt={shop.name}
                       fill
                       sizes="56px"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
                     />
                   ) : (
                     <Building2 className="w-7 h-7 text-amber-600" />
