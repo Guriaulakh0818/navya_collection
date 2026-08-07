@@ -10,18 +10,57 @@ import { useAdminAuthStore } from '@/stores';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: 'dashboard' },
+  { name: 'Registered Users', href: '/admin/users', icon: 'users' },
+  { name: 'Registered Shops', href: '/admin/shops', icon: 'shops' },
+  { name: 'User & Shop Analytics', href: '/admin/analytics', icon: 'analytics' },
   { name: 'Seller Approvals', href: '/admin/sellers', icon: 'sellers' },
   { name: 'Product Approvals', href: '/admin/products/approvals', icon: 'products' },
   { name: 'Products Catalog', href: '/admin/products', icon: 'products' },
+  { name: 'Orders', href: '/admin/orders', icon: 'orders' },
   { name: 'Commission Revenue', href: '/admin/finance/commission', icon: 'dashboard' },
   { name: 'Manual Settlements', href: '/admin/finance/settlements', icon: 'sellers' },
   { name: 'Review Moderation', href: '/admin/reviews', icon: 'products' },
   { name: 'Categories', href: '/admin/categories', icon: 'categories' },
-  { name: 'Orders', href: '/admin/orders', icon: 'orders' },
   { name: 'Team Governance', href: '/admin/team', icon: 'categories' },
 ];
 
 function NavIcon({ type }: { type: string }) {
+  if (type === 'users') {
+    return (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+        />
+      </svg>
+    );
+  }
+  if (type === 'shops') {
+    return (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0V9a2 2 0 012-2h2a2 2 0 012 2v12"
+        />
+      </svg>
+    );
+  }
+  if (type === 'analytics') {
+    return (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+        />
+      </svg>
+    );
+  }
   if (type === 'sellers') {
     return (
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -344,7 +344,10 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
         </div>
 
         {/* Active Boutiques */}
-        <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all">
+        <Link
+          href="/admin/shops"
+          className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all cursor-pointer"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Active Stores
@@ -355,15 +358,20 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           </div>
           <div>
             <p className="text-2xl font-black text-slate-900">{data.stats.activeShopsCount}</p>
-            <p className="text-[11px] font-semibold text-purple-600 mt-1">Verified Boutiques</p>
+            <p className="text-[11px] font-semibold text-purple-600 mt-1">
+              View All Shops ({data.stats.activeShopsCount}) →
+            </p>
           </div>
-        </div>
+        </Link>
 
         {/* Registered Customers */}
-        <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all">
+        <Link
+          href="/admin/users"
+          className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all cursor-pointer"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Customers
+              Registered Users
             </span>
             <div className="p-2 bg-rose-50 text-rose-600 rounded-xl">
               <Users className="w-4 h-4" />
@@ -371,9 +379,9 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           </div>
           <div>
             <p className="text-2xl font-black text-slate-900">{data.stats.totalCustomersCount}</p>
-            <p className="text-[11px] font-semibold text-slate-500 mt-1">Active Accounts</p>
+            <p className="text-[11px] font-semibold text-rose-600 mt-1">View Users Directory →</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* INTERACTIVE TAB NAVIGATION */}

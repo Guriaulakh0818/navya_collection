@@ -43,7 +43,7 @@ export default async function AdminDashboardPage() {
     prisma.shop.count({ where: { status: 'APPROVED' } }),
     prisma.shop.count({ where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } } }),
     prisma.product.count({ where: { status: 'draft' } }),
-    prisma.user.count({ where: { role: 'CUSTOMER' } }),
+    prisma.user.count({ where: { role: { in: ['USER', 'CUSTOMER'] } } }),
 
     // Pending seller onboarding applications
     prisma.shop.findMany({
