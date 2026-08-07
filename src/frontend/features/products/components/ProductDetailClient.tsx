@@ -311,55 +311,56 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
             </div>
           </div>
 
-          {/* Action Buttons: Add to Cart & Buy Now */}
-          <div className="pt-4 flex flex-col sm:flex-row items-center gap-3">
+          {/* Action Buttons: All 4 in 1 single horizontal row */}
+          <div className="pt-4 flex flex-row items-center gap-1.5 xs:gap-2 sm:gap-3 w-full flex-nowrap">
             <button
               type="button"
               onClick={handleAddToCart}
-              className={`flex-1 w-full py-3.5 px-6 rounded-2xl font-extrabold text-xs sm:text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-98 ${
+              className={`flex-1 min-w-0 py-3 xs:py-3.5 px-2 xs:px-3 sm:px-6 rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-1 sm:gap-2 cursor-pointer active:scale-98 shrink-0 ${
                 isAdding ? 'bg-emerald-600 text-white' : 'bg-orange hover:bg-amber-600 text-white'
               }`}
             >
               {isAdding ? (
                 <>
-                  <Check className="w-4 h-4" /> Added to Cart!
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                  <span className="truncate">Added!</span>
                 </>
               ) : (
-                'Add to Cart'
+                <span className="truncate">Add to Cart</span>
               )}
             </button>
 
             <Link
               href="/checkout"
               onClick={handleAddToCart}
-              className="flex-1 w-full py-3.5 px-6 bg-navy hover:bg-navy-hover text-white rounded-2xl font-extrabold text-xs sm:text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer text-center active:scale-98"
+              className="flex-1 min-w-0 py-3 xs:py-3.5 px-2 xs:px-3 sm:px-6 bg-navy hover:bg-navy-hover text-white rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-1 sm:gap-2 cursor-pointer text-center active:scale-98 shrink-0"
             >
-              Buy Now
+              <span className="truncate">Buy Now</span>
             </Link>
 
             <button
               type="button"
               onClick={() => toggleWishlist(product)}
-              className={`p-3.5 rounded-2xl border transition-all cursor-pointer shrink-0 ${
+              className={`p-2.5 xs:p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer shrink-0 ${
                 isWishlisted
                   ? 'border-rose-300 bg-rose-50 text-rose-600'
                   : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
               }`}
               title="Add to Wishlist"
             >
-              <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-rose-600' : ''}`} />
+              <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isWishlisted ? 'fill-rose-600' : ''}`} />
             </button>
 
             <button
               type="button"
               onClick={handleShare}
-              className="p-3.5 rounded-2xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shrink-0"
+              className="p-2.5 xs:p-3 sm:p-3.5 rounded-2xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shrink-0"
               title="Share Link"
             >
               {copiedLink ? (
-                <Check className="w-5 h-5 text-emerald-600" />
+                <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
               ) : (
-                <Share2 className="w-5 h-5" />
+                <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
               )}
             </button>
           </div>
