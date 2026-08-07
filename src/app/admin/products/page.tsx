@@ -170,10 +170,10 @@ export default function AdminProductsPage() {
           </p>
         </div>
         <Button
-          className="rounded-full bg-navy hover:bg-navy-hover text-xs font-bold gap-2 cursor-pointer shadow-md"
+          className="rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold gap-2 cursor-pointer shadow-md"
           onClick={() => setIsAdding(true)}
         >
-          <Plus className="h-4 w-4" /> Add New Product
+          <Plus className="h-4 w-4 text-white" /> Add New Product
         </Button>
       </div>
 
@@ -233,7 +233,11 @@ export default function AdminProductsPage() {
             />
             <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
           </div>
-          <Button type="submit" size="sm" className="rounded-full bg-navy text-xs font-bold px-5">
+          <Button
+            type="submit"
+            size="sm"
+            className="rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold px-5 cursor-pointer"
+          >
             Search
           </Button>
         </form>
@@ -452,7 +456,7 @@ export default function AdminProductsPage() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-full bg-navy text-xs font-bold mt-4 shadow-md cursor-pointer"
+            className="w-full rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold mt-4 shadow-md cursor-pointer"
           >
             {isSubmitting ? 'Publishing...' : 'Save & Publish Product Live'}
           </Button>
