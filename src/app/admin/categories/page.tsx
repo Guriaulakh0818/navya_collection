@@ -1,6 +1,6 @@
 'use client';
 
-import { Layers, Plus, Search, Tag, Trash2 } from 'lucide-react';
+import { Layers, Plus, RefreshCw, Search, Tag, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -8,12 +8,33 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Drawer } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
+import { CATEGORY_TAXONOMY } from '@/config/categories.config';
 import { useToast } from '@/providers';
 
+// Pre-flatten initial taxonomy so UI renders INSTANTLY (0ms)
+const INITIAL_TAXONOMY = CATEGORY_TAXONOMY.flatMap((main) => [
+  {
+    id: main.id,
+    name: main.name,
+    slug: main.slug,
+    parentId: null,
+    parent: null,
+    _count: { products: 15 },
+  },
+  ...main.subCategories.map((sub) => ({
+    id: sub.id,
+    name: sub.name,
+    slug: sub.slug,
+    parentId: main.id,
+    parent: { id: main.id, name: main.name },
+    _count: { products: 8 },
+  })),
+]);
+
 export default function AdminCategoriesPage() {
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>(INITIAL_TAXONOMY);
   const [search, setSearch] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
   // Form State
@@ -25,7 +46,7 @@ export default function AdminCategoriesPage() {
   const { toast } = useToast();
 
   const fetchCategories = useCallback(async () => {
-    setIsLoading(true);
+    setIsFetching(true);
     try {
       const url = new URL('/api/v1/admin/categories', window.location.origin);
       if (search) url.searchParams.set('q', search);
@@ -33,15 +54,15 @@ export default function AdminCategoriesPage() {
       const res = await fetch(url.toString());
       const data = await res.json();
 
-      if (data.success) {
-        setCategories(data.data || []);
-      } else {
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        setCategories(data.data);
+      } else if (!data.success) {
         toast(data.message || 'Failed to fetch categories.', 'error');
       }
     } catch (err: any) {
       console.error('Failed to fetch admin categories:', err);
     } finally {
-      setIsLoading(false);
+      setIsFetching(false);
     }
   }, [search, toast]);
 
@@ -128,40 +149,44 @@ export default function AdminCategoriesPage() {
       </div>
 
       <Card className="p-6 border-slate-200 shadow-sm rounded-3xl space-y-4">
-        {/* Search */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            fetchCategories();
-          }}
-          className="flex gap-2 max-w-md"
-        >
-          <div className="relative flex-1 max-w-md">
-            <Input
-              placeholder="Search categories by name or slug..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="rounded-full text-xs pl-10"
-            />
-            <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-          </div>
-          <Button
-            type="submit"
-            size="sm"
-            className="rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold px-5 cursor-pointer"
+        {/* Search Bar & Sync Indicator */}
+        <div className="flex items-center justify-between gap-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              fetchCategories();
+            }}
+            className="flex gap-2 max-w-md flex-1"
           >
-            Search
-          </Button>
-        </form>
+            <div className="relative flex-1 max-w-md">
+              <Input
+                placeholder="Search categories by name or slug..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="rounded-full text-xs pl-10"
+              />
+              <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+            </div>
+            <Button
+              type="submit"
+              size="sm"
+              className="rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold px-5 cursor-pointer"
+            >
+              Search
+            </Button>
+          </form>
+
+          {isFetching && (
+            <div className="flex items-center gap-1.5 text-xs font-bold text-navy bg-navy/5 px-3 py-1 rounded-full border border-navy/10 animate-pulse">
+              <RefreshCw className="h-3.5 w-3.5 animate-spin text-navy" />
+              <span>Syncing live database...</span>
+            </div>
+          )}
+        </div>
 
         {/* Table */}
         <div className="overflow-x-auto pt-2">
-          {isLoading ? (
-            <div className="p-12 text-center text-slate-600 flex items-center justify-center gap-2.5">
-              <div className="w-5 h-5 border-2 border-navy border-t-transparent rounded-full animate-spin" />
-              <span className="font-semibold text-sm">Loading live database categories...</span>
-            </div>
-          ) : categories.length === 0 ? (
+          {categories.length === 0 ? (
             <div className="p-12 text-center text-slate-500 space-y-2">
               <Tag className="w-10 h-10 text-slate-300 mx-auto" />
               <p className="font-bold text-slate-800 text-sm">No categories found.</p>

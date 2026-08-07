@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-// GET /api/v1/admin/categories - List live Prisma DB categories (Auto-seed full primary + subcategory taxonomy if missing)
+// GET /api/v1/admin/categories - List live Prisma DB categories (Fast & Bulk-seeded)
 export async function GET(request: NextRequest) {
   try {
     const admin = await getAdminUser();
@@ -24,47 +24,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const query = (searchParams.get('q') || '').trim().toLowerCase();
 
-    // 1. Check existing DB categories count
-    const count = await prisma.category.count({ where: { deletedAt: null } });
-
-    // Seed/upsert full taxonomy (Primary Categories + Subcategories)
-    if (count < 25) {
-      for (const main of CATEGORY_TAXONOMY) {
-        const matchingDefault = CATEGORIES.find((c) => c.slug === main.slug);
-
-        await prisma.category.upsert({
-          where: { id: main.id },
-          update: {
-            name: main.name,
-            slug: main.slug,
-            image: matchingDefault?.image || null,
-          },
-          create: {
-            id: main.id,
-            name: main.name,
-            slug: main.slug,
-            image: matchingDefault?.image || null,
-            description: matchingDefault?.description || `${main.name} boutique collection.`,
-          },
-        });
-
-        // Seed sub-categories under this primary category
-        for (const sub of main.subCategories) {
-          await prisma.category.upsert({
-            where: { id: sub.id },
-            update: { name: sub.name, slug: sub.slug, parentId: main.id },
-            create: {
-              id: sub.id,
-              name: sub.name,
-              slug: sub.slug,
-              parentId: main.id,
-              description: `${sub.name} in ${main.name}.`,
-            },
-          });
-        }
-      }
-    }
-
     const whereCondition: any = {
       deletedAt: null,
     };
@@ -76,9 +35,16 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const categories = await prisma.category.findMany({
+    // 1. Fetch live categories directly in ONE fast query
+    let categories = await prisma.category.findMany({
       where: whereCondition,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        parentId: true,
+        image: true,
+        description: true,
         parent: { select: { id: true, name: true } },
         _count: {
           select: { products: { where: { deletedAt: null, status: 'active' } } },
@@ -86,6 +52,62 @@ export async function GET(request: NextRequest) {
       },
       orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
     });
+
+    // 2. Fast Bulk Auto-Seed if DB taxonomy is empty or missing
+    if (categories.length < 25 && !query) {
+      const primaryItems: any[] = [];
+      const subItems: any[] = [];
+
+      for (const main of CATEGORY_TAXONOMY) {
+        const matchingDefault = CATEGORIES.find((c) => c.slug === main.slug);
+        primaryItems.push({
+          id: main.id,
+          name: main.name,
+          slug: main.slug,
+          image: matchingDefault?.image || null,
+          description: matchingDefault?.description || `${main.name} boutique collection.`,
+        });
+
+        for (const sub of main.subCategories) {
+          subItems.push({
+            id: sub.id,
+            name: sub.name,
+            slug: sub.slug,
+            parentId: main.id,
+            description: `${sub.name} in ${main.name}.`,
+          });
+        }
+      }
+
+      // Execute 2 fast bulk createMany queries instead of 43 slow serial upserts
+      await prisma.category.createMany({
+        data: primaryItems,
+        skipDuplicates: true,
+      });
+
+      await prisma.category.createMany({
+        data: subItems,
+        skipDuplicates: true,
+      });
+
+      // Refetch full taxonomy
+      categories = await prisma.category.findMany({
+        where: whereCondition,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          parentId: true,
+          image: true,
+          description: true,
+          parent: { select: { id: true, name: true } },
+          _count: {
+            select: { products: { where: { deletedAt: null, status: 'active' } } },
+          },
+        },
+        orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
+      });
+    }
 
     return NextResponse.json({
       success: true,
