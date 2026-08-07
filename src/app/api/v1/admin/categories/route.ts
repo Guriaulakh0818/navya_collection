@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getAdminUser } from '@/backend/lib/session';
 import { CATEGORY_TAXONOMY } from '@/config/categories.config';
+import { CATEGORIES } from '@/features/categories/constants/category.constants';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-// GET /api/v1/admin/categories - List live Prisma DB categories (Auto-seed primary taxonomy if empty)
+// GET /api/v1/admin/categories - List live Prisma DB categories (Auto-seed full primary + subcategory taxonomy if missing)
 export async function GET(request: NextRequest) {
   try {
     const admin = await getAdminUser();
@@ -26,21 +27,28 @@ export async function GET(request: NextRequest) {
     // 1. Check existing DB categories count
     const count = await prisma.category.count({ where: { deletedAt: null } });
 
-    // If DB is missing primary categories, upsert taxonomy primary categories
-    if (count < 8) {
+    // Seed/upsert full taxonomy (Primary Categories + Subcategories)
+    if (count < 25) {
       for (const main of CATEGORY_TAXONOMY) {
+        const matchingDefault = CATEGORIES.find((c) => c.slug === main.slug);
+
         await prisma.category.upsert({
           where: { id: main.id },
-          update: { name: main.name, slug: main.slug },
+          update: {
+            name: main.name,
+            slug: main.slug,
+            image: matchingDefault?.image || null,
+          },
           create: {
             id: main.id,
             name: main.name,
             slug: main.slug,
-            description: `${main.name} boutique ethnic collection.`,
+            image: matchingDefault?.image || null,
+            description: matchingDefault?.description || `${main.name} boutique collection.`,
           },
         });
 
-        // Also seed sub-categories under this primary category
+        // Seed sub-categories under this primary category
         for (const sub of main.subCategories) {
           await prisma.category.upsert({
             where: { id: sub.id },
@@ -76,7 +84,7 @@ export async function GET(request: NextRequest) {
           select: { products: { where: { deletedAt: null, status: 'active' } } },
         },
       },
-      orderBy: { name: 'asc' },
+      orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
     });
 
     return NextResponse.json({

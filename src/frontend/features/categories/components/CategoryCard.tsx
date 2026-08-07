@@ -22,7 +22,7 @@ export function CategoryCard({ category }: CategoryCardProps) {
               src={category.image}
               alt={category.name}
               fill
-              className="object-cover mix-blend-overlay opacity-80 transition-transform group-hover:scale-105"
+              className="object-cover mix-blend-overlay opacity-80 transition-transform group-hover:scale-105 select-none overflow-hidden [text-indent:-9999px]"
               sizes="(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
             />
           ) : null}

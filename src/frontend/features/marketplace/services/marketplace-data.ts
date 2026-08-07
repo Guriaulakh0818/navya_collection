@@ -205,12 +205,33 @@ export const getMarketplaceHomeData = cache(async () => {
         .catch(() => []),
 
       // 6. Active Primary Categories
-      Promise.resolve(
-        CATEGORIES.map((cat) => ({
-          ...cat,
-          _count: { products: cat.productCount || 10 },
-        })),
-      ),
+      prisma.category
+        .findMany({
+          where: { parentId: null, deletedAt: null },
+          take: 8,
+          orderBy: { name: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            image: true,
+            _count: { select: { products: { where: { deletedAt: null, status: 'active' } } } },
+          },
+        })
+        .then((cats) =>
+          cats.length > 0
+            ? cats
+            : CATEGORIES.map((cat) => ({
+                ...cat,
+                _count: { products: cat.productCount || 10 },
+              })),
+        )
+        .catch(() =>
+          CATEGORIES.map((cat) => ({
+            ...cat,
+            _count: { products: cat.productCount || 10 },
+          })),
+        ),
 
       // 7. Active Coupons
       prisma.coupon
