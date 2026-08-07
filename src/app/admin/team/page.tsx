@@ -4,6 +4,7 @@ import { CheckCircle2, ShieldAlert, Trash2, UserPlus, Users, XCircle } from 'luc
 import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Loader } from '@/components/ui/loader';
 import { useToast } from '@/providers';
@@ -23,6 +24,13 @@ export default function AdminTeamPage() {
   const user = useAuthStore((s) => s.user);
   const { toast } = useToast();
 
+  const isOwner =
+    user &&
+    (String(user.role).toUpperCase() === 'OWNER' ||
+      String(user.role).toUpperCase() === 'SUPER_ADMIN' ||
+      user.email === 'gurvindersingh0218@gmail.com' ||
+      user.email === 'guriaulakh497@gmail.com');
+
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -40,19 +48,21 @@ export default function AdminTeamPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setMembers(data.teamMembers || []);
-      } else {
-        toast(data.message || 'Only the Owner can access Team Governance.', 'error');
       }
-    } catch {
-      toast('Failed to load team members.', 'error');
+    } catch (err: any) {
+      console.error('Failed to load team members:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, []); // Empty dependency array prevents re-trigger loops!
 
   useEffect(() => {
-    fetchTeam();
-  }, [fetchTeam]);
+    if (isOwner) {
+      fetchTeam();
+    } else {
+      setIsLoading(false);
+    }
+  }, [fetchTeam, isOwner]);
 
   const handleGrantAccess = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +100,7 @@ export default function AdminTeamPage() {
       setInvitePassword('');
       fetchTeam();
     } catch (err: any) {
-      toast(err.message || 'Failed to grant access', 'error');
+      toast(err.message || 'Error granting access.', 'error');
     } finally {
       setIsInviting(false);
     }
@@ -103,255 +113,303 @@ export default function AdminTeamPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, approvalStatus, role }),
       });
-
       const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Update failed');
+      if (res.ok && data.success) {
+        toast(data.message || 'Permissions updated!', 'success');
+        fetchTeam();
+      } else {
+        toast(data.message || 'Failed to update permissions.', 'error');
       }
-
-      toast(data.message || 'User status updated', 'success');
-      fetchTeam();
     } catch (err: any) {
-      toast(err.message || 'Failed to update user', 'error');
+      toast(err.message || 'Error updating status.', 'error');
     }
   };
 
-  const handleDeleteUser = async (userId: string, userEmail: string) => {
-    if (!confirm(`Are you sure you want to permanently delete admin account "${userEmail}"?`)) {
-      return;
-    }
-
+  const handleDeleteUser = async (userId: string, email: string) => {
+    if (!confirm(`Are you sure you want to permanently delete admin account "${email}"?`)) return;
     try {
       const res = await fetch(`/api/v1/admin/team?userId=${userId}`, {
         method: 'DELETE',
       });
-
       const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Failed to delete user');
+      if (res.ok && data.success) {
+        toast(data.message || 'User account deleted.', 'success');
+        fetchTeam();
+      } else {
+        toast(data.message || 'Failed to delete user account.', 'error');
       }
-
-      toast(data.message || 'Admin user deleted successfully.', 'success');
-      fetchTeam();
     } catch (err: any) {
-      toast(err.message || 'Failed to delete user', 'error');
+      toast(err.message || 'Error deleting account.', 'error');
     }
   };
 
-  const isOwner =
-    String(user?.role) === 'OWNER' ||
-    String(user?.role) === 'SUPER_ADMIN' ||
-    user?.email === 'gurvindersingh0218@gmail.com';
-
-  if (!isOwner) {
+  // If not owner, display elegant restricted access notice card instead of crashing!
+  if (!isOwner && !isLoading) {
     return (
-      <div className="p-8 text-center bg-white rounded-3xl border border-slate-200 shadow-sm max-w-lg mx-auto mt-12">
-        <ShieldAlert className="h-12 w-12 text-rose-500 mx-auto mb-3" />
-        <h2 className="text-xl font-bold text-navy">Restricted Owner Access</h2>
-        <p className="text-xs text-slate-600 mt-2">
-          Only the Owner (<span className="font-bold text-navy">gurvindersingh0218@gmail.com</span>)
-          has authority to grant admin access and assign roles.
-        </p>
+      <div className="p-6 md:p-12 max-w-4xl mx-auto space-y-6">
+        <Card className="p-8 text-center space-y-4 border-amber-200 bg-amber-50/50 rounded-3xl shadow-sm">
+          <ShieldAlert className="w-14 h-14 text-amber-600 mx-auto" />
+          <h2 className="text-2xl font-bold text-navy">Owner Governance Restricted</h2>
+          <p className="text-xs md:text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
+            Managing admin team members, assigning access roles, and delegating permissions are
+            restricted exclusively to the primary Store Owner (`OWNER` / `SUPER_ADMIN`).
+          </p>
+          <div className="pt-2">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-navy text-white text-xs font-bold shadow-xs">
+              Logged in as: {user?.role || 'ADMIN'} ({user?.email})
+            </span>
+          </div>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-navy text-white p-6 sm:p-8 rounded-3xl shadow-xl">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-navy text-white p-6 sm:p-8 rounded-3xl shadow-xl">
         <div>
           <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-gold text-xs font-bold uppercase tracking-wider mb-2">
             <Users className="h-4 w-4" />
-            <span>Owner Role Governance</span>
+            <span>Store Access Governance</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Admin Access &amp; Role Management
+            Admin &amp; Supervisor Team Governance
           </h1>
           <p className="text-xs text-white/80 mt-1">
-            Grant direct Gmail + Password access to staff members, auto-send email notifications,
-            and manage active accounts.
+            Grant direct login credentials to internal team members (Admin / Supervisor) with
+            automated email welcome notifications.
           </p>
         </div>
       </div>
 
       {/* Grant Access Card */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-md">
-        <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-          <UserPlus className="h-5 w-5 text-orange" />
-          <span>Grant Admin Access to Gmail User</span>
-        </h2>
-        <form
-          onSubmit={handleGrantAccess}
-          className="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-4 items-end"
-        >
+      <Card className="p-6 sm:p-8 border-slate-200 shadow-md rounded-3xl space-y-6 bg-white">
+        <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
+          <div className="p-2.5 bg-navy/10 text-navy rounded-2xl">
+            <UserPlus className="w-6 h-6" />
+          </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Gmail Address</label>
-            <Input
-              type="email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="staff@gmail.com"
-              required
-            />
+            <h2 className="text-lg font-bold text-navy">Grant Direct Admin Access</h2>
+            <p className="text-xs text-slate-500">
+              User will receive an email with login instructions &amp; credentials immediately.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleGrantAccess} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Full Name (Optional)
+              </label>
+              <Input
+                placeholder="e.g. Navya Store Supervisor"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                className="rounded-xl text-xs"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Gmail / Email Address *
+              </label>
+              <Input
+                type="email"
+                required
+                placeholder="member@gmail.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                className="rounded-xl text-xs"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
-            <Input
-              type="text"
-              value={inviteName}
-              onChange={(e) => setInviteName(e.target.value)}
-              placeholder="Staff Name"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Assign Role Permission *
+              </label>
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value as any)}
+                className="w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 bg-white outline-none focus:ring-2 focus:ring-navy/20"
+              >
+                <option value="ADMIN">ADMIN (Products, Orders &amp; Catalog Management)</option>
+                <option value="SUPERVISOR">
+                  SUPERVISOR (Read-Only Insights &amp; Growth Analytics)
+                </option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-700 block mb-1">
+                Set Initial Login Password *
+              </label>
+              <Input
+                type="text"
+                required
+                minLength={6}
+                placeholder="e.g. NavyaPass@2026"
+                value={invitePassword}
+                onChange={(e) => setInvitePassword(e.target.value)}
+                className="rounded-xl text-xs font-mono"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Assigned Role</label>
-            <select
-              value={inviteRole}
-              onChange={(e) => setInviteRole(e.target.value as any)}
-              className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-navy outline-none focus:ring-2 focus:ring-navy shadow-sm"
-            >
-              <option value="ADMIN" className="bg-white text-orange font-bold py-1">
-                ADMIN
-              </option>
-              <option value="SUPERVISOR" className="bg-white text-sky-900 font-bold py-1">
-                SUPERVISOR
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Set User Password</label>
-            <Input
-              type="password"
-              value={invitePassword}
-              onChange={(e) => setInvitePassword(e.target.value)}
-              placeholder="Minimum 6 chars"
-              required
-              minLength={6}
-            />
-          </div>
-
-          <div className="sm:col-span-4 flex justify-end mt-2">
+          <div className="pt-2 flex justify-end">
             <Button
               type="submit"
-              className="bg-orange hover:bg-orange-600 text-white font-extrabold px-6 py-2 h-10 rounded-xl shadow-md cursor-pointer"
               disabled={isInviting}
+              className="bg-navy hover:bg-navy-hover text-white text-xs font-extrabold px-6 py-2.5 rounded-xl shadow-md cursor-pointer gap-2"
             >
               {isInviting ? (
-                <Loader size="sm" text="Granting &amp; Sending Email..." light />
+                <>
+                  <Loader size="sm" className="text-white" /> Sending Access Email...
+                </>
               ) : (
-                'Grant Direct Access & Send Email'
+                <>
+                  <UserPlus className="w-4 h-4" /> Grant Access &amp; Send Credentials Email
+                </>
               )}
             </Button>
           </div>
         </form>
-      </div>
+      </Card>
 
-      {/* Team Members List */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-navy">Authorized Admin Accounts</h2>
-          <span className="text-xs font-bold text-slate-500">{members.length} Users</span>
+      {/* Team Members List Table */}
+      <Card className="p-6 border-slate-200 shadow-sm rounded-3xl space-y-4 bg-white">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <h2 className="text-lg font-bold text-navy flex items-center gap-2">
+            <Users className="w-5 h-5 text-navy" />
+            Active Team Members &amp; Roles ({members.length})
+          </h2>
         </div>
 
         {isLoading ? (
-          <div className="p-12 text-center">
-            <Loader size="lg" text="Loading admin access list..." />
+          <div className="p-12 text-center text-slate-500">
+            <Loader size="md" className="mx-auto text-navy" />
+            <p className="text-xs font-semibold mt-2">Loading team members database...</p>
+          </div>
+        ) : members.length === 0 ? (
+          <div className="p-12 text-center text-slate-400">
+            <p className="text-xs font-semibold">No team members registered yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-700">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-extrabold uppercase tracking-wider">
-                <tr>
-                  <th className="p-4">User Details</th>
-                  <th className="p-4">Assigned Role</th>
-                  <th className="p-4">Access Status</th>
-                  <th className="p-4 text-right">Actions</th>
+            <table className="w-full text-left text-xs text-slate-800">
+              <thead>
+                <tr className="border-b border-slate-100 uppercase text-slate-400 font-extrabold tracking-wider">
+                  <th className="pb-3 pl-2">User Info</th>
+                  <th className="pb-3">Role</th>
+                  <th className="pb-3">Approval Status</th>
+                  <th className="pb-3">Granted Date</th>
+                  <th className="pb-3 text-right pr-2">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-semibold">
-                {members.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-50/50">
-                    <td className="p-4">
-                      <p className="font-bold text-navy text-sm">{m.name || 'Unnamed User'}</p>
-                      <p className="text-slate-500 text-xs">{m.email || m.mobile}</p>
-                    </td>
-                    <td className="p-4">
-                      <select
-                        value={m.role}
-                        disabled={m.email === 'gurvindersingh0218@gmail.com'}
-                        onChange={(e) =>
-                          handleUpdateStatus(m.id, m.approvalStatus || 'APPROVED', e.target.value)
-                        }
-                        className={`rounded-xl border px-3 py-1.5 text-xs font-extrabold shadow-sm transition-all outline-none ${
-                          m.role === 'OWNER'
-                            ? 'border-navy bg-navy text-white'
-                            : m.role === 'ADMIN'
-                              ? 'border-orange/30 bg-orange/10 text-orange'
-                              : 'border-sky-300 bg-sky-50 text-sky-900'
-                        } disabled:opacity-90 disabled:cursor-not-allowed`}
-                      >
-                        <option value="OWNER" className="bg-white text-navy font-bold py-1">
-                          OWNER
-                        </option>
-                        <option value="ADMIN" className="bg-white text-orange font-bold py-1">
-                          ADMIN
-                        </option>
-                        <option value="SUPERVISOR" className="bg-white text-sky-900 font-bold py-1">
-                          SUPERVISOR
-                        </option>
-                      </select>
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
-                          m.approvalStatus === 'APPROVED' || !m.approvalStatus
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                            : 'bg-rose-50 border-rose-200 text-rose-700'
-                        }`}
-                      >
-                        {m.approvalStatus || 'APPROVED'}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right">
-                      {m.email !== 'gurvindersingh0218@gmail.com' && (
-                        <div className="flex items-center justify-end gap-2 shrink-0 whitespace-nowrap">
-                          {m.approvalStatus === 'REJECTED' ? (
-                            <button
-                              onClick={() => handleUpdateStatus(m.id, 'APPROVED')}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all cursor-pointer shrink-0 whitespace-nowrap shadow-xs"
-                            >
-                              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> Enable Access
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => handleUpdateStatus(m.id, 'REJECTED')}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition-all cursor-pointer shrink-0 whitespace-nowrap shadow-xs"
-                            >
-                              <XCircle className="h-3.5 w-3.5 shrink-0" /> Revoke Access
-                            </button>
-                          )}
+                {members.map((m) => {
+                  const roleNormalized = String(m.role || '').toUpperCase();
+                  const isPrimaryOwner =
+                    m.email === 'gurvindersingh0218@gmail.com' ||
+                    m.email === 'guriaulakh497@gmail.com' ||
+                    roleNormalized === 'OWNER';
 
-                          <button
-                            onClick={() => handleDeleteUser(m.id, m.email || m.name || 'User')}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all cursor-pointer shrink-0 whitespace-nowrap shadow-xs"
-                            title="Delete Admin Account"
-                          >
-                            <Trash2 className="h-3.5 w-3.5 shrink-0" /> Delete
-                          </button>
+                  return (
+                    <tr key={m.id} className="hover:bg-slate-50/80 transition-all">
+                      <td className="py-4 pl-2">
+                        <div className="font-extrabold text-navy text-sm">
+                          {m.name || 'Admin User'}
                         </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        <div className="text-[11px] text-slate-500 font-mono">{m.email}</div>
+                      </td>
+
+                      <td className="py-4">
+                        {isPrimaryOwner ? (
+                          <span className="px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded-full text-[11px] font-extrabold">
+                            👑 OWNER
+                          </span>
+                        ) : (
+                          <select
+                            value={m.role}
+                            onChange={(e) =>
+                              handleUpdateStatus(
+                                m.id,
+                                m.approvalStatus || 'APPROVED',
+                                e.target.value,
+                              )
+                            }
+                            className="bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 outline-none cursor-pointer"
+                          >
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="SUPERVISOR">SUPERVISOR</option>
+                          </select>
+                        )}
+                      </td>
+
+                      <td className="py-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-[10px] font-extrabold border uppercase ${
+                            m.approvalStatus === 'APPROVED' || !m.approvalStatus
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-rose-50 text-rose-700 border-rose-200'
+                          }`}
+                        >
+                          {m.approvalStatus || 'APPROVED'}
+                        </span>
+                      </td>
+
+                      <td className="py-4 text-slate-500 font-mono text-[11px]">
+                        {new Date(m.createdAt).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </td>
+
+                      <td className="py-4 text-right pr-2">
+                        {!isPrimaryOwner && (
+                          <div className="flex items-center justify-end gap-2">
+                            {m.approvalStatus === 'APPROVED' || !m.approvalStatus ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-xl text-[11px] h-7 text-amber-700 border-amber-300 bg-amber-50 hover:bg-amber-100 cursor-pointer font-bold"
+                                onClick={() => handleUpdateStatus(m.id, 'REJECTED')}
+                              >
+                                Revoke Access
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-xl text-[11px] h-7 text-emerald-700 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 cursor-pointer font-bold"
+                                onClick={() => handleUpdateStatus(m.id, 'APPROVED')}
+                              >
+                                Grant Access
+                              </Button>
+                            )}
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50 h-7 w-7 p-0 cursor-pointer"
+                              onClick={() => handleDeleteUser(m.id, m.email || 'User')}
+                              title="Delete Account"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

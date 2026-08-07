@@ -2,8 +2,22 @@ import bcrypt from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { sendAdminAccessGrantedEmail } from '@/backend/lib/brevo';
+import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
-import { getCurrentUser } from '@/lib/session';
+
+export const dynamic = 'force-dynamic';
+
+function checkIsOwner(user: any) {
+  if (!user) return false;
+  const role = String(user.role || '').toUpperCase();
+  const email = String(user.email || '').toLowerCase();
+  return (
+    role === 'OWNER' ||
+    role === 'SUPER_ADMIN' ||
+    email === 'gurvindersingh0218@gmail.com' ||
+    email === 'guriaulakh497@gmail.com'
+  );
+}
 
 /**
  * GET /api/v1/admin/team
@@ -12,8 +26,8 @@ import { getCurrentUser } from '@/lib/session';
  */
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user || (user.role !== 'OWNER' && user.role !== 'SUPER_ADMIN')) {
+    const user = await getAdminUser();
+    if (!checkIsOwner(user)) {
       return NextResponse.json(
         { success: false, message: 'Only the Owner can manage admin team members.' },
         { status: 403 },
@@ -52,8 +66,8 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user || (user.role !== 'OWNER' && user.role !== 'SUPER_ADMIN')) {
+    const user = await getAdminUser();
+    if (!checkIsOwner(user)) {
       return NextResponse.json(
         { success: false, message: 'Only the Owner can grant admin team access.' },
         { status: 403 },
@@ -137,8 +151,8 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user || (user.role !== 'OWNER' && user.role !== 'SUPER_ADMIN')) {
+    const user = await getAdminUser();
+    if (!checkIsOwner(user)) {
       return NextResponse.json(
         { success: false, message: 'Only the Owner can modify user roles or permissions.' },
         { status: 403 },
@@ -184,8 +198,8 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user || (user.role !== 'OWNER' && user.role !== 'SUPER_ADMIN')) {
+    const user = await getAdminUser();
+    if (!checkIsOwner(user)) {
       return NextResponse.json(
         { success: false, message: 'Only the Owner can delete admin accounts.' },
         { status: 403 },
