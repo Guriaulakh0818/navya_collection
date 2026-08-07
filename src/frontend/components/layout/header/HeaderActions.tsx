@@ -8,6 +8,7 @@ import {
   ShoppingBag,
   Store,
   TrendingUp,
+  User as UserIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
@@ -124,14 +125,14 @@ export function HeaderActions({ className }: HeaderActionsProps) {
           <button
             type="button"
             onClick={() => setIsSellerMenuOpen(!isSellerMenuOpen)}
-            className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-amber-50 border border-amber-300 text-amber-900 hover:bg-amber-100 px-1.5 xs:px-2 sm:px-3 py-0.5 sm:py-1.5 text-[10px] sm:text-xs font-extrabold shadow-xs transition-all active:scale-95 cursor-pointer"
-            title="Seller Storefront & Dashboard"
+            className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-amber-50 border border-amber-300 text-amber-900 hover:bg-amber-100 p-1.5 xs:p-2 sm:px-3 sm:py-1.5 text-xs font-extrabold shadow-xs transition-all active:scale-95 cursor-pointer"
+            title={`Verified Store: ${shopName}`}
           >
-            <Store className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600 shrink-0" />
-            <span className="truncate max-w-[34px] xs:max-w-[55px] sm:max-w-[90px] md:max-w-[110px] xl:max-w-[130px] font-bold">
+            <Store className="w-4 h-4 text-amber-600 shrink-0" />
+            <span className="hidden sm:inline truncate max-w-[90px] md:max-w-[110px] xl:max-w-[130px] font-bold">
               {shopName}
             </span>
-            <ChevronDown className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-amber-700 shrink-0" />
+            <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-700 shrink-0" />
           </button>
 
           {/* Seller Dashboard Quick Access Dropdown Menu */}
@@ -197,11 +198,10 @@ export function HeaderActions({ className }: HeaderActionsProps) {
       ) : (
         <Link
           href="/become-seller"
-          className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/10 to-orange/10 border border-amber-500/30 text-amber-700 hover:text-navy hover:bg-amber-100 px-1.5 xs:px-2.5 sm:px-3 py-0.5 sm:py-1.5 text-[10px] sm:text-xs font-bold transition-all active:scale-95 shadow-xs whitespace-nowrap shrink-0"
+          className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500/10 to-orange/10 border border-amber-500/30 text-amber-700 hover:text-navy hover:bg-amber-100 p-1.5 xs:p-2 sm:px-3 sm:py-1.5 text-xs font-bold transition-all active:scale-95 shadow-xs whitespace-nowrap shrink-0"
         >
-          <span>
-            <span className="hidden sm:inline">Become </span>Seller ✨
-          </span>
+          <Store className="w-4 h-4 text-amber-600 sm:hidden shrink-0" />
+          <span className="hidden sm:inline">Become Seller ✨</span>
         </Link>
       )}
 
@@ -209,19 +209,21 @@ export function HeaderActions({ className }: HeaderActionsProps) {
       {isMounted && user ? (
         <Link
           href="/account"
-          className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-slate-100/90 px-1.5 xs:px-2.5 sm:px-3 py-0.5 sm:py-1.5 text-[10px] sm:text-xs font-bold text-navy hover:bg-slate-200 transition-colors active:scale-95 shadow-xs shrink-0"
+          className="inline-flex items-center gap-1.5 rounded-full bg-slate-100/90 p-1.5 xs:p-2 sm:px-3 sm:py-1.5 text-xs font-bold text-navy hover:bg-slate-200 transition-colors active:scale-95 shadow-xs shrink-0"
           title={user.name || user.email || 'Account'}
         >
-          <span className="truncate max-w-[32px] xs:max-w-[55px] sm:max-w-[85px] md:max-w-[100px] xl:max-w-[120px]">
+          <UserIcon className="w-4 h-4 text-slate-700 shrink-0" />
+          <span className="hidden sm:inline truncate max-w-[85px] md:max-w-[100px] xl:max-w-[120px]">
             {user.name || (user.email ? user.email.split('@')[0] : 'Account')}
           </span>
         </Link>
       ) : (
         <Link
           href="/login"
-          className="inline-flex items-center gap-1.5 rounded-full bg-navy text-white hover:bg-navy/90 px-2 xs:px-3 sm:px-4 py-0.5 sm:py-1.5 text-[10px] sm:text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 rounded-full bg-navy text-white hover:bg-navy/90 p-1.5 xs:px-3 sm:px-4 sm:py-1.5 text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer shrink-0"
         >
-          Login
+          <UserIcon className="w-4 h-4 text-white sm:hidden shrink-0" />
+          <span className="hidden sm:inline">Login</span>
         </Link>
       )}
 
