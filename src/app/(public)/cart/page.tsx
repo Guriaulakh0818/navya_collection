@@ -48,24 +48,24 @@ export default function MultiVendorCartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+      <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
         <Breadcrumb
           items={[{ label: 'Home', href: '/' }, { label: 'Multi-Vendor Cart' }]}
           className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4"
         />
         <div className="mx-auto max-w-4xl px-4 py-20 text-center space-y-4">
-          <div className="w-20 h-20 bg-slate-900 border border-slate-800 rounded-3xl flex items-center justify-center mx-auto text-amber-400">
+          <div className="w-20 h-20 bg-amber-50 border-2 border-amber-200 rounded-3xl flex items-center justify-center mx-auto text-amber-600 shadow-sm">
             <ShoppingBag className="h-10 w-10" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-navy">
             Your Marketplace Cart is Empty
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
             Discover luxury sarees, lehengas, and designer couture from verified boutique partner
             stores.
           </p>
           <Button
-            className="mt-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-8 py-3 text-xs"
+            className="mt-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange hover:from-amber-600 hover:to-orange/90 text-white font-extrabold px-8 py-3 text-xs shadow-lg shadow-orange/20 cursor-pointer"
             asChild
           >
             <Link href="/shop">Explore Marketplace Stores</Link>
@@ -76,7 +76,7 @@ export default function MultiVendorCartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
       <Breadcrumb
         items={[{ label: 'Home', href: '/' }, { label: 'Multi-Vendor Cart' }]}
         className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4"
@@ -84,19 +84,19 @@ export default function MultiVendorCartPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         {/* Header Title */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-navy tracking-tight">
               Multi-Vendor Shopping Bag ({items.length} Items)
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 mt-1">
               Products grouped by seller boutique for transparent fulfillment and payouts.
             </p>
           </div>
 
           <Button
             variant="outline"
-            className="rounded-xl border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold"
+            className="rounded-xl border-slate-300 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold shadow-xs cursor-pointer"
             onClick={clearCart}
           >
             Clear Entire Bag
@@ -110,12 +110,12 @@ export default function MultiVendorCartPage() {
             {shopGroups.map((group) => (
               <div
                 key={group.shopId}
-                className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl space-y-4"
+                className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-shadow space-y-4"
               >
                 {/* Shop Header */}
-                <div className="bg-slate-950/80 border-b border-slate-800 p-4 sm:p-5 flex items-center justify-between gap-4">
+                <div className="bg-amber-50/70 border-b border-amber-200/70 p-4 sm:p-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-900 border border-amber-500/30 overflow-hidden shrink-0 flex items-center justify-center text-amber-400 relative">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-amber-300 overflow-hidden shrink-0 flex items-center justify-center text-amber-700 shadow-xs relative">
                       {group.shopLogo ? (
                         <Image
                           src={group.shopLogo}
@@ -133,32 +133,32 @@ export default function MultiVendorCartPage() {
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/shop/${group.shopSlug || ''}`}
-                          className="font-extrabold text-white text-sm hover:text-amber-400 transition-colors flex items-center gap-1"
+                          className="font-extrabold text-navy text-sm hover:text-amber-700 transition-colors flex items-center gap-1"
                         >
-                          {group.shopName} <ChevronRight className="w-4 h-4 text-slate-500" />
+                          {group.shopName} <ChevronRight className="w-4 h-4 text-slate-400" />
                         </Link>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                          <ShieldCheck className="w-3 h-3 text-emerald-400" /> VERIFIED SELLER
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-xs">
+                          <ShieldCheck className="w-3 h-3 text-emerald-600" /> VERIFIED SELLER
                         </span>
                       </div>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-slate-600 font-medium">
                         {group.itemCount} item(s) from this boutique store
                       </span>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-[10px] uppercase text-slate-400 font-bold block">
+                    <span className="text-[10px] uppercase text-slate-500 font-extrabold block">
                       Shop Subtotal
                     </span>
-                    <span className="text-sm font-extrabold text-amber-400 font-mono">
+                    <span className="text-sm font-black text-navy font-mono">
                       {formatPrice(group.subtotal)}
                     </span>
                   </div>
                 </div>
 
                 {/* Shop Items List */}
-                <div className="p-4 sm:p-6 space-y-4 divide-y divide-slate-800/60">
+                <div className="p-4 sm:p-6 space-y-4 divide-y divide-slate-100">
                   {group.items.map((item) => {
                     const targetKey = item.id || item.productId;
                     return (
@@ -167,7 +167,7 @@ export default function MultiVendorCartPage() {
                         className="pt-4 first:pt-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
                       >
                         <div className="flex items-center gap-4 flex-1 min-w-0">
-                          <div className="h-20 w-20 shrink-0 rounded-2xl bg-slate-950 overflow-hidden relative border border-slate-800">
+                          <div className="h-20 w-20 shrink-0 rounded-2xl bg-slate-100 overflow-hidden relative border border-slate-200 shadow-xs">
                             {item.image ? (
                               <Image
                                 src={item.image}
@@ -177,30 +177,32 @@ export default function MultiVendorCartPage() {
                                 unoptimized
                               />
                             ) : (
-                              <div className="h-full w-full flex items-center justify-center text-slate-700">
+                              <div className="h-full w-full flex items-center justify-center text-slate-400">
                                 <Tag className="w-8 h-8" />
                               </div>
                             )}
                           </div>
 
                           <div className="space-y-1 min-w-0">
-                            <h3 className="font-bold text-white text-sm truncate">{item.name}</h3>
-                            <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
+                            <h3 className="font-extrabold text-navy text-sm truncate">
+                              {item.name}
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
                               {item.size && (
                                 <span>
-                                  Size: <strong className="text-white">{item.size}</strong>
+                                  Size: <strong className="text-navy">{item.size}</strong>
                                 </span>
                               )}
                               {item.color && (
                                 <span>
-                                  Color: <strong className="text-white">{item.color}</strong>
+                                  Color: <strong className="text-navy">{item.color}</strong>
                                 </span>
                               )}
-                              <span className="text-emerald-400 text-[10px] font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                              <span className="text-emerald-700 text-[10px] font-extrabold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                                 In Stock
                               </span>
                             </div>
-                            <p className="text-sm font-extrabold text-amber-400 font-mono">
+                            <p className="text-sm font-black text-navy font-mono">
                               {formatPrice(item.price)}
                             </p>
                           </div>
@@ -208,21 +210,21 @@ export default function MultiVendorCartPage() {
 
                         {/* Quantity & Delete */}
                         <div className="flex items-center justify-between w-full sm:w-auto gap-4 pt-2 sm:pt-0">
-                          <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl p-1">
+                          <div className="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl p-1 shadow-xs">
                             <button
                               onClick={() =>
                                 updateQuantity(targetKey, Math.max(1, item.quantity - 1))
                               }
-                              className="h-7 w-7 rounded-lg border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-800"
+                              className="h-7 w-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                             >
                               <Minus className="h-3 w-3" />
                             </button>
-                            <span className="w-8 text-center text-xs font-bold text-white font-mono">
+                            <span className="w-8 text-center text-xs font-black text-navy font-mono">
                               {item.quantity}
                             </span>
                             <button
                               onClick={() => updateQuantity(targetKey, item.quantity + 1)}
-                              className="h-7 w-7 rounded-lg border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-800"
+                              className="h-7 w-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                             >
                               <Plus className="h-3 w-3" />
                             </button>
@@ -230,7 +232,8 @@ export default function MultiVendorCartPage() {
 
                           <button
                             onClick={() => removeItem(targetKey)}
-                            className="p-2 text-slate-500 hover:text-red-400 rounded-lg hover:bg-slate-800/80 transition-colors"
+                            className="p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Remove item"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -245,20 +248,22 @@ export default function MultiVendorCartPage() {
 
           {/* ORDER SUMMARY SIDEBAR */}
           <div className="space-y-6">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6">
-              <h2 className="text-base font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-3">
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm space-y-6">
+              <h2 className="text-base font-extrabold text-navy uppercase tracking-wider border-b border-slate-200 pb-3">
                 Order Summary Breakdown
               </h2>
 
               {/* Per-Shop Subtotals */}
-              <div className="space-y-2 text-xs border-b border-slate-800 pb-4">
-                <span className="text-slate-400 font-bold uppercase text-[10px] block">
+              <div className="space-y-2 text-xs border-b border-slate-200 pb-4">
+                <span className="text-slate-500 font-extrabold uppercase text-[10px] block">
                   Shop Subtotals
                 </span>
                 {shopGroups.map((g) => (
-                  <div key={g.shopId} className="flex justify-between text-slate-300">
+                  <div key={g.shopId} className="flex justify-between text-slate-700 font-medium">
                     <span className="truncate max-w-[180px]">{g.shopName}</span>
-                    <span className="font-mono text-white">{formatPrice(groupSubtotal(g))}</span>
+                    <span className="font-mono text-navy font-extrabold">
+                      {formatPrice(groupSubtotal(g))}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -273,30 +278,30 @@ export default function MultiVendorCartPage() {
 
               {/* Subtotal, Shipping, Discount & Grand Total */}
               <div className="space-y-3 pt-2 text-xs">
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-slate-700 font-medium">
                   <span>Gross Subtotal</span>
-                  <span className="font-mono text-white font-bold">
+                  <span className="font-mono text-navy font-extrabold">
                     {formatPrice(grandSubtotal)}
                   </span>
                 </div>
 
                 {discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-400 font-semibold">
+                  <div className="flex justify-between text-emerald-700 font-bold">
                     <span>Coupon Discount ({appliedCoupon?.code})</span>
                     <span className="font-mono">- {formatPrice(discountAmount)}</span>
                   </div>
                 )}
 
-                <div className="flex justify-between text-slate-300">
+                <div className="flex justify-between text-slate-700 font-medium">
                   <span>Multi-Vendor Shipping Estimate</span>
-                  <span className="font-mono text-amber-400">
+                  <span className="font-mono text-amber-700 font-extrabold">
                     {shippingTotal === 0 ? 'FREE' : formatPrice(shippingTotal)}
                   </span>
                 </div>
 
-                <div className="flex justify-between text-base font-extrabold text-white pt-4 border-t border-slate-800">
+                <div className="flex justify-between text-base font-extrabold text-navy pt-4 border-t border-slate-200">
                   <span>Grand Total</span>
-                  <span className="font-mono text-emerald-400 text-lg">
+                  <span className="font-mono text-emerald-700 text-xl font-black">
                     {formatPrice(grandTotal)}
                   </span>
                 </div>
@@ -305,7 +310,7 @@ export default function MultiVendorCartPage() {
               {/* Checkout Button */}
               <Button
                 asChild
-                className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm rounded-2xl shadow-xl shadow-amber-500/25 transition-all flex items-center justify-center gap-2 active:scale-95"
+                className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange hover:from-amber-600 hover:to-orange/90 text-white font-extrabold text-sm rounded-2xl shadow-lg shadow-orange/20 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
               >
                 <Link href="/checkout">Proceed to Multi-Vendor Checkout →</Link>
               </Button>
