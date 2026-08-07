@@ -19,6 +19,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import {
+  CATEGORY_TAXONOMY,
+  MainCategoryOption,
+  SubCategoryOption,
+} from '@/config/categories.config';
+
 type ProductFormProps = {
   productId?: string;
   initialData?: any;
@@ -34,10 +40,24 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   >([]);
   const [isDragging, setIsDragging] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [selectedMainCat, setSelectedMainCat] = useState<string>('cat_women');
+  const [subCategories, setSubCategories] = useState<SubCategoryOption[]>(
+    CATEGORY_TAXONOMY[0].subCategories,
+  );
   const [toastMessage, setToastMessage] = useState<{
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+
+  const handleMainCategoryChange = (mainId: string) => {
+    setSelectedMainCat(mainId);
+    const found = CATEGORY_TAXONOMY.find((c: MainCategoryOption) => c.id === mainId);
+    const subs = found?.subCategories || [];
+    setSubCategories(subs);
+    if (subs.length > 0) {
+      setFormData((prev) => ({ ...prev, categoryId: subs[0].id }));
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -355,21 +375,47 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Category *
+            <label className="block text-xs font-bold text-navy uppercase tracking-wider mb-2">
+              Primary Category *
+            </label>
+            <select
+              value={selectedMainCat}
+              onChange={(e) => handleMainCategoryChange(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-navy focus:bg-white focus:outline-none transition-all cursor-pointer font-extrabold"
+            >
+              {CATEGORY_TAXONOMY.map((main: MainCategoryOption) => (
+                <option key={main.id} value={main.id}>
+                  {main.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-navy uppercase tracking-wider mb-2">
+              Garment Type / Sub-Category *
             </label>
             <select
               required
               value={formData.categoryId}
               onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-navy focus:bg-white focus:outline-none transition-all cursor-pointer font-medium"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-navy focus:bg-white focus:outline-none transition-all cursor-pointer font-bold"
             >
-              <option value="">Select Category</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
+              <option value="">Select Sub-Category / Garment Type</option>
+              {subCategories.map((sub) => (
+                <option key={sub.id} value={sub.id}>
+                  {sub.name}
                 </option>
               ))}
+              {categories.length > 0 && (
+                <optgroup label="Database Categories">
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
 

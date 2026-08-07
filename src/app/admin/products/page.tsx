@@ -432,17 +432,114 @@ export default function AdminProductsPage() {
             />
           </div>
           <div>
-            <label className="font-bold text-slate-700 block mb-1">Category</label>
+            <label className="font-bold text-slate-700 block mb-1">
+              Category &amp; Garment Type
+            </label>
             <select
               value={categoryName}
               onChange={(e) => setCategoryName(e.target.value)}
               className="w-full rounded-xl border border-slate-200 p-2.5 outline-none font-semibold text-slate-700 bg-white"
             >
-              <option value="Sarees">Sarees</option>
-              <option value="Suits & Dress Material">Suits &amp; Dress Material</option>
-              <option value="Gents Collection">Gents Collection</option>
-              <option value="Kids Wear">Kids Wear</option>
-              <option value="New Arrivals">New Arrivals</option>
+              <optgroup label="Women Wear">
+                <option value="Sarees">Sarees (Banarasi, Silk, Chiffon, Georgette)</option>
+                <option value="Designer Lehengas &amp; Bridal Wear">
+                  Designer Lehengas &amp; Bridal Wear
+                </option>
+                <option value="Salwar Suits, Anarkalis &amp; Shararas">
+                  Salwar Suits, Anarkalis &amp; Shararas
+                </option>
+                <option value="Kurtis, Tunics &amp; Tops">Kurtis, Tunics &amp; Tops</option>
+                <option value="Indo-Western Gowns &amp; Dresses">
+                  Indo-Western Gowns &amp; Dresses
+                </option>
+                <option value="Dupattas, Shawls &amp; Stoles">Dupattas, Shawls &amp; Stoles</option>
+                <option value="Western Tops, Dresses &amp; Jeans">
+                  Western Tops, Dresses &amp; Jeans
+                </option>
+              </optgroup>
+              <optgroup label="Gents / Men Wear">
+                <option value="Ethnic Kurtas &amp; Pyjamas">Ethnic Kurtas &amp; Pyjamas</option>
+                <option value="Designer Sherwanis &amp; Indo-Western">
+                  Designer Sherwanis &amp; Indo-Western
+                </option>
+                <option value="Nehru Jackets &amp; Ethnic Vests">
+                  Nehru Jackets &amp; Ethnic Vests
+                </option>
+                <option value="Formal &amp; Casual Shirts">Formal &amp; Casual Shirts</option>
+                <option value="Trousers, Chinos &amp; Jeans">Trousers, Chinos &amp; Jeans</option>
+                <option value="Blazers, Suits &amp; Tuxedos">Blazers, Suits &amp; Tuxedos</option>
+                <option value="T-Shirts &amp; Polos">T-Shirts &amp; Polos</option>
+              </optgroup>
+              <optgroup label="Boys Wear">
+                <option value="Boys Kurta Pyjama Sets">Boys Kurta Pyjama Sets</option>
+                <option value="Boys Indo-Western &amp; Sherwani Sets">
+                  Boys Indo-Western &amp; Sherwani Sets
+                </option>
+                <option value="Boys Shirts &amp; Trousers">Boys Shirts &amp; Trousers</option>
+                <option value="Boys Party Wear Suits &amp; Blazers">
+                  Boys Party Wear Suits &amp; Blazers
+                </option>
+                <option value="Boys Shorts, Tees &amp; Casuals">
+                  Boys Shorts, Tees &amp; Casuals
+                </option>
+              </optgroup>
+              <optgroup label="Girls Wear">
+                <option value="Girls Ethnic Gowns &amp; Lehengas">
+                  Girls Ethnic Gowns &amp; Lehengas
+                </option>
+                <option value="Girls Frocks &amp; Party Dresses">
+                  Girls Frocks &amp; Party Dresses
+                </option>
+                <option value="Girls Kurti &amp; Sharara Sets">
+                  Girls Kurti &amp; Sharara Sets
+                </option>
+                <option value="Girls Skirts, Tops &amp; Shorts">
+                  Girls Skirts, Tops &amp; Shorts
+                </option>
+              </optgroup>
+              <optgroup label="Children / Kids Wear">
+                <option value="Kids Daily Clothing Sets">Kids Daily Clothing Sets</option>
+                <option value="Kids Ethnic &amp; Festive Clothing">
+                  Kids Ethnic &amp; Festive Clothing
+                </option>
+                <option value="Kids Cotton Sleepwear &amp; Loungewear">
+                  Kids Cotton Sleepwear &amp; Loungewear
+                </option>
+                <option value="Kids Shorts, Tees &amp; Dungarees">
+                  Kids Shorts, Tees &amp; Dungarees
+                </option>
+              </optgroup>
+              <optgroup label="Newborn / Baby Wear">
+                <option value="Soft Cotton Onesies &amp; Sleepsuits">
+                  Soft Cotton Onesies &amp; Sleepsuits
+                </option>
+                <option value="Baby Ethnic Kurta &amp; Frock Sets">
+                  Baby Ethnic Kurta &amp; Frock Sets
+                </option>
+                <option value="Baby Swaddles, Wraps &amp; Blankets">
+                  Baby Swaddles, Wraps &amp; Blankets
+                </option>
+                <option value="Baby Rompers &amp; Bodysuits">Baby Rompers &amp; Bodysuits</option>
+                <option value="Baby Booties, Caps &amp; Mittens">
+                  Baby Booties, Caps &amp; Mittens
+                </option>
+              </optgroup>
+              <optgroup label="Festive &amp; Wedding Couture">
+                <option value="Royal Bridal Lehengas">Royal Bridal Lehengas</option>
+                <option value="Groom Sherwani &amp; Safa Sets">
+                  Groom Sherwani &amp; Safa Sets
+                </option>
+                <option value="Festival Special Ethnic Sets">Festival Special Ethnic Sets</option>
+                <option value="Pure Heritage Silk Sarees">Pure Heritage Silk Sarees</option>
+              </optgroup>
+              <optgroup label="Accessories &amp; Essentials">
+                <option value="Jewellery &amp; Ornaments">Jewellery &amp; Ornaments</option>
+                <option value="Footwear, Mojris &amp; Juttis">Footwear, Mojris &amp; Juttis</option>
+                <option value="Handbags, Clutches &amp; Potlis">
+                  Handbags, Clutches &amp; Potlis
+                </option>
+                <option value="Turbans, Safas &amp; Stoles">Turbans, Safas &amp; Stoles</option>
+              </optgroup>
             </select>
           </div>
           <div>
