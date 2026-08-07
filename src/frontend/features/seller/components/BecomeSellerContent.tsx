@@ -95,8 +95,13 @@ export function BecomeSellerContent() {
         </p>
       </div>
 
-      {/* Feature Highlights Grid */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+      {/* Embedded 8-Step Seller Onboarding Wizard (Placed at the top as requested) */}
+      <div className="mb-12">
+        <SellerRegistrationWizard />
+      </div>
+
+      {/* Feature Highlights Grid (Placed below registration form as requested) */}
+      <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-amber-500/50 hover:shadow-md transition-all shadow-xs space-y-3">
           <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shadow-xs">
             <IndianRupee className="w-5 h-5" />
@@ -145,9 +150,6 @@ export function BecomeSellerContent() {
           </div>
         </div>
       </div>
-
-      {/* Embedded 8-Step Seller Onboarding Wizard */}
-      <SellerRegistrationWizard />
     </div>
   );
 }
