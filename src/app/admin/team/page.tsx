@@ -316,33 +316,33 @@ export default function AdminTeamPage() {
                         {m.approvalStatus || 'APPROVED'}
                       </span>
                     </td>
-                    <td className="p-4 text-right space-x-2">
+                    <td className="p-4 text-right">
                       {m.email !== 'gurvindersingh0218@gmail.com' && (
-                        <>
+                        <div className="flex items-center justify-end gap-2 shrink-0 whitespace-nowrap">
                           {m.approvalStatus === 'REJECTED' ? (
                             <button
                               onClick={() => handleUpdateStatus(m.id, 'APPROVED')}
-                              className="inline-flex items-center gap-1 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700 cursor-pointer"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-300 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all cursor-pointer shrink-0 whitespace-nowrap shadow-xs"
                             >
-                              <CheckCircle2 className="h-3.5 w-3.5" /> Enable Access
+                              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> Enable Access
                             </button>
                           ) : (
                             <button
                               onClick={() => handleUpdateStatus(m.id, 'REJECTED')}
-                              className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition-all cursor-pointer shrink-0 whitespace-nowrap shadow-xs"
                             >
-                              <XCircle className="h-3.5 w-3.5" /> Revoke Access
+                              <XCircle className="h-3.5 w-3.5 shrink-0" /> Revoke Access
                             </button>
                           )}
 
                           <button
                             onClick={() => handleDeleteUser(m.id, m.email || m.name || 'User')}
-                            className="inline-flex items-center gap-1 bg-rose-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-700 transition-colors cursor-pointer shadow-xs"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all cursor-pointer shrink-0 whitespace-nowrap shadow-xs"
                             title="Delete Admin Account"
                           >
-                            <Trash2 className="h-3.5 w-3.5" /> Delete Account
+                            <Trash2 className="h-3.5 w-3.5 shrink-0" /> Delete
                           </button>
-                        </>
+                        </div>
                       )}
                     </td>
                   </tr>
