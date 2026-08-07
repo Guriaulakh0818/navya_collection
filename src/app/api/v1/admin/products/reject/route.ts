@@ -7,12 +7,9 @@ export async function POST(request: NextRequest) {
   try {
     const adminUser = await getAdminUser();
 
-    if (
-      !adminUser ||
-      !['ADMIN', 'OWNER', 'SUPER_ADMIN', 'SUPERVISOR'].includes(adminUser.role?.toUpperCase())
-    ) {
+    if (!adminUser || !['ADMIN', 'OWNER', 'SUPER_ADMIN'].includes(adminUser.role?.toUpperCase())) {
       return NextResponse.json(
-        { success: false, message: 'Admin permissions required.' },
+        { success: false, message: 'Forbidden. Supervisor is in read-only mode.' },
         { status: 403 },
       );
     }

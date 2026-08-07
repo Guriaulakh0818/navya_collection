@@ -19,6 +19,8 @@ import {
 import { useState } from 'react';
 import Link from 'next/link';
 
+import { useAuthStore } from '@/stores';
+
 interface SellerDetailModalProps {
   shop: any | null;
   isOpen: boolean;
@@ -36,6 +38,8 @@ export function SellerDetailModal({
   onReject,
   onSuspend,
 }: SellerDetailModalProps) {
+  const user = useAuthStore((s) => s.user);
+  const isSupervisor = String(user?.role) === 'SUPERVISOR';
   const [activeTab, setActiveTab] = useState<'details' | 'documents' | 'actions'>('details');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -163,17 +167,19 @@ export function SellerDetailModal({
             <FileCheck className="w-4 h-4" />
             Uploaded Documents ({documents.length})
           </button>
-          <button
-            onClick={() => setActiveTab('actions')}
-            className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
-              activeTab === 'actions'
-                ? 'border-amber-400 text-amber-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            Approval & Governance Actions
-          </button>
+          {!isSupervisor && (
+            <button
+              onClick={() => setActiveTab('actions')}
+              className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
+                activeTab === 'actions'
+                  ? 'border-amber-400 text-amber-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Approval & Governance Actions
+            </button>
+          )}
         </div>
 
         {/* Body Content */}

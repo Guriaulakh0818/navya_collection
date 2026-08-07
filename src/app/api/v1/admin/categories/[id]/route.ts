@@ -9,16 +9,13 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// DELETE /api/v1/admin/categories/[id] - Soft delete category
+// DELETE /api/v1/admin/categories/[id] - Soft delete category (Restricted to OWNER / SUPER_ADMIN ONLY)
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const admin = await getAdminUser();
-    if (
-      !admin ||
-      !['ADMIN', 'OWNER', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
-    ) {
+    if (!admin || !['OWNER', 'SUPER_ADMIN'].includes(admin.role?.toUpperCase())) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized. Admin access required.' },
+        { success: false, message: 'Forbidden. Only the Owner can delete categories.' },
         { status: 403 },
       );
     }

@@ -3,6 +3,7 @@
 import {
   ChevronDown,
   ChevronRight,
+  Eye,
   FolderOpen,
   Layers,
   Plus,
@@ -20,6 +21,7 @@ import { Drawer } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { CATEGORY_TAXONOMY } from '@/config/categories.config';
 import { useToast } from '@/providers';
+import { useAuthStore } from '@/stores';
 
 // Pre-flatten initial taxonomy so UI renders INSTANTLY (0ms)
 const INITIAL_TAXONOMY = CATEGORY_TAXONOMY.flatMap((main) => [
@@ -42,6 +44,15 @@ const INITIAL_TAXONOMY = CATEGORY_TAXONOMY.flatMap((main) => [
 ]);
 
 export default function AdminCategoriesPage() {
+  const user = useAuthStore((s) => s.user);
+
+  const isOwner =
+    String(user?.role) === 'OWNER' ||
+    String(user?.role) === 'SUPER_ADMIN' ||
+    user?.email === 'gurvindersingh0218@gmail.com';
+
+  const isSupervisor = String(user?.role) === 'SUPERVISOR';
+
   const [categories, setCategories] = useState<any[]>(INITIAL_TAXONOMY);
   const [search, setSearch] = useState('');
   const [isFetching, setIsFetching] = useState(false);
@@ -88,6 +99,11 @@ export default function AdminCategoriesPage() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSupervisor) {
+      toast('Supervisor role is read-only. Cannot create categories.', 'error');
+      return;
+    }
+
     if (!name.trim()) {
       toast('Please enter category name.', 'error');
       return;
@@ -124,6 +140,11 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDelete = async (id: string, catName: string) => {
+    if (!isOwner) {
+      toast('Only the Store Owner can delete categories.', 'error');
+      return;
+    }
+
     if (!confirm(`Are you sure you want to delete category "${catName}"?`)) return;
     try {
       const res = await fetch(`/api/v1/admin/categories/${id}`, {
@@ -150,6 +171,17 @@ export default function AdminCategoriesPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Read-Only Banner for Supervisor */}
+      {isSupervisor && (
+        <div className="bg-sky-50 border border-sky-200 text-sky-900 p-4 rounded-2xl flex items-center gap-3 text-xs font-bold shadow-xs">
+          <Eye className="h-5 w-5 text-sky-600 shrink-0" />
+          <span>
+            Supervisor Read-Only Mode: You have view access to analyze category insights &amp;
+            garment taxonomy. Category editing and deletion are restricted to Admin and Owner roles.
+          </span>
+        </div>
+      )}
+
       {/* Header Banner */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-navy text-white p-6 sm:p-8 rounded-3xl shadow-xl">
         <div>
@@ -166,15 +198,17 @@ export default function AdminCategoriesPage() {
           </p>
         </div>
 
-        <Button
-          className="rounded-xl bg-orange hover:bg-orange-600 text-white text-xs font-extrabold px-5 py-2.5 gap-2 cursor-pointer shadow-md self-start sm:self-auto"
-          onClick={() => {
-            setParentId('');
-            setIsAdding(true);
-          }}
-        >
-          <Plus className="h-4 w-4 text-white" /> Add New Category
-        </Button>
+        {!isSupervisor && (
+          <Button
+            className="rounded-xl bg-orange hover:bg-orange-600 text-white text-xs font-extrabold px-5 py-2.5 gap-2 cursor-pointer shadow-md self-start sm:self-auto"
+            onClick={() => {
+              setParentId('');
+              setIsAdding(true);
+            }}
+          >
+            <Plus className="h-4 w-4 text-white" /> Add New Category
+          </Button>
+        )}
       </div>
 
       {/* Main Search & Primary Category List Card */}
@@ -297,15 +331,18 @@ export default function AdminCategoriesPage() {
                             {subCats.length})
                           </Button>
 
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50 h-8 w-8 p-0 cursor-pointer"
-                            onClick={() => handleDelete(primaryCat.id, primaryCat.name)}
-                            title="Delete Primary Category"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {/* DELETE Button: ONLY visible to OWNER */}
+                          {isOwner && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-xl text-rose-600 hover:text-rose-700 hover:bg-rose-50 h-8 w-8 p-0 cursor-pointer"
+                              onClick={() => handleDelete(primaryCat.id, primaryCat.name)}
+                              title="Delete Primary Category"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -340,16 +377,18 @@ export default function AdminCategoriesPage() {
                   {getSubcategories(activeParentCategory.id).length} sub-types assigned
                 </p>
               </div>
-              <Button
-                size="sm"
-                onClick={() => {
-                  setParentId(activeParentCategory.id);
-                  setIsAdding(true);
-                }}
-                className="rounded-xl bg-orange hover:bg-orange-600 text-white text-xs font-extrabold gap-1.5 cursor-pointer shadow-xs"
-              >
-                <Plus className="h-4 w-4" /> Add Sub-type
-              </Button>
+              {!isSupervisor && (
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setParentId(activeParentCategory.id);
+                    setIsAdding(true);
+                  }}
+                  className="rounded-xl bg-orange hover:bg-orange-600 text-white text-xs font-extrabold gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <Plus className="h-4 w-4" /> Add Sub-type
+                </Button>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -390,13 +429,16 @@ export default function AdminCategoriesPage() {
                           {sub._count?.products || 0} Products
                         </Badge>
 
-                        <button
-                          onClick={() => handleDelete(sub.id, sub.name)}
-                          className="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 cursor-pointer"
-                          title="Delete Subcategory"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        {/* DELETE Button: ONLY visible to OWNER */}
+                        {isOwner && (
+                          <button
+                            onClick={() => handleDelete(sub.id, sub.name)}
+                            className="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 cursor-pointer"
+                            title="Delete Subcategory"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -408,63 +450,65 @@ export default function AdminCategoriesPage() {
       </Drawer>
 
       {/* Add New Category or Subcategory Drawer */}
-      <Drawer
-        open={isAdding}
-        onClose={() => setIsAdding(false)}
-        title={parentId ? 'Add New Sub-category' : 'Add New Main Category'}
-        side="right"
-      >
-        <form onSubmit={handleAdd} className="space-y-4 p-2 text-xs">
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">
-              Category / Sub-type Name *
-            </label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder={parentId ? 'e.g. Silk Sarees' : 'e.g. Festive Wear'}
-            />
-          </div>
+      {!isSupervisor && (
+        <Drawer
+          open={isAdding}
+          onClose={() => setIsAdding(false)}
+          title={parentId ? 'Add New Sub-category' : 'Add New Main Category'}
+          side="right"
+        >
+          <form onSubmit={handleAdd} className="space-y-4 p-2 text-xs">
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">
+                Category / Sub-type Name *
+              </label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder={parentId ? 'e.g. Silk Sarees' : 'e.g. Festive Wear'}
+              />
+            </div>
 
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Parent Main Category</label>
-            <select
-              value={parentId}
-              onChange={(e) => setParentId(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 p-2.5 outline-none font-semibold text-slate-700 bg-white shadow-xs"
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Parent Main Category</label>
+              <select
+                value={parentId}
+                onChange={(e) => setParentId(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 p-2.5 outline-none font-semibold text-slate-700 bg-white shadow-xs"
+              >
+                <option value="">None (Primary Main Category)</option>
+                {primaryCategories.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Description</label>
+              <Input
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief overview of garments in this category"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-xl bg-navy hover:bg-navy-hover text-white text-xs font-extrabold py-3 mt-4 shadow-md cursor-pointer"
             >
-              <option value="">None (Primary Main Category)</option>
-              {primaryCategories.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Description</label>
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief overview of garments in this category"
-            />
-          </div>
-
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-xl bg-navy hover:bg-navy-hover text-white text-xs font-extrabold py-3 mt-4 shadow-md cursor-pointer"
-          >
-            {isSubmitting
-              ? 'Saving...'
-              : parentId
-                ? 'Save Sub-category Live'
-                : 'Save Primary Category Live'}
-          </Button>
-        </form>
-      </Drawer>
+              {isSubmitting
+                ? 'Saving...'
+                : parentId
+                  ? 'Save Sub-category Live'
+                  : 'Save Primary Category Live'}
+            </Button>
+          </form>
+        </Drawer>
+      )}
     </div>
   );
 }

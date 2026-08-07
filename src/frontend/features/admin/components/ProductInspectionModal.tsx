@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
+import { useAuthStore } from '@/stores';
+
 interface ProductInspectionModalProps {
   product: any;
   isOpen: boolean;
@@ -31,6 +33,9 @@ export function ProductInspectionModal({
   onApprove,
   onReject,
 }: ProductInspectionModalProps) {
+  const user = useAuthStore((s) => s.user);
+  const isSupervisor = String(user?.role) === 'SUPERVISOR';
+
   const [rejectReason, setRejectReason] = useState('');
   const [isRejecting, setIsRejecting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -267,22 +272,28 @@ export function ProductInspectionModal({
             >
               Close Inspection
             </button>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsRejecting(true)}
-                disabled={isSubmitting}
-                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer"
-              >
-                Reject Submission ✕
-              </button>
-              <button
-                onClick={handleApprove}
-                disabled={isSubmitting}
-                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <CheckCircle2 className="w-4 h-4" /> Approve &amp; Publish Live ✓
-              </button>
-            </div>
+            {isSupervisor ? (
+              <span className="text-xs font-bold text-sky-800 bg-sky-100 border border-sky-300 px-3.5 py-1.5 rounded-full">
+                ℹ️ Supervisor Read-Only Inspection Mode
+              </span>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsRejecting(true)}
+                  disabled={isSubmitting}
+                  className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+                >
+                  Reject Submission ✕
+                </button>
+                <button
+                  onClick={handleApprove}
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" /> Approve &amp; Publish Live ✓
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

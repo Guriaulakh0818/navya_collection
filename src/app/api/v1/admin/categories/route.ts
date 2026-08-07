@@ -123,12 +123,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const admin = await getAdminUser();
-    if (
-      !admin ||
-      !['ADMIN', 'OWNER', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
-    ) {
+    if (!admin || !['ADMIN', 'OWNER', 'SUPER_ADMIN'].includes(admin.role?.toUpperCase())) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized. Admin access required.' },
+        { success: false, message: 'Forbidden. Supervisor is in read-only mode.' },
         { status: 403 },
       );
     }

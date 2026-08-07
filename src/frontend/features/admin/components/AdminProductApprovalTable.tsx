@@ -15,9 +15,13 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 
+import { useAuthStore } from '@/stores';
+
 import { ProductInspectionModal } from './ProductInspectionModal';
 
 export function AdminProductApprovalTable() {
+  const user = useAuthStore((s) => s.user);
+  const isSupervisor = String(user?.role) === 'SUPERVISOR';
   const [products, setProducts] = useState<any[]>([]);
   const [counts, setCounts] = useState<any>({
     ALL: 0,

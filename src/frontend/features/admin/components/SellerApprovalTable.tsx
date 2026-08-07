@@ -12,9 +12,13 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useAuthStore } from '@/stores';
+
 import { SellerDetailModal } from './SellerDetailModal';
 
 export function SellerApprovalTable() {
+  const user = useAuthStore((s) => s.user);
+  const isSupervisor = String(user?.role) === 'SUPERVISOR';
   const [shops, setShops] = useState<any[]>([]);
   const [counts, setCounts] = useState<any>({
     ALL: 0,

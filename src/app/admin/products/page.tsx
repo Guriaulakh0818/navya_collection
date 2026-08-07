@@ -1,10 +1,9 @@
 'use client';
 
 import {
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Clock,
+  Eye,
   Plus,
   Search,
   ShoppingBag,
@@ -20,8 +19,18 @@ import { Card } from '@/components/ui/card';
 import { Drawer } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/providers';
+import { useAuthStore } from '@/stores';
 
 export default function AdminProductsPage() {
+  const user = useAuthStore((s) => s.user);
+
+  const isOwner =
+    String(user?.role) === 'OWNER' ||
+    String(user?.role) === 'SUPER_ADMIN' ||
+    user?.email === 'gurvindersingh0218@gmail.com';
+
+  const isSupervisor = String(user?.role) === 'SUPERVISOR';
+
   const [products, setProducts] = useState<any[]>([]);
   const [counts, setCounts] = useState<any>({
     ALL: 0,
@@ -78,6 +87,11 @@ export default function AdminProductsPage() {
   }, [fetchProducts]);
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
+    if (isSupervisor) {
+      toast('Supervisor accounts are read-only and cannot change product status.', 'error');
+      return;
+    }
+
     const nextStatus = currentStatus === 'active' ? 'draft' : 'active';
     try {
       const res = await fetch(`/api/v1/admin/products/${id}`, {
@@ -98,6 +112,11 @@ export default function AdminProductsPage() {
   };
 
   const handleDelete = async (id: string, prodName: string) => {
+    if (!isOwner) {
+      toast('Only the Store Owner can delete products from the catalog.', 'error');
+      return;
+    }
+
     if (!confirm(`Are you sure you want to delete product "${prodName}"?`)) return;
     try {
       const res = await fetch(`/api/v1/admin/products/${id}`, {
@@ -117,6 +136,11 @@ export default function AdminProductsPage() {
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSupervisor) {
+      toast('Supervisor role is read-only. Cannot create products.', 'error');
+      return;
+    }
+
     if (!name.trim() || !price) {
       toast('Please enter product title and price.', 'error');
       return;
@@ -157,6 +181,18 @@ export default function AdminProductsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Read-Only Banner for Supervisor */}
+      {isSupervisor && (
+        <div className="bg-sky-50 border border-sky-200 text-sky-900 p-4 rounded-2xl flex items-center gap-3 text-xs font-bold shadow-xs">
+          <Eye className="h-5 w-5 text-sky-600 shrink-0" />
+          <span>
+            Supervisor Read-Only Mode: You have view access to analyze product catalog insights
+            &amp; inventory metrics. Product editing and deletion are restricted to Admin and Owner
+            roles.
+          </span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -169,12 +205,14 @@ export default function AdminProductsPage() {
             statuses
           </p>
         </div>
-        <Button
-          className="rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold gap-2 cursor-pointer shadow-md"
-          onClick={() => setIsAdding(true)}
-        >
-          <Plus className="h-4 w-4 text-white" /> Add New Product
-        </Button>
+        {!isSupervisor && (
+          <Button
+            className="rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold gap-2 cursor-pointer shadow-md"
+            onClick={() => setIsAdding(true)}
+          >
+            <Plus className="h-4 w-4 text-white" /> Add New Product
+          </Button>
+        )}
       </div>
 
       {/* Tabs & Filters Card */}
@@ -341,22 +379,29 @@ export default function AdminProductsPage() {
 
                       <td className="py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="rounded-full text-[11px] h-7 cursor-pointer"
-                            onClick={() => handleToggleStatus(product.id, product.status)}
-                          >
-                            {product.status === 'active' ? 'Make Draft' : 'Publish Live'}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="rounded-full text-rose-600 hover:text-rose-700 h-7 cursor-pointer"
-                            onClick={() => handleDelete(product.id, product.name)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                          {!isSupervisor && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full text-[11px] h-7 cursor-pointer"
+                              onClick={() => handleToggleStatus(product.id, product.status)}
+                            >
+                              {product.status === 'active' ? 'Make Draft' : 'Publish Live'}
+                            </Button>
+                          )}
+
+                          {/* DELETE Product Button: ONLY visible to OWNER */}
+                          {isOwner && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-full text-rose-600 hover:text-rose-700 h-7 cursor-pointer"
+                              onClick={() => handleDelete(product.id, product.name)}
+                              title="Delete Product"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -396,169 +441,175 @@ export default function AdminProductsPage() {
       </Card>
 
       {/* Add Product Drawer */}
-      <Drawer
-        open={isAdding}
-        onClose={() => setIsAdding(false)}
-        title="Create New Product in Catalog"
-        side="right"
-      >
-        <form onSubmit={handleAddProduct} className="space-y-4 p-2 text-xs">
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Product Title *</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="e.g. Royal Silk Handcrafted Saree"
-            />
-          </div>
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Price (₹) *</label>
-            <Input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-              placeholder="4999"
-            />
-          </div>
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Stock Quantity</label>
-            <Input
-              type="number"
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-              placeholder="20"
-            />
-          </div>
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">
-              Category &amp; Garment Type
-            </label>
-            <select
-              value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 p-2.5 outline-none font-semibold text-slate-700 bg-white"
+      {!isSupervisor && (
+        <Drawer
+          open={isAdding}
+          onClose={() => setIsAdding(false)}
+          title="Create New Product in Catalog"
+          side="right"
+        >
+          <form onSubmit={handleAddProduct} className="space-y-4 p-2 text-xs">
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Product Title *</label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="e.g. Royal Silk Handcrafted Saree"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Price (₹) *</label>
+              <Input
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+                placeholder="4999"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Stock Quantity</label>
+              <Input
+                type="number"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                placeholder="20"
+              />
+            </div>
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">
+                Category &amp; Garment Type
+              </label>
+              <select
+                value={categoryName}
+                onChange={(e) => setCategoryName(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 p-2.5 outline-none font-semibold text-slate-700 bg-white"
+              >
+                <optgroup label="Women Wear">
+                  <option value="Sarees">Sarees (Banarasi, Silk, Chiffon, Georgette)</option>
+                  <option value="Designer Lehengas &amp; Bridal Wear">
+                    Designer Lehengas &amp; Bridal Wear
+                  </option>
+                  <option value="Salwar Suits, Anarkalis &amp; Shararas">
+                    Salwar Suits, Anarkalis &amp; Shararas
+                  </option>
+                  <option value="Kurtis, Tunics &amp; Tops">Kurtis, Tunics &amp; Tops</option>
+                  <option value="Indo-Western Gowns &amp; Dresses">
+                    Indo-Western Gowns &amp; Dresses
+                  </option>
+                  <option value="Dupattas, Shawls &amp; Stoles">
+                    Dupattas, Shawls &amp; Stoles
+                  </option>
+                  <option value="Western Tops, Dresses &amp; Jeans">
+                    Western Tops, Dresses &amp; Jeans
+                  </option>
+                </optgroup>
+                <optgroup label="Gents / Men Wear">
+                  <option value="Ethnic Kurtas &amp; Pyjamas">Ethnic Kurtas &amp; Pyjamas</option>
+                  <option value="Designer Sherwanis &amp; Indo-Western">
+                    Designer Sherwanis &amp; Indo-Western
+                  </option>
+                  <option value="Nehru Jackets &amp; Ethnic Vests">
+                    Nehru Jackets &amp; Ethnic Vests
+                  </option>
+                  <option value="Formal &amp; Casual Shirts">Formal &amp; Casual Shirts</option>
+                  <option value="Trousers, Chinos &amp; Jeans">Trousers, Chinos &amp; Jeans</option>
+                  <option value="Blazers, Suits &amp; Tuxedos">Blazers, Suits &amp; Tuxedos</option>
+                  <option value="T-Shirts &amp; Polos">T-Shirts &amp; Polos</option>
+                </optgroup>
+                <optgroup label="Boys Wear">
+                  <option value="Boys Kurta Pyjama Sets">Boys Kurta Pyjama Sets</option>
+                  <option value="Boys Indo-Western &amp; Sherwani Sets">
+                    Boys Indo-Western &amp; Sherwani Sets
+                  </option>
+                  <option value="Boys Shirts &amp; Trousers">Boys Shirts &amp; Trousers</option>
+                  <option value="Boys Party Wear Suits &amp; Blazers">
+                    Boys Party Wear Suits &amp; Blazers
+                  </option>
+                  <option value="Boys Shorts, Tees &amp; Casuals">
+                    Boys Shorts, Tees &amp; Casuals
+                  </option>
+                </optgroup>
+                <optgroup label="Girls Wear">
+                  <option value="Girls Ethnic Gowns &amp; Lehengas">
+                    Girls Ethnic Gowns &amp; Lehengas
+                  </option>
+                  <option value="Girls Frocks &amp; Party Dresses">
+                    Girls Frocks &amp; Party Dresses
+                  </option>
+                  <option value="Girls Kurti &amp; Sharara Sets">
+                    Girls Kurti &amp; Sharara Sets
+                  </option>
+                  <option value="Girls Skirts, Tops &amp; Shorts">
+                    Girls Skirts, Tops &amp; Shorts
+                  </option>
+                </optgroup>
+                <optgroup label="Children / Kids Wear">
+                  <option value="Kids Daily Clothing Sets">Kids Daily Clothing Sets</option>
+                  <option value="Kids Ethnic &amp; Festive Clothing">
+                    Kids Ethnic &amp; Festive Clothing
+                  </option>
+                  <option value="Kids Cotton Sleepwear &amp; Loungewear">
+                    Kids Cotton Sleepwear &amp; Loungewear
+                  </option>
+                  <option value="Kids Shorts, Tees &amp; Dungarees">
+                    Kids Shorts, Tees &amp; Dungarees
+                  </option>
+                </optgroup>
+                <optgroup label="Newborn / Baby Wear">
+                  <option value="Soft Cotton Onesies &amp; Sleepsuits">
+                    Soft Cotton Onesies &amp; Sleepsuits
+                  </option>
+                  <option value="Baby Ethnic Kurta &amp; Frock Sets">
+                    Baby Ethnic Kurta &amp; Frock Sets
+                  </option>
+                  <option value="Baby Swaddles, Wraps &amp; Blankets">
+                    Baby Swaddles, Wraps &amp; Blankets
+                  </option>
+                  <option value="Baby Rompers &amp; Bodysuits">Baby Rompers &amp; Bodysuits</option>
+                  <option value="Baby Booties, Caps &amp; Mittens">
+                    Baby Booties, Caps &amp; Mittens
+                  </option>
+                </optgroup>
+                <optgroup label="Festive &amp; Wedding Couture">
+                  <option value="Royal Bridal Lehengas">Royal Bridal Lehengas</option>
+                  <option value="Groom Sherwani &amp; Safa Sets">
+                    Groom Sherwani &amp; Safa Sets
+                  </option>
+                  <option value="Festival Special Ethnic Sets">Festival Special Ethnic Sets</option>
+                  <option value="Pure Heritage Silk Sarees">Pure Heritage Silk Sarees</option>
+                </optgroup>
+                <optgroup label="Accessories &amp; Essentials">
+                  <option value="Jewellery &amp; Ornaments">Jewellery &amp; Ornaments</option>
+                  <option value="Footwear, Mojris &amp; Juttis">
+                    Footwear, Mojris &amp; Juttis
+                  </option>
+                  <option value="Handbags, Clutches &amp; Potlis">
+                    Handbags, Clutches &amp; Potlis
+                  </option>
+                  <option value="Turbans, Safas &amp; Stoles">Turbans, Safas &amp; Stoles</option>
+                </optgroup>
+              </select>
+            </div>
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Product Image URL</label>
+              <Input
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://..."
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold mt-4 shadow-md cursor-pointer"
             >
-              <optgroup label="Women Wear">
-                <option value="Sarees">Sarees (Banarasi, Silk, Chiffon, Georgette)</option>
-                <option value="Designer Lehengas &amp; Bridal Wear">
-                  Designer Lehengas &amp; Bridal Wear
-                </option>
-                <option value="Salwar Suits, Anarkalis &amp; Shararas">
-                  Salwar Suits, Anarkalis &amp; Shararas
-                </option>
-                <option value="Kurtis, Tunics &amp; Tops">Kurtis, Tunics &amp; Tops</option>
-                <option value="Indo-Western Gowns &amp; Dresses">
-                  Indo-Western Gowns &amp; Dresses
-                </option>
-                <option value="Dupattas, Shawls &amp; Stoles">Dupattas, Shawls &amp; Stoles</option>
-                <option value="Western Tops, Dresses &amp; Jeans">
-                  Western Tops, Dresses &amp; Jeans
-                </option>
-              </optgroup>
-              <optgroup label="Gents / Men Wear">
-                <option value="Ethnic Kurtas &amp; Pyjamas">Ethnic Kurtas &amp; Pyjamas</option>
-                <option value="Designer Sherwanis &amp; Indo-Western">
-                  Designer Sherwanis &amp; Indo-Western
-                </option>
-                <option value="Nehru Jackets &amp; Ethnic Vests">
-                  Nehru Jackets &amp; Ethnic Vests
-                </option>
-                <option value="Formal &amp; Casual Shirts">Formal &amp; Casual Shirts</option>
-                <option value="Trousers, Chinos &amp; Jeans">Trousers, Chinos &amp; Jeans</option>
-                <option value="Blazers, Suits &amp; Tuxedos">Blazers, Suits &amp; Tuxedos</option>
-                <option value="T-Shirts &amp; Polos">T-Shirts &amp; Polos</option>
-              </optgroup>
-              <optgroup label="Boys Wear">
-                <option value="Boys Kurta Pyjama Sets">Boys Kurta Pyjama Sets</option>
-                <option value="Boys Indo-Western &amp; Sherwani Sets">
-                  Boys Indo-Western &amp; Sherwani Sets
-                </option>
-                <option value="Boys Shirts &amp; Trousers">Boys Shirts &amp; Trousers</option>
-                <option value="Boys Party Wear Suits &amp; Blazers">
-                  Boys Party Wear Suits &amp; Blazers
-                </option>
-                <option value="Boys Shorts, Tees &amp; Casuals">
-                  Boys Shorts, Tees &amp; Casuals
-                </option>
-              </optgroup>
-              <optgroup label="Girls Wear">
-                <option value="Girls Ethnic Gowns &amp; Lehengas">
-                  Girls Ethnic Gowns &amp; Lehengas
-                </option>
-                <option value="Girls Frocks &amp; Party Dresses">
-                  Girls Frocks &amp; Party Dresses
-                </option>
-                <option value="Girls Kurti &amp; Sharara Sets">
-                  Girls Kurti &amp; Sharara Sets
-                </option>
-                <option value="Girls Skirts, Tops &amp; Shorts">
-                  Girls Skirts, Tops &amp; Shorts
-                </option>
-              </optgroup>
-              <optgroup label="Children / Kids Wear">
-                <option value="Kids Daily Clothing Sets">Kids Daily Clothing Sets</option>
-                <option value="Kids Ethnic &amp; Festive Clothing">
-                  Kids Ethnic &amp; Festive Clothing
-                </option>
-                <option value="Kids Cotton Sleepwear &amp; Loungewear">
-                  Kids Cotton Sleepwear &amp; Loungewear
-                </option>
-                <option value="Kids Shorts, Tees &amp; Dungarees">
-                  Kids Shorts, Tees &amp; Dungarees
-                </option>
-              </optgroup>
-              <optgroup label="Newborn / Baby Wear">
-                <option value="Soft Cotton Onesies &amp; Sleepsuits">
-                  Soft Cotton Onesies &amp; Sleepsuits
-                </option>
-                <option value="Baby Ethnic Kurta &amp; Frock Sets">
-                  Baby Ethnic Kurta &amp; Frock Sets
-                </option>
-                <option value="Baby Swaddles, Wraps &amp; Blankets">
-                  Baby Swaddles, Wraps &amp; Blankets
-                </option>
-                <option value="Baby Rompers &amp; Bodysuits">Baby Rompers &amp; Bodysuits</option>
-                <option value="Baby Booties, Caps &amp; Mittens">
-                  Baby Booties, Caps &amp; Mittens
-                </option>
-              </optgroup>
-              <optgroup label="Festive &amp; Wedding Couture">
-                <option value="Royal Bridal Lehengas">Royal Bridal Lehengas</option>
-                <option value="Groom Sherwani &amp; Safa Sets">
-                  Groom Sherwani &amp; Safa Sets
-                </option>
-                <option value="Festival Special Ethnic Sets">Festival Special Ethnic Sets</option>
-                <option value="Pure Heritage Silk Sarees">Pure Heritage Silk Sarees</option>
-              </optgroup>
-              <optgroup label="Accessories &amp; Essentials">
-                <option value="Jewellery &amp; Ornaments">Jewellery &amp; Ornaments</option>
-                <option value="Footwear, Mojris &amp; Juttis">Footwear, Mojris &amp; Juttis</option>
-                <option value="Handbags, Clutches &amp; Potlis">
-                  Handbags, Clutches &amp; Potlis
-                </option>
-                <option value="Turbans, Safas &amp; Stoles">Turbans, Safas &amp; Stoles</option>
-              </optgroup>
-            </select>
-          </div>
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Product Image URL</label>
-            <Input
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
-            />
-          </div>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold mt-4 shadow-md cursor-pointer"
-          >
-            {isSubmitting ? 'Publishing...' : 'Save & Publish Product Live'}
-          </Button>
-        </form>
-      </Drawer>
+              {isSubmitting ? 'Publishing...' : 'Save & Publish Product Live'}
+            </Button>
+          </form>
+        </Drawer>
+      )}
     </div>
   );
 }

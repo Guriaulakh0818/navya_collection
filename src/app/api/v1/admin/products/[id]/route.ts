@@ -9,16 +9,16 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// PATCH /api/v1/admin/products/[id] - Toggle product status or update metadata
+// PATCH /api/v1/admin/products/[id] - Toggle product status or update metadata (ADMIN & OWNER ONLY)
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const admin = await getAdminUser();
-    if (
-      !admin ||
-      !['ADMIN', 'OWNER', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
-    ) {
+    if (!admin || !['ADMIN', 'OWNER', 'SUPER_ADMIN'].includes(admin.role?.toUpperCase())) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized. Admin access required.' },
+        {
+          success: false,
+          message: 'Forbidden. Supervisor accounts are read-only and cannot edit products.',
+        },
         { status: 403 },
       );
     }
@@ -55,16 +55,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-// DELETE /api/v1/admin/products/[id] - Soft delete product
+// DELETE /api/v1/admin/products/[id] - Soft delete product (OWNER / SUPER_ADMIN ONLY)
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const admin = await getAdminUser();
-    if (
-      !admin ||
-      !['ADMIN', 'OWNER', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
-    ) {
+    if (!admin || !['OWNER', 'SUPER_ADMIN'].includes(admin.role?.toUpperCase())) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized. Admin access required.' },
+        { success: false, message: 'Forbidden. Only the Owner can delete products from catalog.' },
         { status: 403 },
       );
     }
