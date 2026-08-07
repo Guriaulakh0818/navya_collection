@@ -407,15 +407,6 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                   {sub.name}
                 </option>
               ))}
-              {categories.length > 0 && (
-                <optgroup label="Database Categories">
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
             </select>
           </div>
 
