@@ -13,8 +13,8 @@ import { useAdminAuthStore } from '@/stores';
 export default function AdminLoginPage() {
   const setAdminUser = useAdminAuthStore((s) => s.setUser);
 
-  const [email, setEmail] = useState('gurvindersingh0218@gmail.com');
-  const [password, setPassword] = useState('SaniyaBatra@68182');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const searchParams = useSearchParams();
@@ -73,7 +73,7 @@ export default function AdminLoginPage() {
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleLogin} className="mt-8 space-y-5">
+        <form onSubmit={handleLogin} className="mt-8 space-y-5" autoComplete="off">
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-2">
               Admin Email / Gmail Address
@@ -84,7 +84,8 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="gurvindersingh0218@gmail.com"
+                placeholder="admin@navyacollection.com"
+                autoComplete="off"
                 required
                 className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none"
               />
@@ -99,7 +100,8 @@ export default function AdminLoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
+                placeholder="Enter admin password"
+                autoComplete="new-password"
                 required
                 className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none"
               />
