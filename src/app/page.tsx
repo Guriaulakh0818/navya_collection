@@ -85,7 +85,7 @@ export default async function MultiVendorMarketplaceHomePage() {
             {categories.map((cat: any) => (
               <Link
                 key={cat.id}
-                href={`/shop?category=${cat.slug}`}
+                href={`/category/${cat.slug}`}
                 className="group bg-white border border-slate-200 rounded-2xl p-4 hover:border-amber-500/50 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 w-[150px] xs:w-[170px] sm:w-[200px] shrink-0 snap-start"
               >
                 <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 font-bold group-hover:scale-110 transition-transform shadow-xs">

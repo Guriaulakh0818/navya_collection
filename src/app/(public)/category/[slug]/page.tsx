@@ -80,11 +80,17 @@ export default async function CategoryPage({ params }: Props) {
   let dbProducts: any[] = [];
   try {
     const { prisma } = await import('@/lib/prisma');
+    const categoryKeyword = category.name.split(' ')[0];
     dbProducts = await prisma.product.findMany({
       where: {
         status: 'active',
         deletedAt: null,
-        OR: [{ categoryId: category.id }, { category: { slug } }],
+        OR: [
+          { categoryId: category.id },
+          { category: { slug } },
+          { category: { parentId: category.id } },
+          { name: { contains: categoryKeyword, mode: 'insensitive' } },
+        ],
       },
       include: {
         images: { select: { imageUrl: true }, take: 1 },

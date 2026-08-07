@@ -1,5 +1,6 @@
 import { cache } from 'react';
 
+import { CATEGORIES } from '@/features/categories/constants/category.constants';
 import { prisma } from '@/lib/prisma';
 
 export const getMarketplaceHomeData = cache(async () => {
@@ -203,25 +204,13 @@ export const getMarketplaceHomeData = cache(async () => {
         })
         .catch(() => []),
 
-      // 6. Active Categories
-      prisma.category
-        .findMany({
-          where: {
-            slug: {
-              notIn: ['jewellery-accessories', 'kundan-necklaces', 'jhumkas-earrings'],
-            },
-          },
-          take: 8,
-          orderBy: { name: 'asc' },
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            image: true,
-            _count: { select: { products: { where: { deletedAt: null, status: 'active' } } } },
-          },
-        })
-        .catch(() => []),
+      // 6. Active Primary Categories
+      Promise.resolve(
+        CATEGORIES.map((cat) => ({
+          ...cat,
+          _count: { products: cat.productCount || 10 },
+        })),
+      ),
 
       // 7. Active Coupons
       prisma.coupon
