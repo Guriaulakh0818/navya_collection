@@ -97,24 +97,34 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
         )}
       </button>
 
-      {/* Notifications Popover Dropdown */}
+      {/* Notifications Popover Dropdown (Fully Responsive on 320px-414px Mobile & Desktop) */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-3xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 text-xs">
+        <div className="fixed top-16 left-3 right-3 sm:absolute sm:top-full sm:left-auto sm:right-0 mt-2 sm:w-96 max-w-[calc(100vw-24px)] bg-white border border-slate-200/90 rounded-3xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 text-xs">
           {/* Header */}
-          <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div className="p-3.5 sm:p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-600" />
+              <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
               <h3 className="font-extrabold text-navy text-sm">Notification Center</h3>
             </div>
 
-            {unreadCount > 0 && (
+            <div className="flex items-center gap-2 shrink-0">
+              {unreadCount > 0 && (
+                <button
+                  onClick={markAllAsRead}
+                  className="text-[11px] text-amber-600 hover:underline flex items-center gap-1 font-bold cursor-pointer"
+                >
+                  <CheckCheck className="w-3.5 h-3.5" /> Mark All Read
+                </button>
+              )}
               <button
-                onClick={markAllAsRead}
-                className="text-[11px] text-amber-600 hover:underline flex items-center gap-1 font-bold"
+                onClick={() => setIsOpen(false)}
+                className="sm:hidden text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-200/60 transition-colors cursor-pointer"
+                aria-label="Close notification box"
+                title="Close"
               >
-                <CheckCheck className="w-3.5 h-3.5" /> Mark All Read
+                <X className="w-4 h-4" />
               </button>
-            )}
+            </div>
           </div>
 
           {/* List */}
