@@ -214,10 +214,10 @@ export default function AdminTeamPage() {
               className="w-full h-9 rounded-md border border-slate-300 bg-white px-3 text-xs font-bold text-navy outline-none focus:ring-2 focus:ring-navy shadow-sm"
             >
               <option value="ADMIN" className="bg-white text-orange font-bold py-1">
-                ADMIN (Create/Edit - No Delete)
+                ADMIN
               </option>
               <option value="SUPERVISOR" className="bg-white text-sky-900 font-bold py-1">
-                SUPERVISOR (Read-Only &amp; Order Processing)
+                SUPERVISOR
               </option>
             </select>
           </div>
@@ -295,13 +295,13 @@ export default function AdminTeamPage() {
                         } disabled:opacity-90 disabled:cursor-not-allowed`}
                       >
                         <option value="OWNER" className="bg-white text-navy font-bold py-1">
-                          OWNER (Full Access)
+                          OWNER
                         </option>
                         <option value="ADMIN" className="bg-white text-orange font-bold py-1">
-                          ADMIN (Create/Edit - No Delete)
+                          ADMIN
                         </option>
                         <option value="SUPERVISOR" className="bg-white text-sky-900 font-bold py-1">
-                          SUPERVISOR (Read-Only)
+                          SUPERVISOR
                         </option>
                       </select>
                     </td>
