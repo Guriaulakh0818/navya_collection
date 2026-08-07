@@ -21,7 +21,10 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
       const url = new URL('/api/v1/notifications', window.location.origin);
       if (userId) url.searchParams.set('userId', userId);
 
-      const res = await fetch(url.toString());
+      const res = await fetch(url.toString(), {
+        headers: { 'Cache-Control': 'no-cache' },
+        credentials: 'same-origin',
+      });
       const json = await res.json();
       if (json.success && json.data) {
         setNotifications(json.data.notifications || []);
