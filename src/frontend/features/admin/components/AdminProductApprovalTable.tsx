@@ -354,23 +354,24 @@ export function AdminProductApprovalTable() {
 
         {/* Pagination Footer */}
         {pagination.pages > 1 && (
-          <div className="p-4 bg-slate-950/60 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+          <div className="p-4 bg-slate-100/90 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600 font-medium">
             <span>
-              Page <strong>{page}</strong> of <strong>{pagination.pages}</strong> (
-              {pagination.total} Total Queue Items)
+              Page <strong className="text-navy">{page}</strong> of{' '}
+              <strong className="text-navy">{pagination.pages}</strong> ({pagination.total} Total
+              Queue Items)
             </span>
             <div className="flex gap-2">
               <button
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg disabled:opacity-50 flex items-center gap-1"
+                className="px-3.5 py-1.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl font-bold disabled:opacity-50 flex items-center gap-1 shadow-2xs cursor-pointer transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" /> Prev
               </button>
               <button
                 disabled={page >= pagination.pages}
                 onClick={() => setPage(page + 1)}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg disabled:opacity-50 flex items-center gap-1"
+                className="px-3.5 py-1.5 bg-navy hover:bg-navy-hover text-white rounded-xl font-extrabold disabled:opacity-50 flex items-center gap-1 shadow-xs cursor-pointer transition-colors"
               >
                 Next <ChevronRight className="w-4 h-4" />
               </button>
