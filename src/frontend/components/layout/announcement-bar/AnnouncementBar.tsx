@@ -1,7 +1,7 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
+import { useState } from 'react';
 
 const announcements = [
   { text: '🚚 FREE Shipping across India on orders above ₹999!', badge: 'LIMITED' },
@@ -11,60 +11,38 @@ const announcements = [
 ];
 
 export default function AnnouncementBar() {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % announcements.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
 
   if (!isVisible) return null;
 
   return (
-    <div className="relative bg-[#183A73] text-white text-[11px] sm:text-xs font-medium py-1.5 px-2 sm:px-6 overflow-hidden border-b border-white/10 select-none z-30">
-      <div className="mx-auto max-w-[1440px] flex items-center justify-between gap-1 sm:gap-3">
-        {/* Left Arrow */}
-        <button
-          onClick={() =>
-            setCurrentIndex((prev) => (prev - 1 + announcements.length) % announcements.length)
-          }
-          className="text-white/80 hover:text-white transition-colors shrink-0 p-1 rounded-full hover:bg-white/10"
-          aria-label="Previous announcement"
-        >
-          <ChevronLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-        </button>
-
-        {/* Center Text Container (Fully Responsive on 320px, 375px, 414px, and Desktop) */}
-        <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-center text-center overflow-hidden">
-          <span className="bg-[#F15A25] px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold tracking-wide uppercase shrink-0 shadow-xs">
-            {announcements[currentIndex].badge}
-          </span>
-          <span className="truncate max-w-[170px] xs:max-w-[240px] sm:max-w-none text-[11px] sm:text-xs font-semibold">
-            {announcements[currentIndex].text}
-          </span>
-        </div>
-
-        {/* Right Controls */}
-        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          <button
-            onClick={() => setCurrentIndex((prev) => (prev + 1) % announcements.length)}
-            className="text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
-            aria-label="Next announcement"
-          >
-            <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          </button>
-          <button
-            onClick={() => setIsVisible(false)}
-            className="text-white/60 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10 ml-0.5"
-            aria-label="Close announcement bar"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
+    <div className="relative bg-[#183A73] text-white text-xs font-medium py-2 overflow-hidden border-b border-white/10 select-none z-30 shadow-xs">
+      <div className="flex items-center w-full overflow-hidden">
+        {/* Continuous Marquee Ticker Track (Repeated twice for seamless infinite loop) */}
+        <div className="animate-marquee flex items-center whitespace-nowrap gap-8 sm:gap-12 pl-4">
+          {[...announcements, ...announcements].map((item, idx) => (
+            <div key={idx} className="flex items-center gap-2 shrink-0">
+              <span className="bg-[#F15A25] px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-extrabold tracking-wider uppercase shrink-0 shadow-xs">
+                {item.badge}
+              </span>
+              <span className="text-[11px] sm:text-xs font-bold tracking-tight text-white/95">
+                {item.text}
+              </span>
+              <span className="text-white/30 text-xs ml-2">|</span>
+            </div>
+          ))}
         </div>
       </div>
+
+      {/* Close Button on Right */}
+      <button
+        onClick={() => setIsVisible(false)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors p-1 rounded-full bg-[#183A73]/90 hover:bg-white/20 z-10 cursor-pointer shadow-xs"
+        aria-label="Close announcement bar"
+        title="Close offer banner"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
     </div>
   );
 }
