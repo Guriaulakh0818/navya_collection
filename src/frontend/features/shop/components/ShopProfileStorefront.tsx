@@ -173,10 +173,10 @@ export function ShopProfileStorefront({ initialData, slug }: ShopProfileStorefro
           </div>
 
           {/* Tab Controls */}
-          <div className="flex border-b border-slate-800 pt-2 gap-4 text-xs font-bold">
+          <div className="flex border-b border-slate-800 pt-2 gap-4 text-xs font-bold max-w-full overflow-x-auto scrollbar-none">
             <button
               onClick={() => setActiveTab('catalog')}
-              className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
+              className={`pb-3 border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap ${
                 activeTab === 'catalog'
                   ? 'border-amber-400 text-amber-400 font-extrabold'
                   : 'border-transparent text-slate-400 hover:text-white'
@@ -186,7 +186,7 @@ export function ShopProfileStorefront({ initialData, slug }: ShopProfileStorefro
             </button>
             <button
               onClick={() => setActiveTab('policies')}
-              className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
+              className={`pb-3 border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap ${
                 activeTab === 'policies'
                   ? 'border-amber-400 text-amber-400 font-extrabold'
                   : 'border-transparent text-slate-400 hover:text-white'
@@ -196,7 +196,7 @@ export function ShopProfileStorefront({ initialData, slug }: ShopProfileStorefro
             </button>
             <button
               onClick={() => setActiveTab('contact')}
-              className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
+              className={`pb-3 border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap ${
                 activeTab === 'contact'
                   ? 'border-amber-400 text-amber-400 font-extrabold'
                   : 'border-transparent text-slate-400 hover:text-white'

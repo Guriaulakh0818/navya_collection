@@ -268,7 +268,7 @@ export function ShopManagementForm() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 bg-slate-100/80 rounded-xl p-1 gap-1">
+      <div className="flex border-b border-slate-200 bg-slate-100/80 rounded-xl p-1 gap-1 max-w-full overflow-x-auto scrollbar-none">
         {[
           { id: 'branding', label: 'Branding & Images', icon: ImageIcon },
           { id: 'identity', label: 'Identity & Unique URL', icon: LinkIcon },
@@ -283,14 +283,14 @@ export function ShopManagementForm() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 py-3 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`flex-1 py-3 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap ${
                 isActive
                   ? 'bg-navy text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              <span className="hidden md:inline">{tab.label}</span>
+              <span>{tab.label}</span>
             </button>
           );
         })}

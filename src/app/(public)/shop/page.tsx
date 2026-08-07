@@ -203,28 +203,28 @@ function MarketplaceCatalogContent() {
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* View Mode Switcher */}
-            <div className="flex items-center bg-slate-100 p-1.5 rounded-2xl w-full md:w-auto">
+            <div className="flex items-center bg-slate-100 p-1.5 rounded-2xl w-full md:w-auto max-w-full overflow-x-auto scrollbar-none">
               <button
                 onClick={() => setActiveView('products')}
-                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`flex-1 md:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
                   activeView === 'products'
                     ? 'bg-navy text-white shadow-md'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Package className="w-4 h-4" />
+                <Package className="w-4 h-4 shrink-0" />
                 <span>Products Catalogue ({sortedProducts.length})</span>
               </button>
 
               <button
                 onClick={() => setActiveView('shops')}
-                className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                className={`flex-1 md:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
                   activeView === 'shops'
                     ? 'bg-navy text-white shadow-md'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Store className="w-4 h-4" />
+                <Store className="w-4 h-4 shrink-0" />
                 <span>Verified Shops ({filteredShops.length})</span>
               </button>
             </div>

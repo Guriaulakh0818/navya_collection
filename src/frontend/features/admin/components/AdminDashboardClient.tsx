@@ -385,17 +385,17 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
       </div>
 
       {/* INTERACTIVE TAB NAVIGATION */}
-      <div className="border-b border-slate-200 flex flex-wrap gap-2">
+      <div className="border-b border-slate-200 flex items-center gap-2 max-w-full overflow-x-auto scrollbar-none">
         <button
           onClick={() => setActiveTab('moderation')}
-          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'moderation'
-              ? 'border-amber-500 text-amber-600'
+              ? 'border-amber-500 text-amber-600 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <ShieldAlert className="w-4 h-4" />
-          <span>Moderation & Onboarding Queue</span>
+          <ShieldAlert className="w-4 h-4 shrink-0" />
+          <span>Moderation Queue</span>
           {(data.stats.pendingSellersCount > 0 || data.stats.pendingProductsCount > 0) && (
             <span className="px-2 py-0.5 bg-amber-500 text-slate-950 text-[10px] font-extrabold rounded-full">
               {data.stats.pendingSellersCount + data.stats.pendingProductsCount}
@@ -405,38 +405,38 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
 
         <button
           onClick={() => setActiveTab('financials')}
-          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'financials'
-              ? 'border-amber-500 text-amber-600'
+              ? 'border-amber-500 text-amber-600 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <DollarSign className="w-4 h-4" />
+          <DollarSign className="w-4 h-4 shrink-0" />
           <span>Financials & Payouts</span>
         </button>
 
         <button
           onClick={() => setActiveTab('orders')}
-          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'orders'
-              ? 'border-amber-500 text-amber-600'
+              ? 'border-amber-500 text-amber-600 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <ShoppingBag className="w-4 h-4" />
-          <span>Recent Marketplace Orders</span>
+          <ShoppingBag className="w-4 h-4 shrink-0" />
+          <span>Marketplace Orders</span>
         </button>
 
         <button
           onClick={() => setActiveTab('modules')}
-          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+          className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'modules'
-              ? 'border-amber-500 text-amber-600'
+              ? 'border-amber-500 text-amber-600 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Layers className="w-4 h-4" />
-          <span>Governance Modules & Tools</span>
+          <Layers className="w-4 h-4 shrink-0" />
+          <span>Governance Modules</span>
         </button>
       </div>
 

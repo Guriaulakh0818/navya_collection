@@ -188,7 +188,7 @@ export function SellerProductList() {
 
       {/* Status Tabs & Search */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4 shadow-sm">
-        <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-4">
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-4 max-w-full overflow-x-auto scrollbar-none">
           {[
             { id: 'ALL', label: 'All Products', count: counts.ALL },
             { id: 'active', label: 'Active', count: counts.active },
@@ -204,7 +204,7 @@ export function SellerProductList() {
                   setActiveTab(tab.id);
                   setPage(1);
                 }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shrink-0 whitespace-nowrap ${
                   isActive
                     ? 'bg-navy border-navy text-white shadow-sm'
                     : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'

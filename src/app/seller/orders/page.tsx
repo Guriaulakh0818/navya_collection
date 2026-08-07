@@ -116,7 +116,7 @@ export default function SellerOrdersPage() {
       </div>
 
       {/* Status Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 text-xs font-bold border-b border-slate-200">
+      <div className="flex items-center gap-2 overflow-x-auto max-w-full scrollbar-none pb-2 text-xs font-bold border-b border-slate-200">
         {[
           { key: 'ALL', label: 'All Orders' },
           { key: 'PENDING', label: 'Pending' },
@@ -129,7 +129,7 @@ export default function SellerOrdersPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap border cursor-pointer ${
+            className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap shrink-0 border cursor-pointer ${
               activeTab === tab.key
                 ? 'bg-amber-50 text-amber-800 border-amber-400 font-extrabold shadow-xs'
                 : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'

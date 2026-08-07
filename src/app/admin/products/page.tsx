@@ -180,7 +180,7 @@ export default function AdminProductsPage() {
       {/* Tabs & Filters Card */}
       <Card className="p-6 border-slate-200 shadow-sm rounded-3xl space-y-4">
         {/* Status Filter Tabs */}
-        <div className="flex flex-wrap gap-2 border-b border-slate-100 pb-4">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-4 max-w-full overflow-x-auto scrollbar-none">
           {[
             { id: 'ALL', label: 'All Products', count: counts.ALL },
             { id: 'active', label: 'Active', count: counts.active },
@@ -196,7 +196,7 @@ export default function AdminProductsPage() {
                   setActiveTab(tab.id);
                   setPage(1);
                 }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer shrink-0 whitespace-nowrap ${
                   isActive
                     ? 'bg-navy border-navy text-white shadow-sm'
                     : 'bg-slate-50 border-slate-200 text-slate-600 hover:text-navy hover:bg-slate-100'
