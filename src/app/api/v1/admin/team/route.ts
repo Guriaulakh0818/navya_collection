@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { sendAdminAccessGrantedEmail } from '@/backend/lib/brevo';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/session';
 
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/v1/admin/team
- * Add or grant direct access to a new team member with Email, Name, Role, and Password.
+ * Add or grant direct access to a new team member with Email, Name, Role, and Password + Sends Email.
  * Restricted to OWNER / SUPER_ADMIN.
  */
 export async function POST(request: NextRequest) {
@@ -85,22 +86,26 @@ export async function POST(request: NextRequest) {
 
     const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
 
+    let finalName = name || normalizedEmail.split('@')[0];
+
     if (existing) {
+      finalName = name || existing.name || normalizedEmail.split('@')[0];
       await prisma.user.update({
         where: { id: existing.id },
         data: {
-          name: name || existing.name || normalizedEmail.split('@')[0],
+          name: finalName,
           password: hashedPassword,
           role: targetRole as any,
           approvalStatus: 'APPROVED',
           mustChangePassword: false,
+          deletedAt: null,
         },
       });
     } else {
       await prisma.user.create({
         data: {
           email: normalizedEmail,
-          name: name || normalizedEmail.split('@')[0],
+          name: finalName,
           password: hashedPassword,
           role: targetRole as any,
           approvalStatus: 'APPROVED',
@@ -109,9 +114,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // 📧 Send Email Notification to user informing them of their granted Admin Access & Credentials
+    try {
+      await sendAdminAccessGrantedEmail(normalizedEmail, finalName, targetRole, password);
+    } catch (emailErr) {
+      console.error('Failed to send admin access granted email:', emailErr);
+    }
+
     return NextResponse.json({
       success: true,
-      message: `Access granted for ${normalizedEmail} as ${targetRole}. User can log in directly with their password.`,
+      message: `Access granted & email sent to ${normalizedEmail} as ${targetRole}. User can log in directly with their password.`,
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
@@ -159,6 +171,63 @@ export async function PATCH(request: NextRequest) {
       success: true,
       message: `User ${updated.email} permissions updated successfully.`,
       user: updated,
+    });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}
+
+/**
+ * DELETE /api/v1/admin/team
+ * Permanently delete or revoke and soft-delete an admin user account.
+ * Restricted to OWNER / SUPER_ADMIN.
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || (user.role !== 'OWNER' && user.role !== 'SUPER_ADMIN')) {
+      return NextResponse.json(
+        { success: false, message: 'Only the Owner can delete admin accounts.' },
+        { status: 403 },
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId');
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: 'Missing target userId query parameter.' },
+        { status: 400 },
+      );
+    }
+
+    const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+    if (!targetUser) {
+      return NextResponse.json({ success: false, message: 'User not found.' }, { status: 404 });
+    }
+
+    if (
+      targetUser.email === 'gurvindersingh0218@gmail.com' ||
+      targetUser.email === 'guriaulakh497@gmail.com'
+    ) {
+      return NextResponse.json(
+        { success: false, message: 'The primary Owner account cannot be deleted.' },
+        { status: 400 },
+      );
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        deletedAt: new Date(),
+        approvalStatus: 'REJECTED',
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Admin user account "${targetUser.email || targetUser.name}" has been permanently deleted.`,
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });

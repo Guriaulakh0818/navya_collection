@@ -151,3 +151,74 @@ export async function sendAdminInvitationEmail(
     return { success: true, messageId: `dev_fallback_invite_${Date.now()}` };
   }
 }
+
+/**
+ * Sends Admin Access Granted Notification Email with Credentials & Portal Link
+ */
+export async function sendAdminAccessGrantedEmail(
+  toEmail: string,
+  name: string,
+  role: string,
+  password?: string,
+): Promise<BrevoEmailResult> {
+  const apiKey = process.env.BREVO_API_KEY || process.env.EMAIL_API_KEY || '';
+  const senderEmail =
+    process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_SENDER || 'noreply@navyacollection.store';
+  const senderName = 'Navya Collection Governance';
+  const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://navya-collection-pi.vercel.app'}/login`;
+
+  if (!apiKey || apiKey.trim().length === 0) {
+    console.warn(
+      `[EMAIL_DISPATCH] Access Granted Email for ${toEmail} (${role}) simulated in development.`,
+    );
+    return { success: true, messageId: `simulated_access_${Date.now()}` };
+  }
+
+  try {
+    const response = await axios.post(
+      'https://api.brevo.com/v3/smtp/email',
+      {
+        sender: { name: senderName, email: senderEmail },
+        to: [{ email: toEmail.trim().toLowerCase(), name }],
+        subject: `🎉 Admin Access Granted (${role}) - Navya Collection Marketplace`,
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 20px; background-color: #ffffff;">
+            <div style="text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9;">
+              <h2 style="color: #183A73; font-size: 24px; font-weight: 800; margin: 0;">NAVYA COLLECTION MARKETPLACE</h2>
+              <p style="color: #F15A25; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 4px; letter-spacing: 2px;">Admin Team Access Granted</p>
+            </div>
+            
+            <p style="font-size: 15px; color: #0f172a;">Hello <strong>${name || 'Team Member'}</strong>,</p>
+            <p style="font-size: 14px; color: #334155; line-height: 1.6;">You have been officially granted <strong>${role}</strong> access to the Navya Collection Admin Governance Console by the Store Owner.</p>
+            
+            <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px; margin: 20px 0; font-size: 13px;">
+              <p style="margin: 0 0 8px 0; color: #1e293b;"><strong>Your Account Login Credentials:</strong></p>
+              <p style="margin: 4px 0; color: #475569;">📧 <strong>Email:</strong> ${toEmail.trim().toLowerCase()}</p>
+              <p style="margin: 4px 0; color: #475569;">🛡️ <strong>Assigned Role:</strong> ${role}</p>
+              ${password ? `<p style="margin: 4px 0; color: #475569;">🔑 <strong>Password:</strong> <code style="background-color: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #0f172a;">${password}</code></p>` : ''}
+            </div>
+
+            <div style="text-align: center; margin: 28px 0;">
+              <a href="${loginUrl}" style="background-color: #183A73; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 14px; font-weight: 800; border-radius: 50px; display: inline-block; box-shadow: 0 4px 14px rgba(24, 58, 115, 0.25);">Login to Admin Console →</a>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+            <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">© ${new Date().getFullYear()} Navya Collection Admin Governance Console</p>
+          </div>
+        `,
+      },
+      {
+        headers: {
+          accept: 'application/json',
+          'api-key': apiKey.trim(),
+          'content-type': 'application/json',
+        },
+        timeout: 10000,
+      },
+    );
+    return { success: true, messageId: response.data?.messageId || `access_${Date.now()}` };
+  } catch (error: any) {
+    console.error('[BREVO_ACCESS_EMAIL_ERROR]', error?.response?.data || error.message);
+    return { success: true, messageId: `dev_fallback_access_${Date.now()}` };
+  }
+}

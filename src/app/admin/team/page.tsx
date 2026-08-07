@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, KeyRound, ShieldAlert, UserPlus, Users, XCircle } from 'lucide-react';
+import { CheckCircle2, ShieldAlert, Trash2, UserPlus, Users, XCircle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -84,7 +84,7 @@ export default function AdminTeamPage() {
         throw new Error(data.message || 'Failed to grant access');
       }
 
-      toast(data.message || 'Admin access granted successfully!', 'success');
+      toast(data.message || 'Admin access granted & email sent successfully!', 'success');
       setInviteEmail('');
       setInviteName('');
       setInvitePassword('');
@@ -116,6 +116,28 @@ export default function AdminTeamPage() {
     }
   };
 
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
+    if (!confirm(`Are you sure you want to permanently delete admin account "${userEmail}"?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/v1/admin/team?userId=${userId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to delete user');
+      }
+
+      toast(data.message || 'Admin user deleted successfully.', 'success');
+      fetchTeam();
+    } catch (err: any) {
+      toast(err.message || 'Failed to delete user', 'error');
+    }
+  };
+
   const isOwner =
     String(user?.role) === 'OWNER' ||
     String(user?.role) === 'SUPER_ADMIN' ||
@@ -144,11 +166,11 @@ export default function AdminTeamPage() {
             <span>Owner Role Governance</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Admin Access & Role Management
+            Admin Access &amp; Role Management
           </h1>
           <p className="text-xs text-white/80 mt-1">
-            Grant direct Gmail + Password access to staff members and assign roles (Owner, Admin,
-            Supervisor).
+            Grant direct Gmail + Password access to staff members, auto-send email notifications,
+            and manage active accounts.
           </p>
         </div>
       </div>
@@ -195,7 +217,7 @@ export default function AdminTeamPage() {
                 ADMIN (Create/Edit - No Delete)
               </option>
               <option value="SUPERVISOR" className="bg-white text-sky-900 font-bold py-1">
-                SUPERVISOR (Read-Only & Order Processing)
+                SUPERVISOR (Read-Only &amp; Order Processing)
               </option>
             </select>
           </div>
@@ -219,9 +241,9 @@ export default function AdminTeamPage() {
               disabled={isInviting}
             >
               {isInviting ? (
-                <Loader size="sm" text="Granting Access..." light />
+                <Loader size="sm" text="Granting &amp; Sending Email..." light />
               ) : (
-                'Grant Direct Access'
+                'Grant Direct Access & Send Email'
               )}
             </Button>
           </div>
@@ -300,18 +322,26 @@ export default function AdminTeamPage() {
                           {m.approvalStatus === 'REJECTED' ? (
                             <button
                               onClick={() => handleUpdateStatus(m.id, 'APPROVED')}
-                              className="inline-flex items-center gap-1 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700"
+                              className="inline-flex items-center gap-1 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700 cursor-pointer"
                             >
                               <CheckCircle2 className="h-3.5 w-3.5" /> Enable Access
                             </button>
                           ) : (
                             <button
                               onClick={() => handleUpdateStatus(m.id, 'REJECTED')}
-                              className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-50 hover:text-rose-600"
+                              className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
                             >
                               <XCircle className="h-3.5 w-3.5" /> Revoke Access
                             </button>
                           )}
+
+                          <button
+                            onClick={() => handleDeleteUser(m.id, m.email || m.name || 'User')}
+                            className="inline-flex items-center gap-1 bg-rose-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-rose-700 transition-colors cursor-pointer shadow-xs"
+                            title="Delete Admin Account"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Delete Account
+                          </button>
                         </>
                       )}
                     </td>
