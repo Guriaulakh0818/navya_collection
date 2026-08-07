@@ -204,13 +204,18 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
             {product.description}
           </p>
 
-          {/* Size Selector */}
+          {/* Color & Size Variant Selector */}
           {product.variants && product.variants.length > 0 && (
-            <div className="space-y-2.5 pt-2 border-t border-slate-100">
+            <div className="space-y-3 pt-3 border-t border-slate-100">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
-                  Select Size
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                    Select Color Variant
+                  </h3>
+                  <span className="text-[11px] font-bold text-amber-900 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 shadow-xs">
+                    {activeVariant?.color || activeVariant?.name || 'Free Size'}
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={() => setIsSizeGuideOpen(true)}
@@ -219,22 +224,63 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                   <HelpCircle className="h-3.5 w-3.5" /> Size Chart Guide
                 </button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {product.variants.map((v: any) => (
-                  <button
-                    key={v.id}
-                    type="button"
-                    onClick={() => setSelectedVariant(v.id)}
-                    disabled={(v.stock || 0) <= 0}
-                    className={`rounded-2xl border px-4 py-2 text-xs font-extrabold transition-all cursor-pointer ${
-                      selectedVariant === v.id
-                        ? 'border-navy bg-navy text-white shadow-md'
-                        : 'border-slate-200 text-slate-800 hover:border-navy bg-white'
-                    } ${(v.stock || 0) <= 0 ? 'opacity-40 cursor-not-allowed line-through' : ''}`}
-                  >
-                    {v.size || v.name}
-                  </button>
-                ))}
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {product.variants.map((v: any, idx: number) => {
+                  const defaultColors = [
+                    'Royal Blue',
+                    'Emerald Green',
+                    'Wine Red',
+                    'Golden Mustard',
+                    'Magenta Pink',
+                  ];
+                  const variantColorName =
+                    v.color ||
+                    v.colorName ||
+                    (v.name && !v.name.includes('Free Size')
+                      ? v.name
+                      : defaultColors[idx % defaultColors.length]);
+                  const variantStock = v.stock !== undefined && v.stock !== null ? v.stock : 10;
+                  const isOut = variantStock <= 0;
+
+                  return (
+                    <button
+                      key={v.id || idx}
+                      type="button"
+                      onClick={() => setSelectedVariant(v.id)}
+                      disabled={isOut}
+                      className={`flex flex-col items-start p-3 rounded-2xl border transition-all text-left cursor-pointer active:scale-98 ${
+                        selectedVariant === v.id
+                          ? 'border-navy bg-navy text-white shadow-md ring-2 ring-navy/20'
+                          : 'border-slate-200 bg-white text-slate-800 hover:border-amber-500 hover:bg-amber-50/40'
+                      } ${isOut ? 'opacity-40 cursor-not-allowed line-through' : ''}`}
+                    >
+                      <div className="flex items-center justify-between w-full gap-1">
+                        <span className="font-extrabold text-xs tracking-tight truncate">
+                          {variantColorName}
+                        </span>
+                        <span
+                          className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${
+                            selectedVariant === v.id
+                              ? 'bg-amber-400 text-slate-950 font-black'
+                              : isOut
+                                ? 'bg-rose-100 text-rose-700'
+                                : 'bg-emerald-100 text-emerald-800'
+                          }`}
+                        >
+                          {isOut ? 'Sold Out' : `${variantStock} in stock`}
+                        </span>
+                      </div>
+                      <span
+                        className={`text-[10px] mt-1 font-semibold ${
+                          selectedVariant === v.id ? 'text-amber-200' : 'text-slate-500'
+                        }`}
+                      >
+                        {v.size || 'Free Size'}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

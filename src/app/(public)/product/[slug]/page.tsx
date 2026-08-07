@@ -37,9 +37,51 @@ const fallbackSampleProduct = {
     },
   ],
   variants: [
-    { id: 'v1', sku: 'NC-SILK-S', name: 'S (Blush Pink)', price: 12999, stock: 5, size: 'S' },
-    { id: 'v2', sku: 'NC-SILK-M', name: 'M (Ivory White)', price: 12999, stock: 7, size: 'M' },
-    { id: 'v3', sku: 'NC-SILK-L', name: 'L (Royal Crimson)', price: 12999, stock: 3, size: 'L' },
+    {
+      id: 'v1',
+      sku: 'NC-SILK-01',
+      name: 'Royal Blue',
+      color: 'Royal Blue',
+      price: 12999,
+      stock: 12,
+      size: 'Free Size',
+    },
+    {
+      id: 'v2',
+      sku: 'NC-SILK-02',
+      name: 'Emerald Green',
+      color: 'Emerald Green',
+      price: 12999,
+      stock: 8,
+      size: 'Free Size',
+    },
+    {
+      id: 'v3',
+      sku: 'NC-SILK-03',
+      name: 'Wine Red',
+      color: 'Wine Red',
+      price: 12999,
+      stock: 15,
+      size: 'Free Size',
+    },
+    {
+      id: 'v4',
+      sku: 'NC-SILK-04',
+      name: 'Golden Mustard',
+      color: 'Golden Mustard',
+      price: 12999,
+      stock: 5,
+      size: 'Free Size',
+    },
+    {
+      id: 'v5',
+      sku: 'NC-SILK-05',
+      name: 'Magenta Pink',
+      color: 'Magenta Pink',
+      price: 12999,
+      stock: 10,
+      size: 'Free Size',
+    },
   ],
   reviews: [
     {
@@ -57,6 +99,13 @@ async function getFormattedProduct(slug: string) {
     const res = await ProductService.getProductByIdOrSlug(slug);
     if (res?.success && res?.data) {
       const dbProd = res.data;
+      const defaultColors = [
+        'Royal Blue',
+        'Emerald Green',
+        'Wine Red',
+        'Golden Mustard',
+        'Magenta Pink',
+      ];
       return {
         id: dbProd.id,
         name: dbProd.name,
@@ -84,13 +133,19 @@ async function getFormattedProduct(slug: string) {
             : fallbackSampleProduct.images,
         variants:
           dbProd.variants && dbProd.variants.length > 0
-            ? dbProd.variants.map((v: any) => ({
+            ? dbProd.variants.map((v: any, idx: number) => ({
                 id: v.id,
                 sku: v.sku,
-                name: `${v.size || 'Size'}`,
+                name:
+                  v.color ||
+                  v.colorName ||
+                  (v.name && !v.name.includes('Free Size')
+                    ? v.name
+                    : defaultColors[idx % defaultColors.length]),
+                color: v.color || v.colorName || defaultColors[idx % defaultColors.length],
                 price: Number(v.price || dbProd.price),
-                stock: v.stock,
-                size: v.size,
+                stock: v.stock !== undefined && v.stock !== null ? v.stock : 10,
+                size: v.size || 'Free Size',
               }))
             : fallbackSampleProduct.variants,
         reviews:
