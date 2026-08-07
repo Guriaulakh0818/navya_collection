@@ -53,3 +53,4 @@ pnpm-debug.log*
 
 # storybook build outputs
 storybook-static/
+.vercel
