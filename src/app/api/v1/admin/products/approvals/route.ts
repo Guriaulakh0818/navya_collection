@@ -1,41 +1,18 @@
-import { jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
+import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
-
-function getJwtSecretKey(): Uint8Array {
-  const secret = process.env.JWT_SECRET || 'navya_collection_jwt_secret_key_2026_min_32chars';
-  return new TextEncoder().encode(secret);
-}
-
-async function getAdminUser() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, getJwtSecretKey());
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId as string },
-      select: { id: true, role: true, email: true },
-    });
-    if (!user || !['ADMIN', 'OWNER', 'SUPER_ADMIN'].includes(user.role)) {
-      return null;
-    }
-    return user;
-  } catch {
-    return null;
-  }
-}
 
 // GET /api/v1/admin/products/approvals - List products for approval queue
 export async function GET(request: NextRequest) {
   try {
     const admin = await getAdminUser();
-    if (!admin) {
+    if (
+      !admin ||
+      !['ADMIN', 'OWNER', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
+    ) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized. Admin access required.' },
         { status: 403 },

@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
           costPrice: data.costPrice || null,
           stock: data.stock,
           categoryId: data.categoryId,
-          status: data.status,
+          status: data.status === 'draft' ? 'draft' : 'pending_approval',
           isFeatured: data.isFeatured,
           gender: data.gender || null,
           fabric: data.fabric || null,
