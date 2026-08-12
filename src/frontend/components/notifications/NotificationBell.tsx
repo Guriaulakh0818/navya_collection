@@ -38,18 +38,26 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
   useEffect(() => {
     fetchNotifications();
 
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+    const handleClickOutside = (e: Event) => {
       if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
+
+    if (isOpen) {
+      document.addEventListener('pointerdown', handleClickOutside, true);
+      document.addEventListener('mousedown', handleClickOutside, true);
+      document.addEventListener('touchstart', handleClickOutside, true);
+      document.addEventListener('click', handleClickOutside, true);
+    }
+
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('pointerdown', handleClickOutside, true);
+      document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener('touchstart', handleClickOutside, true);
+      document.removeEventListener('click', handleClickOutside, true);
     };
-  }, [fetchNotifications]);
+  }, [fetchNotifications, isOpen]);
 
   const markAllAsRead = async () => {
     try {

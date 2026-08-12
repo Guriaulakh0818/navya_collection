@@ -47,20 +47,24 @@ export function HeaderActions({ className }: HeaderActionsProps) {
 
   // Close seller menu dropdown when clicking or tapping outside on mobile/desktop
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+    const handleClickOutside = (e: Event) => {
       if (sellerMenuRef.current && !sellerMenuRef.current.contains(e.target as Node)) {
         setIsSellerMenuOpen(false);
       }
     };
 
     if (isSellerMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
+      document.addEventListener('pointerdown', handleClickOutside, true);
+      document.addEventListener('mousedown', handleClickOutside, true);
+      document.addEventListener('touchstart', handleClickOutside, true);
+      document.addEventListener('click', handleClickOutside, true);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('pointerdown', handleClickOutside, true);
+      document.removeEventListener('mousedown', handleClickOutside, true);
+      document.removeEventListener('touchstart', handleClickOutside, true);
+      document.removeEventListener('click', handleClickOutside, true);
     };
   }, [isSellerMenuOpen]);
 
