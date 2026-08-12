@@ -4,6 +4,7 @@ import {
   Building2,
   ChevronDown,
   Heart,
+  Home,
   LayoutDashboard,
   Package,
   ShoppingBag,
@@ -207,25 +208,34 @@ export function HeaderActions({ className }: HeaderActionsProps) {
         </Link>
       )}
 
-      {/* Account / Login Pill Button */}
+      {/* Home Icon for Mobile */}
+      <Link
+        href="/"
+        className="inline-flex sm:hidden items-center justify-center rounded-full p-1.5 xs:p-2 text-slate-700 hover:text-navy hover:bg-slate-100 transition-colors active:scale-95 shrink-0"
+        aria-label="Home"
+        title="Home Page"
+      >
+        <Home className="h-5 w-5 text-slate-700 hover:text-navy transition-colors" />
+      </Link>
+
+      {/* Account / Login Pill Button (Desktop) */}
       {isMounted && user ? (
         <Link
           href="/account"
-          className="inline-flex items-center gap-1.5 rounded-full bg-slate-100/90 p-1.5 xs:p-2 sm:px-3 sm:py-1.5 text-xs font-bold text-navy hover:bg-slate-200 transition-colors active:scale-95 shadow-xs shrink-0"
+          className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-slate-100/90 sm:px-3 sm:py-1.5 text-xs font-bold text-navy hover:bg-slate-200 transition-colors active:scale-95 shadow-xs shrink-0"
           title={user.name || user.email || 'Account'}
         >
           <UserIcon className="w-4 h-4 text-slate-700 shrink-0" />
-          <span className="hidden sm:inline truncate max-w-[85px] md:max-w-[100px] xl:max-w-[120px]">
+          <span className="truncate max-w-[85px] md:max-w-[100px] xl:max-w-[120px]">
             {user.name || (user.email ? user.email.split('@')[0] : 'Account')}
           </span>
         </Link>
       ) : (
         <Link
           href="/login"
-          className="inline-flex items-center gap-1.5 rounded-full bg-navy text-white hover:bg-navy/90 p-1.5 xs:px-3 sm:px-4 sm:py-1.5 text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer shrink-0"
+          className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-navy text-white hover:bg-navy/90 sm:px-4 sm:py-1.5 text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer shrink-0"
         >
-          <UserIcon className="w-4 h-4 text-white sm:hidden shrink-0" />
-          <span className="hidden sm:inline">Login</span>
+          <span>Login</span>
         </Link>
       )}
 
