@@ -95,9 +95,9 @@ export function SellerDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
       <div className="relative w-full max-w-4xl max-h-[90vh] bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
-        {/* Header */}
+        {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 font-bold shrink-0">
@@ -114,15 +114,16 @@ export function SellerDetailModal({
                         ? 'bg-amber-50 text-amber-800 border-amber-300 animate-pulse'
                         : shop.status === 'REJECTED'
                           ? 'bg-rose-50 text-rose-800 border-rose-300'
-                          : 'bg-slate-100 text-slate-700 border-slate-200'
+                          : 'bg-indigo-50 text-indigo-800 border-indigo-300'
                   }`}
                 >
                   {shop.status}
                 </span>
               </h2>
-              <p className="text-xs text-slate-400">
-                Slug: <span className="font-mono text-amber-400">{shop.slug}</span> | Owner:{' '}
-                {owner.name} ({owner.email})
+              <p className="text-xs text-slate-500">
+                Slug: <span className="font-mono text-amber-700 font-bold">{shop.slug}</span> |
+                Owner: <span className="font-semibold text-slate-800">{owner.name}</span> (
+                {owner.email})
               </p>
             </div>
           </div>
@@ -130,13 +131,13 @@ export function SellerDetailModal({
           <div className="flex items-center gap-3">
             <Link
               href={`/admin/sellers/${shop.id}`}
-              className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
+              className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 shadow-xs"
             >
               Open Review Page <ExternalLink className="w-3.5 h-3.5" />
             </Link>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-all"
+              className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-200 transition-all cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -144,13 +145,13 @@ export function SellerDetailModal({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-800 bg-slate-950/30 px-6 gap-2">
+        <div className="flex border-b border-slate-200 bg-slate-50 px-6 gap-2">
           <button
             onClick={() => setActiveTab('details')}
-            className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
+            className={`py-3 px-4 text-xs font-extrabold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'details'
-                ? 'border-amber-400 text-amber-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-amber-500 text-amber-800'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
             }`}
           >
             <FileText className="w-4 h-4" />
@@ -158,10 +159,10 @@ export function SellerDetailModal({
           </button>
           <button
             onClick={() => setActiveTab('documents')}
-            className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
+            className={`py-3 px-4 text-xs font-extrabold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'documents'
-                ? 'border-amber-400 text-amber-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-amber-500 text-amber-800'
+                : 'border-transparent text-slate-500 hover:text-slate-900'
             }`}
           >
             <FileCheck className="w-4 h-4" />
@@ -170,10 +171,10 @@ export function SellerDetailModal({
           {!isSupervisor && (
             <button
               onClick={() => setActiveTab('actions')}
-              className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
+              className={`py-3 px-4 text-xs font-extrabold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'actions'
-                  ? 'border-amber-400 text-amber-400'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                  ? 'border-amber-500 text-amber-800'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
               <ShieldCheck className="w-4 h-4" />
@@ -187,27 +188,31 @@ export function SellerDetailModal({
           {activeTab === 'details' && (
             <div className="space-y-6">
               {/* Primary Owner Info */}
-              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
-                  <User className="w-4 h-4" />
+              <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
+                  <User className="w-4 h-4 text-amber-600" />
                   Primary Owner Profile
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                   <div>
-                    <span className="text-slate-400 block">Full Name</span>
-                    <span className="font-semibold text-white">{owner.name || 'N/A'}</span>
+                    <span className="text-slate-500 block text-[11px] font-medium">Full Name</span>
+                    <span className="font-bold text-slate-900">{owner.name || 'N/A'}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">Email Address</span>
-                    <span className="font-semibold text-slate-200 flex items-center gap-1">
-                      <Mail className="w-3 h-3 text-amber-400" />
+                    <span className="text-slate-500 block text-[11px] font-medium">
+                      Email Address
+                    </span>
+                    <span className="font-bold text-slate-900 flex items-center gap-1">
+                      <Mail className="w-3 h-3 text-amber-600" />
                       {owner.email || 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">Contact Phone</span>
-                    <span className="font-semibold text-slate-200 flex items-center gap-1">
-                      <Phone className="w-3 h-3 text-amber-400" />
+                    <span className="text-slate-500 block text-[11px] font-medium">
+                      Contact Phone
+                    </span>
+                    <span className="font-bold text-slate-900 flex items-center gap-1">
+                      <Phone className="w-3 h-3 text-amber-600" />
                       {owner.mobile || shop.phone || 'N/A'}
                     </span>
                   </div>
@@ -215,25 +220,29 @@ export function SellerDetailModal({
               </div>
 
               {/* Tax & Business Structure */}
-              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
+              <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-amber-600" />
                   Business Tax & Legal Registration
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                   <div>
-                    <span className="text-slate-400 block">Legal Registered Name</span>
-                    <span className="font-semibold text-white">{profile.legalName || 'N/A'}</span>
+                    <span className="text-slate-500 block text-[11px] font-medium">
+                      Legal Registered Name
+                    </span>
+                    <span className="font-bold text-slate-900">{profile.legalName || 'N/A'}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">PAN Number</span>
-                    <span className="font-mono font-semibold text-amber-300">
+                    <span className="text-slate-500 block text-[11px] font-medium">PAN Number</span>
+                    <span className="font-mono font-extrabold text-amber-800">
                       {profile.panNumber || shop.panNumber || 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">GSTIN Number</span>
-                    <span className="font-mono font-semibold text-amber-300">
+                    <span className="text-slate-500 block text-[11px] font-medium">
+                      GSTIN Number
+                    </span>
+                    <span className="font-mono font-extrabold text-amber-800">
                       {profile.gstin || shop.gstin || 'N/A'}
                     </span>
                   </div>
@@ -241,12 +250,12 @@ export function SellerDetailModal({
               </div>
 
               {/* Physical Address */}
-              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
+              <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-amber-600" />
                   Shop & Pickup Warehouse Address
                 </h3>
-                <p className="text-xs text-slate-200">
+                <p className="text-xs font-semibold text-slate-800">
                   {shop.fullAddress ||
                     primaryAddress.addressLine1 ||
                     profile.businessAddress ||
@@ -254,20 +263,20 @@ export function SellerDetailModal({
                 </p>
                 <div className="grid grid-cols-3 gap-4 text-xs">
                   <div>
-                    <span className="text-slate-400 block">City</span>
-                    <span className="font-semibold text-white">
+                    <span className="text-slate-500 block text-[11px] font-medium">City</span>
+                    <span className="font-bold text-slate-900">
                       {shop.city || profile.city || 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">State</span>
-                    <span className="font-semibold text-white">
+                    <span className="text-slate-500 block text-[11px] font-medium">State</span>
+                    <span className="font-bold text-slate-900">
                       {shop.state || profile.state || 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">Pincode</span>
-                    <span className="font-mono font-semibold text-white">
+                    <span className="text-slate-500 block text-[11px] font-medium">Pincode</span>
+                    <span className="font-mono font-bold text-slate-900">
                       {shop.pincode || profile.pincode || 'N/A'}
                     </span>
                   </div>
@@ -275,28 +284,34 @@ export function SellerDetailModal({
               </div>
 
               {/* Settlement Bank & UPI */}
-              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
-                  <Wallet className="w-4 h-4" />
+              <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-amber-600" />
                   Settlement Bank Account & Payout UPI
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                   <div>
-                    <span className="text-slate-400 block">Account Holder Name</span>
-                    <span className="font-semibold text-white">
+                    <span className="text-slate-500 block text-[11px] font-medium">
+                      Account Holder Name
+                    </span>
+                    <span className="font-bold text-slate-900">
                       {shop.bankAccountHolder || profile.bankAccountHolder || 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">Bank Name & Account</span>
-                    <span className="font-semibold text-white">
+                    <span className="text-slate-500 block text-[11px] font-medium">
+                      Bank Name & Account
+                    </span>
+                    <span className="font-bold text-slate-900">
                       {shop.bankName || profile.bankName || 'N/A'} (
                       {shop.bankAccountNumber || profile.bankAccountNumber || 'N/A'})
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">IFSC Code & UPI ID</span>
-                    <span className="font-mono font-semibold text-amber-300">
+                    <span className="text-slate-500 block text-[11px] font-medium">
+                      IFSC Code & UPI ID
+                    </span>
+                    <span className="font-mono font-extrabold text-amber-800">
                       {shop.bankIfscCode || profile.bankIfscCode || 'N/A'} |{' '}
                       {profile.upiId || 'N/A'}
                     </span>
@@ -308,13 +323,13 @@ export function SellerDetailModal({
 
           {activeTab === 'documents' && (
             <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
-                <FileCheck className="w-4 h-4" />
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
+                <FileCheck className="w-4 h-4 text-amber-600" />
                 Submitted Documents & Verification Assets
               </h3>
 
               {documents.length === 0 ? (
-                <div className="p-8 text-center text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                <div className="p-8 text-center text-slate-500 border border-dashed border-slate-200 bg-slate-50 rounded-2xl text-xs font-medium">
                   No verification documents were attached with this seller application.
                 </div>
               ) : (
@@ -322,21 +337,22 @@ export function SellerDetailModal({
                   {documents.map((doc: any) => (
                     <div
                       key={doc.id}
-                      className="p-4 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between"
+                      className="p-4 bg-slate-50/80 border border-slate-200 rounded-2xl flex items-center justify-between"
                     >
                       <div>
-                        <span className="text-xs font-bold text-white block uppercase tracking-wider">
+                        <span className="text-xs font-bold text-slate-900 block uppercase tracking-wider">
                           {doc.documentType}
                         </span>
-                        <span className="text-[10px] text-slate-400 block mt-0.5">
-                          Status: <span className="text-amber-400 font-semibold">{doc.status}</span>
+                        <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
+                          Status:{' '}
+                          <span className="text-amber-700 font-extrabold">{doc.status}</span>
                         </span>
                       </div>
                       <a
                         href={doc.fileUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg text-xs font-medium flex items-center gap-1 transition-all"
+                        className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-xl text-xs font-extrabold flex items-center gap-1 transition-all shadow-xs"
                       >
                         View File <ExternalLink className="w-3.5 h-3.5" />
                       </a>
@@ -349,8 +365,8 @@ export function SellerDetailModal({
 
           {activeTab === 'actions' && (
             <div className="space-y-6">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4" />
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-amber-600" />
                 Governance & Status Action Controls
               </h3>
 
@@ -358,10 +374,10 @@ export function SellerDetailModal({
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => setActionMode('approve')}
-                  className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${
+                  className={`px-5 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer ${
                     actionMode === 'approve'
-                      ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20'
-                      : 'bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30'
+                      ? 'bg-emerald-600 text-white shadow-md'
+                      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200'
                   }`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
@@ -370,10 +386,10 @@ export function SellerDetailModal({
 
                 <button
                   onClick={() => setActionMode('reject')}
-                  className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${
+                  className={`px-5 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer ${
                     actionMode === 'reject'
-                      ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20'
-                      : 'bg-slate-800 hover:bg-slate-700 text-rose-400 border border-rose-500/30'
+                      ? 'bg-rose-600 text-white shadow-md'
+                      : 'bg-rose-50 hover:bg-rose-100 text-rose-900 border border-rose-200'
                   }`}
                 >
                   <ShieldAlert className="w-4 h-4" />
@@ -382,10 +398,10 @@ export function SellerDetailModal({
 
                 <button
                   onClick={() => setActionMode('suspend')}
-                  className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${
+                  className={`px-5 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer ${
                     actionMode === 'suspend'
-                      ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                      : 'bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30'
+                      ? 'bg-amber-500 text-slate-950 shadow-md'
+                      : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200'
                   }`}
                 >
                   <Clock className="w-4 h-4" />
@@ -395,14 +411,14 @@ export function SellerDetailModal({
 
               {/* APPROVE ACTION PANEL */}
               {actionMode === 'approve' && (
-                <div className="p-5 bg-emerald-950/40 border border-emerald-500/30 rounded-xl space-y-4">
-                  <h4 className="text-sm font-bold text-emerald-300">
+                <div className="p-5 bg-emerald-50/80 border border-emerald-200 rounded-2xl space-y-4">
+                  <h4 className="text-sm font-extrabold text-emerald-900">
                     Configure Seller Approval Parameters
                   </h4>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                         Commission Rate (%)
                       </label>
                       <input
@@ -410,18 +426,18 @@ export function SellerDetailModal({
                         step="0.5"
                         value={commissionRate}
                         onChange={(e) => setCommissionRate(parseFloat(e.target.value))}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white font-mono"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 font-mono text-xs font-bold focus:border-emerald-500 focus:outline-none shadow-xs"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                         Verification Badge
                       </label>
                       <select
                         value={verificationBadge}
                         onChange={(e) => setVerificationBadge(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 text-xs font-bold focus:border-emerald-500 focus:outline-none shadow-xs cursor-pointer"
                       >
                         <option value="VERIFIED_SELLER">VERIFIED_SELLER</option>
                         <option value="TRUSTED_SELLER">TRUSTED_SELLER</option>
@@ -434,7 +450,7 @@ export function SellerDetailModal({
                   <button
                     onClick={handleConfirmApprove}
                     disabled={isSubmitting}
-                    className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/25 transition-all disabled:opacity-50"
+                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting
                       ? 'Approving & Activating Seller...'
@@ -445,8 +461,8 @@ export function SellerDetailModal({
 
               {/* REJECT ACTION PANEL */}
               {actionMode === 'reject' && (
-                <div className="p-5 bg-rose-950/40 border border-rose-500/30 rounded-xl space-y-4">
-                  <h4 className="text-sm font-bold text-rose-300">Provide Rejection Reason</h4>
+                <div className="p-5 bg-rose-50/80 border border-rose-200 rounded-2xl space-y-4">
+                  <h4 className="text-sm font-extrabold text-rose-900">Provide Rejection Reason</h4>
 
                   <div>
                     <textarea
@@ -454,14 +470,14 @@ export function SellerDetailModal({
                       placeholder="e.g. GSTIN certificate is invalid or legal entity name does not match bank account details."
                       value={rejectionReason}
                       onChange={(e) => setRejectionReason(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 text-xs font-medium focus:border-rose-500 focus:outline-none shadow-xs"
                     />
                   </div>
 
                   <button
                     onClick={handleConfirmReject}
                     disabled={isSubmitting}
-                    className="w-full py-3 bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-500/25 transition-all disabled:opacity-50"
+                    className="w-full py-3 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? 'Rejecting Application...' : 'Confirm Application Rejection ✕'}
                   </button>
@@ -470,8 +486,10 @@ export function SellerDetailModal({
 
               {/* SUSPEND ACTION PANEL */}
               {actionMode === 'suspend' && (
-                <div className="p-5 bg-amber-950/40 border border-amber-500/30 rounded-xl space-y-4">
-                  <h4 className="text-sm font-bold text-amber-300">Provide Suspension Reason</h4>
+                <div className="p-5 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-4">
+                  <h4 className="text-sm font-extrabold text-amber-900">
+                    Provide Suspension Reason
+                  </h4>
 
                   <div>
                     <textarea
@@ -479,14 +497,14 @@ export function SellerDetailModal({
                       placeholder="e.g. High customer complaint rate or counterfeit product listing investigation."
                       value={suspensionReason}
                       onChange={(e) => setSuspensionReason(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 text-xs font-medium focus:border-amber-500 focus:outline-none shadow-xs"
                     />
                   </div>
 
                   <button
                     onClick={handleConfirmSuspend}
                     disabled={isSubmitting}
-                    className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-500/25 transition-all disabled:opacity-50"
+                    className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? 'Suspending Shop...' : 'Confirm Shop Suspension ⚠️'}
                   </button>
@@ -496,11 +514,11 @@ export function SellerDetailModal({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-800 bg-slate-950/50 flex justify-end">
+        {/* Modal Footer */}
+        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all"
+            className="px-5 py-2.5 text-xs font-extrabold rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 transition-all cursor-pointer"
           >
             Close Modal
           </button>

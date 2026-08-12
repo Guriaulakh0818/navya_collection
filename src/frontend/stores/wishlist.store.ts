@@ -32,6 +32,7 @@ interface WishlistStore {
   removeItem: (productId: string) => Promise<void>;
   toggleItem: (item: WishlistStoreItem) => Promise<void>;
   clearWishlist: () => Promise<void>;
+  resetLocalWishlist: () => void;
   mergeGuestWishlist: () => Promise<void>;
   isInWishlist: (productId: string) => boolean;
   syncWithServer: (data: { items: WishlistStoreItem[]; count: number }) => void;
@@ -163,6 +164,15 @@ export const useWishlistStore = create<WishlistStore>()(
 
       clearWishlist: async () => {
         set({ items: [], count: 0, isLoading: false, error: null });
+      },
+
+      resetLocalWishlist: () => {
+        set({ items: [], count: 0, isGuest: true, isLoading: false, error: null });
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.removeItem('wishlist-storage');
+          } catch {}
+        }
       },
 
       mergeGuestWishlist: async () => {

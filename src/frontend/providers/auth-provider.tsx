@@ -114,10 +114,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLocalUser(null);
         clearStore();
         try {
-          useCartStore.getState().clearCart();
+          useCartStore.getState().resetLocalCart();
         } catch {}
         try {
-          useWishlistStore.getState().clearWishlist();
+          useWishlistStore.getState().resetLocalWishlist();
         } catch {}
         window.location.href = targetRedirect;
       }

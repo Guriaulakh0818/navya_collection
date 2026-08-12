@@ -23,6 +23,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { PendingApprovalCard } from '@/frontend/features/seller/components/PendingApprovalCard';
+import { useAuthStore, useCartStore, useWishlistStore } from '@/stores';
 
 const SELLER_NAV = [
   { name: 'Dashboard', href: '/seller/dashboard', icon: LayoutDashboard },
@@ -69,6 +70,13 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
     } catch {
       // Ignore
     }
+    useAuthStore.getState().logout();
+    try {
+      useCartStore.getState().resetLocalCart();
+    } catch {}
+    try {
+      useWishlistStore.getState().resetLocalWishlist();
+    } catch {}
     window.location.href = '/login';
   };
 

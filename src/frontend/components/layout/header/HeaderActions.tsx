@@ -12,7 +12,7 @@ import {
   TrendingUp,
   User as UserIcon,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
@@ -43,6 +43,26 @@ export function HeaderActions({ className }: HeaderActionsProps) {
   const wishlistItems = useWishlistStore((s) => s.items);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSellerMenuOpen, setIsSellerMenuOpen] = useState(false);
+  const sellerMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close seller menu dropdown when clicking or tapping outside on mobile/desktop
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (sellerMenuRef.current && !sellerMenuRef.current.contains(e.target as Node)) {
+        setIsSellerMenuOpen(false);
+      }
+    };
+
+    if (isSellerMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isSellerMenuOpen]);
 
   const cartCount = isMounted ? cartItems.reduce((sum, item) => sum + item.quantity, 0) : 0;
   const wishlistCount = isMounted ? wishlistItems.length : 0;
@@ -99,7 +119,7 @@ export function HeaderActions({ className }: HeaderActionsProps) {
 
       {/* VERIFIED SELLER BOUTIQUE BOX OR BECOME SELLER LINK */}
       {isVerifiedSeller ? (
-        <div className="relative shrink-0">
+        <div ref={sellerMenuRef} className="relative shrink-0">
           <button
             type="button"
             onClick={() => setIsSellerMenuOpen(!isSellerMenuOpen)}

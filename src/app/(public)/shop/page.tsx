@@ -200,38 +200,38 @@ function MarketplaceCatalogContent() {
         </div>
 
         {/* TOP CONTROL BAR: SEARCH, VIEW SWITCHER & SORT */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 lg:p-6 shadow-sm space-y-4 sm:space-y-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
             {/* View Mode Switcher */}
-            <div className="flex items-center bg-slate-100 p-1.5 rounded-2xl w-full md:w-auto max-w-full overflow-x-auto scrollbar-none">
+            <div className="flex items-center bg-slate-100 p-1 sm:p-1.5 rounded-2xl w-full md:w-auto max-w-full overflow-x-auto scrollbar-none gap-1">
               <button
                 onClick={() => setActiveView('products')}
-                className={`flex-1 md:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
+                className={`flex-1 md:flex-none px-3 sm:px-6 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
                   activeView === 'products'
                     ? 'bg-navy text-white shadow-md'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Package className="w-4 h-4 shrink-0" />
+                <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                 <span>Products Catalogue ({sortedProducts.length})</span>
               </button>
 
               <button
                 onClick={() => setActiveView('shops')}
-                className={`flex-1 md:flex-none px-4 sm:px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
+                className={`flex-1 md:flex-none px-3 sm:px-6 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
                   activeView === 'shops'
                     ? 'bg-navy text-white shadow-md'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Store className="w-4 h-4 shrink-0" />
+                <Store className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                 <span>Verified Shops ({filteredShops.length})</span>
               </button>
             </div>
 
             {/* Live Search */}
             <div className="relative w-full md:w-96">
-              <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <Input
                 type="text"
                 placeholder={
@@ -241,7 +241,7 @@ function MarketplaceCatalogContent() {
                 }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 rounded-2xl bg-slate-50 border-slate-200 text-xs font-medium focus:bg-white focus:ring-2 focus:ring-navy"
+                className="pl-9 sm:pl-11 rounded-2xl bg-slate-50 border-slate-200 text-xs font-medium focus:bg-white focus:ring-2 focus:ring-navy h-9 sm:h-10"
               />
             </div>
           </div>
@@ -249,99 +249,106 @@ function MarketplaceCatalogContent() {
 
         {/* MAIN CATALOGUE CONTENT WITH SIDEBAR */}
         {activeView === 'products' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {/* SIDEBAR FILTERS */}
-            <div className="space-y-6 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm h-fit">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="font-extrabold text-navy text-sm flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-amber-600" /> Catalog Filters
+            <div className="space-y-3 sm:space-y-4 lg:space-y-6 bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 lg:p-6 shadow-sm h-fit">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2 sm:pb-3">
+                <h3 className="font-extrabold text-navy text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
+                  <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 shrink-0" /> Catalog
+                  Filters
                 </h3>
                 {hasActiveFilters && (
                   <button
                     onClick={resetAllFilters}
-                    className="text-[11px] font-bold text-rose-600 hover:underline cursor-pointer"
+                    className="text-[10px] sm:text-[11px] font-bold text-rose-600 hover:underline cursor-pointer"
                   >
                     Reset All
                   </button>
                 )}
               </div>
 
-              {/* Filter 1: Shop / Seller */}
-              <div className="space-y-2">
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                  Filter By Shop
-                </label>
-                <select
-                  value={selectedShop}
-                  onChange={(e) => setSelectedShop(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 font-bold text-xs rounded-xl px-3 py-2.5 focus:border-navy focus:bg-white focus:outline-none cursor-pointer"
-                >
-                  <option value="all">All Verified Shops ({shops.length})</option>
-                  {shops.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Row 1: Shop & Category 1-Line Side by Side on Mobile */}
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 sm:gap-4">
+                {/* Filter 1: Shop / Seller */}
+                <div className="space-y-1 sm:space-y-1.5">
+                  <label className="block text-[10px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider truncate">
+                    Filter By Shop
+                  </label>
+                  <select
+                    value={selectedShop}
+                    onChange={(e) => setSelectedShop(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 font-bold text-[11px] sm:text-xs rounded-xl px-2 sm:px-3 py-1.5 sm:py-2.5 focus:border-navy focus:bg-white focus:outline-none cursor-pointer truncate"
+                  >
+                    <option value="all">All Verified Shops ({shops.length})</option>
+                    {shops.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              {/* Filter 2: Category */}
-              <div className="space-y-2">
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                  Category
-                </label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 font-bold text-xs rounded-xl px-3 py-2.5 focus:border-navy focus:bg-white focus:outline-none cursor-pointer"
-                >
-                  <option value="all">All Categories</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Filter 3: Price Range */}
-              <div className="space-y-2">
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                  Price Range (₹)
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="number"
-                    placeholder="Min ₹"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    className="bg-slate-50 text-xs rounded-xl h-9"
-                  />
-                  <Input
-                    type="number"
-                    placeholder="Max ₹"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    className="bg-slate-50 text-xs rounded-xl h-9"
-                  />
+                {/* Filter 2: Category */}
+                <div className="space-y-1 sm:space-y-1.5">
+                  <label className="block text-[10px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider truncate">
+                    Category
+                  </label>
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 font-bold text-[11px] sm:text-xs rounded-xl px-2 sm:px-3 py-1.5 sm:py-2.5 focus:border-navy focus:bg-white focus:outline-none cursor-pointer truncate"
+                  >
+                    <option value="all">All Categories</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              {/* Filter 4: Sort */}
-              <div className="space-y-2">
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                  Sort Order
-                </label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 font-bold text-xs rounded-xl px-3 py-2.5 focus:border-navy focus:bg-white focus:outline-none cursor-pointer"
-                >
-                  <option value="newest">Newest Arrivals</option>
-                  <option value="price_asc">Price: Low to High</option>
-                  <option value="price_desc">Price: High to Low</option>
-                  <option value="rating">Highest Rated</option>
-                </select>
+              {/* Row 2: Price Range & Sort Order Side by Side on Mobile */}
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 sm:gap-4">
+                {/* Filter 3: Price Range */}
+                <div className="space-y-1 sm:space-y-1.5">
+                  <label className="block text-[10px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider truncate">
+                    Price Range (₹)
+                  </label>
+                  <div className="grid grid-cols-2 gap-1 sm:gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Min"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                      className="bg-slate-50 text-[11px] sm:text-xs rounded-xl h-8 sm:h-9 px-2"
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Max"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                      className="bg-slate-50 text-[11px] sm:text-xs rounded-xl h-8 sm:h-9 px-2"
+                    />
+                  </div>
+                </div>
+
+                {/* Filter 4: Sort */}
+                <div className="space-y-1 sm:space-y-1.5">
+                  <label className="block text-[10px] sm:text-xs font-extrabold text-slate-700 uppercase tracking-wider truncate">
+                    Sort Order
+                  </label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 font-bold text-[11px] sm:text-xs rounded-xl px-2 sm:px-3 py-1.5 sm:py-2.5 focus:border-navy focus:bg-white focus:outline-none cursor-pointer truncate"
+                  >
+                    <option value="newest">Newest Arrivals</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="rating">Highest Rated</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -355,13 +362,16 @@ function MarketplaceCatalogContent() {
               </div>
 
               {isLoading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-6">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="aspect-[3/4] bg-slate-200 rounded-3xl animate-pulse" />
+                    <div
+                      key={i}
+                      className="aspect-[3/4] bg-slate-200 rounded-2xl sm:rounded-3xl animate-pulse"
+                    />
                   ))}
                 </div>
               ) : sortedProducts.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-6">
                   {sortedProducts.map((p) => (
                     <Link
                       key={p.id}

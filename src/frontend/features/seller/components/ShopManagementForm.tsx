@@ -4,6 +4,7 @@ import {
   Building2,
   Calendar,
   CheckCircle2,
+  ExternalLink,
   FileText,
   Globe,
   Image as ImageIcon,
@@ -245,15 +246,14 @@ export function ShopManagementForm() {
       )}
 
       {/* Top Banner */}
-      <div className="pb-6 border-b border-slate-200 flex items-center justify-between">
+      <div className="pb-5 sm:pb-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-            <Store className="w-6 h-6 text-navy" />
-            Shop Customization & Store Management
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5 sm:gap-3">
+            <Store className="w-5 h-5 sm:w-6 sm:h-6 text-navy shrink-0" />
+            Shop Customization & Settings
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Customize shop branding, Cloudinary banner cover, unique URL slug (`/shop/$
-            {formData.slug}`), shipping policies, and SEO.
+          <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+            Manage your boutique profile, shop URL, policies, and SEO settings.
           </p>
         </div>
 
@@ -261,21 +261,32 @@ export function ShopManagementForm() {
           href={`/shop/${formData.slug}`}
           target="_blank"
           rel="noreferrer"
-          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-navy font-bold border border-slate-200 rounded-xl text-xs flex items-center gap-1.5 transition-all"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-navy font-extrabold border border-slate-200 rounded-xl text-xs whitespace-nowrap shrink-0 transition-all active:scale-95 shadow-xs"
         >
-          Preview Live Storefront ↗
+          <span>Preview Storefront</span>
+          <ExternalLink className="w-3.5 h-3.5 text-navy shrink-0" />
         </a>
       </div>
 
       {/* Tab Navigation */}
       <div className="flex border-b border-slate-200 bg-slate-100/80 rounded-xl p-1 gap-1 max-w-full overflow-x-auto scrollbar-none">
         {[
-          { id: 'branding', label: 'Branding & Images', icon: ImageIcon },
-          { id: 'identity', label: 'Identity & Unique URL', icon: LinkIcon },
-          { id: 'address', label: 'Address & Contact', icon: MapPin },
-          { id: 'policies', label: 'Shop Policies', icon: Truck },
-          { id: 'seo', label: 'SEO Metadata', icon: Globe },
-          { id: 'vacation', label: 'Vacation Mode 🌴', icon: Palmtree },
+          {
+            id: 'branding',
+            shortLabel: 'Branding',
+            fullLabel: 'Branding & Images',
+            icon: ImageIcon,
+          },
+          {
+            id: 'identity',
+            shortLabel: 'Shop URL',
+            fullLabel: 'Identity & Unique URL',
+            icon: LinkIcon,
+          },
+          { id: 'address', shortLabel: 'Address', fullLabel: 'Address & Contact', icon: MapPin },
+          { id: 'policies', shortLabel: 'Policies', fullLabel: 'Shop Policies', icon: Truck },
+          { id: 'seo', shortLabel: 'SEO', fullLabel: 'SEO Metadata', icon: Globe },
+          { id: 'vacation', shortLabel: 'Vacation', fullLabel: 'Vacation Mode 🌴', icon: Palmtree },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -283,14 +294,15 @@ export function ShopManagementForm() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 py-3 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap ${
+              className={`flex-1 py-2.5 sm:py-3 px-2 sm:px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 whitespace-nowrap ${
                 isActive
                   ? 'bg-navy text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
               }`}
             >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{tab.label}</span>
+              <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span className="hidden sm:inline">{tab.fullLabel}</span>
+              <span className="sm:hidden">{tab.shortLabel}</span>
             </button>
           );
         })}
@@ -404,8 +416,8 @@ export function ShopManagementForm() {
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   Unique Shop URL Slug *
                 </label>
-                <div className="flex items-center">
-                  <span className="bg-slate-100 border border-r-0 border-slate-200 px-3 py-3 text-slate-500 font-mono text-[11px] rounded-l-xl">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center">
+                  <span className="bg-slate-100 border border-b-0 sm:border-b sm:border-r-0 border-slate-200 px-3 py-2.5 sm:py-3 text-slate-500 font-mono text-[10px] sm:text-[11px] rounded-t-xl sm:rounded-t-none sm:rounded-l-xl truncate">
                     navyacollection.store/shop/
                   </span>
                   <input
@@ -417,7 +429,7 @@ export function ShopManagementForm() {
                         slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''),
                       })
                     }
-                    className="w-full bg-white border border-slate-200 rounded-r-xl px-3 py-3 text-amber-700 font-mono font-extrabold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none shadow-xs"
+                    className="w-full bg-white border border-slate-200 rounded-b-xl sm:rounded-b-none sm:rounded-r-xl px-3 py-2.5 sm:py-3 text-amber-700 font-mono font-extrabold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none shadow-xs text-xs"
                   />
                 </div>
               </div>
@@ -704,10 +716,10 @@ export function ShopManagementForm() {
           <button
             type="submit"
             disabled={isSaving}
-            className="px-8 py-3.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto px-8 py-3.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
-            <Save className="w-4 h-4" />
-            {isSaving ? 'Saving Customizations...' : 'Save Boutique Customization ✓'}
+            <Save className="w-4 h-4 shrink-0" />
+            <span>{isSaving ? 'Saving Customizations...' : 'Save Boutique Customization ✓'}</span>
           </button>
         </div>
       </form>

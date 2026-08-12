@@ -68,6 +68,7 @@ interface CartStore extends CartCalculatedTotals {
   updateQuantity: (itemIdOrProductId: string, quantity: number) => Promise<void>;
   removeItem: (itemIdOrProductId: string) => Promise<void>;
   clearCart: () => Promise<void>;
+  resetLocalCart: () => void;
   mergeGuestCart: () => Promise<void>;
   syncWithServer: (data: CartCalculatedTotals) => void;
   setGuestMode: (isGuest: boolean) => void;
@@ -317,6 +318,21 @@ export const useCartStore = create<CartStore>()(
             get().syncWithServer(json.data);
           }
         } catch {}
+      },
+
+      resetLocalCart: () => {
+        set({
+          ...DEFAULT_TOTALS,
+          isGuest: true,
+          isLoading: false,
+          error: null,
+          appliedCoupon: null,
+        });
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.removeItem('cart-storage');
+          } catch {}
+        }
       },
 
       mergeGuestCart: async () => {

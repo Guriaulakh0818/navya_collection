@@ -18,11 +18,13 @@ export function CartSyncProvider({ children }: { children: React.ReactNode }) {
   const cartStore = useCartStore();
   const wishlistStore = useWishlistStore();
   const hasMergedRef = useRef(false);
+  const wasAuthRef = useRef(false);
 
   useEffect(() => {
     if (isLoading) return;
 
     if (isAuthenticated) {
+      wasAuthRef.current = true;
       if (!hasMergedRef.current) {
         hasMergedRef.current = true;
 
@@ -35,8 +37,14 @@ export function CartSyncProvider({ children }: { children: React.ReactNode }) {
       }
     } else {
       hasMergedRef.current = false;
-      cartStore.setGuestMode(true);
-      wishlistStore.setGuestMode(true);
+      if (wasAuthRef.current) {
+        wasAuthRef.current = false;
+        cartStore.resetLocalCart();
+        wishlistStore.resetLocalWishlist();
+      } else {
+        cartStore.setGuestMode(true);
+        wishlistStore.setGuestMode(true);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isLoading]);
