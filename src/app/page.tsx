@@ -112,7 +112,7 @@ export default async function MultiVendorMarketplaceHomePage() {
           <HorizontalCarousel
             title="Trending Marketplace Items"
             subtitle="Top-rated customer favorites from our partner boutiques."
-            icon={<Sparkles className="w-5 h-5 text-amber-600" />}
+            icon={<Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />}
             actionLink="/shop"
             actionText="Explore All"
           >
@@ -120,45 +120,45 @@ export default async function MultiVendorMarketplaceHomePage() {
               <Link
                 key={p.id}
                 href={`/product/${p.slug}`}
-                className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-amber-500/50 hover:shadow-md transition-all flex flex-col shadow-xs w-[200px] xs:w-[225px] sm:w-[250px] shrink-0 snap-start"
+                className="group bg-white border border-slate-200 rounded-xl sm:rounded-2xl overflow-hidden hover:border-amber-500/50 hover:shadow-md transition-all flex flex-col shadow-xs w-[145px] xs:w-[165px] sm:w-[220px] md:w-[250px] shrink-0 snap-start"
               >
-                <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
+                <div className="aspect-[4/5] sm:aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
                   {p.images?.[0]?.imageUrl ? (
                     <Image
                       src={p.images[0].imageUrl}
                       alt={p.name}
                       fill
-                      sizes="(max-width: 640px) 220px, 250px"
+                      sizes="(max-width: 640px) 165px, 250px"
                       className="object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      <Tag className="w-10 h-10" />
+                      <Tag className="w-8 h-8 sm:w-10 sm:h-10" />
                     </div>
                   )}
 
                   {/* Shop Badge Pill */}
-                  <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-white/90 backdrop-blur-md rounded-full text-[9px] font-extrabold text-slate-800 border border-slate-200 flex items-center gap-1 shadow-xs truncate max-w-[85%]">
-                    <Building2 className="w-3 h-3 text-amber-600 shrink-0" />
+                  <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 px-1.5 sm:px-2 py-0.5 bg-white/90 backdrop-blur-md rounded-full text-[8px] sm:text-[9px] font-extrabold text-slate-800 border border-slate-200 flex items-center gap-0.5 sm:gap-1 shadow-xs truncate max-w-[85%]">
+                    <Building2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-600 shrink-0" />
                     <span className="truncate">{p.shop?.name || 'Navya Store'}</span>
                   </div>
                 </div>
 
-                <div className="p-3.5 flex-1 flex flex-col justify-between space-y-2">
+                <div className="p-2 sm:p-3.5 flex-1 flex flex-col justify-between space-y-1 sm:space-y-2">
                   <div>
-                    <h3 className="font-extrabold text-navy text-xs sm:text-sm line-clamp-1 group-hover:text-amber-600 transition-colors">
+                    <h3 className="font-extrabold text-navy text-[11px] sm:text-xs md:text-sm line-clamp-1 group-hover:text-amber-600 transition-colors">
                       {p.name}
                     </h3>
-                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                    <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-0.5 truncate">
                       {p.category?.name || 'Couture'}
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                    <span className="text-sm sm:text-base font-extrabold text-emerald-700 font-mono">
+                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-100">
+                    <span className="text-xs sm:text-sm md:text-base font-extrabold text-emerald-700 font-mono">
                       ₹{Number(p.price || 0).toLocaleString('en-IN')}
                     </span>
-                    <span className="text-xs text-amber-700 font-extrabold group-hover:translate-x-0.5 transition-transform">
+                    <span className="text-[10px] sm:text-xs text-amber-700 font-extrabold group-hover:translate-x-0.5 transition-transform">
                       Buy →
                     </span>
                   </div>
@@ -173,7 +173,7 @@ export default async function MultiVendorMarketplaceHomePage() {
           <HorizontalCarousel
             title="New Arrivals Season 2026"
             subtitle="Freshly listed designer outfits added today across all vendor shops."
-            icon={<ShoppingBag className="w-5 h-5 text-amber-600" />}
+            icon={<ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />}
             actionLink="/shop?filter=new"
             actionText="View New Listings"
           >
@@ -181,42 +181,44 @@ export default async function MultiVendorMarketplaceHomePage() {
               <Link
                 key={p.id}
                 href={`/product/${p.slug}`}
-                className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-amber-500/50 hover:shadow-md transition-all flex flex-col shadow-xs w-[200px] xs:w-[225px] sm:w-[250px] shrink-0 snap-start"
+                className="group bg-white border border-slate-200 rounded-xl sm:rounded-2xl overflow-hidden hover:border-amber-500/50 hover:shadow-md transition-all flex flex-col shadow-xs w-[145px] xs:w-[165px] sm:w-[220px] md:w-[250px] shrink-0 snap-start"
               >
-                <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
+                <div className="aspect-[4/5] sm:aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
                   {p.images?.[0]?.imageUrl ? (
                     <Image
                       src={p.images[0].imageUrl}
                       alt={p.name}
                       fill
-                      sizes="(max-width: 640px) 220px, 250px"
+                      sizes="(max-width: 640px) 165px, 250px"
                       className="object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      <Tag className="w-10 h-10" />
+                      <Tag className="w-8 h-8 sm:w-10 sm:h-10" />
                     </div>
                   )}
-                  <span className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-amber-500 text-slate-950 text-[9px] font-extrabold rounded-full shadow-xs">
+                  <span className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 px-1.5 sm:px-2 py-0.5 bg-amber-500 text-slate-950 text-[8px] sm:text-[9px] font-extrabold rounded-full shadow-xs">
                     NEW
                   </span>
                 </div>
 
-                <div className="p-3.5 flex-1 flex flex-col justify-between space-y-2">
+                <div className="p-2 sm:p-3.5 flex-1 flex flex-col justify-between space-y-1 sm:space-y-2">
                   <div>
-                    <h3 className="font-extrabold text-navy text-xs sm:text-sm line-clamp-1 group-hover:text-amber-600 transition-colors">
+                    <h3 className="font-extrabold text-navy text-[11px] sm:text-xs md:text-sm line-clamp-1 group-hover:text-amber-600 transition-colors">
                       {p.name}
                     </h3>
-                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                    <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-0.5 truncate">
                       {p.shop?.name || 'Boutique Partner'}
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                    <span className="text-sm sm:text-base font-extrabold text-amber-700 font-mono">
+                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-100">
+                    <span className="text-xs sm:text-sm md:text-base font-extrabold text-amber-700 font-mono">
                       ₹{Number(p.price || 0).toLocaleString('en-IN')}
                     </span>
-                    <span className="text-xs text-amber-700 font-extrabold">Shop →</span>
+                    <span className="text-[10px] sm:text-xs text-amber-700 font-extrabold">
+                      Shop →
+                    </span>
                   </div>
                 </div>
               </Link>
