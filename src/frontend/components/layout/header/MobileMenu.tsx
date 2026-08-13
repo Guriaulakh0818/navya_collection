@@ -51,13 +51,28 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 
   if (!open || !mounted) return null;
 
+  const userRole = String(user?.role || '').toUpperCase();
+  const isVerifiedSeller = Boolean(
+    mounted &&
+    user &&
+    (['SELLER', 'OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(userRole) ||
+      Boolean((user as any)?.shopName || (user as any)?.shop)),
+  );
+
+  const shopName =
+    (user as any)?.shopName ||
+    (user as any)?.shop?.name ||
+    (userRole === 'OWNER' || userRole === 'ADMIN' ? 'Navya Boutique' : 'My Boutique');
+
   const menuItems = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop', href: '/shop', icon: ShoppingBag },
     { label: 'Gents Wear', href: '/shop?category=gents', icon: Shirt },
     { label: 'Kids Wear', href: '/shop?category=kids', icon: Baby },
     { label: 'Categories', href: '/shop', icon: Grid },
-    { label: 'Become Seller ✨', href: '/become-seller', icon: Store },
+    isVerifiedSeller
+      ? { label: 'Seller Dashboard 🏪', href: '/seller/dashboard', icon: Store }
+      : { label: 'Become Seller ✨', href: '/become-seller', icon: Store },
     { label: 'My Account', href: user ? '/account' : '/login', icon: User },
     { label: 'Contact Us', href: '/contact', icon: PhoneCall },
   ];
@@ -118,20 +133,26 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
 
         {/* 3. BOTTOM CTA BUTTONS */}
         <div className="space-y-2 shrink-0 pt-3 border-t border-slate-100">
-          <Link
-            href="/shop?category=gents"
-            onClick={onClose}
-            className="w-full block bg-[#F15A25] hover:bg-[#F15A25]/90 text-white font-extrabold text-xs tracking-wider uppercase py-3 rounded-2xl text-center shadow-md transition-all active:scale-[0.98]"
-          >
-            EXPLORE GENTS COLLECTION
-          </Link>
+          {isVerifiedSeller && (
+            <Link
+              href="/seller/dashboard"
+              onClick={onClose}
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-extrabold text-xs tracking-wider uppercase py-3 rounded-2xl text-center shadow-md transition-all active:scale-[0.98]"
+            >
+              <Store className="w-4 h-4 text-slate-950 shrink-0" />
+              <span className="truncate">SELLER DASHBOARD ({shopName})</span>
+            </Link>
+          )}
 
           <Link
             href={user ? '/account' : '/login'}
             onClick={onClose}
-            className="w-full block bg-[#183A73] hover:bg-[#183A73]/90 text-white font-extrabold text-xs tracking-wider uppercase py-3 rounded-2xl text-center shadow-md transition-all active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-2 bg-[#183A73] hover:bg-[#183A73]/90 text-white font-extrabold text-xs tracking-wider uppercase py-3 rounded-2xl text-center shadow-md transition-all active:scale-[0.98]"
           >
-            {user ? `MY ACCOUNT (${user.name || 'PROFILE'})` : 'SIGN IN WITH EMAIL OTP'}
+            <User className="w-4 h-4 text-white shrink-0" />
+            <span className="truncate">
+              {user ? `MY ACCOUNT (${user.name || 'PROFILE'})` : 'SIGN IN WITH EMAIL OTP'}
+            </span>
           </Link>
         </div>
       </div>
