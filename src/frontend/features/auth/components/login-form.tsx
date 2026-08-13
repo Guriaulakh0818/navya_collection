@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, CheckCircle2, Mail, RotateCw } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, Mail, RotateCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -13,6 +13,21 @@ import { useAuthStore } from '@/stores';
 type LoginFormProps = {
   initialUser?: { name?: string; email?: string } | null;
 };
+
+// Helper utility to mask email address (e.g., gurvindersingh0218@gmail.com -> gu***18@gmail.com)
+function maskEmail(emailAddress: string): string {
+  if (!emailAddress || !emailAddress.includes('@')) return emailAddress;
+  const parts = emailAddress.split('@');
+  const user = parts[0];
+  const domain = parts[1];
+
+  if (user.length <= 3) {
+    return `${user[0]}***@${domain}`;
+  }
+  const start = user.slice(0, 2);
+  const end = user.slice(-2);
+  return `${start}***${end}@${domain}`;
+}
 
 export function LoginForm({ initialUser }: LoginFormProps) {
   const { user: authUser, logout } = useAuth();
@@ -33,6 +48,8 @@ export function LoginForm({ initialUser }: LoginFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('/');
   const [resendCooldown, setResendCooldown] = useState(60);
+  const [otpError, setOtpError] = useState(false);
+  const [otpErrorMessage, setOtpErrorMessage] = useState<string | null>(null);
 
   const router = useRouter();
   const { toast } = useToast();
@@ -98,6 +115,8 @@ export function LoginForm({ initialUser }: LoginFormProps) {
     }
 
     setIsSubmitting(true);
+    setOtpError(false);
+    setOtpErrorMessage(null);
 
     try {
       const res = await fetch('/api/v1/auth/send-otp', {
@@ -121,7 +140,10 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           } catch {}
         } else {
           try {
-            toast(json.message || `Verification code sent to ${cleanedEmail}`, 'success');
+            toast(
+              json.message || `Verification code sent to ${maskEmail(cleanedEmail)}`,
+              'success',
+            );
           } catch {}
         }
       } else if (res.status === 429 || json.status === 'COOLDOWN' || json.statusCode === 429) {
@@ -157,15 +179,17 @@ export function LoginForm({ initialUser }: LoginFormProps) {
     }
   };
 
-  const handleVerifyOtp = async (e?: React.SyntheticEvent) => {
+  const handleVerifyOtp = async (e?: React.SyntheticEvent, overrideOtp?: string) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
 
-    const cleanedOtp = otp.trim();
+    const cleanedOtp = (overrideOtp || otp).trim();
 
     if (!cleanedOtp || cleanedOtp.length !== 6) {
+      setOtpError(true);
+      setOtpErrorMessage('Please enter a valid 6-digit verification code.');
       try {
         toast('Please enter a valid 6-digit verification code.', 'error');
       } catch {}
@@ -173,6 +197,9 @@ export function LoginForm({ initialUser }: LoginFormProps) {
     }
 
     setIsSubmitting(true);
+    setOtpError(false);
+    setOtpErrorMessage(null);
+
     try {
       const res = await fetch('/api/v1/auth/verify-otp', {
         method: 'POST',
@@ -201,23 +228,45 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           router.push(destination);
         }
       } else {
+        setOtpError(true);
+        const errMsg =
+          json.message ||
+          'Invalid or expired verification code. Please check your code and try again.';
+        setOtpErrorMessage(errMsg);
         try {
-          toast(json.message || 'Invalid or expired verification code.', 'error');
+          toast(errMsg, 'error');
         } catch {}
       }
     } catch (err: any) {
       console.error('[VERIFY_OTP_CLIENT_ERROR]', err);
+      setOtpError(true);
+      const errMsg = err?.message || 'Verification error. Please try again.';
+      setOtpErrorMessage(errMsg);
       try {
-        toast(err?.message || 'Verification error. Please try again.', 'error');
+        toast(errMsg, 'error');
       } catch {}
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleOtpInputChange = (val: string) => {
+    const cleaned = val.replace(/\D/g, '').slice(0, 6);
+    setOtp(cleaned);
+    setOtpError(false);
+    setOtpErrorMessage(null);
+
+    // Auto-verify as soon as user types/pastes 6 digits
+    if (cleaned.length === 6 && !isSubmitting) {
+      handleVerifyOtp(undefined, cleaned);
+    }
+  };
+
   const handleResetStep = () => {
     setStep('email');
     setOtp('');
+    setOtpError(false);
+    setOtpErrorMessage(null);
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('navya_login_step');
       sessionStorage.removeItem('navya_login_email');
@@ -235,7 +284,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
             </strong>
             {activeUser.email && (
               <span className="block text-[11px] font-mono text-amber-700 font-normal mt-0.5">
-                {activeUser.email}
+                {maskEmail(activeUser.email)}
               </span>
             )}
           </p>
@@ -270,9 +319,14 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           {step === 'email' ? 'Welcome Back' : 'Enter Verification Code'}
         </h1>
         <p className="mt-1.5 text-xs sm:text-sm font-medium text-slate-600">
-          {step === 'email'
-            ? 'Sign in to your Navya Collection account'
-            : `We sent a 6-digit code to ${email}`}
+          {step === 'email' ? (
+            'Sign in to your Navya Collection account'
+          ) : (
+            <>
+              We sent a 6-digit verification code to{' '}
+              <strong className="font-extrabold text-[#183A73]">{maskEmail(email)}</strong>
+            </>
+          )}
         </p>
       </div>
 
@@ -334,26 +388,37 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           }}
           className="space-y-5"
         >
+          {/* Navya Theme Invalid OTP Notification Alert Banner */}
+          {otpErrorMessage && (
+            <div className="rounded-2xl bg-rose-50 border border-rose-200/80 p-3.5 text-xs font-semibold text-rose-800 flex items-start gap-2.5 shadow-xs animate-in fade-in slide-in-from-top-2">
+              <AlertCircle className="h-4.5 w-4.5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-extrabold text-rose-900">Invalid Verification Code</p>
+                <p className="text-[11px] text-rose-700 font-medium">{otpErrorMessage}</p>
+              </div>
+            </div>
+          )}
+
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-extrabold uppercase tracking-wider text-[#183A73]">
                 6-Digit Verification Code
               </label>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#183A73] bg-[#183A73]/5 px-2.5 py-0.5 rounded-full border border-[#183A73]/20 truncate max-w-[170px]">
-                <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
-                <span className="truncate">{email}</span>
-              </span>
             </div>
 
             <Input
               type="text"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={(e) => handleOtpInputChange(e.target.value)}
               placeholder="123456"
               maxLength={6}
               autoFocus
               required
-              className="mt-1.5 text-center text-2xl font-black tracking-[0.4em] h-13 rounded-2xl border-slate-200 focus:ring-2 focus:ring-[#183A73] text-[#183A73]"
+              className={`mt-1.5 text-center text-2xl font-black tracking-[0.4em] h-13 rounded-2xl transition-all text-[#183A73] ${
+                otpError
+                  ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:ring-2 focus:ring-rose-500 focus:border-rose-500'
+                  : 'border-slate-200 focus:ring-2 focus:ring-[#183A73]'
+              }`}
             />
             <p className="mt-2 text-center text-[11px] font-medium text-slate-500">
               Please check your inbox or spam folder for your code.
