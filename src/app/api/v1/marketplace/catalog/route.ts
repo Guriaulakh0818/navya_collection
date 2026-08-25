@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     let dbShops: any[] = [];
@@ -74,14 +77,21 @@ export async function GET() {
     const finalShops = dbShops;
     const finalProducts = dbProducts;
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        shops: finalShops,
-        products: finalProducts,
-        categories: dbCategories,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          shops: finalShops,
+          products: finalProducts,
+          categories: dbCategories,
+        },
       },
-    });
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      },
+    );
   } catch (error: any) {
     console.error('❌ GET Marketplace Catalog Error:', error);
     return NextResponse.json(
