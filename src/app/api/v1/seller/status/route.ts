@@ -5,6 +5,8 @@ import { NextResponse } from 'next/server';
 import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 function getJwtSecretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET || 'navya_collection_jwt_secret_key_2026_min_32chars';
   return new TextEncoder().encode(secret);
