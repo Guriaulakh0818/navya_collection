@@ -2,74 +2,6 @@ import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
 
-const mockSearchStore = [
-  {
-    id: 'prd_banarasi_1',
-    name: 'Royal Banarasi Silk Saree',
-    slug: 'royal-banarasi-silk-saree',
-    sku: 'NAV-SAN-1001',
-    brand: 'Navya Couture',
-    description:
-      'Exquisite Indian luxury couture from Navya Collection. Featuring intricate hand embroidery and fine zari work.',
-    price: new Prisma.Decimal(14999),
-    compareAtPrice: new Prisma.Decimal(17499),
-    stock: 45,
-    status: 'active',
-    isFeatured: true,
-    isNewArrival: true,
-    rating: 4.8,
-    reviewCount: 28,
-    createdAt: new Date('2026-01-15'),
-    updatedAt: new Date(),
-    deletedAt: null,
-    category: { id: 'cat_sarees', name: 'Sarees', slug: 'sarees' },
-    images: [
-      {
-        id: 'img_1',
-        url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-        imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-        secureUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-        altText: 'Royal Banarasi Silk Saree Front View',
-        isPrimary: true,
-        sortOrder: 0,
-      },
-    ],
-    _count: { variants: 2 },
-  },
-  {
-    id: 'prd_kanjeevaram_2',
-    name: 'Heritage Kanjeevaram Silk Saree',
-    slug: 'heritage-kanjeevaram-silk-saree',
-    sku: 'NAV-KAN-1002',
-    brand: 'South Heritage',
-    description: 'Handcrafted pure Kanjeevaram silk saree woven with rich golden zari borders.',
-    price: new Prisma.Decimal(24999),
-    compareAtPrice: new Prisma.Decimal(28999),
-    stock: 25,
-    status: 'active',
-    isFeatured: true,
-    isNewArrival: false,
-    rating: 4.9,
-    reviewCount: 34,
-    createdAt: new Date('2026-02-10'),
-    updatedAt: new Date(),
-    deletedAt: null,
-    category: { id: 'cat_sarees', name: 'Sarees', slug: 'sarees' },
-    images: [
-      {
-        id: 'img_2',
-        url: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800',
-        imageUrl: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800',
-        secureUrl: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800',
-        altText: 'Heritage Kanjeevaram Silk Saree',
-        isPrimary: true,
-        sortOrder: 0,
-      },
-    ],
-    _count: { variants: 1 },
-  },
-];
-
 export class SearchRepository {
   /**
    * Searches active products matching Prisma filters, pagination, and sorting options.
@@ -131,8 +63,7 @@ export class SearchRepository {
         },
       });
     } catch {
-      let items = mockSearchStore.filter((p) => p.deletedAt === null && p.status === 'active');
-      return items.slice(skip, skip + take);
+      return [];
     }
   }
 
@@ -153,7 +84,7 @@ export class SearchRepository {
         },
       });
     } catch {
-      return mockSearchStore.filter((p) => p.deletedAt === null && p.status === 'active').length;
+      return 0;
     }
   }
 
@@ -243,27 +174,10 @@ export class SearchRepository {
         brands: brandList,
       };
     } catch {
-      const matchingProducts = mockSearchStore
-        .filter(
-          (p) =>
-            p.deletedAt === null &&
-            p.status === 'active' &&
-            (p.name.toLowerCase().includes(formattedTerm.toLowerCase()) ||
-              p.sku.toLowerCase().includes(formattedTerm.toLowerCase())),
-        )
-        .slice(0, limit)
-        .map((p) => ({
-          id: p.id,
-          name: p.name,
-          slug: p.slug,
-          price: Number(p.price),
-          image: p.images[0]?.imageUrl || null,
-        }));
-
       return {
-        products: matchingProducts,
-        categories: [{ id: 'cat_sarees', name: 'Sarees', slug: 'sarees' }],
-        brands: ['Navya Couture'],
+        products: [],
+        categories: [],
+        brands: [],
       };
     }
   }

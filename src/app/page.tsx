@@ -22,6 +22,14 @@ export default async function MultiVendorMarketplaceHomePage() {
   const categories = data?.categories || [];
   const coupons = data?.coupons || [];
 
+  console.log('PUBLIC HOMEPAGE DATA:', {
+    featuredShops: featuredShops.length,
+    recentShops: recentShops.length,
+    trendingProducts: trendingProducts.length,
+    newArrivals: newArrivals.length,
+    bestSellers: (data?.bestSellers || []).length,
+  });
+
   // JSON-LD SEO Structured Data
   const jsonLdSchema = {
     '@context': 'https://schema.org',
