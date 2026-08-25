@@ -70,7 +70,8 @@ export class CouponService {
 
       // 3. Check Date Validity Window
       const now = new Date();
-      const startDate = coupon.startDate ? new Date(coupon.startDate) : new Date(0);
+      const cAny = coupon as any;
+      const startDate = cAny.startDate ? new Date(cAny.startDate) : new Date(0);
       const validUntil = new Date(coupon.validUntil);
 
       if (now < startDate) {
@@ -91,7 +92,7 @@ export class CouponService {
 
       // 4. Check Minimum Order Amount (> ₹3,000 for NAVYA15VIP)
       const minAmount = Number(coupon.minOrderAmount || 0);
-      if (cleanCode === 'NAVYA15VIP' || coupon.onlyNonDiscounted) {
+      if (cleanCode === 'NAVYA15VIP' || cAny.onlyNonDiscounted) {
         if (cartAmount <= 3000) {
           return {
             success: false,
@@ -111,7 +112,7 @@ export class CouponService {
 
       // 4b. Check Non-Discounted Products Rule for NAVYA15VIP
       let applicableCartAmount = cartAmount;
-      if ((cleanCode === 'NAVYA15VIP' || coupon.onlyNonDiscounted) && items && items.length > 0) {
+      if ((cleanCode === 'NAVYA15VIP' || cAny.onlyNonDiscounted) && items && items.length > 0) {
         // Filter non-discounted items (where originalPrice <= price or no discount)
         const nonDiscountedItems = items.filter(
           (item: any) => !item.originalPrice || Number(item.originalPrice) <= Number(item.price),
@@ -142,7 +143,7 @@ export class CouponService {
       }
 
       // 5. Check Global Usage Limit
-      if (coupon.usageLimit && (coupon.usedCount || 0) >= coupon.usageLimit) {
+      if (cAny.usageLimit && (cAny.usedCount || 0) >= cAny.usageLimit) {
         return {
           success: false,
           message: `Coupon code '${cleanCode}' has reached its maximum total usage limit.`,
@@ -153,7 +154,7 @@ export class CouponService {
       // 6. Check Per-User Usage Limit (if user authenticated)
       if (userId) {
         const userUsageCount = await CouponRepository.countUserUsages(coupon.id, userId);
-        const perUserLimit = coupon.usagePerUser || 1;
+        const perUserLimit = cAny.usagePerUser || 1;
 
         if (userUsageCount >= perUserLimit) {
           return {
@@ -165,10 +166,10 @@ export class CouponService {
       }
 
       // 7. Check Excluded Products (if cart items provided)
-      if (items && items.length > 0 && coupon.excludedProducts) {
-        const excludedList = Array.isArray(coupon.excludedProducts)
-          ? coupon.excludedProducts
-          : (coupon.excludedProducts as any);
+      if (items && items.length > 0 && cAny.excludedProducts) {
+        const excludedList = Array.isArray(cAny.excludedProducts)
+          ? cAny.excludedProducts
+          : (cAny.excludedProducts as any);
         const allItemsExcluded = items.every((item) => excludedList.includes(item.productId));
 
         if (allItemsExcluded) {
@@ -199,9 +200,9 @@ export class CouponService {
         data: {
           code: coupon.code,
           title:
-            coupon.title ||
+            cAny.title ||
             `${discountValueNum}${coupon.discountType === 'PERCENTAGE' ? '%' : '₹'} OFF`,
-          description: coupon.description || null,
+          description: cAny.description || null,
           discountType: coupon.discountType,
           discountValue: discountValueNum,
           discountAmount,

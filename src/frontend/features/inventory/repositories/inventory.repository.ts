@@ -13,34 +13,6 @@ export function calculateStockStatus(
   return 'IN_STOCK';
 }
 
-const mockInventoryStore = new Map<string, any>([
-  [
-    'var_1',
-    {
-      id: 'var_1',
-      productId: 'prd_banarasi_1',
-      name: 'Free Size / Royal Crimson',
-      sku: 'NAV-SAN-1001-FS-RED',
-      stock: 20,
-      availableStock: 20,
-      reservedStock: 0,
-      soldStock: 5,
-      minimumStockLevel: 5,
-      maximumStockLevel: 100,
-      stockStatus: 'IN_STOCK',
-      lastRestockedAt: new Date(),
-      updatedAt: new Date(),
-      deletedAt: null,
-      product: {
-        id: 'prd_banarasi_1',
-        name: 'Royal Banarasi Silk Saree',
-        slug: 'royal-banarasi-silk-saree',
-        sku: 'NAV-SAN-1001',
-      },
-    },
-  ],
-]);
-
 export class InventoryRepository {
   /**
    * Queries inventory variants with pagination, product details, search, and stock status filters.
@@ -86,13 +58,7 @@ export class InventoryRepository {
         },
       });
     } catch {
-      let items = Array.from(mockInventoryStore.values()).filter((v) => v.deletedAt === null);
-
-      if (where.stockStatus) {
-        items = items.filter((v) => v.stockStatus === where.stockStatus);
-      }
-
-      return items.slice(skip, skip + take);
+      return [];
     }
   }
 
@@ -108,7 +74,7 @@ export class InventoryRepository {
         },
       });
     } catch {
-      return Array.from(mockInventoryStore.values()).filter((v) => v.deletedAt === null).length;
+      return 0;
     }
   }
 
@@ -134,8 +100,6 @@ export class InventoryRepository {
         },
       });
     } catch {
-      const v = mockInventoryStore.get(variantId);
-      if (v && v.deletedAt === null) return v;
       return null;
     }
   }
@@ -192,16 +156,7 @@ export class InventoryRepository {
         },
       });
     } catch {
-      const updated = {
-        ...current,
-        ...data,
-        availableStock: newAvailable,
-        stock: newAvailable,
-        stockStatus: newStatus,
-        updatedAt: new Date(),
-      };
-      mockInventoryStore.set(variantId, updated);
-      return updated;
+      throw new Error(`Failed to update variant ${variantId}.`);
     }
   }
 
@@ -232,16 +187,7 @@ export class InventoryRepository {
         }),
       );
     } catch {
-      const updatedList = [];
-      for (const item of items) {
-        const updated = await this.update(item.variantId, {
-          availableStock: item.availableStock,
-          minimumStockLevel: item.minimumStockLevel,
-          lastRestockedAt: new Date(),
-        });
-        updatedList.push(updated);
-      }
-      return updatedList;
+      throw new Error(`Failed to bulk update variants.`);
     }
   }
 }

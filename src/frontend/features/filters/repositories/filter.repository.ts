@@ -2,115 +2,6 @@ import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
 
-const mockFilterStore = [
-  {
-    id: 'prd_banarasi_1',
-    name: 'Royal Banarasi Silk Saree',
-    slug: 'royal-banarasi-silk-saree',
-    sku: 'NAV-SAN-1001',
-    brand: 'Navya Couture',
-    gender: 'women',
-    ageGroup: 'adults',
-    fabric: 'Silk',
-    description: 'Exquisite Indian luxury couture from Navya Collection.',
-    price: new Prisma.Decimal(14999),
-    compareAtPrice: new Prisma.Decimal(17499),
-    stock: 45,
-    status: 'active',
-    isFeatured: true,
-    isNewArrival: true,
-    rating: 4.8,
-    reviewCount: 28,
-    createdAt: new Date('2026-01-15'),
-    updatedAt: new Date(),
-    deletedAt: null,
-    category: { id: 'cat_sarees', name: 'Sarees', slug: 'sarees' },
-    images: [
-      {
-        id: 'img_1',
-        url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-        imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-        secureUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-        altText: 'Royal Banarasi Silk Saree Front View',
-        isPrimary: true,
-        sortOrder: 0,
-      },
-    ],
-    variants: [
-      {
-        id: 'var_1',
-        size: 'Free Size',
-        color: 'Red',
-        price: new Prisma.Decimal(14999),
-        stock: 25,
-        stockStatus: 'IN_STOCK',
-      },
-      {
-        id: 'var_2',
-        size: 'Free Size',
-        color: 'Gold',
-        price: new Prisma.Decimal(15499),
-        stock: 20,
-        stockStatus: 'IN_STOCK',
-      },
-    ],
-    _count: { variants: 2 },
-  },
-  {
-    id: 'prd_cotton_shirt_2',
-    name: 'Classic Linen Cotton Shirt',
-    slug: 'classic-linen-cotton-shirt',
-    sku: 'NAV-SHT-2002',
-    brand: 'Navya Essentials',
-    gender: 'men',
-    ageGroup: 'adults',
-    fabric: 'Cotton',
-    description: 'Breathable premium linen cotton shirt for men.',
-    price: new Prisma.Decimal(1299),
-    compareAtPrice: new Prisma.Decimal(1999),
-    stock: 80,
-    status: 'active',
-    isFeatured: false,
-    isNewArrival: true,
-    rating: 4.6,
-    reviewCount: 15,
-    createdAt: new Date('2026-02-01'),
-    updatedAt: new Date(),
-    deletedAt: null,
-    category: { id: 'cat_shirts', name: 'Shirts', slug: 'shirts' },
-    images: [
-      {
-        id: 'img_2',
-        url: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800',
-        imageUrl: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800',
-        secureUrl: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=800',
-        altText: 'Classic Linen Cotton Shirt',
-        isPrimary: true,
-        sortOrder: 0,
-      },
-    ],
-    variants: [
-      {
-        id: 'var_3',
-        size: 'M',
-        color: 'Black',
-        price: new Prisma.Decimal(1299),
-        stock: 40,
-        stockStatus: 'IN_STOCK',
-      },
-      {
-        id: 'var_4',
-        size: 'L',
-        color: 'Black',
-        price: new Prisma.Decimal(1299),
-        stock: 40,
-        stockStatus: 'IN_STOCK',
-      },
-    ],
-    _count: { variants: 2 },
-  },
-];
-
 export class FilterRepository {
   /**
    * Retrieves active products filtered, sorted, and paginated by Prisma.
@@ -185,8 +76,7 @@ export class FilterRepository {
         },
       });
     } catch {
-      let items = mockFilterStore.filter((p) => p.deletedAt === null && p.status === 'active');
-      return items.slice(skip, skip + take);
+      return [];
     }
   }
 
@@ -203,7 +93,7 @@ export class FilterRepository {
         },
       });
     } catch {
-      return mockFilterStore.filter((p) => p.deletedAt === null && p.status === 'active').length;
+      return 0;
     }
   }
 
@@ -352,21 +242,21 @@ export class FilterRepository {
       };
     } catch {
       return {
-        categories: [{ id: 'cat_sarees', name: 'Sarees', slug: 'sarees', count: 1 }],
-        brands: ['Navya Couture', 'Navya Essentials'],
-        genders: ['women', 'men'],
-        ageGroups: ['adults'],
-        fabrics: ['Silk', 'Cotton'],
-        sizes: ['Free Size', 'S', 'M', 'L', 'XL'],
-        colors: ['Red', 'Gold', 'Black', 'Blue'],
-        patterns: ['Solid', 'Embroidery'],
-        occasions: ['Bridal', 'Festive', 'Casual'],
-        seasons: ['All Season', 'Summer'],
-        priceRange: { minPrice: 1299, maxPrice: 24999 },
-        ratings: [4, 3, 2, 1],
-        availability: { inStockCount: 2, outOfStockCount: 0 },
-        featuredCount: 1,
-        newArrivalsCount: 2,
+        categories: [],
+        brands: [],
+        genders: [],
+        ageGroups: [],
+        fabrics: [],
+        sizes: [],
+        colors: [],
+        patterns: [],
+        occasions: [],
+        seasons: [],
+        priceRange: { minPrice: 0, maxPrice: 0 },
+        ratings: [],
+        availability: { inStockCount: 0, outOfStockCount: 0 },
+        featuredCount: 0,
+        newArrivalsCount: 0,
       };
     }
   }

@@ -28,7 +28,7 @@ export const CloudinaryImage: React.FC<CloudinaryImageProps> = ({
   height,
   quality = 80,
   crop,
-  fallbackSrc = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
+  fallbackSrc = '/images/default-shop-banner.png',
   className = '',
   fill,
   ...props

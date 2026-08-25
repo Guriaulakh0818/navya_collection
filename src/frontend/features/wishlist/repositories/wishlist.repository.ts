@@ -1,7 +1,5 @@
 import { prisma } from '@/lib/prisma';
 
-const mockWishlistStore = new Map<string, Set<string>>();
-
 export class WishlistRepository {
   /**
    * Finds all active wishlist items for a user.
@@ -38,24 +36,7 @@ export class WishlistRepository {
         },
       });
     } catch {
-      // Memory fallback for offline mode
-      const set = mockWishlistStore.get(userId) || new Set();
-      return Array.from(set).map((productId) => ({
-        id: `w_${userId}_${productId}`,
-        userId,
-        productId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        product: {
-          id: productId,
-          name: 'Wishlist Item',
-          slug: 'wishlist-item',
-          price: 1499,
-          status: 'active',
-          deletedAt: null,
-          images: [],
-        },
-      }));
+      return [];
     }
   }
 
@@ -74,8 +55,7 @@ export class WishlistRepository {
       });
       return Boolean(item);
     } catch {
-      const set = mockWishlistStore.get(userId);
-      return set ? set.has(productId) : false;
+      return false;
     }
   }
 
@@ -107,14 +87,8 @@ export class WishlistRepository {
           },
         },
       });
-    } catch {
-      let set = mockWishlistStore.get(userId);
-      if (!set) {
-        set = new Set();
-        mockWishlistStore.set(userId, set);
-      }
-      set.add(productId);
-      return { id: `w_${userId}_${productId}`, userId, productId };
+    } catch (err: any) {
+      throw new Error(`Failed to add item to wishlist: ${err.message}`);
     }
   }
 
@@ -132,8 +106,6 @@ export class WishlistRepository {
         },
       });
     } catch {
-      const set = mockWishlistStore.get(userId);
-      if (set) set.delete(productId);
       return { userId, productId };
     }
   }
@@ -191,13 +163,7 @@ export class WishlistRepository {
         });
       });
     } catch {
-      let set = mockWishlistStore.get(userId);
-      if (!set) {
-        set = new Set();
-        mockWishlistStore.set(userId, set);
-      }
-      productIds.forEach((id) => set!.add(id));
-      return Array.from(set).map((id) => ({ id: `w_${userId}_${id}`, userId, productId: id }));
+      return [];
     }
   }
 }

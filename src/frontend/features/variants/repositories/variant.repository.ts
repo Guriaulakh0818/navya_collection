@@ -4,31 +4,6 @@ import { prisma } from '@/lib/prisma';
 
 import { CreateVariantInput, UpdateVariantInput } from '../schemas/variant.schema';
 
-const mockVariantStore = new Map<string, any>([
-  [
-    'var_1',
-    {
-      id: 'var_1',
-      productId: 'prd_banarasi_1',
-      name: 'Free Size / Royal Crimson',
-      sku: 'NAV-SAN-1001-FS-RED',
-      barcode: '8901234567890',
-      price: new Prisma.Decimal(14999),
-      compareAtPrice: new Prisma.Decimal(17499),
-      stock: 20,
-      size: 'FS',
-      color: 'Royal Crimson',
-      weight: 0.8,
-      dimensions: '10x10x5 cm',
-      attributes: { fabric: 'Banarasi Silk', fit: 'Regular', season: 'Festive' },
-      status: 'active',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      deletedAt: null,
-    },
-  ],
-]);
-
 export class VariantRepository {
   /**
    * Finds all non-deleted variants for a specific product matching optional filter criteria.
@@ -44,9 +19,7 @@ export class VariantRepository {
         orderBy: [{ size: 'asc' }, { color: 'asc' }],
       });
     } catch {
-      return Array.from(mockVariantStore.values()).filter(
-        (v) => v.productId === productId && v.deletedAt === null,
-      );
+      return [];
     }
   }
 
@@ -72,8 +45,6 @@ export class VariantRepository {
         },
       });
     } catch {
-      const variant = mockVariantStore.get(variantId);
-      if (variant && variant.deletedAt === null) return variant;
       return null;
     }
   }
@@ -91,9 +62,6 @@ export class VariantRepository {
         },
       });
     } catch {
-      for (const v of mockVariantStore.values()) {
-        if (v.sku === formattedSku && v.id !== excludeId) return v;
-      }
       return null;
     }
   }
@@ -118,17 +86,6 @@ export class VariantRepository {
         },
       });
     } catch {
-      for (const v of mockVariantStore.values()) {
-        if (
-          v.productId === productId &&
-          v.size === (size || null) &&
-          v.color === (color || null) &&
-          v.id !== excludeId &&
-          v.deletedAt === null
-        ) {
-          return v;
-        }
-      }
       return null;
     }
   }
@@ -146,9 +103,7 @@ export class VariantRepository {
         },
       });
     } catch {
-      return Array.from(mockVariantStore.values()).filter(
-        (v) => v.productId === productId && v.status === 'active' && v.deletedAt === null,
-      ).length;
+      return 0;
     }
   }
 
@@ -176,30 +131,8 @@ export class VariantRepository {
           status: data.status ?? 'active',
         },
       });
-    } catch {
-      const newId = `var_${Date.now()}`;
-      const newVariant = {
-        id: newId,
-        productId,
-        name: data.name,
-        sku: data.sku.toUpperCase(),
-        barcode: data.barcode || null,
-        price: new Prisma.Decimal(data.price),
-        compareAtPrice: data.compareAtPrice ? new Prisma.Decimal(data.compareAtPrice) : null,
-        stock: data.stock,
-        size: data.size || null,
-        color: data.color || null,
-        weight: data.weight || null,
-        dimensions: data.dimensions || null,
-        attributes: data.attributes || null,
-        status: data.status ?? 'active',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
-      };
-
-      mockVariantStore.set(newId, newVariant);
-      return newVariant;
+    } catch (err: any) {
+      throw new Error(`Failed to create product variant: ${err.message}`);
     }
   }
 
@@ -230,12 +163,7 @@ export class VariantRepository {
         ),
       );
     } catch {
-      const createdList = [];
-      for (const v of variants) {
-        const created = await this.create(productId, v);
-        createdList.push(created);
-      }
-      return createdList;
+      throw new Error(`Failed to bulk create product variants.`);
     }
   }
 
@@ -270,17 +198,6 @@ export class VariantRepository {
         data: updateData,
       });
     } catch {
-      const existing = mockVariantStore.get(variantId);
-      if (existing) {
-        const updated = {
-          ...existing,
-          ...data,
-          ...(data.price ? { price: new Prisma.Decimal(data.price) } : {}),
-          updatedAt: new Date(),
-        };
-        mockVariantStore.set(variantId, updated);
-        return updated;
-      }
       throw new Error(`Variant ${variantId} not found.`);
     }
   }
@@ -298,13 +215,7 @@ export class VariantRepository {
         },
       });
     } catch {
-      const existing = mockVariantStore.get(variantId);
-      if (existing) {
-        existing.deletedAt = new Date();
-        existing.status = 'inactive';
-        mockVariantStore.set(variantId, existing);
-      }
-      return existing;
+      return null;
     }
   }
 }

@@ -1,28 +1,5 @@
 import { prisma } from '@/lib/prisma';
 
-const mockImageStore = new Map<string, any>([
-  [
-    'img_1',
-    {
-      id: 'img_1',
-      productId: 'prd_banarasi_1',
-      cloudinaryPublicId: 'navya-collection/products/banarasi_front',
-      imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-      secureUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-      altText: 'Royal Banarasi Silk Saree Front View',
-      sortOrder: 0,
-      isPrimary: true,
-      width: 1200,
-      height: 1600,
-      fileSize: 245000,
-      format: 'jpg',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      deletedAt: null,
-    },
-  ],
-]);
-
 export class ImageRepository {
   /**
    * Finds all non-deleted images for a product sorted by display order.
@@ -39,9 +16,7 @@ export class ImageRepository {
         },
       });
     } catch {
-      return Array.from(mockImageStore.values()).filter(
-        (img) => img.productId === productId && img.deletedAt === null,
-      );
+      return [];
     }
   }
 
@@ -57,8 +32,6 @@ export class ImageRepository {
         },
       });
     } catch {
-      const img = mockImageStore.get(imageId);
-      if (img && img.deletedAt === null) return img;
       return null;
     }
   }
@@ -78,10 +51,7 @@ export class ImageRepository {
         },
       });
     } catch {
-      const activeImages = Array.from(mockImageStore.values()).filter(
-        (img) => img.productId === productId && img.deletedAt === null,
-      );
-      return activeImages[0] || null;
+      return null;
     }
   }
 
@@ -119,28 +89,8 @@ export class ImageRepository {
           format: data.format || null,
         },
       });
-    } catch {
-      const newId = `img_${Date.now()}`;
-      const newImage = {
-        id: newId,
-        productId,
-        cloudinaryPublicId: data.cloudinaryPublicId || `mock_pub_${Date.now()}`,
-        imageUrl: data.imageUrl,
-        secureUrl: data.secureUrl || data.imageUrl,
-        altText: data.altText || null,
-        sortOrder: data.sortOrder ?? 0,
-        isPrimary: data.isPrimary ?? false,
-        width: data.width || 1200,
-        height: data.height || 1600,
-        fileSize: data.fileSize || 245000,
-        format: data.format || 'jpg',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
-      };
-
-      mockImageStore.set(newId, newImage);
-      return newImage;
+    } catch (err: any) {
+      throw new Error(`Failed to create product image: ${err.message}`);
     }
   }
 
@@ -168,16 +118,6 @@ export class ImageRepository {
         data,
       });
     } catch {
-      const existing = mockImageStore.get(imageId);
-      if (existing) {
-        const updated = {
-          ...existing,
-          ...data,
-          updatedAt: new Date(),
-        };
-        mockImageStore.set(imageId, updated);
-        return updated;
-      }
       throw new Error(`Image ${imageId} not found.`);
     }
   }
@@ -198,11 +138,7 @@ export class ImageRepository {
         }),
       ]);
     } catch {
-      for (const img of mockImageStore.values()) {
-        if (img.productId === productId) {
-          img.isPrimary = img.id === primaryImageId;
-        }
-      }
+      // Transaction failed
     }
   }
 
@@ -223,12 +159,7 @@ export class ImageRepository {
         ),
       );
     } catch {
-      for (const item of imageOrders) {
-        const existing = mockImageStore.get(item.imageId);
-        if (existing) {
-          existing.sortOrder = item.sortOrder;
-        }
-      }
+      // Reorder transaction failed
     }
   }
 
@@ -245,13 +176,7 @@ export class ImageRepository {
         },
       });
     } catch {
-      const existing = mockImageStore.get(imageId);
-      if (existing) {
-        existing.deletedAt = new Date();
-        existing.isPrimary = false;
-        mockImageStore.set(imageId, existing);
-      }
-      return existing;
+      return null;
     }
   }
 }

@@ -4,69 +4,9 @@ import { prisma } from '@/lib/prisma';
 
 import { CreateCategoryInput, UpdateCategoryInput } from '../schemas/category.schema';
 
-const mockCategoryStore = new Map<string, any>([
-  [
-    'cat_sarees',
-    {
-      id: 'cat_sarees',
-      name: 'Sarees',
-      slug: 'sarees',
-      description: 'Handcrafted luxury ethnic silk, chiffon, georgette and organza sarees.',
-      image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
-      icon: 'sparkles',
-      parentId: null,
-      displayOrder: 1,
-      isFeatured: true,
-      status: 'active',
-      metaTitle: 'Designer Sarees Collection | Navya Collection',
-      metaDescription: 'Shop handcrafted luxury sarees online at Navya Collection.',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      deletedAt: null,
-      parent: null,
-      children: [
-        {
-          id: 'cat_banarasi',
-          name: 'Banarasi Sarees',
-          slug: 'banarasi-sarees',
-          parentId: 'cat_sarees',
-          displayOrder: 1,
-          status: 'active',
-          deletedAt: null,
-          children: [],
-        },
-      ],
-      _count: { products: 12 },
-    },
-  ],
-  [
-    'cat_lehengas',
-    {
-      id: 'cat_lehengas',
-      name: 'Lehengas',
-      slug: 'lehengas',
-      description: 'Exquisite bridal and festive lehenga cholis with rich embroidery.',
-      image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600',
-      icon: 'crown',
-      parentId: null,
-      displayOrder: 2,
-      isFeatured: true,
-      status: 'active',
-      metaTitle: 'Bridal & Partywear Lehengas | Navya Collection',
-      metaDescription: 'Explore exquisite Indian designer lehengas.',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      deletedAt: null,
-      parent: null,
-      children: [],
-      _count: { products: 8 },
-    },
-  ],
-]);
-
 export class CategoryRepository {
   /**
-   * Finds categories matching criteria with pagination and sorting.
+   * Queries categories with pagination, search, status, and featured filters.
    */
   static async findMany(
     where: Prisma.CategoryWhereInput,
@@ -83,7 +23,18 @@ export class CategoryRepository {
         skip,
         take,
         orderBy,
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          image: true,
+          icon: true,
+          parentId: true,
+          displayOrder: true,
+          isFeatured: true,
+          status: true,
+          updatedAt: true,
           parent: {
             select: {
               id: true,
@@ -91,35 +42,15 @@ export class CategoryRepository {
               slug: true,
             },
           },
-          children: {
-            where: { deletedAt: null },
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              status: true,
-            },
-          },
           _count: {
             select: {
-              products: {
-                where: { deletedAt: null },
-              },
+              products: { where: { deletedAt: null } },
             },
           },
         },
       });
     } catch {
-      let items = Array.from(mockCategoryStore.values()).filter((c) => c.deletedAt === null);
-
-      if (where.status) {
-        items = items.filter((c) => c.status === where.status);
-      }
-      if (where.isFeatured !== undefined) {
-        items = items.filter((c) => c.isFeatured === where.isFeatured);
-      }
-
-      return items.slice(skip, skip + take);
+      return [];
     }
   }
 
@@ -135,7 +66,7 @@ export class CategoryRepository {
         },
       });
     } catch {
-      return Array.from(mockCategoryStore.values()).filter((c) => c.deletedAt === null).length;
+      return 0;
     }
   }
 
@@ -177,9 +108,7 @@ export class CategoryRepository {
         },
       });
     } catch {
-      return Array.from(mockCategoryStore.values()).filter(
-        (c) => c.parentId === null && c.status === 'active' && c.deletedAt === null,
-      );
+      return [];
     }
   }
 
@@ -206,9 +135,7 @@ export class CategoryRepository {
         },
       });
     } catch {
-      return Array.from(mockCategoryStore.values()).filter(
-        (c) => c.isFeatured && c.status === 'active' && c.deletedAt === null,
-      );
+      return [];
     }
   }
 
@@ -235,11 +162,6 @@ export class CategoryRepository {
         },
       });
     } catch {
-      for (const cat of mockCategoryStore.values()) {
-        if ((cat.id === idOrSlug || cat.slug === idOrSlug) && cat.deletedAt === null) {
-          return cat;
-        }
-      }
       return null;
     }
   }
@@ -257,11 +179,6 @@ export class CategoryRepository {
       });
       return count > 0;
     } catch {
-      for (const cat of mockCategoryStore.values()) {
-        if (cat.parentId === parentId && cat.deletedAt === null) {
-          return true;
-        }
-      }
       return false;
     }
   }
@@ -279,11 +196,6 @@ export class CategoryRepository {
         },
       });
     } catch {
-      for (const cat of mockCategoryStore.values()) {
-        if (cat.slug === formattedSlug && cat.id !== excludeId) {
-          return cat;
-        }
-      }
       return null;
     }
   }
@@ -311,31 +223,8 @@ export class CategoryRepository {
           parent: true,
         },
       });
-    } catch {
-      const newId = `cat_${Date.now()}`;
-      const newCategory = {
-        id: newId,
-        name: data.name,
-        slug: computedSlug,
-        description: data.description || null,
-        image: data.image || null,
-        icon: data.icon || null,
-        parentId: data.parentId || null,
-        displayOrder: data.displayOrder ?? 0,
-        isFeatured: data.isFeatured ?? false,
-        status: data.status ?? 'active',
-        metaTitle: data.metaTitle || null,
-        metaDescription: data.metaDescription || null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
-        parent: null,
-        children: [],
-        _count: { products: 0 },
-      };
-
-      mockCategoryStore.set(newId, newCategory);
-      return newCategory;
+    } catch (err: any) {
+      throw new Error(`Failed to create category: ${err.message}`);
     }
   }
 
@@ -365,17 +254,6 @@ export class CategoryRepository {
         },
       });
     } catch {
-      const existing = mockCategoryStore.get(id);
-      if (existing) {
-        const updated = {
-          ...existing,
-          ...data,
-          ...(computedSlug ? { slug: computedSlug } : {}),
-          updatedAt: new Date(),
-        };
-        mockCategoryStore.set(id, updated);
-        return updated;
-      }
       throw new Error(`Category ${id} not found.`);
     }
   }
@@ -393,13 +271,7 @@ export class CategoryRepository {
         },
       });
     } catch {
-      const existing = mockCategoryStore.get(id);
-      if (existing) {
-        existing.deletedAt = new Date();
-        existing.status = 'inactive';
-        mockCategoryStore.set(id, existing);
-      }
-      return existing;
+      return null;
     }
   }
 
@@ -416,13 +288,7 @@ export class CategoryRepository {
         },
       });
     } catch {
-      const existing = mockCategoryStore.get(id);
-      if (existing) {
-        existing.deletedAt = null;
-        existing.status = 'active';
-        mockCategoryStore.set(id, existing);
-      }
-      return existing;
+      return null;
     }
   }
 }
