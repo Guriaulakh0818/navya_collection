@@ -360,7 +360,7 @@ export class OtpService {
       }
 
       // 3. Max Attempts Verification Check
-      if (record.attempts >= 5) {
+      if (record.attempts >= 4) {
         try {
           await prisma.otpVerification.delete({ where: { phone: email } });
         } catch {
@@ -383,7 +383,7 @@ export class OtpService {
       if (!isMatch) {
         const newAttempts = record.attempts + 1;
 
-        if (newAttempts >= 5) {
+        if (newAttempts >= 4) {
           try {
             await prisma.otpVerification.delete({ where: { phone: email } });
           } catch {
@@ -413,14 +413,14 @@ export class OtpService {
           }
         }
 
-        const remainingAttempts = 5 - newAttempts;
+        const remainingAttempts = 4 - newAttempts;
         console.log(
-          `[${timestamp}] [EMAIL_OTP_VERIFY] Email: ${maskedEmail} | Status: INVALID_OTP (Attempt ${newAttempts}/5)`,
+          `[${timestamp}] [EMAIL_OTP_VERIFY] Email: ${maskedEmail} | Status: INVALID_OTP (Attempt ${newAttempts}/4)`,
         );
 
         return {
           status: 'INVALID_OTP',
-          message: `Invalid verification code. ${remainingAttempts} attempts remaining.`,
+          message: `Invalid verification code. ${remainingAttempts} ${remainingAttempts === 1 ? 'attempt' : 'attempts'} remaining.`,
           statusCode: 400,
         };
       }

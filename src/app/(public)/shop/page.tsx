@@ -467,8 +467,8 @@ function MarketplaceCatalogContent() {
                       {/* Cover Banner */}
                       <div className="h-32 bg-slate-900 relative overflow-hidden">
                         <Image
-                          src="/images/default-shop-banner.png"
-                          alt={shop.name}
+                          src={shop.banner || '/images/default-shop-banner.png'}
+                          alt={shop.name || 'Vendor Shop'}
                           fill
                           priority={index < 2}
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

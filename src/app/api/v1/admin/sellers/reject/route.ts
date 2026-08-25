@@ -106,12 +106,25 @@ export async function POST(request: NextRequest) {
       return updatedShop;
     });
 
-    // Trigger Seller Email Notification asynchronously
+    // Purge public marketplace cache immediately on status change
     try {
-      if (targetShop.owner?.email) {
+      const { revalidatePath } = await import('next/cache');
+      revalidatePath('/', 'layout');
+      revalidatePath('/shop');
+      if (targetShop.slug) {
+        revalidatePath(`/shop/${targetShop.slug}`);
+      }
+    } catch {
+      // Cache revalidation fallback
+    }
+
+    // Trigger Seller Email & In-App Notification asynchronously
+    try {
+      const recipientEmail = targetShop.owner?.email || targetShop.email;
+      if (recipientEmail) {
         await NotificationService.notifySellerStatusChange(
           targetShop.ownerId,
-          targetShop.owner.email,
+          recipientEmail,
           targetShop.name,
           'REJECTED',
           rejectionReason,

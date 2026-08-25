@@ -1,4 +1,4 @@
-import { Building2, Grid, ShoppingBag, Sparkles, Tag } from 'lucide-react';
+import { Building2, Grid, ShoppingBag, Sparkles, Store, Tag } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -96,7 +96,7 @@ export default async function MultiVendorMarketplaceHomePage() {
                     {cat.name}
                   </h3>
                   <span className="text-[11px] text-slate-500 font-semibold">
-                    {cat._count?.products || 10}+ Items
+                    {cat._count?.products ?? 0} Items
                   </span>
                 </div>
               </Link>
@@ -105,7 +105,17 @@ export default async function MultiVendorMarketplaceHomePage() {
         )}
 
         {/* 4. FEATURED SHOPS CAROUSEL */}
-        <FeaturedShopsGrid shops={featuredShops} />
+        {featuredShops.length > 0 ? (
+          <FeaturedShopsGrid shops={featuredShops} />
+        ) : (
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-12 text-center space-y-3 shadow-xs my-6">
+            <Store className="w-12 h-12 text-slate-300 mx-auto" />
+            <h3 className="text-base font-extrabold text-navy">No Boutique Stores Available</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">
+              Currently no verified merchant stores are active. Please check back soon!
+            </p>
+          </div>
+        )}
 
         {/* 5. TRENDING PRODUCTS CAROUSEL */}
         {trendingProducts.length > 0 && (
@@ -140,7 +150,7 @@ export default async function MultiVendorMarketplaceHomePage() {
                   {/* Shop Badge Pill */}
                   <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 px-1.5 sm:px-2 py-0.5 bg-white/90 backdrop-blur-md rounded-full text-[8px] sm:text-[9px] font-extrabold text-slate-800 border border-slate-200 flex items-center gap-0.5 sm:gap-1 shadow-xs truncate max-w-[85%]">
                     <Building2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-600 shrink-0" />
-                    <span className="truncate">{p.shop?.name || 'Navya Store'}</span>
+                    <span className="truncate">{p.shop?.name || 'Partner Shop'}</span>
                   </div>
                 </div>
 

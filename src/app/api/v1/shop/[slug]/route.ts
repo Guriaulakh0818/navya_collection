@@ -18,10 +18,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const category = searchParams.get('category');
     const sort = searchParams.get('sort') || 'newest';
 
-    // 1. Fetch Shop details: Exact slug match first, then ID or name match
+    // 1. Fetch Shop details: Require status = APPROVED and deletedAt = null for public storefront
     let shop = await prisma.shop.findFirst({
       where: {
         slug: slug.toLowerCase(),
+        status: 'APPROVED',
         deletedAt: null,
       },
       include: {
@@ -51,6 +52,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       shop = await prisma.shop.findFirst({
         where: {
           OR: [{ id: slug }, { name: { contains: slug.replace(/-/g, ' '), mode: 'insensitive' } }],
+          status: 'APPROVED',
           deletedAt: null,
         },
         include: {
@@ -79,7 +81,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!shop) {
       return NextResponse.json(
-        { success: false, message: 'Shop storefront not found.' },
+        { success: false, message: 'Shop storefront unavailable or pending approval.' },
         { status: 404 },
       );
     }

@@ -194,13 +194,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await getFormattedProduct(slug);
 
-  const activeProduct = product || {
-    ...fallbackSampleProduct,
-    name: slug
-      .split('-')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' '),
-  };
+  if (!product) {
+    notFound();
+  }
+
+  const activeProduct = product;
 
   const productSchema = generateProductSchema({
     id: activeProduct.id,

@@ -85,7 +85,11 @@ export class SearchRepository {
         where: {
           ...where,
           deletedAt: null,
-          status: 'active', // Security: strictly active only
+          status: 'active',
+          shop: {
+            status: 'APPROVED',
+            deletedAt: null,
+          },
         },
         skip,
         take,
@@ -142,6 +146,10 @@ export class SearchRepository {
           ...where,
           deletedAt: null,
           status: 'active',
+          shop: {
+            status: 'APPROVED',
+            deletedAt: null,
+          },
         },
       });
     } catch {
@@ -157,11 +165,15 @@ export class SearchRepository {
 
     try {
       const [products, categories, brands] = await Promise.all([
-        // 1. Product Name suggestions
+        // 1. Product Name suggestions (Only from Approved Shops)
         prisma.product.findMany({
           where: {
             deletedAt: null,
             status: 'active',
+            shop: {
+              status: 'APPROVED',
+              deletedAt: null,
+            },
             OR: [
               { name: { contains: formattedTerm, mode: 'insensitive' } },
               { sku: { contains: formattedTerm, mode: 'insensitive' } },
@@ -196,11 +208,15 @@ export class SearchRepository {
           },
         }),
 
-        // 3. Distinct Brand suggestions
+        // 3. Distinct Brand suggestions (Only from Approved Shops)
         prisma.product.findMany({
           where: {
             deletedAt: null,
             status: 'active',
+            shop: {
+              status: 'APPROVED',
+              deletedAt: null,
+            },
             brand: { contains: formattedTerm, mode: 'insensitive' },
           },
           take: limit,

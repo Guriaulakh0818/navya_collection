@@ -113,6 +113,18 @@ export async function POST(request: NextRequest) {
       return updatedShop;
     });
 
+    // Purge public marketplace cache immediately on status change
+    try {
+      const { revalidatePath } = await import('next/cache');
+      revalidatePath('/', 'layout');
+      revalidatePath('/shop');
+      if (targetShop.slug) {
+        revalidatePath(`/shop/${targetShop.slug}`);
+      }
+    } catch {
+      // Cache revalidation fallback
+    }
+
     // Trigger Seller Email Notification asynchronously
     try {
       if (targetShop.owner?.email) {

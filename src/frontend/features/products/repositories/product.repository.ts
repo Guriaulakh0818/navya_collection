@@ -114,6 +114,10 @@ export class ProductRepository {
           status: 'active',
           ...where,
           deletedAt: null,
+          shop: {
+            status: 'APPROVED',
+            deletedAt: null,
+          },
         },
         skip,
         take,
@@ -124,6 +128,17 @@ export class ProductRepository {
               id: true,
               name: true,
               slug: true,
+            },
+          },
+          shop: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              city: true,
+              logo: true,
+              banner: true,
+              verificationBadge: true,
             },
           },
           images: {
@@ -169,6 +184,10 @@ export class ProductRepository {
           status: 'active',
           ...where,
           deletedAt: null,
+          shop: {
+            status: 'APPROVED',
+            deletedAt: null,
+          },
         },
       });
     } catch {
@@ -188,6 +207,10 @@ export class ProductRepository {
           OR: [{ id: idOrSlug }, { slug: idOrSlug }],
           ...(allowPending ? {} : { status: 'active' }),
           deletedAt: null,
+          shop: {
+            status: 'APPROVED',
+            deletedAt: null,
+          },
         },
         include: {
           category: true,

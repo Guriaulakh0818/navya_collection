@@ -24,7 +24,12 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
       className="my-6 md:my-8"
     >
       {shops.map((shop, index) => {
+        if (process.env.NODE_ENV !== 'production' && (!shop?.id || !shop?.name)) {
+          console.error('⚠️ FeaturedShopCard rendered without valid shopId or name:', shop);
+        }
+
         const productCount = shop._count?.products || 0;
+        const bannerUrl = shop.banner || '/images/default-shop-banner.png';
 
         return (
           <Link
@@ -35,8 +40,8 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
             {/* Cover Banner */}
             <div className="h-28 sm:h-32 bg-slate-900 relative overflow-hidden select-none">
               <Image
-                src="/images/default-shop-banner.png"
-                alt={shop.name}
+                src={bannerUrl}
+                alt={shop.name || 'Vendor Shop'}
                 fill
                 priority={index < 2}
                 sizes="(max-width: 640px) 280px, 320px"

@@ -7,14 +7,42 @@ const MOCK_SHOPS = [
     id: 'shop_navya_collection',
     name: 'Navya Collection',
     slug: 'navya-collection',
-    logo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+    logo: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=400',
+    banner: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200',
+    rating: 4.8,
+    reviewCount: 120,
+    city: 'Hisar',
+    state: 'Haryana',
+    status: 'APPROVED',
+    verificationBadge: 'PREMIUM_STORE',
+    _count: { products: 45 },
+  },
+  {
+    id: 'shop_jaspreet_fashions',
+    name: 'Jaspreet Fashions',
+    slug: 'jaspreet-fashions',
+    logo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
     banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200',
-    rating: 5.0,
-    reviewCount: 156,
-    city: 'Chandigarh',
+    rating: 4.9,
+    reviewCount: 88,
+    city: 'Ludhiana',
     state: 'Punjab',
     status: 'APPROVED',
     verificationBadge: 'PREMIUM_STORE',
+    _count: { products: 36 },
+  },
+  {
+    id: 'shop_barkat_fashion',
+    name: 'Barkat Fashion',
+    slug: 'barkat-fashion',
+    logo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+    banner: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1200',
+    rating: 4.8,
+    reviewCount: 64,
+    city: 'Amritsar',
+    state: 'Punjab',
+    status: 'APPROVED',
+    verificationBadge: 'VERIFIED_SELLER',
     _count: { products: 24 },
   },
   {
@@ -22,28 +50,28 @@ const MOCK_SHOPS = [
     name: 'Saniya Fashions',
     slug: 'saniya-fashions',
     logo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-    banner: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200',
+    banner: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1200',
     rating: 4.9,
-    reviewCount: 42,
+    reviewCount: 45,
     city: 'Chandigarh',
     state: 'Punjab',
     status: 'APPROVED',
     verificationBadge: 'VERIFIED_SELLER',
-    _count: { products: 12 },
+    _count: { products: 32 },
   },
   {
-    id: 'shop_royal_heritage',
-    name: 'Royal Heritage Sarees',
-    slug: 'royal-heritage-sarees',
-    logo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
-    banner: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1200',
-    rating: 4.8,
-    reviewCount: 38,
-    city: 'Varanasi',
-    state: 'Uttar Pradesh',
+    id: 'shop_style_zone',
+    name: 'Style Zone',
+    slug: 'style-zone',
+    logo: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?w=400',
+    banner: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200',
+    rating: 4.7,
+    reviewCount: 32,
+    city: 'Sirsa',
+    state: 'Haryana',
     status: 'APPROVED',
     verificationBadge: 'TRUSTED_SELLER',
-    _count: { products: 18 },
+    _count: { products: 28 },
   },
 ];
 
@@ -172,9 +200,10 @@ export async function GET() {
 
     try {
       [dbShops, dbProducts, dbCategories] = await Promise.all([
-        // 1. Fetch ALL non-deleted shops across the entire marketplace
+        // 1. Fetch ALL APPROVED non-deleted shops across the entire marketplace
         prisma.shop.findMany({
           where: {
+            status: 'APPROVED',
             deletedAt: null,
           },
           orderBy: { createdAt: 'desc' },
@@ -198,11 +227,15 @@ export async function GET() {
           },
         }),
 
-        // 2. Fetch ALL active non-deleted products across all shops & sellers
+        // 2. Fetch ALL active products belonging ONLY to APPROVED shops
         prisma.product.findMany({
           where: {
             status: 'active',
             deletedAt: null,
+            shop: {
+              status: 'APPROVED',
+              deletedAt: null,
+            },
           },
           orderBy: { createdAt: 'desc' },
           include: {
@@ -225,11 +258,11 @@ export async function GET() {
         }),
       ]);
     } catch (dbErr) {
-      console.warn('⚠️ DB query error in catalog route, using rich marketplace fallback:', dbErr);
+      console.warn('⚠️ DB query error in catalog route:', dbErr);
     }
 
-    const finalShops = dbShops.length > 0 ? dbShops : MOCK_SHOPS;
-    const finalProducts = dbProducts.length > 0 ? dbProducts : MOCK_PRODUCTS;
+    const finalShops = dbShops;
+    const finalProducts = dbProducts;
 
     return NextResponse.json({
       success: true,

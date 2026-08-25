@@ -19,9 +19,9 @@ export function groupCartItemsByShop(items: CartStoreItem[]): ShopCartGroup[] {
   const groupsMap = new Map<string, ShopCartGroup>();
 
   items.forEach((item) => {
-    const shopId = item.shopId || 'navya-boutique';
-    const shopName = item.shopName || 'Navya Collection Boutique';
-    const shopSlug = item.shopSlug || 'navya-collection';
+    const shopId = item.shopId || 'independent-shop';
+    const shopName = item.shopName || 'Independent Vendor';
+    const shopSlug = item.shopSlug || 'shop';
     const shopLogo = item.shopLogo;
 
     if (!groupsMap.has(shopId)) {

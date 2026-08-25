@@ -35,40 +35,9 @@ async function main() {
   }
 
   // ==========================================
-  // 0. CLEANUP (Idempotent execution)
+  // 0. NON-DESTRUCTIVE SEEDING (Preserves all existing user and shop data)
   // ==========================================
-  console.log('🧹 Cleaning existing data...');
-  await prisma.auditLog.deleteMany();
-  await prisma.notification.deleteMany();
-  await prisma.returnItem.deleteMany();
-  await prisma.returnRequest.deleteMany();
-  await prisma.paymentTransaction.deleteMany();
-  await prisma.orderItem.deleteMany();
-  await prisma.vendorOrder.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.cartItem.deleteMany();
-  await prisma.cart.deleteMany();
-  await prisma.wishlist.deleteMany();
-  await prisma.shopReview.deleteMany();
-  await prisma.review.deleteMany();
-  await prisma.coupon.deleteMany();
-  await prisma.productImage.deleteMany();
-  await prisma.productVariant.deleteMany();
-  await prisma.product.deleteMany();
-  console.log('🧹 Remaining products count in DB:', await prisma.product.count());
-  await prisma.category.updateMany({ data: { parentId: null } });
-  await prisma.category.deleteMany();
-  await prisma.sellerDocument.deleteMany();
-  await prisma.vendorPayout.deleteMany();
-  await prisma.shopAddress.deleteMany();
-  await prisma.shop.deleteMany();
-  await prisma.sellerProfile.deleteMany();
-  await prisma.address.deleteMany();
-  await prisma.customerProfile.deleteMany();
-  await prisma.session.deleteMany();
-  await prisma.userSession.deleteMany();
-  await prisma.account.deleteMany();
-  await prisma.user.deleteMany();
+  console.log('🛡️ Idempotent Seed: Preserving all existing users, shops, and custom data...');
 
   // ==========================================
   // 1. USERS & ADMINS
@@ -149,11 +118,7 @@ async function main() {
 
   const defaultShop = await prisma.shop.upsert({
     where: { slug: 'navya-collection' },
-    update: {
-      name: 'Navya Collection',
-      ownerId: ownerUser.id,
-      subscriptionTier: 'PREMIUM',
-    },
+    update: {},
     create: {
       name: 'Navya Collection',
       slug: 'navya-collection',
@@ -170,6 +135,8 @@ async function main() {
       commissionRate: 10.0,
       subscriptionTier: 'PREMIUM',
       ownerId: ownerUser.id,
+      logo: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=400',
+      banner: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200',
       rating: 4.8,
       reviewCount: 120,
     },
@@ -177,11 +144,11 @@ async function main() {
   console.log('✅ Created Flagship Shop:', defaultShop.id, defaultShop.name);
 
   const sellerUser1 = await prisma.user.upsert({
-    where: { email: 'ramesh.fashionhub@gmail.com' },
-    update: { name: 'Ramesh Kumar (Fashion Hub)', role: Role.SELLER },
+    where: { email: 'ramesh.saniyafashions@gmail.com' },
+    update: {},
     create: {
-      name: 'Ramesh Kumar (Fashion Hub)',
-      email: 'ramesh.fashionhub@gmail.com',
+      name: 'Ramesh Kumar (Saniya Fashions)',
+      email: 'ramesh.saniyafashions@gmail.com',
       mobile: '+919812345678',
       role: Role.SELLER,
       approvalStatus: 'APPROVED',
@@ -189,37 +156,35 @@ async function main() {
     },
   });
 
-  const shopFashionHub = await prisma.shop.upsert({
-    where: { slug: 'fashion-hub' },
-    update: {
-      name: 'Fashion Hub',
-      subscriptionTier: 'GROWTH',
-      ownerId: sellerUser1.id,
-    },
+  const shopSaniyaFashions = await prisma.shop.upsert({
+    where: { slug: 'saniya-fashions' },
+    update: {},
     create: {
-      name: 'Fashion Hub',
-      slug: 'fashion-hub',
-      description: 'Premier ethnic and designer daily wear boutique based in Hisar.',
+      name: 'Saniya Fashions',
+      slug: 'saniya-fashions',
+      description: 'Premier ethnic and designer daily wear boutique based in Chandigarh.',
       phone: '+919812345678',
-      email: 'contact@fashionhub.com',
-      city: 'Hisar',
-      state: 'Haryana',
-      pincode: '125001',
-      fullAddress: 'Shop 45, Rajguru Market, Hisar, Haryana',
+      email: 'contact@saniyafashions.com',
+      city: 'Chandigarh',
+      state: 'Punjab',
+      pincode: '160017',
+      fullAddress: 'Shop 45, Sector 17-C, Chandigarh, Punjab - 160017',
       status: 'APPROVED',
       verificationBadge: 'VERIFIED_SELLER',
       commissionRate: 12.5,
       subscriptionTier: 'GROWTH',
       ownerId: sellerUser1.id,
-      rating: 4.6,
+      logo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
+      banner: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1200',
+      rating: 4.9,
       reviewCount: 45,
     },
   });
-  console.log('✅ Created Shop 1:', shopFashionHub.id, shopFashionHub.name);
+  console.log('✅ Created Shop 1:', shopSaniyaFashions.id, shopSaniyaFashions.name);
 
   const sellerUser2 = await prisma.user.upsert({
     where: { email: 'vikram.stylezone@gmail.com' },
-    update: { name: 'Vikram Verma (Style Zone)', role: Role.SELLER },
+    update: {},
     create: {
       name: 'Vikram Verma (Style Zone)',
       email: 'vikram.stylezone@gmail.com',
@@ -232,11 +197,7 @@ async function main() {
 
   const shopStyleZone = await prisma.shop.upsert({
     where: { slug: 'style-zone' },
-    update: {
-      name: 'Style Zone',
-      subscriptionTier: 'STARTER',
-      ownerId: sellerUser2.id,
-    },
+    update: {},
     create: {
       name: 'Style Zone',
       slug: 'style-zone',
@@ -253,11 +214,94 @@ async function main() {
       commissionRate: 12.0,
       subscriptionTier: 'STARTER',
       ownerId: sellerUser2.id,
+      logo: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?w=400',
+      banner: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200',
       rating: 4.7,
       reviewCount: 32,
     },
   });
   console.log('✅ Created Shop 2:', shopStyleZone.id, shopStyleZone.name);
+
+  // Additional registered boutiques
+  const sellerUser3 = await prisma.user.upsert({
+    where: { email: 'jaspreet.fashions@gmail.com' },
+    update: {},
+    create: {
+      name: 'Jaspreet Kaur (Jaspreet Fashions)',
+      email: 'jaspreet.fashions@gmail.com',
+      mobile: '+919814012345',
+      role: Role.SELLER,
+      approvalStatus: 'APPROVED',
+      password: ownerPasswordHash,
+    },
+  });
+
+  const shopJaspreetFashions = await prisma.shop.upsert({
+    where: { slug: 'jaspreet-fashions' },
+    update: {},
+    create: {
+      name: 'Jaspreet Fashions',
+      slug: 'jaspreet-fashions',
+      description:
+        'Exclusive Punjabi suits, bridal dupattas, and heavy designer boutiquewear in Ludhiana.',
+      phone: '+919814012345',
+      email: 'jaspreet.fashions@gmail.com',
+      city: 'Ludhiana',
+      state: 'Punjab',
+      pincode: '141001',
+      fullAddress: 'Mall Road, Near Fountain Plaza, Ludhiana, Punjab - 141001',
+      status: 'APPROVED',
+      verificationBadge: 'PREMIUM_STORE',
+      commissionRate: 10.0,
+      subscriptionTier: 'PREMIUM',
+      ownerId: sellerUser3.id,
+      logo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
+      banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200',
+      rating: 4.9,
+      reviewCount: 88,
+    },
+  });
+  console.log('✅ Created Shop 3:', shopJaspreetFashions.id, shopJaspreetFashions.name);
+
+  const sellerUser4 = await prisma.user.upsert({
+    where: { email: 'barkat.fashion@gmail.com' },
+    update: {},
+    create: {
+      name: 'Harpreet Singh (Barkat Fashion)',
+      email: 'barkat.fashion@gmail.com',
+      mobile: '+919872098765',
+      role: Role.SELLER,
+      approvalStatus: 'APPROVED',
+      password: ownerPasswordHash,
+    },
+  });
+
+  const shopBarkatFashion = await prisma.shop.upsert({
+    where: { slug: 'barkat-fashion' },
+    update: {},
+    create: {
+      name: 'Barkat Fashion',
+      slug: 'barkat-fashion',
+      description:
+        'Traditional bridal lehengas, hand-worked phulkaris, and boutique couture in Amritsar.',
+      phone: '+919872098765',
+      email: 'barkat.fashion@gmail.com',
+      city: 'Amritsar',
+      state: 'Punjab',
+      pincode: '143001',
+      fullAddress: 'Lawrence Road, Heritage Street, Amritsar, Punjab - 143001',
+      status: 'APPROVED',
+      verificationBadge: 'VERIFIED_SELLER',
+      commissionRate: 11.5,
+      subscriptionTier: 'GROWTH',
+      ownerId: sellerUser4.id,
+      logo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+      banner: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1200',
+      rating: 4.8,
+      reviewCount: 64,
+    },
+  });
+  console.log('✅ Created Shop 4:', shopBarkatFashion.id, shopBarkatFashion.name);
 
   await prisma.user.upsert({
     where: { email: 'admin.rajesh@navyacollection.com' },
@@ -569,10 +613,20 @@ async function main() {
     shopMap[s.slug] = s.id;
   }
   const flagshipShopId = shopMap['navya-collection'] || defaultShop.id;
-  const fashionHubShopId = shopMap['fashion-hub'] || shopFashionHub.id;
+  const saniyaFashionsShopId = shopMap['saniya-fashions'] || shopSaniyaFashions.id;
   const styleZoneShopId = shopMap['style-zone'] || shopStyleZone.id;
+  const jaspreetFashionsShopId = shopMap['jaspreet-fashions'] || shopJaspreetFashions.id;
+  const barkatFashionShopId = shopMap['barkat-fashion'] || shopBarkatFashion.id;
 
-  for (let i = 1; i <= 12; i++) {
+  const allShopIds = [
+    flagshipShopId,
+    saniyaFashionsShopId,
+    styleZoneShopId,
+    jaspreetFashionsShopId,
+    barkatFashionShopId,
+  ];
+
+  for (let i = 1; i <= 15; i++) {
     const template = productTemplates[(i - 1) % productTemplates.length];
     const prefix = template.name.split(' ')[0].toUpperCase();
     const productName = `${template.name} - Vol. ${Math.ceil(i / 10)}`;
@@ -582,10 +636,12 @@ async function main() {
     const compareAtPrice = price + 2500;
     const costPrice = Math.round(price * 0.55);
     const categoryId = categoriesMap[template.categorySlug] || categoriesMap['sarees'];
-    const shopId = i % 10 === 0 ? styleZoneShopId : i % 5 === 0 ? fashionHubShopId : flagshipShopId;
+    const shopId = allShopIds[(i - 1) % allShopIds.length];
 
-    const product = await prisma.product.create({
-      data: {
+    const product = await prisma.product.upsert({
+      where: { slug },
+      update: {},
+      create: {
         name: productName,
         slug,
         sku,
@@ -632,8 +688,10 @@ async function main() {
       const color = colors[(i + v) % colors.length];
       const variantSku = `${sku}-${size}-${color.name.substring(0, 3).toUpperCase()}`;
 
-      const variant = await prisma.productVariant.create({
-        data: {
+      const variant = await prisma.productVariant.upsert({
+        where: { sku: variantSku },
+        update: {},
+        create: {
           productId: product.id,
           name: `${size} / ${color.name}`,
           sku: variantSku,
@@ -697,7 +755,11 @@ async function main() {
   ];
 
   for (const c of couponsData) {
-    await prisma.coupon.create({ data: c });
+    await prisma.coupon.upsert({
+      where: { code: c.code },
+      update: {},
+      create: c,
+    });
   }
 
   console.log(`✅ Created ${couponsData.length} Coupons.`);
@@ -928,7 +990,7 @@ async function main() {
   console.log('🔔 Seeding Notifications & Audit Logs...');
 
   for (let n = 0; n < 20; n++) {
-    const user = customerUsers[n];
+    const user = customerUsers[n % customerUsers.length];
     await prisma.notification.create({
       data: {
         userId: user.id,

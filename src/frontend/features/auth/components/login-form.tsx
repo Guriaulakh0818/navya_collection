@@ -15,6 +15,25 @@ type LoginFormProps = {
   initialUser?: { name?: string; email?: string } | null;
 };
 
+function parseOtpError(msg: string): { title: string; detail?: string } {
+  if (msg.includes('.')) {
+    const parts = msg
+      .split('.')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (parts.length >= 2) {
+      return {
+        title: parts[0],
+        detail: parts.slice(1).join('. ') + '.',
+      };
+    }
+  }
+  return {
+    title: 'Invalid verification code',
+    detail: msg.endsWith('.') ? msg : `${msg}.`,
+  };
+}
+
 export function LoginForm({ initialUser }: LoginFormProps) {
   const { user: authUser, logout } = useAuth();
   const storeUser = useAuthStore((s) => s.user);
@@ -176,9 +195,6 @@ export function LoginForm({ initialUser }: LoginFormProps) {
     if (!cleanedOtp || cleanedOtp.length !== 6) {
       setOtpError(true);
       setOtpErrorMessage('Please enter a valid 6-digit verification code.');
-      try {
-        toast('Please enter a valid 6-digit verification code.', 'error');
-      } catch {}
       return;
     }
 
@@ -219,18 +235,12 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           json.message ||
           'Invalid or expired verification code. Please check your code and try again.';
         setOtpErrorMessage(errMsg);
-        try {
-          toast(errMsg, 'error');
-        } catch {}
       }
     } catch (err: any) {
       console.error('[VERIFY_OTP_CLIENT_ERROR]', err);
       setOtpError(true);
       const errMsg = err?.message || 'Verification error. Please try again.';
       setOtpErrorMessage(errMsg);
-      try {
-        toast(errMsg, 'error');
-      } catch {}
     } finally {
       setIsSubmitting(false);
     }
@@ -378,17 +388,6 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           }}
           className="space-y-5"
         >
-          {/* Navya Theme Invalid OTP Notification Alert Banner */}
-          {otpErrorMessage && (
-            <div className="rounded-2xl bg-rose-50 border border-rose-200/80 p-3.5 text-xs font-semibold text-rose-800 flex items-start gap-2.5 shadow-xs animate-in fade-in slide-in-from-top-2">
-              <AlertCircle className="h-4.5 w-4.5 text-rose-600 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <p className="font-extrabold text-rose-900">Invalid Verification Code</p>
-                <p className="text-[11px] text-rose-700 font-medium">{otpErrorMessage}</p>
-              </div>
-            </div>
-          )}
-
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-extrabold uppercase tracking-wider text-[#183A73]">
@@ -410,7 +409,29 @@ export function LoginForm({ initialUser }: LoginFormProps) {
                   : 'border-slate-200 focus:ring-2 focus:ring-[#183A73]'
               }`}
             />
-            <p className="mt-2 text-center text-[11px] font-medium text-slate-500">
+
+            {/* Prominent Inline Error Alert directly below the OTP input field */}
+            {otpErrorMessage && (
+              <div
+                role="alert"
+                aria-live="polite"
+                className="mt-3 rounded-2xl bg-rose-50/90 border border-rose-200/90 p-3.5 text-xs flex items-start gap-3 shadow-xs animate-in fade-in slide-in-from-top-2 transition-all"
+              >
+                <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+                <div className="space-y-0.5 text-left">
+                  <p className="font-extrabold text-rose-900 leading-snug">
+                    {parseOtpError(otpErrorMessage).title}
+                  </p>
+                  {parseOtpError(otpErrorMessage).detail && (
+                    <p className="text-[11.5px] font-medium text-rose-700 leading-snug">
+                      {parseOtpError(otpErrorMessage).detail}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <p className="mt-2.5 text-center text-[11px] font-medium text-slate-500">
               Please check your inbox or spam folder for your code.
             </p>
           </div>

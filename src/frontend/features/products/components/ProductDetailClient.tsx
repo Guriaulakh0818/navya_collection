@@ -79,9 +79,9 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       price: price,
       quantity: quantity,
       image: product.images?.[0]?.url || product.images?.[0]?.imageUrl || '',
-      shopId: product.shop?.id || 'navya-boutique',
-      shopName: product.shop?.name || 'Navya Collection Boutique',
-      shopSlug: product.shop?.slug || 'navya-collection',
+      shopId: product.shop?.id || product.shopId || 'independent-shop',
+      shopName: product.shop?.name || 'Independent Boutique',
+      shopSlug: product.shop?.slug || 'shop',
       shopLogo: product.shop?.logo,
       variantId: activeVariant?.id,
     });

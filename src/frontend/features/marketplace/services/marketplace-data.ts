@@ -7,31 +7,73 @@ export const getMarketplaceHomeData = cache(async () => {
   const fallbackShops = [
     {
       id: 'shop_navya',
-      name: 'Navya Flagship Store',
+      name: 'Navya Collection',
       slug: 'navya-collection',
-      logo: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=200',
-      banner: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',
-      rating: 4.9,
-      reviewCount: 128,
-      verificationBadge: true,
-      city: 'Chandigarh',
-      state: 'Punjab',
+      logo: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=400',
+      banner: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200',
+      rating: 4.8,
+      reviewCount: 120,
+      verificationBadge: 'PREMIUM_STORE',
+      city: 'Hisar',
+      state: 'Haryana',
       createdAt: new Date(),
       _count: { products: 45 },
     },
     {
-      id: 'shop_fashion_hub',
-      name: 'Royal Heritage Sarees',
-      slug: 'fashion-hub',
-      logo: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=200',
-      banner: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800',
-      rating: 4.8,
-      reviewCount: 94,
-      verificationBadge: true,
-      city: 'Varanasi',
-      state: 'Uttar Pradesh',
+      id: 'shop_saniya_fashions',
+      name: 'Saniya Fashions',
+      slug: 'saniya-fashions',
+      logo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
+      banner: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1200',
+      rating: 4.9,
+      reviewCount: 45,
+      verificationBadge: 'VERIFIED_SELLER',
+      city: 'Chandigarh',
+      state: 'Punjab',
       createdAt: new Date(),
       _count: { products: 32 },
+    },
+    {
+      id: 'shop_style_zone',
+      name: 'Style Zone',
+      slug: 'style-zone',
+      logo: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?w=400',
+      banner: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200',
+      rating: 4.7,
+      reviewCount: 32,
+      verificationBadge: 'TRUSTED_SELLER',
+      city: 'Sirsa',
+      state: 'Haryana',
+      createdAt: new Date(),
+      _count: { products: 28 },
+    },
+    {
+      id: 'shop_jaspreet_fashions',
+      name: 'Jaspreet Fashions',
+      slug: 'jaspreet-fashions',
+      logo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400',
+      banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200',
+      rating: 4.9,
+      reviewCount: 88,
+      verificationBadge: 'PREMIUM_STORE',
+      city: 'Ludhiana',
+      state: 'Punjab',
+      createdAt: new Date(),
+      _count: { products: 36 },
+    },
+    {
+      id: 'shop_barkat_fashion',
+      name: 'Barkat Fashion',
+      slug: 'barkat-fashion',
+      logo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+      banner: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1200',
+      rating: 4.8,
+      reviewCount: 64,
+      verificationBadge: 'VERIFIED_SELLER',
+      city: 'Amritsar',
+      state: 'Punjab',
+      createdAt: new Date(),
+      _count: { products: 24 },
     },
   ];
 
@@ -44,10 +86,10 @@ export const getMarketplaceHomeData = cache(async () => {
       rating: 4.9,
       images: [{ imageUrl: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800' }],
       shop: {
-        id: 's1',
-        name: 'Navya Flagship Store',
+        id: 'shop_navya',
+        name: 'Navya Collection',
         slug: 'navya-collection',
-        verificationBadge: true,
+        verificationBadge: 'PREMIUM_STORE',
       },
       category: { id: 'c1', name: 'Banarasi Sarees', slug: 'banarasi-sarees' },
     },
@@ -59,12 +101,27 @@ export const getMarketplaceHomeData = cache(async () => {
       rating: 4.9,
       images: [{ imageUrl: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=800' }],
       shop: {
-        id: 's2',
-        name: 'Royal Heritage Sarees',
-        slug: 'fashion-hub',
-        verificationBadge: true,
+        id: 'shop_saniya_fashions',
+        name: 'Saniya Fashions',
+        slug: 'saniya-fashions',
+        verificationBadge: 'VERIFIED_SELLER',
       },
       category: { id: 'c2', name: 'Bridal Lehengas', slug: 'bridal-lehengas' },
+    },
+    {
+      id: 'p3',
+      name: 'Designer Royal Velvet Sherwani Set',
+      slug: 'designer-velvet-sherwani-set-3',
+      price: 28999,
+      rating: 4.7,
+      images: [{ imageUrl: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=800' }],
+      shop: {
+        id: 'shop_style_zone',
+        name: 'Style Zone',
+        slug: 'style-zone',
+        verificationBadge: 'TRUSTED_SELLER',
+      },
+      category: { id: 'c3', name: 'Gents Couture', slug: 'gents-mens-couture' },
     },
   ];
 
@@ -162,10 +219,14 @@ export const getMarketplaceHomeData = cache(async () => {
         })
         .catch(() => []),
 
-      // 3. Trending Products
+      // 3. Trending Products (Only from Approved Shops)
       prisma.product
         .findMany({
-          where: { status: 'active', deletedAt: null },
+          where: {
+            status: 'active',
+            deletedAt: null,
+            shop: { status: 'APPROVED', deletedAt: null },
+          },
           take: 8,
           orderBy: { rating: 'desc' },
           include: {
@@ -176,10 +237,14 @@ export const getMarketplaceHomeData = cache(async () => {
         })
         .catch(() => []),
 
-      // 4. New Arrivals Products
+      // 4. New Arrivals Products (Only from Approved Shops)
       prisma.product
         .findMany({
-          where: { status: 'active', deletedAt: null },
+          where: {
+            status: 'active',
+            deletedAt: null,
+            shop: { status: 'APPROVED', deletedAt: null },
+          },
           take: 8,
           orderBy: { createdAt: 'desc' },
           include: {
@@ -190,10 +255,15 @@ export const getMarketplaceHomeData = cache(async () => {
         })
         .catch(() => []),
 
-      // 5. Best Sellers Products
+      // 5. Best Sellers Products (Only from Approved Shops)
       prisma.product
         .findMany({
-          where: { status: 'active', deletedAt: null, isFeatured: true },
+          where: {
+            status: 'active',
+            deletedAt: null,
+            isFeatured: true,
+            shop: { status: 'APPROVED', deletedAt: null },
+          },
           take: 8,
           orderBy: { price: 'desc' },
           include: {
@@ -215,7 +285,20 @@ export const getMarketplaceHomeData = cache(async () => {
             name: true,
             slug: true,
             image: true,
-            _count: { select: { products: { where: { deletedAt: null, status: 'active' } } } },
+            _count: {
+              select: {
+                products: {
+                  where: {
+                    deletedAt: null,
+                    status: 'active',
+                    shop: {
+                      status: 'APPROVED',
+                      deletedAt: null,
+                    },
+                  },
+                },
+              },
+            },
           },
         })
         .then((cats) =>
@@ -223,13 +306,13 @@ export const getMarketplaceHomeData = cache(async () => {
             ? cats
             : CATEGORIES.map((cat) => ({
                 ...cat,
-                _count: { products: cat.productCount || 10 },
+                _count: { products: 0 },
               })),
         )
         .catch(() =>
           CATEGORIES.map((cat) => ({
             ...cat,
-            _count: { products: cat.productCount || 10 },
+            _count: { products: 0 },
           })),
         ),
 
@@ -250,22 +333,22 @@ export const getMarketplaceHomeData = cache(async () => {
     ]);
 
     return {
-      featuredShops: featuredShops.length > 0 ? featuredShops : fallbackShops,
-      recentShops: recentShops.length > 0 ? recentShops : fallbackShops,
-      trendingProducts: trendingProducts.length > 0 ? trendingProducts : fallbackProducts,
-      newArrivals: newArrivals.length > 0 ? newArrivals : fallbackProducts,
-      bestSellers: bestSellers.length > 0 ? bestSellers : fallbackProducts,
+      featuredShops: featuredShops || [],
+      recentShops: recentShops || [],
+      trendingProducts: trendingProducts || [],
+      newArrivals: newArrivals || [],
+      bestSellers: bestSellers || [],
       categories: categories.length > 0 ? categories : fallbackCategories,
       coupons: coupons.length > 0 ? coupons : fallbackCoupons,
     };
   } catch (error) {
     console.error('❌ Failed to fetch marketplace home data:', error);
     return {
-      featuredShops: fallbackShops,
-      recentShops: fallbackShops,
-      trendingProducts: fallbackProducts,
-      newArrivals: fallbackProducts,
-      bestSellers: fallbackProducts,
+      featuredShops: [],
+      recentShops: [],
+      trendingProducts: [],
+      newArrivals: [],
+      bestSellers: [],
       categories: fallbackCategories,
       coupons: fallbackCoupons,
     };

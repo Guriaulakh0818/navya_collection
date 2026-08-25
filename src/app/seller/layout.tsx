@@ -22,7 +22,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { PendingApprovalCard } from '@/frontend/features/seller/components/PendingApprovalCard';
+import { SellerStatusView } from '@/frontend/features/seller/components/SellerStatusView';
 import { useAuthStore, useCartStore, useWishlistStore } from '@/stores';
 
 const SELLER_NAV = [
@@ -91,30 +91,26 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
 
   // If user has submitted a seller application but is pending approval
   if (sellerData && !sellerData.isApproved) {
-    const shop = sellerData.shop || {};
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-900 p-6 flex flex-col justify-center items-center">
+      <div className="min-h-screen bg-slate-50 text-slate-900 p-4 sm:p-6 flex flex-col justify-center items-center">
         <div className="w-full max-w-4xl">
-          <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
-            <h1 className="text-xl font-bold text-navy flex items-center gap-2">
-              <Store className="w-6 h-6 text-orange" />
+          <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-4">
+            <h1 className="text-xl font-extrabold text-navy flex items-center gap-2">
+              <Store className="w-6 h-6 text-amber-600" />
               Navya Collection Merchant Portal
             </h1>
             <button
               onClick={handleLogout}
-              className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 font-semibold"
+              className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 font-bold cursor-pointer"
             >
-              <LogOut className="w-4 h-4" /> Sign Out
+              <LogOut className="w-4 h-4 text-rose-600" /> Sign Out
             </button>
           </div>
 
-          <PendingApprovalCard
-            shopName={shop.name || 'Your Boutique Shop'}
-            applicantName={sellerData.name}
-            email={sellerData.email}
-            mobile={sellerData.mobile}
-            shopId={shop.id || 'PENDING'}
+          <SellerStatusView
+            statusData={sellerData}
             onRefresh={fetchSellerStatus}
+            onStartNew={() => router.push('/become-seller')}
           />
         </div>
       </div>

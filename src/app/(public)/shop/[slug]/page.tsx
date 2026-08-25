@@ -139,7 +139,10 @@ export default function BoutiqueShopStorefrontPage({
         } else {
           setShopData({
             id: 'fallback_shop',
-            name: resolvedSlug.replace(/-/g, ' ').toUpperCase(),
+            name: resolvedSlug
+              .split('-')
+              .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+              .join(' '),
             slug: resolvedSlug,
             description:
               'Verified shop store showcasing handcrafted ethnic wear and designer garments.',
