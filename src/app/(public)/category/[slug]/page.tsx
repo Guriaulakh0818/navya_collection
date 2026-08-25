@@ -10,33 +10,6 @@ import type { Product } from '@/features/products/types/product.types';
 
 import { CategoryPagination } from './CategoryPagination';
 
-const MOCK_PRODUCTS_PER_CATEGORY = 35;
-
-function generateMockProducts(category: Category): Product[] {
-  return Array.from({ length: MOCK_PRODUCTS_PER_CATEGORY }).map((_, i): Product => ({
-    id: `${category.slug}-${i + 1}`,
-    name: `${category.name} Product ${i + 1}`,
-    slug: `${category.slug}-product-${i + 1}`,
-    description: `Premium ${category.name.toLowerCase()} product with excellent craftsmanship.`,
-    price: 599 + (i % 10) * 120,
-    compareAtPrice: [1199, 1499, 1799, 1999][i % 4] as number | undefined,
-    images: [],
-    category: {
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      description: category.description,
-      image: category.image,
-      parentId: category.parentId,
-    },
-    categoryId: category.id,
-    status: 'active',
-    stock: 10,
-    rating: 4 + (i % 2) * 0.5,
-    reviewCount: 20 + i * 5,
-  }));
-}
-
 type Props = {
   params: Promise<{ slug: string }>;
 };
@@ -85,6 +58,10 @@ export default async function CategoryPage({ params }: Props) {
       where: {
         status: 'active',
         deletedAt: null,
+        shop: {
+          status: 'APPROVED',
+          deletedAt: null,
+        },
         OR: [
           { categoryId: category.id },
           { category: { slug } },
@@ -103,7 +80,7 @@ export default async function CategoryPage({ params }: Props) {
     console.error('Failed to query category products:', err);
   }
 
-  const allProducts = dbProducts.length > 0 ? dbProducts : generateMockProducts(category);
+  const allProducts = dbProducts;
   const totalPages = Math.max(1, Math.ceil(allProducts.length / DEFAULT_PAGE_SIZE));
 
   return (

@@ -50,6 +50,10 @@ export class MarketplaceSearchService {
         gte: minPrice,
         lte: maxPrice,
       },
+      shop: {
+        status: 'APPROVED',
+        deletedAt: null,
+      },
     };
 
     if (minRating > 0) {
@@ -187,6 +191,10 @@ export class MarketplaceSearchService {
           deletedAt: null,
           status: 'active',
           name: { contains: keyword, mode: 'insensitive' },
+          shop: {
+            status: 'APPROVED',
+            deletedAt: null,
+          },
         },
         take: 5,
         select: {

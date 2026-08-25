@@ -18,6 +18,10 @@ export class FilterRepository {
           ...where,
           deletedAt: null,
           status: 'active', // Security enforcement: active products only
+          shop: {
+            status: 'APPROVED',
+            deletedAt: null,
+          },
         },
         skip,
         take,
@@ -90,6 +94,10 @@ export class FilterRepository {
           ...where,
           deletedAt: null,
           status: 'active',
+          shop: {
+            status: 'APPROVED',
+            deletedAt: null,
+          },
         },
       });
     } catch {
@@ -102,6 +110,8 @@ export class FilterRepository {
    */
   static async getFilterOptions() {
     try {
+      const shopApprovedFilter = { status: 'APPROVED' as const, deletedAt: null };
+
       const [
         categories,
         brands,
@@ -125,7 +135,9 @@ export class FilterRepository {
             slug: true,
             _count: {
               select: {
-                products: { where: { deletedAt: null, status: 'active' } },
+                products: {
+                  where: { deletedAt: null, status: 'active', shop: shopApprovedFilter },
+                },
               },
             },
           },
@@ -134,71 +146,121 @@ export class FilterRepository {
 
         // 2. Distinct Brands
         prisma.product.findMany({
-          where: { deletedAt: null, status: 'active', brand: { not: null } },
+          where: {
+            deletedAt: null,
+            status: 'active',
+            brand: { not: null },
+            shop: shopApprovedFilter,
+          },
           select: { brand: true },
           distinct: ['brand'],
         }),
 
         // 3. Distinct Genders
         prisma.product.findMany({
-          where: { deletedAt: null, status: 'active', gender: { not: null } },
+          where: {
+            deletedAt: null,
+            status: 'active',
+            gender: { not: null },
+            shop: shopApprovedFilter,
+          },
           select: { gender: true },
           distinct: ['gender'],
         }),
 
         // 4. Distinct Age Groups
         prisma.product.findMany({
-          where: { deletedAt: null, status: 'active', ageGroup: { not: null } },
+          where: {
+            deletedAt: null,
+            status: 'active',
+            ageGroup: { not: null },
+            shop: shopApprovedFilter,
+          },
           select: { ageGroup: true },
           distinct: ['ageGroup'],
         }),
 
         // 5. Distinct Fabrics
         prisma.product.findMany({
-          where: { deletedAt: null, status: 'active', fabric: { not: null } },
+          where: {
+            deletedAt: null,
+            status: 'active',
+            fabric: { not: null },
+            shop: shopApprovedFilter,
+          },
           select: { fabric: true },
           distinct: ['fabric'],
         }),
 
         // 6. Distinct Sizes from variants
         prisma.productVariant.findMany({
-          where: { deletedAt: null, status: 'active', size: { not: null } },
+          where: {
+            deletedAt: null,
+            status: 'active',
+            size: { not: null },
+            product: { shop: shopApprovedFilter },
+          },
           select: { size: true },
           distinct: ['size'],
         }),
 
         // 7. Distinct Colors from variants
         prisma.productVariant.findMany({
-          where: { deletedAt: null, status: 'active', color: { not: null } },
+          where: {
+            deletedAt: null,
+            status: 'active',
+            color: { not: null },
+            product: { shop: shopApprovedFilter },
+          },
           select: { color: true },
           distinct: ['color'],
         }),
 
         // 8. Min and Max Price aggregate
         prisma.product.aggregate({
-          where: { deletedAt: null, status: 'active' },
+          where: { deletedAt: null, status: 'active', shop: shopApprovedFilter },
           _min: { price: true },
           _max: { price: true },
         }),
 
         // 9. In Stock count
         prisma.product.count({
-          where: { deletedAt: null, status: 'active', stock: { gt: 0 } },
+          where: {
+            deletedAt: null,
+            status: 'active',
+            stock: { gt: 0 },
+            shop: shopApprovedFilter,
+          },
         }),
 
         // 10. Out of stock count
         prisma.product.count({
-          where: { deletedAt: null, status: 'active', stock: { lte: 0 } },
+          where: {
+            deletedAt: null,
+            status: 'active',
+            stock: { lte: 0 },
+            shop: shopApprovedFilter,
+          },
         }),
 
         // 11. Featured Count
         prisma.product.count({
-          where: { deletedAt: null, status: 'active', isFeatured: true },
+          where: {
+            deletedAt: null,
+            status: 'active',
+            isFeatured: true,
+            shop: shopApprovedFilter,
+          },
         }),
 
         // 12. New Arrivals Count
         prisma.product.count({
-          where: { deletedAt: null, status: 'active', isNewArrival: true },
+          where: {
+            deletedAt: null,
+            status: 'active',
+            isNewArrival: true,
+            shop: shopApprovedFilter,
+          },
         }),
       ]);
 
