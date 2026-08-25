@@ -8,26 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader } from '@/components/ui/loader';
 import { useAuth, useToast } from '@/providers';
+import { maskEmail } from '@/shared/utils/validators';
 import { useAuthStore } from '@/stores';
 
 type LoginFormProps = {
   initialUser?: { name?: string; email?: string } | null;
 };
-
-// Helper utility to mask email address (e.g., gurvindersingh0218@gmail.com -> gu***18@gmail.com)
-function maskEmail(emailAddress: string): string {
-  if (!emailAddress || !emailAddress.includes('@')) return emailAddress;
-  const parts = emailAddress.split('@');
-  const user = parts[0];
-  const domain = parts[1];
-
-  if (user.length <= 3) {
-    return `${user[0]}***@${domain}`;
-  }
-  const start = user.slice(0, 2);
-  const end = user.slice(-2);
-  return `${start}***${end}@${domain}`;
-}
 
 export function LoginForm({ initialUser }: LoginFormProps) {
   const { user: authUser, logout } = useAuth();
@@ -319,15 +305,19 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           {step === 'email' ? 'Welcome Back' : 'Enter Verification Code'}
         </h1>
         <p className="mt-1.5 text-xs sm:text-sm font-medium text-slate-600">
-          {step === 'email' ? (
-            'Sign in to your Navya Collection account'
-          ) : (
-            <>
-              We sent a 6-digit verification code to{' '}
-              <strong className="font-extrabold text-[#183A73]">{maskEmail(email)}</strong>
-            </>
-          )}
+          {step === 'email'
+            ? 'Sign in to your Navya Collection account'
+            : 'We sent a 6-digit code to your email'}
         </p>
+
+        {step === 'otp' && (
+          <div className="mt-3 flex items-center justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50/80 px-4 py-1.5 text-xs font-semibold text-[#183A73] max-w-full overflow-hidden shadow-xs">
+              <Mail className="h-4 w-4 text-[#183A73] shrink-0" />
+              <span className="truncate max-w-full font-semibold">{maskEmail(email)}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {step === 'email' ? (

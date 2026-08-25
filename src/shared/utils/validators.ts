@@ -20,3 +20,30 @@ export function isValidMobileNumber(mobile: string): boolean {
 }
 
 export const isValidMobile = isValidMobileNumber;
+
+/**
+ * Masks an email address for privacy display.
+ * Examples:
+ * - guriaulakh0806@gmail.com -> guriaul***@gmail.com
+ * - rahul123@gmail.com -> rah***@gmail.com
+ * - a@gmail.com -> *@gmail.com
+ */
+export function maskEmail(email: string): string {
+  if (!email || !email.includes('@')) return email;
+  const [local, domain] = email.trim().toLowerCase().split('@');
+  if (!local || !domain) return email;
+
+  if (local.length <= 1) {
+    return `*@${domain}`;
+  }
+  if (local.length <= 3) {
+    return `${local.slice(0, 1)}***@${domain}`;
+  }
+  if (local.length <= 6) {
+    return `${local.slice(0, 2)}***@${domain}`;
+  }
+  if (local.length <= 9) {
+    return `${local.slice(0, 3)}***@${domain}`;
+  }
+  return `${local.slice(0, 7)}***@${domain}`;
+}

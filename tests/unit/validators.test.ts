@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { isValidEmail, isValidMobile, isValidPincode } from '../../src/shared/utils/validators';
+import {
+  isValidEmail,
+  isValidMobile,
+  isValidPincode,
+  maskEmail,
+} from '../../src/shared/utils/validators';
 
 describe('Validation Utilities', () => {
   describe('isValidEmail', () => {
@@ -13,6 +18,20 @@ describe('Validation Utilities', () => {
       expect(isValidEmail('plainaddress')).toBe(false);
       expect(isValidEmail('@domain.com')).toBe(false);
       expect(isValidEmail('user@domain')).toBe(false);
+    });
+  });
+
+  describe('maskEmail', () => {
+    it('masks emails according to privacy rules matching specified examples', () => {
+      expect(maskEmail('guriaulakh0806@gmail.com')).toBe('guriaul***@gmail.com');
+      expect(maskEmail('rahul123@gmail.com')).toBe('rah***@gmail.com');
+      expect(maskEmail('a@gmail.com')).toBe('*@gmail.com');
+    });
+
+    it('handles short and edge case email usernames properly', () => {
+      expect(maskEmail('ab@gmail.com')).toBe('a***@gmail.com');
+      expect(maskEmail('abc@gmail.com')).toBe('a***@gmail.com');
+      expect(maskEmail('rahul@gmail.com')).toBe('ra***@gmail.com');
     });
   });
 
