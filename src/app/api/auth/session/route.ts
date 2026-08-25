@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 
-import { getCurrentUser } from '@/lib/session';
+import { getAdminUser, getCurrentUser } from '@/lib/session';
 
 export async function GET() {
   try {
-    const user = await getCurrentUser();
+    const user = (await getAdminUser()) || (await getCurrentUser());
 
     if (!user) {
       return NextResponse.json({ authenticated: false, user: null });

@@ -68,6 +68,13 @@ export async function POST(request: NextRequest) {
           path: '/',
           maxAge: 7 * 24 * 60 * 60,
         });
+        response.cookies.set('navya_session', result.token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 7 * 24 * 60 * 60,
+        });
       }
 
       return response;
