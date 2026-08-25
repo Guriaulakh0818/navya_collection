@@ -9,7 +9,8 @@ import { MarketplaceHero } from '@/frontend/features/marketplace/components/Mark
 import { RecentlyAddedShops } from '@/frontend/features/marketplace/components/RecentlyAddedShops';
 import { getMarketplaceHomeData } from '@/frontend/features/marketplace/services/marketplace-data';
 
-export const revalidate = 60; // Incremental Static Revalidation (ISR) every 60 seconds
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function MultiVendorMarketplaceHomePage() {
   const data = await getMarketplaceHomeData();
