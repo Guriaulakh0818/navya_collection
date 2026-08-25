@@ -100,9 +100,12 @@ export class AdminAuthService {
       isPasswordValid = await bcrypt.compare(plainPassword, user.password);
     }
 
-    // 4.b Check Owner Approval Status
+    // 4.b Check Owner Approval Status (Skip check for platform OWNER and SUPER_ADMIN)
     if (isAllowedAdminRole && isPasswordValid) {
-      const isApproved = user?.approvalStatus === 'APPROVED' || !user?.approvalStatus;
+      const isApproved =
+        user?.approvalStatus === 'APPROVED' ||
+        !user?.approvalStatus ||
+        ['OWNER', 'SUPER_ADMIN'].includes(String(user?.role));
       if (!isApproved) {
         console.log(
           `[${timestamp}] [ADMIN_AUTH] Email: ${masked} | Status: PENDING_OWNER_APPROVAL`,
