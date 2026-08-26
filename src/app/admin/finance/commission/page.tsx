@@ -169,6 +169,7 @@ export default function AdminCommissionAnalyticsPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-navy font-bold">
                           {shop.shopLogo ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
                             <img
                               src={shop.shopLogo}
                               alt={shop.shopName}
