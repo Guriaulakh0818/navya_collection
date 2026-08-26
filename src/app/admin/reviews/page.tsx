@@ -58,10 +58,10 @@ export default function AdminReviewModerationPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-            <MessageSquare className="w-7 h-7 text-amber-600" />
+            <MessageSquare className="w-7 h-7 text-orange" />
             Marketplace Review Moderation Center
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1 font-medium">
             Review, approve, or reject customer ratings and merchant replies across product and shop
             reviews.
           </p>
@@ -72,64 +72,66 @@ export default function AdminReviewModerationPage() {
       <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2">
-            <div className="w-5 h-5 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-orange border-t-transparent rounded-full animate-spin" />
             Loading reviews for moderation...
           </div>
         ) : reviews.length === 0 ? (
-          <div className="p-12 text-center text-slate-500">No customer reviews recorded yet.</div>
+          <div className="p-12 text-center text-slate-500 font-medium">
+            No customer reviews recorded yet.
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left text-slate-700">
-              <thead className="bg-slate-50 text-slate-500 uppercase font-mono border-b border-slate-200">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+            <table className="w-full text-xs text-left text-slate-800 border-collapse">
+              <thead className="bg-slate-50 text-navy font-extrabold uppercase border-b border-slate-200 tracking-wider">
                 <tr>
-                  <th className="px-4 py-3">Customer</th>
-                  <th className="px-4 py-3">Rating</th>
-                  <th className="px-4 py-3">Review Comment</th>
-                  <th className="px-4 py-3">Verified Buyer</th>
-                  <th className="px-4 py-3 text-center">Status</th>
-                  <th className="px-4 py-3 text-right">Moderation Actions</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200">Customer</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200">Rating</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200">Review Comment</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200">Verified Buyer</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200 text-center">Status</th>
+                  <th className="px-4 py-3.5 text-right">Moderation Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 bg-white">
                 {reviews.map((r: any) => (
-                  <tr key={r.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-4 py-4 font-bold text-white whitespace-nowrap">
+                  <tr key={r.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-4 font-bold text-navy whitespace-nowrap border-r border-slate-100">
                       {r.user?.name || 'Customer'}
                     </td>
 
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-0.5 text-amber-400 font-bold font-mono">
-                        {r.rating} <Star className="w-3.5 h-3.5 fill-amber-400" />
+                    <td className="px-4 py-4 whitespace-nowrap border-r border-slate-100">
+                      <div className="flex items-center gap-1 text-amber-500 font-bold font-mono text-sm">
+                        {r.rating} <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                       </div>
                     </td>
 
-                    <td className="px-4 py-4 max-w-sm">
-                      <p className="text-slate-200 line-clamp-2">{r.comment}</p>
+                    <td className="px-4 py-4 max-w-sm border-r border-slate-100">
+                      <p className="text-slate-700 font-medium line-clamp-2">{r.comment}</p>
                       {r.sellerReply && (
-                        <p className="text-[10px] text-amber-300 italic mt-1">
-                          Reply: {r.sellerReply}
+                        <p className="text-xs text-orange font-semibold italic mt-1 bg-orange/5 p-2 rounded-lg border border-orange/10">
+                          Seller Reply: {r.sellerReply}
                         </p>
                       )}
                     </td>
 
-                    <td className="px-4 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap border-r border-slate-100">
                       <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
                           r.isVerifiedPurchase
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-slate-800 text-slate-400'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-slate-100 text-slate-600 border border-slate-200'
                         }`}
                       >
                         {r.isVerifiedPurchase ? 'VERIFIED' : 'UNVERIFIED'}
                       </span>
                     </td>
 
-                    <td className="px-4 py-4 text-center whitespace-nowrap">
+                    <td className="px-4 py-4 text-center whitespace-nowrap border-r border-slate-100">
                       <span
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
                           r.status === 'APPROVED'
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                            : 'bg-red-500/10 text-red-400 border-red-500/30'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-red-50 text-red-700 border-red-200'
                         }`}
                       >
                         {r.status || 'APPROVED'}
@@ -139,13 +141,13 @@ export default function AdminReviewModerationPage() {
                     <td className="px-4 py-4 text-right space-x-2 whitespace-nowrap">
                       <button
                         onClick={() => handleModerate(r.id, 'APPROVED')}
-                        className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold rounded-lg border border-emerald-500/30 transition-all"
+                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl border border-emerald-200 transition-all cursor-pointer"
                       >
                         Approve ✓
                       </button>
                       <button
                         onClick={() => handleModerate(r.id, 'REJECTED')}
-                        className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold rounded-lg border border-red-500/30 transition-all"
+                        className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl border border-red-200 transition-all cursor-pointer"
                       >
                         Reject ✕
                       </button>
