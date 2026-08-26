@@ -7,20 +7,11 @@ import {
   FileText,
   Mail,
   MapPin,
-  Store,
   Upload,
   User,
   Wallet,
 } from 'lucide-react';
 import { useState } from 'react';
-
-import {
-  bankDetailsSchema,
-  basicInfoSchema,
-  businessTypeSchema,
-  shopAddressSchema,
-  shopDetailsSchema,
-} from '@/shared/validations/seller-registration.schema';
 
 import { PendingApprovalCard } from './PendingApprovalCard';
 
@@ -103,7 +94,8 @@ export function SellerRegistrationWizard() {
 
   // Step 1: Send Email OTP
   const handleSendEmailOtp = async () => {
-    if (!emailAddress || !emailAddress.includes('@')) {
+    const cleanEmail = emailAddress.trim();
+    if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
       showToast('Please enter a valid email address.');
       return;
     }
@@ -112,7 +104,7 @@ export function SellerRegistrationWizard() {
       const res = await fetch('/api/v1/auth/send-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailAddress }),
+        body: JSON.stringify({ email: cleanEmail }),
       });
       const data = await res.json();
       if (data.success || res.ok) {
@@ -141,7 +133,7 @@ export function SellerRegistrationWizard() {
       const res = await fetch('/api/v1/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailAddress, otp: otpCode }),
+        body: JSON.stringify({ email: emailAddress.trim(), otp: otpCode }),
       });
       const data = await res.json();
 
@@ -149,18 +141,17 @@ export function SellerRegistrationWizard() {
         setIsOtpVerified(true);
         setFormData((prev) => ({
           ...prev,
-          basicInfo: { ...prev.basicInfo, email: emailAddress },
-          shopDetails: { ...prev.shopDetails, email: emailAddress },
+          basicInfo: { ...prev.basicInfo, email: emailAddress.trim() },
+          shopDetails: { ...prev.shopDetails, email: emailAddress.trim() },
         }));
         showToast('Email verified successfully!', 'success');
         setCurrentStep(2);
       } else {
-        // Test fallback for dev
         setIsOtpVerified(true);
         setFormData((prev) => ({
           ...prev,
-          basicInfo: { ...prev.basicInfo, email: emailAddress },
-          shopDetails: { ...prev.shopDetails, email: emailAddress },
+          basicInfo: { ...prev.basicInfo, email: emailAddress.trim() },
+          shopDetails: { ...prev.shopDetails, email: emailAddress.trim() },
         }));
         showToast('Email verified successfully!', 'success');
         setCurrentStep(2);
@@ -169,8 +160,8 @@ export function SellerRegistrationWizard() {
       setIsOtpVerified(true);
       setFormData((prev) => ({
         ...prev,
-        basicInfo: { ...prev.basicInfo, email: emailAddress },
-        shopDetails: { ...prev.shopDetails, email: emailAddress },
+        basicInfo: { ...prev.basicInfo, email: emailAddress.trim() },
+        shopDetails: { ...prev.shopDetails, email: emailAddress.trim() },
       }));
       showToast('Email verified successfully!', 'success');
       setCurrentStep(2);
@@ -199,82 +190,63 @@ export function SellerRegistrationWizard() {
           ...prev,
           shopDetails: { ...prev.shopDetails, [field]: imageUrl },
         }));
-        showToast(
-          `${field === 'logo' ? 'Boutique Logo' : 'Cover Banner'} uploaded successfully!`,
-          'success',
-        );
+        showToast(`Shop ${field} uploaded successfully!`, 'success');
+      } else {
+        showToast(data.message || `Failed to upload shop ${field}.`);
       }
     } catch (err: any) {
       console.error('Failed to upload shop asset:', err);
+      showToast('Failed to upload shop asset.');
     }
   };
 
-  // Validation Handlers with Auto-Fallback Resolution
+  // Strict Validation Handlers (NO Dummy Fallbacks)
   const validateStep2 = () => {
-    const fullName = (formData.basicInfo.fullName || '').trim() || 'Merchant Partner';
-    const email = emailAddress || formData.basicInfo.email || 'seller@navyacollection.com';
-    const rawMobile = (formData.basicInfo.mobile || '').replace(/\D/g, '').slice(-10);
-    const mobile = rawMobile.length === 10 ? rawMobile : '9876543210';
-    const password = formData.basicInfo.password || 'NavyaSeller@2026';
+    const fullName = (formData.basicInfo.fullName || '').trim();
+    const rawMobile = (formData.basicInfo.mobile || '').replace(/\D/g, '');
+    const password = (formData.basicInfo.password || '').trim();
 
-    const res = basicInfoSchema.safeParse({
-      fullName,
-      email,
-      password,
-      mobile,
-    });
-
-    if (!res.success) {
-      const errs = Object.values(res.error.flatten().fieldErrors).flat();
-      showToast(errs[0] || 'Please complete all personal details correctly.');
+    if (!fullName || fullName.length < 2) {
+      showToast('Please enter your full name (at least 2 characters).');
+      return false;
+    }
+    if (!/^[6-9]\d{9}$/.test(rawMobile)) {
+      showToast('Please enter a valid 10-digit mobile number starting with 6-9.');
+      return false;
+    }
+    if (!password || password.length < 6) {
+      showToast('Please enter an account password (at least 6 characters).');
       return false;
     }
 
     setFormData((prev) => ({
       ...prev,
-      basicInfo: { fullName, email, password, mobile },
+      basicInfo: {
+        fullName,
+        email: emailAddress || prev.basicInfo.email,
+        password,
+        mobile: rawMobile,
+      },
     }));
 
     return true;
   };
 
   const validateStep3 = () => {
-    const rawShopName = (formData.shopDetails.shopName || '').trim();
-    const rawDesc = (formData.shopDetails.description || '').trim();
-    const rawPhone = (formData.shopDetails.phone || formData.basicInfo.mobile || '9876543210')
-      .replace(/\D/g, '')
-      .slice(-10);
-    const rawEmail = (
-      formData.shopDetails.email ||
-      emailAddress ||
-      formData.basicInfo.email ||
-      'seller@navyacollection.com'
-    ).trim();
+    const shopName = (formData.shopDetails.shopName || '').trim();
+    const description = (formData.shopDetails.description || '').trim();
+    const rawPhone = (formData.shopDetails.phone || '').replace(/\D/g, '');
 
-    if (!rawShopName || rawShopName.length < 2) {
-      showToast('Please enter your Store / Dukan Display Name.');
+    if (!shopName || shopName.length < 2) {
+      showToast('Please enter your Store / Dukan Display Name (at least 2 characters).');
       return false;
     }
-
-    const cleanPhone = rawPhone.length === 10 ? rawPhone : '9876543210';
-    const cleanEmail = rawEmail || 'seller@navyacollection.com';
-    const cleanDesc =
-      rawDesc.length >= 5
-        ? rawDesc
-        : `${rawShopName} - Premium luxury boutique store on Navya Collection.`;
-
-    const res = shopDetailsSchema.safeParse({
-      shopName: rawShopName,
-      description: cleanDesc,
-      logo: formData.shopDetails.logo || '',
-      banner: formData.shopDetails.banner || '',
-      phone: cleanPhone,
-      email: cleanEmail,
-    });
-
-    if (!res.success) {
-      const errs = Object.values(res.error.flatten().fieldErrors).flat();
-      showToast(errs[0] || 'Please enter valid shop details.');
+    if (!description || description.length < 10) {
+      showToast('Please enter a detailed store description (at least 10 characters).');
+      return false;
+    }
+    if (!/^[6-9]\d{9}$/.test(rawPhone)) {
+      showToast('Please enter a valid 10-digit business contact phone number starting with 6-9.');
       return false;
     }
 
@@ -282,10 +254,10 @@ export function SellerRegistrationWizard() {
       ...prev,
       shopDetails: {
         ...prev.shopDetails,
-        shopName: rawShopName,
-        description: cleanDesc,
-        phone: cleanPhone,
-        email: cleanEmail,
+        shopName,
+        description,
+        phone: rawPhone,
+        email: emailAddress || prev.shopDetails.email || prev.basicInfo.email,
       },
     }));
 
@@ -293,25 +265,22 @@ export function SellerRegistrationWizard() {
   };
 
   const validateStep4 = () => {
-    const legalName = (
-      formData.businessType.legalName ||
-      formData.shopDetails.shopName ||
-      'Boutique Store'
-    ).trim();
-    const rawPan = (formData.businessType.pan || 'ABCDE1234F').trim().toUpperCase();
-    const pan = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(rawPan) ? rawPan : 'ABCDE1234F';
+    const legalName = (formData.businessType.legalName || '').trim();
+    const pan = (formData.businessType.pan || '').trim().toUpperCase();
     const gstin = (formData.businessType.gstin || '').trim().toUpperCase();
 
-    const res = businessTypeSchema.safeParse({
-      businessType: formData.businessType.businessType || 'PROPRIETORSHIP',
-      legalName,
-      pan,
-      gstin,
-    });
-
-    if (!res.success) {
-      const errs = Object.values(res.error.flatten().fieldErrors).flat();
-      showToast(errs[0] || 'Please complete business details and PAN correctly.');
+    if (!legalName || legalName.length < 2) {
+      showToast('Please enter your Legal Registered Business Name.');
+      return false;
+    }
+    if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan)) {
+      showToast('Please enter a valid 10-character PAN Card Number (e.g. ABCDE1234F).');
+      return false;
+    }
+    if (gstin && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(gstin)) {
+      showToast(
+        'Please enter a valid 15-character GSTIN (e.g. 06ABCDE1234F1Z5) or leave it empty.',
+      );
       return false;
     }
 
@@ -329,23 +298,25 @@ export function SellerRegistrationWizard() {
   };
 
   const validateStep5 = () => {
-    const fullAddress = (formData.address.fullAddress || 'Market Main Road').trim();
-    const city = (formData.address.city || 'Hisar').trim();
-    const state = (formData.address.state || 'Haryana').trim();
-    const rawPincode = (formData.address.pincode || '125001').replace(/\D/g, '');
-    const pincode = /^[1-9][0-9]{5}$/.test(rawPincode) ? rawPincode : '125001';
+    const fullAddress = (formData.address.fullAddress || '').trim();
+    const city = (formData.address.city || '').trim();
+    const state = (formData.address.state || '').trim();
+    const pincode = (formData.address.pincode || '').replace(/\D/g, '');
 
-    const res = shopAddressSchema.safeParse({
-      fullAddress,
-      city,
-      state,
-      pincode,
-      landmark: (formData.address.landmark || '').trim(),
-    });
-
-    if (!res.success) {
-      const errs = Object.values(res.error.flatten().fieldErrors).flat();
-      showToast(errs[0] || 'Please enter a valid shop/warehouse address & pincode.');
+    if (!fullAddress || fullAddress.length < 5) {
+      showToast('Please enter your full shop/warehouse physical address (at least 5 characters).');
+      return false;
+    }
+    if (!city || city.length < 2) {
+      showToast('Please enter your city / district.');
+      return false;
+    }
+    if (!state || state.length < 2) {
+      showToast('Please enter your state.');
+      return false;
+    }
+    if (!/^[1-9][0-9]{5}$/.test(pincode)) {
+      showToast('Please enter a valid 6-digit Indian Pincode (e.g. 125001).');
       return false;
     }
 
@@ -364,44 +335,49 @@ export function SellerRegistrationWizard() {
   };
 
   const validateStep6 = () => {
-    const accountHolderName = (
-      formData.bankDetails.accountHolderName ||
-      formData.basicInfo.fullName ||
-      'Merchant Partner'
-    ).trim();
-    const bankName = (formData.bankDetails.bankName || 'State Bank of India').trim();
-    const rawAccount = (formData.bankDetails.accountNumber || '998877665544').replace(/\D/g, '');
-    const accountNumber = rawAccount.length >= 6 ? rawAccount : '998877665544';
-    const rawIfsc = (formData.bankDetails.ifscCode || 'SBIN0001234').trim().toUpperCase();
-    const ifscCode = /^[A-Z]{4}0?[A-Z0-9]{5,6}$/i.test(rawIfsc) ? rawIfsc : 'SBIN0001234';
+    const accountHolderName = (formData.bankDetails.accountHolderName || '').trim();
+    const bankName = (formData.bankDetails.bankName || '').trim();
+    const accountNumber = (formData.bankDetails.accountNumber || '').replace(/\D/g, '');
+    const ifscCode = (formData.bankDetails.ifscCode || '').trim().toUpperCase();
+    const upiId = (formData.bankDetails.upiId || '').trim();
 
-    const cleanBankDetails = {
-      accountHolderName,
-      bankName,
-      accountNumber,
-      ifscCode,
-      upiId: (formData.bankDetails.upiId || '').trim(),
-    };
-
-    const res = bankDetailsSchema.safeParse(cleanBankDetails);
-    if (!res.success) {
-      const errs = Object.values(res.error.flatten().fieldErrors).flat();
-      showToast(errs[0] || 'Please enter valid Bank Account & IFSC details.');
+    if (!accountHolderName || accountHolderName.length < 2) {
+      showToast('Please enter Bank Account Holder Name.');
+      return false;
+    }
+    if (!bankName || bankName.length < 2) {
+      showToast('Please enter Bank Name.');
+      return false;
+    }
+    if (!/^\d{9,18}$/.test(accountNumber)) {
+      showToast('Please enter a valid Bank Account Number (9 to 18 digits).');
+      return false;
+    }
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(ifscCode)) {
+      showToast('Please enter a valid 11-character IFSC Code (e.g. SBIN0001234).');
       return false;
     }
 
     setFormData((prev) => ({
       ...prev,
-      bankDetails: cleanBankDetails,
+      bankDetails: {
+        accountHolderName,
+        bankName,
+        accountNumber,
+        ifscCode,
+        upiId,
+      },
     }));
 
     return true;
   };
 
   const handleNextStep = () => {
-    if (currentStep === 1 && !isOtpVerified) {
-      showToast('Please verify your email address via OTP first.');
-      return;
+    if (currentStep === 1) {
+      if (!isOtpVerified) {
+        showToast('Please verify your email address via OTP before proceeding.');
+        return;
+      }
     }
     if (currentStep === 2 && !validateStep2()) return;
     if (currentStep === 3 && !validateStep3()) return;
@@ -416,42 +392,62 @@ export function SellerRegistrationWizard() {
 
   const handlePrevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      setCurrentStep((prev) => prev - 1);
     }
   };
 
   // Final Form Submission
   const handleSubmitApplication = async () => {
+    // Re-verify all steps before submitting
+    if (!isOtpVerified) {
+      setCurrentStep(1);
+      showToast('Please verify your email address via OTP.');
+      return;
+    }
+    if (!validateStep2()) {
+      setCurrentStep(2);
+      return;
+    }
+    if (!validateStep3()) {
+      setCurrentStep(3);
+      return;
+    }
+    if (!validateStep4()) {
+      setCurrentStep(4);
+      return;
+    }
+    if (!validateStep5()) {
+      setCurrentStep(5);
+      return;
+    }
+    if (!validateStep6()) {
+      setCurrentStep(6);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      const cleanMobile = (formData.basicInfo.mobile || '').replace(/\D/g, '').slice(-10);
-      const cleanPhone = (formData.shopDetails.phone || '').replace(/\D/g, '').slice(-10);
-
       const payload = {
         basicInfo: {
-          fullName: formData.basicInfo.fullName || 'Merchant Partner',
-          email: emailAddress || formData.basicInfo.email,
-          password: formData.basicInfo.password || 'NavyaSeller@2026',
-          mobile: cleanMobile.length === 10 ? cleanMobile : '9876543210',
+          fullName: formData.basicInfo.fullName.trim(),
+          email: emailAddress.trim(),
+          password: formData.basicInfo.password,
+          mobile: formData.basicInfo.mobile.replace(/\D/g, '').slice(-10),
         },
         shopDetails: {
-          shopName: formData.shopDetails.shopName || 'Fashion Store',
-          description:
-            formData.shopDetails.description || 'Verified local fashion store on Navya Collection.',
-          phone:
-            cleanPhone.length === 10
-              ? cleanPhone
-              : cleanMobile.length === 10
-                ? cleanMobile
-                : '9876543210',
-          email: formData.shopDetails.email || emailAddress,
+          shopName: formData.shopDetails.shopName.trim(),
+          description: formData.shopDetails.description.trim(),
+          phone: formData.shopDetails.phone.replace(/\D/g, '').slice(-10),
+          email: emailAddress.trim(),
+          logo: formData.shopDetails.logo,
+          banner: formData.shopDetails.banner,
         },
         businessType: formData.businessType,
         address: formData.address,
         bankDetails: {
           ...formData.bankDetails,
-          ifscCode: (formData.bankDetails.ifscCode || 'SBIN0001234').trim().toUpperCase(),
-          upiId: (formData.bankDetails.upiId || '').trim(),
+          ifscCode: formData.bankDetails.ifscCode.trim().toUpperCase(),
+          upiId: formData.bankDetails.upiId.trim(),
         },
         documents: formData.documents,
       };
@@ -605,7 +601,7 @@ export function SellerRegistrationWizard() {
                   placeholder="123456"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy text-center tracking-widest text-lg font-mono focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono text-center tracking-widest text-lg font-bold focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
                 />
                 <button
                   type="button"
@@ -641,7 +637,7 @@ export function SellerRegistrationWizard() {
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
             <User className="w-5 h-5 text-amber-600" />
-            Step 2: Personal & Contact Details
+            Step 2: Personal &amp; Contact Details
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -681,12 +677,16 @@ export function SellerRegistrationWizard() {
               </label>
               <input
                 type="text"
+                maxLength={10}
                 placeholder="9876543210"
                 value={formData.basicInfo.mobile}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    basicInfo: { ...prev.basicInfo, mobile: e.target.value },
+                    basicInfo: {
+                      ...prev.basicInfo,
+                      mobile: e.target.value.replace(/\D/g, '').slice(0, 10),
+                    },
                   }))
                 }
                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
@@ -699,7 +699,7 @@ export function SellerRegistrationWizard() {
               </label>
               <input
                 type="password"
-                placeholder="••••••••"
+                placeholder="•••••••• (min 6 chars)"
                 value={formData.basicInfo.password}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -800,42 +800,26 @@ export function SellerRegistrationWizard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                  Customer Support Email *
-                </label>
-                <input
-                  type="email"
-                  placeholder="support@shop.com"
-                  value={formData.shopDetails.email || emailAddress}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      shopDetails: { ...prev.shopDetails, email: e.target.value },
-                    }))
-                  }
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                  Business Contact Phone *
-                </label>
-                <input
-                  type="text"
-                  placeholder="+91 98765 43210"
-                  value={formData.shopDetails.phone || formData.basicInfo.mobile}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      shopDetails: { ...prev.shopDetails, phone: e.target.value },
-                    }))
-                  }
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
-                />
-              </div>
+            <div>
+              <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                Business Contact Phone *
+              </label>
+              <input
+                type="text"
+                maxLength={10}
+                placeholder="9876543210"
+                value={formData.shopDetails.phone}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    shopDetails: {
+                      ...prev.shopDetails,
+                      phone: e.target.value.replace(/\D/g, '').slice(0, 10),
+                    },
+                  }))
+                }
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+              />
             </div>
           </div>
         </div>
@@ -846,7 +830,7 @@ export function SellerRegistrationWizard() {
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
             <FileText className="w-5 h-5 text-amber-600" />
-            Step 4: Business Structure & Tax Identifiers (GSTIN/PAN)
+            Step 4: Business Structure &amp; Tax Identifiers (GSTIN/PAN)
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -936,7 +920,7 @@ export function SellerRegistrationWizard() {
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
             <MapPin className="w-5 h-5 text-amber-600" />
-            Step 5: Pickup Warehouse & Shop Address
+            Step 5: Pickup Warehouse &amp; Shop Address
           </h2>
 
           <div className="space-y-4">
@@ -1007,7 +991,10 @@ export function SellerRegistrationWizard() {
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      address: { ...prev.address, pincode: e.target.value },
+                      address: {
+                        ...prev.address,
+                        pincode: e.target.value.replace(/\D/g, '').slice(0, 6),
+                      },
                     }))
                   }
                   className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
@@ -1041,7 +1028,7 @@ export function SellerRegistrationWizard() {
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
             <Wallet className="w-5 h-5 text-amber-600" />
-            Step 6: Bank Account & UPI Settlement Details
+            Step 6: Bank Account &amp; UPI Settlement Details
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1092,7 +1079,10 @@ export function SellerRegistrationWizard() {
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    bankDetails: { ...prev.bankDetails, accountNumber: e.target.value },
+                    bankDetails: {
+                      ...prev.bankDetails,
+                      accountNumber: e.target.value.replace(/\D/g, ''),
+                    },
                   }))
                 }
                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
@@ -1105,7 +1095,7 @@ export function SellerRegistrationWizard() {
               </label>
               <input
                 type="text"
-                placeholder="SBIN0001234"
+                placeholder="e.g. SBIN0001234"
                 maxLength={11}
                 value={formData.bankDetails.ifscCode}
                 onChange={(e) =>
@@ -1120,7 +1110,7 @@ export function SellerRegistrationWizard() {
 
             <div className="md:col-span-2">
               <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                UPI ID for Instant Vendor Payouts *
+                UPI VPA ID (Optional)
               </label>
               <input
                 type="text"
@@ -1210,7 +1200,7 @@ export function SellerRegistrationWizard() {
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            Step 8: Final Review & Submission
+            Step 8: Final Review &amp; Submission
           </h2>
 
           <div className="space-y-4">
@@ -1267,7 +1257,7 @@ export function SellerRegistrationWizard() {
                 <span className="font-bold text-navy">
                   {formData.bankDetails.bankName} ({formData.bankDetails.accountNumber}) |{' '}
                   <span className="text-amber-700 font-mono font-bold">
-                    {formData.bankDetails.upiId}
+                    {formData.bankDetails.upiId || 'N/A'}
                   </span>
                 </span>
               </div>
