@@ -67,9 +67,10 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
   const menuItems = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop', href: '/shop', icon: ShoppingBag },
-    { label: 'Gents Wear', href: '/shop?category=gents', icon: Shirt },
-    { label: 'Kids Wear', href: '/shop?category=kids', icon: Baby },
-    { label: 'Categories', href: '/shop', icon: Grid },
+    { label: 'Categories', href: '/category', icon: Grid },
+    { label: '  • Men Wear', href: '/category/gents-wear', icon: Shirt },
+    { label: '  • Women Wear', href: '/category/women-wear', icon: Shirt },
+    { label: '  • Kids Wear', href: '/category/kids-wear', icon: Baby },
     isVerifiedSeller
       ? { label: 'Seller Dashboard 🏪', href: '/seller/dashboard', icon: Store }
       : { label: 'Become Seller ✨', href: '/become-seller', icon: Store },
