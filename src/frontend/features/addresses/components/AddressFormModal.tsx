@@ -346,7 +346,7 @@ export const AddressFormModal: React.FC<AddressFormModalProps> = ({
             {/* Multiple Post Offices / Localities Selector */}
             {localities.length > 1 && (
               <div className="md:col-span-2 bg-slate-50 border border-slate-200 rounded-2xl p-3.5 space-y-1.5 animate-fade-in">
-                <label className="block text-xs font-bold uppercase tracking-wider text-navy flex items-center gap-1.5">
+                <label className="flex text-xs font-bold uppercase tracking-wider text-navy items-center gap-1.5">
                   <MapPin className="h-3.5 w-3.5 text-orange shrink-0" />
                   Select Area / Post Office ({localities.length} available for {form.pincode})
                 </label>

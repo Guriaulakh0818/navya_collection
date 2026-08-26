@@ -1,43 +1,30 @@
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
 
-export interface RazorpayConfig {
-  keyId: string;
-  keySecret: string;
-  webhookSecret: string;
-  isTestMode: boolean;
-}
+let razorpayInstance: Razorpay | null = null;
 
-/**
- * Validates and retrieves Razorpay Environment Variables.
- */
-export function getRazorpayConfig(): RazorpayConfig {
+export function getRazorpayConfig() {
   const keyId =
     process.env.RAZORPAY_KEY_ID ||
     process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
     'rzp_test_TUSsl0DgRczLN7';
+
   const keySecret = process.env.RAZORPAY_KEY_SECRET || 'a6z4ZPaOIyai9gc1Twwsq8sU';
-  const webhookSecret =
-    process.env.RAZORPAY_WEBHOOK_SECRET || 'whsec_navya_collection_webhook_secret_67890';
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || 'a6z4ZPaOIyai9gc1Twwsq8sU';
 
-  const isTestMode = keyId.startsWith('rzp_test_');
-
-  return {
-    keyId,
-    keySecret,
-    webhookSecret,
-    isTestMode,
-  };
+  return { keyId, keySecret, webhookSecret };
 }
 
-let razorpayInstance: Razorpay | null = null;
+export function getRazorpayClient(): Razorpay {
+  const config = getRazorpayConfig();
 
-/**
- * Gets or initializes singleton Razorpay SDK Instance.
- */
-export function getRazorpayInstance(): Razorpay {
+  if (!config.keyId || !config.keySecret) {
+    throw new Error(
+      '[RAZORPAY_CONFIG_ERROR] Missing RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in environment variables.',
+    );
+  }
+
   if (!razorpayInstance) {
-    const config = getRazorpayConfig();
     razorpayInstance = new Razorpay({
       key_id: config.keyId,
       key_secret: config.keySecret,
@@ -45,6 +32,9 @@ export function getRazorpayInstance(): Razorpay {
   }
   return razorpayInstance;
 }
+
+// Alias for backwards compatibility
+export const getRazorpayInstance = getRazorpayClient;
 
 /**
  * Verifies Razorpay Payment Signature using HMAC-SHA256.
@@ -60,10 +50,14 @@ export function verifyRazorpaySignature(
     const payload = `${orderId}|${paymentId}`;
     const expectedSignature = crypto.createHmac('sha256', keySecret).update(payload).digest('hex');
 
-    return crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, 'utf-8'),
-      Buffer.from(signature, 'utf-8'),
-    );
+    const expectedBuffer = Buffer.from(expectedSignature, 'utf-8');
+    const signatureBuffer = Buffer.from(signature, 'utf-8');
+
+    if (expectedBuffer.length !== signatureBuffer.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(new Uint8Array(expectedBuffer), new Uint8Array(signatureBuffer));
   } catch (err) {
     console.error('[RAZORPAY_SIGNATURE_VERIFICATION_ERROR]', err);
     return false;
@@ -82,10 +76,14 @@ export function verifyRazorpayWebhookSignature(rawBody: string, signature: strin
       .update(rawBody)
       .digest('hex');
 
-    return crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, 'utf-8'),
-      Buffer.from(signature, 'utf-8'),
-    );
+    const expectedBuffer = Buffer.from(expectedSignature, 'utf-8');
+    const signatureBuffer = Buffer.from(signature, 'utf-8');
+
+    if (expectedBuffer.length !== signatureBuffer.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(new Uint8Array(expectedBuffer), new Uint8Array(signatureBuffer));
   } catch (err) {
     console.error('[RAZORPAY_WEBHOOK_SIGNATURE_ERROR]', err);
     return false;
