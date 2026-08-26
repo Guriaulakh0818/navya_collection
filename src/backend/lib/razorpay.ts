@@ -15,8 +15,8 @@ export function getRazorpayConfig(): RazorpayConfig {
   const keyId =
     process.env.RAZORPAY_KEY_ID ||
     process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
-    'rzp_test_navya_collection_key_id';
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || 'navya_collection_razorpay_secret_key_12345';
+    'rzp_test_TUSsl0DgRczLN7';
+  const keySecret = process.env.RAZORPAY_KEY_SECRET || 'a6z4ZPaOIyai9gc1Twwsq8sU';
   const webhookSecret =
     process.env.RAZORPAY_WEBHOOK_SECRET || 'whsec_navya_collection_webhook_secret_67890';
 
