@@ -2,6 +2,7 @@ import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 import { sellerProductSchema } from '@/shared/validations/seller-product.schema';
@@ -119,6 +120,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
+    const validCategoryId = await resolveValidCategoryId(data.categoryId);
+
     const result = await prisma.$transaction(async (tx) => {
       // 1. Update Product
       const updatedProduct = await tx.product.update({
@@ -131,7 +134,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           compareAtPrice: data.compareAtPrice || null,
           costPrice: data.costPrice || null,
           stock: data.stock,
-          categoryId: data.categoryId,
+          categoryId: validCategoryId,
           status: data.status === 'draft' ? 'draft' : 'pending_approval',
           isFeatured: data.isFeatured,
           gender: data.gender || null,

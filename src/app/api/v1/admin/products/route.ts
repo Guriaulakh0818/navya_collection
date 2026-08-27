@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
@@ -145,10 +146,12 @@ export async function POST(request: NextRequest) {
     const generatedSlug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
     const generatedSku = sku || `NC-ADM-${Math.floor(1000 + Math.random() * 9000)}`;
 
+    const validCategoryId = await resolveValidCategoryId(category?.id || categoryName);
+
     const newProduct = await prisma.product.create({
       data: {
         shopId: shop.id,
-        categoryId: category?.id || 'cat_sarees',
+        categoryId: validCategoryId,
         name: name.trim(),
         slug: generatedSlug,
         sku: generatedSku.toUpperCase(),

@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 
+import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { prisma } from '@/lib/prisma';
 
 import { CreateProductInput, UpdateProductInput } from '../schemas/product.schema';
@@ -186,6 +187,8 @@ export class ProductRepository {
   static async create(data: CreateProductInput, computedSlug: string) {
     const { images = [], variants = [], ...productData } = data;
 
+    const validCatId = await resolveValidCategoryId(productData.categoryId);
+
     try {
       return await prisma.product.create({
         data: {
@@ -203,7 +206,7 @@ export class ProductRepository {
           status: productData.status ?? 'active',
           isFeatured: productData.isFeatured ?? false,
           isNewArrival: productData.isNewArrival ?? true,
-          category: { connect: { id: productData.categoryId } },
+          category: { connect: { id: validCatId } },
           images: {
             create: images.map((img, index) => ({
               imageUrl: img.url,
@@ -267,7 +270,8 @@ export class ProductRepository {
       if (productData.isNewArrival !== undefined)
         updatePayload.isNewArrival = productData.isNewArrival;
       if (productData.categoryId !== undefined) {
-        updatePayload.category = { connect: { id: productData.categoryId } };
+        const validCatId = await resolveValidCategoryId(productData.categoryId);
+        updatePayload.category = { connect: { id: validCatId } };
       }
 
       if (images !== undefined) {

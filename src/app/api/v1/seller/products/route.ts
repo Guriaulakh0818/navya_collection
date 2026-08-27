@@ -2,6 +2,7 @@ import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 import { sellerProductSchema } from '@/shared/validations/seller-product.schema';
@@ -181,6 +182,9 @@ export async function POST(request: NextRequest) {
       uniqueSlug = `${baseSlug}-${counter++}`;
     }
 
+    // Resolve category ID to a guaranteed valid DB category ID
+    const validCategoryId = await resolveValidCategoryId(data.categoryId);
+
     // Atomic transaction for Product, ProductImages, ProductVariants, and AuditLog
     const result = await prisma.$transaction(async (tx) => {
       // 1. Create Product
@@ -195,7 +199,7 @@ export async function POST(request: NextRequest) {
           compareAtPrice: data.compareAtPrice || null,
           costPrice: data.costPrice || null,
           stock: data.stock,
-          categoryId: data.categoryId,
+          categoryId: validCategoryId,
           status: data.status === 'draft' ? 'draft' : 'pending_approval',
           isFeatured: data.isFeatured,
           gender: data.gender || null,

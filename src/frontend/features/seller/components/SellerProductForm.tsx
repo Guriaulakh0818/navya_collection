@@ -169,10 +169,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       try {
         const res = await fetch('/api/v1/categories');
         const data = await res.json();
-        if (data.success) {
-          setCategories(data.data || []);
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setCategories(data.data);
           setFormData((prev) =>
-            prev.categoryId ? prev : { ...prev, categoryId: data.data?.[0]?.id || '' },
+            prev.categoryId ? prev : { ...prev, categoryId: data.data[0].id },
           );
         }
       } catch (err: any) {
@@ -402,11 +402,17 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-navy focus:bg-white focus:outline-none transition-all cursor-pointer font-bold"
             >
               <option value="">Select Sub-Category / Garment Type</option>
-              {subCategories.map((sub) => (
-                <option key={sub.id} value={sub.id}>
-                  {sub.name}
-                </option>
-              ))}
+              {categories.length > 0
+                ? categories.map((cat: any) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))
+                : subCategories.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </option>
+                  ))}
             </select>
           </div>
 
