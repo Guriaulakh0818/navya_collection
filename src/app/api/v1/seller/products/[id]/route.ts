@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
+import { generateVariantSku } from '@/backend/lib/sku-generator';
 import { prisma } from '@/lib/prisma';
 import { sellerProductSchema } from '@/shared/validations/seller-product.schema';
 
@@ -108,32 +109,28 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const data = validation.data;
 
     // Check SKU conflict with other products
-    if (data.sku !== existingProduct.sku) {
-      const skuCheck = await prisma.product.findFirst({
-        where: { sku: data.sku, id: { not: id }, deletedAt: null },
-      });
-      if (skuCheck) {
-        return NextResponse.json(
-          { success: false, message: `SKU "${data.sku}" is already assigned to another product.` },
-          { status: 400 },
-        );
-      }
-    }
+    // Permanent parent SKU must NOT change on product update
+    const parentSku = existingProduct.sku;
 
     const validCategoryId = await resolveValidCategoryId(data.categoryId);
 
+    const hasVariants = data.variants && data.variants.length > 0;
+    const totalStock = hasVariants
+      ? data.variants!.reduce((sum, v) => sum + Number(v.stock || 0), 0)
+      : Number(data.stock || 0);
+
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Update Product
+      // 1. Update Product (keep permanent parent SKU intact)
       const updatedProduct = await tx.product.update({
         where: { id },
         data: {
           name: data.name,
-          sku: data.sku,
+          sku: parentSku,
           description: data.description,
           price: data.price,
           compareAtPrice: data.compareAtPrice || null,
           costPrice: data.costPrice || null,
-          stock: data.stock,
+          stock: totalStock,
           categoryId: validCategoryId,
           status: data.status === 'draft' ? 'draft' : 'pending_approval',
           isFeatured: data.isFeatured,
@@ -163,24 +160,33 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         });
       }
 
-      // 3. Refresh Variants
+      // 3. Refresh Variants with Auto-Generated Variant SKUs
       if (data.variants) {
         await tx.productVariant.deleteMany({ where: { productId: id } });
-        await tx.productVariant.createMany({
-          data: data.variants.map((v) => ({
-            productId: id,
-            name: `${data.name} - ${v.size || ''} ${v.color || ''}`.trim(),
-            sku: v.sku,
-            barcode: v.barcode || data.barcode || null,
-            price: v.price,
-            compareAtPrice: v.compareAtPrice || null,
-            stock: v.stock,
-            availableStock: v.stock,
-            size: v.size || null,
-            color: v.color || null,
-            status: 'active',
-          })),
-        });
+        if (hasVariants) {
+          await tx.productVariant.createMany({
+            data: data.variants.map((v, index) => {
+              const variantSku =
+                v.sku && v.sku.trim().length > 0
+                  ? v.sku.trim()
+                  : generateVariantSku(parentSku, v.color, v.size, index);
+
+              return {
+                productId: id,
+                name: `${data.name} - ${v.color || ''} ${v.size || ''}`.trim(),
+                sku: variantSku,
+                barcode: v.barcode || data.barcode || null,
+                price: v.price,
+                compareAtPrice: v.compareAtPrice || null,
+                stock: Number(v.stock || 0),
+                availableStock: Number(v.stock || 0),
+                size: v.size || null,
+                color: v.color || null,
+                status: 'active',
+              };
+            }),
+          });
+        }
       }
 
       // 4. Audit Log

@@ -375,10 +375,39 @@ export default function AdminProductsPage() {
                         >
                           {product.status}
                         </span>
+                        {product.variants && product.variants.length > 0 ? (
+                          <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 block mt-1 w-fit">
+                            {product.variants.length} Variants
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 block mt-0.5">
+                            Single Item
+                          </span>
+                        )}
                       </td>
 
                       <td className="py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-full text-[11px] h-7 cursor-pointer"
+                            onClick={() =>
+                              alert(
+                                `Product SKUs & Variants:\nParent SKU: ${product.sku}\nVariants:\n` +
+                                  (product.variants
+                                    ?.map(
+                                      (v: any) =>
+                                        `- ${v.name || 'Variant'}: ${v.sku} | Price: ₹${v.price} | Stock: ${v.stock}`,
+                                    )
+                                    .join('\n') || 'No variants'),
+                              )
+                            }
+                            title="View Variant Details"
+                          >
+                            <Eye className="h-3.5 w-3.5 text-slate-600" /> Details
+                          </Button>
+
                           {!isSupervisor && (
                             <Button
                               variant="outline"

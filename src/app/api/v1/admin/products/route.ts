@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { getAdminUser } from '@/backend/lib/session';
+import { generateParentSku } from '@/backend/lib/sku-generator';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -144,7 +145,8 @@ export async function POST(request: NextRequest) {
     }
 
     const generatedSlug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
-    const generatedSku = sku || `NC-ADM-${Math.floor(1000 + Math.random() * 9000)}`;
+    const generatedSku =
+      sku && sku.trim().length > 0 ? sku.trim().toUpperCase() : await generateParentSku();
 
     const validCategoryId = await resolveValidCategoryId(category?.id || categoryName);
 

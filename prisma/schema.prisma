@@ -465,6 +465,14 @@ model ProductVariant {
   @@map("product_variants")
 }
 
+model SkuSequence {
+  name      String   @id
+  nextVal   Int      @default(1)
+  updatedAt DateTime @updatedAt
+
+  @@map("sku_sequences")
+}
+
 // ==========================================
 // WISHLIST & CART MODELS
 // ===================================

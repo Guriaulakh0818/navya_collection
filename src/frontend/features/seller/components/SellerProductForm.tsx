@@ -10,6 +10,7 @@ import {
   Plus,
   Save,
   ShoppingBag,
+  Sparkles,
   Tag,
   Trash2,
   Upload,
@@ -30,7 +31,21 @@ type ProductFormProps = {
   initialData?: any;
 };
 
-const AVAILABLE_SIZES = ['Free Size', 'S', 'M', 'L', 'XL', 'XXL', 'Custom Stitching'];
+const COMMON_SIZES = ['S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free Size', 'Custom Stitching'];
+const COMMON_COLORS = [
+  'Red',
+  'Blue',
+  'Black',
+  'Green',
+  'Yellow',
+  'Pink',
+  'Maroon',
+  'Gold',
+  'Purple',
+  'White',
+];
+
+type VariantMode = 'NONE' | 'SIZE_ONLY' | 'COLOR_ONLY' | 'SIZE_AND_COLOR';
 
 export function SellerProductForm({ productId, initialData }: ProductFormProps) {
   const router = useRouter();
@@ -48,6 +63,27 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+
+  // Variant management state
+  const initialVariants = initialData?.variants || [];
+  let initialMode: VariantMode = 'NONE';
+  if (initialVariants.length > 0) {
+    const hasSize = initialVariants.some((v: any) => v.size && v.size !== '');
+    const hasColor = initialVariants.some((v: any) => v.color && v.color !== '');
+    if (hasSize && hasColor) initialMode = 'SIZE_AND_COLOR';
+    else if (hasSize) initialMode = 'SIZE_ONLY';
+    else if (hasColor) initialMode = 'COLOR_ONLY';
+  }
+
+  const [variantMode, setVariantMode] = useState<VariantMode>(initialMode);
+  const [selectedColors, setSelectedColors] = useState<string[]>(
+    Array.from(new Set(initialVariants.map((v: any) => v.color).filter(Boolean))),
+  );
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(
+    Array.from(new Set(initialVariants.map((v: any) => v.size).filter(Boolean))),
+  );
+  const [customColorInput, setCustomColorInput] = useState('');
+  const [customSizeInput, setCustomSizeInput] = useState('');
 
   const handleMainCategoryChange = (mainId: string) => {
     setSelectedMainCat(mainId);
@@ -85,7 +121,6 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     const imageFiles = files.filter((f) => f.type.startsWith('image/'));
     if (imageFiles.length === 0) return;
 
-    // Generate local preview items immediately for visual loading feedback
     const newQueueItems = imageFiles.map((file) => ({
       id: `${file.name}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       file,
@@ -94,7 +129,6 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
     setUploadingQueue((prev) => [...prev, ...newQueueItems]);
 
-    // Process all images in parallel
     await Promise.all(
       newQueueItems.map(async (item) => {
         try {
@@ -208,58 +242,151 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     }));
   };
 
-  const handleGenerateVariants = (size: string, colorParam?: string) => {
-    const color = colorParam || formData.color || 'Standard';
-    const cleanSize = size.replace(/\s+/g, '');
-    const variantSku = `${formData.sku || 'SKU'}-${cleanSize}-${color.toUpperCase().substring(0, 3)}`;
-    const exists = formData.variants.some((v: any) => v.size === size && v.color === color);
-
-    if (exists) {
-      showToast(`Variant for Size "${size}" and Color "${color}" already exists.`, 'error');
+  // Re-build variant combinations whenever variantMode, selectedColors, or selectedSizes change
+  const rebuildVariants = (
+    mode: VariantMode,
+    colors: string[],
+    sizes: string[],
+    basePrice: number,
+    baseStock: number,
+  ) => {
+    if (mode === 'NONE') {
+      setFormData((prev) => ({ ...prev, variants: [] }));
       return;
     }
 
+    const newVariants: any[] = [];
+
+    if (mode === 'SIZE_ONLY') {
+      sizes.forEach((sz) => {
+        const existing = formData.variants.find((v: any) => v.size === sz && !v.color);
+        newVariants.push({
+          size: sz,
+          color: '',
+          price: existing?.price ?? basePrice ?? 0,
+          stock: existing?.stock ?? baseStock ?? 10,
+          sku: existing?.sku || '',
+        });
+      });
+    } else if (mode === 'COLOR_ONLY') {
+      colors.forEach((clr) => {
+        const existing = formData.variants.find((v: any) => v.color === clr && !v.size);
+        newVariants.push({
+          size: '',
+          color: clr,
+          price: existing?.price ?? basePrice ?? 0,
+          stock: existing?.stock ?? baseStock ?? 10,
+          sku: existing?.sku || '',
+        });
+      });
+    } else if (mode === 'SIZE_AND_COLOR') {
+      colors.forEach((clr) => {
+        sizes.forEach((sz) => {
+          const existing = formData.variants.find((v: any) => v.color === clr && v.size === sz);
+          newVariants.push({
+            size: sz,
+            color: clr,
+            price: existing?.price ?? basePrice ?? 0,
+            stock: existing?.stock ?? baseStock ?? 10,
+            sku: existing?.sku || '',
+          });
+        });
+      });
+    }
+
+    const totalStock = newVariants.reduce((sum, v) => sum + Number(v.stock || 0), 0);
+
     setFormData((prev) => ({
       ...prev,
-      variants: [
-        ...prev.variants,
-        {
-          sku: variantSku,
-          size,
-          color,
-          price: prev.price || 0,
-          stock: prev.stock || 0,
-        },
-      ],
+      variants: newVariants,
+      stock: totalStock > 0 ? totalStock : prev.stock,
     }));
-    showToast(`Added variant: Size ${size}`, 'success');
   };
 
-  const handleRemoveVariant = (index: number) => {
+  const handleToggleColor = (color: string) => {
+    const updated = selectedColors.includes(color)
+      ? selectedColors.filter((c) => c !== color)
+      : [...selectedColors, color];
+    setSelectedColors(updated);
+    rebuildVariants(variantMode, updated, selectedSizes, formData.price, formData.stock);
+  };
+
+  const handleToggleSize = (size: string) => {
+    const updated = selectedSizes.includes(size)
+      ? selectedSizes.filter((s) => s !== size)
+      : [...selectedSizes, size];
+    setSelectedSizes(updated);
+    rebuildVariants(variantMode, selectedColors, updated, formData.price, formData.stock);
+  };
+
+  const handleAddCustomColor = () => {
+    if (!customColorInput.trim()) return;
+    const clean = customColorInput.trim();
+    if (!selectedColors.includes(clean)) {
+      const updated = [...selectedColors, clean];
+      setSelectedColors(updated);
+      rebuildVariants(variantMode, updated, selectedSizes, formData.price, formData.stock);
+    }
+    setCustomColorInput('');
+  };
+
+  const handleAddCustomSize = () => {
+    if (!customSizeInput.trim()) return;
+    const clean = customSizeInput.trim();
+    if (!selectedSizes.includes(clean)) {
+      const updated = [...selectedSizes, clean];
+      setSelectedSizes(updated);
+      rebuildVariants(variantMode, selectedColors, updated, formData.price, formData.stock);
+    }
+    setCustomSizeInput('');
+  };
+
+  const handleVariantModeChange = (mode: VariantMode) => {
+    setVariantMode(mode);
+    rebuildVariants(mode, selectedColors, selectedSizes, formData.price, formData.stock);
+  };
+
+  const handleRemoveVariantRow = (index: number) => {
+    const updated = formData.variants.filter((_: any, i: number) => i !== index);
+    const totalStock = updated.reduce((sum: number, v: any) => sum + Number(v.stock || 0), 0);
     setFormData((prev) => ({
       ...prev,
-      variants: prev.variants.filter((_: any, i: number) => i !== index),
+      variants: updated,
+      stock: totalStock,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.sku || !formData.categoryId) {
-      showToast('Please fill in all mandatory fields (Name, SKU, Category).', 'error');
+    if (!formData.name || !formData.categoryId) {
+      showToast('Please fill in all mandatory fields (Name & Category).', 'error');
+      return;
+    }
+
+    if (formData.images.length === 0) {
+      showToast('Please upload at least 1 product image.', 'error');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const method = productId ? 'PUT' : 'POST';
       const endpoint = productId
         ? `/api/v1/seller/products/${productId}`
         : '/api/v1/seller/products';
+      const method = productId ? 'PUT' : 'POST';
+
+      const payload = {
+        ...formData,
+        price: Number(formData.price),
+        compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
+        costPrice: formData.costPrice ? Number(formData.costPrice) : undefined,
+        stock: Number(formData.stock),
+      };
 
       const res = await fetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -349,16 +476,19 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-              Product SKU (Unique ID) *
+              Parent Product SKU
             </label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. NAV-BS-001"
-              value={formData.sku}
-              onChange={(e) => setFormData({ ...formData, sku: e.target.value.toUpperCase() })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono uppercase focus:border-navy focus:bg-white focus:outline-none transition-all"
-            />
+            <div className="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-mono uppercase text-xs flex items-center justify-between">
+              <span className="font-bold text-navy">
+                {formData.sku || 'NVC-XXXXXX (Auto-Generated by Navya)'}
+              </span>
+              <span className="text-[10px] bg-navy/10 text-navy px-2 py-0.5 rounded font-sans font-bold">
+                AUTO-SKU
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 mt-1">
+              Navya automatically assigns permanent collision-free SKU (`NVC-000001`, `NVC-000002`).
+            </p>
           </div>
 
           <div>
@@ -499,17 +629,16 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           <div className="flex flex-col justify-between">
             <label className="flex text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2 min-h-[32px] items-end">
-              Base Inventory Stock *
+              Stock Quantity {formData.variants.length > 0 ? '(Auto Sum)' : '*'}
             </label>
             <input
               type="number"
-              required
-              min={0}
+              disabled={formData.variants.length > 0}
               value={formData.stock}
               onChange={(e) =>
                 setFormData({ ...formData, stock: parseInt(e.target.value, 10) || 0 })
               }
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono font-extrabold focus:border-amber-500 focus:bg-white focus:outline-none transition-all shadow-xs"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono font-extrabold focus:border-amber-500 focus:bg-white focus:outline-none transition-all shadow-xs disabled:bg-slate-100 disabled:text-slate-500"
             />
           </div>
         </div>
@@ -573,8 +702,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 <span className="text-navy underline">browse files</span>
               </p>
               <p className="text-xs text-slate-500">
-                Supports JPEG, PNG, WEBP high-resolution boutique photos (Drag or select multiple
-                files)
+                Supports JPEG, PNG, WEBP high-resolution boutique photos
               </p>
             </div>
           ) : (
@@ -589,10 +717,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           )}
         </label>
 
-        {/* Image Grid: Uploaded Images + Live Uploading Queue Skeletons */}
+        {/* Image Grid */}
         {(formData.images.length > 0 || uploadingQueue.length > 0) && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
-            {/* Uploaded Images */}
             {formData.images.map((img: any, idx: number) => (
               <div
                 key={idx}
@@ -630,7 +757,6 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               </div>
             ))}
 
-            {/* Live Uploading Queue Skeleton Cards */}
             {uploadingQueue.map((item) => (
               <div
                 key={item.id}
@@ -647,9 +773,6 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                   <span className="text-[10px] font-extrabold text-navy bg-white px-2.5 py-1 rounded-full shadow-xs truncate max-w-[95%]">
                     Uploading...
                   </span>
-                  <span className="text-[9px] text-white truncate max-w-[90%] mt-1 font-mono font-medium drop-shadow-sm">
-                    {item.file.name}
-                  </span>
                 </div>
               </div>
             ))}
@@ -657,128 +780,274 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         )}
       </div>
 
-      {/* SECTION 4: SIZE & COLOR VARIANTS MATRIX */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-navy flex items-center gap-2">
-          <Layers className="w-4 h-4 text-navy" /> Section 4: Size & Color Variant Matrix
-        </h2>
-
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 text-xs">
-          <span className="font-semibold text-slate-700 block">Quick Variant Generator:</span>
-          <div className="flex flex-wrap gap-2">
-            {AVAILABLE_SIZES.map((sz) => (
-              <button
-                key={sz}
-                type="button"
-                onClick={() => handleGenerateVariants(sz, formData.color)}
-                className="px-3 py-1.5 bg-white hover:bg-navy hover:text-white text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
-              >
-                + Add Size {sz}
-              </button>
-            ))}
-          </div>
+      {/* SECTION 4: PRODUCT VARIANT ARCHITECTURE (SIZE / COLOR) */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
+        <div>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-navy flex items-center gap-2">
+            <Layers className="w-4 h-4 text-navy" /> Section 4: Product Variant Architecture
+          </h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Choose whether this item has size/color variations. Each variant has its own price,
+            stock & unique SKU.
+          </p>
         </div>
 
-        {formData.variants.length === 0 ? (
-          <div className="p-4 text-center text-slate-500 text-xs font-medium">
-            No variants created. Single variant product will use base price & stock.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {formData.variants.map((v: any, idx: number) => (
-              <div
-                key={idx}
-                className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-4 text-xs"
-              >
-                <div className="flex items-center gap-4 flex-wrap">
-                  <span className="font-bold text-navy">Size: {v.size || 'Free Size'}</span>
-
-                  <div className="flex items-center gap-1">
-                    <span className="text-slate-500 font-medium">Color:</span>
-                    <input
-                      type="text"
-                      value={v.color || ''}
-                      placeholder="e.g. Red, Gold"
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setFormData((prev) => ({
-                          ...prev,
-                          variants: prev.variants.map((varItem: any, i: number) =>
-                            i === idx ? { ...varItem, color: val } : varItem,
-                          ),
-                        }));
-                      }}
-                      className="w-24 bg-white border border-slate-200 rounded px-2 py-1 text-slate-800 font-medium text-xs focus:border-navy focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-1">
-                    <span className="text-slate-500 font-medium">SKU:</span>
-                    <input
-                      type="text"
-                      value={v.sku || ''}
-                      placeholder="e.g. NAV-FS-RED"
-                      onChange={(e) => {
-                        const val = e.target.value.toUpperCase();
-                        setFormData((prev) => ({
-                          ...prev,
-                          variants: prev.variants.map((varItem: any, i: number) =>
-                            i === idx ? { ...varItem, sku: val } : varItem,
-                          ),
-                        }));
-                      }}
-                      className="w-36 bg-white border border-slate-200 rounded px-2 py-1 text-slate-900 font-mono font-bold text-xs uppercase focus:border-navy focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <span className="text-slate-500 font-medium">Price: ₹</span>
-                    <input
-                      type="number"
-                      value={v.price}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value) || 0;
-                        setFormData((prev) => ({
-                          ...prev,
-                          variants: prev.variants.map((varItem: any, i: number) =>
-                            i === idx ? { ...varItem, price: val } : varItem,
-                          ),
-                        }));
-                      }}
-                      className="w-20 bg-white border border-slate-200 rounded px-2 py-1 text-emerald-600 font-mono font-bold text-xs"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-1">
-                    <span className="text-slate-500 font-medium">Stock:</span>
-                    <input
-                      type="number"
-                      value={v.stock}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value, 10) || 0;
-                        setFormData((prev) => ({
-                          ...prev,
-                          variants: prev.variants.map((varItem: any, i: number) =>
-                            i === idx ? { ...varItem, stock: val } : varItem,
-                          ),
-                        }));
-                      }}
-                      className="w-16 bg-white border border-slate-200 rounded px-2 py-1 text-slate-900 font-mono font-bold text-xs"
-                    />
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveVariant(idx)}
-                    className="p-1.5 bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 rounded-lg transition-all cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+        {/* Variant Mode Selection */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            {
+              mode: 'NONE' as VariantMode,
+              title: 'No Variants',
+              desc: 'Single Size & Color (Handbag, Accessory)',
+            },
+            {
+              mode: 'SIZE_ONLY' as VariantMode,
+              title: 'Size Only',
+              desc: 'S, M, L, XL (Standard Apparel)',
+            },
+            {
+              mode: 'COLOR_ONLY' as VariantMode,
+              title: 'Color Only',
+              desc: 'Red, Blue, Green (Saree, Dupatta)',
+            },
+            {
+              mode: 'SIZE_AND_COLOR' as VariantMode,
+              title: 'Size + Color',
+              desc: 'Full Matrix (Kurti, Suit, Sherwani)',
+            },
+          ].map((item) => (
+            <button
+              key={item.mode}
+              type="button"
+              onClick={() => handleVariantModeChange(item.mode)}
+              className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                variantMode === item.mode
+                  ? 'border-navy bg-navy/5 ring-2 ring-navy/20 font-bold'
+                  : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+              }`}
+            >
+              <div>
+                <span
+                  className={`text-xs font-bold block ${variantMode === item.mode ? 'text-navy' : 'text-slate-800'}`}
+                >
+                  {item.title}
+                </span>
+                <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
+                  {item.desc}
+                </span>
               </div>
-            ))}
+              {variantMode === item.mode && (
+                <CheckCircle2 className="w-4 h-4 text-navy self-end mt-2" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Color Selector */}
+        {(variantMode === 'COLOR_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+            <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+              Step A: Select Available Colors
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {COMMON_COLORS.map((clr) => {
+                const active = selectedColors.includes(clr);
+                return (
+                  <button
+                    key={clr}
+                    type="button"
+                    onClick={() => handleToggleColor(clr)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                      active
+                        ? 'bg-navy text-white border-navy shadow-xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-navy'
+                    }`}
+                  >
+                    {active ? `✓ ${clr}` : `+ ${clr}`}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <input
+                type="text"
+                placeholder="Custom color (e.g. Peach, Royal Blue)"
+                value={customColorInput}
+                onChange={(e) => setCustomColorInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCustomColor();
+                  }
+                }}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:border-navy focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleAddCustomColor}
+                className="px-3 py-1.5 bg-navy text-white text-xs font-bold rounded-lg hover:bg-navy/90 cursor-pointer"
+              >
+                + Add Color
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Size Selector */}
+        {(variantMode === 'SIZE_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+            <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+              Step B: Select Available Sizes
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {COMMON_SIZES.map((sz) => {
+                const active = selectedSizes.includes(sz);
+                return (
+                  <button
+                    key={sz}
+                    type="button"
+                    onClick={() => handleToggleSize(sz)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border ${
+                      active
+                        ? 'bg-navy text-white border-navy shadow-xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-navy'
+                    }`}
+                  >
+                    {active ? `✓ ${sz}` : `+ ${sz}`}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <input
+                type="text"
+                placeholder="Custom size (e.g. 40, 42, 3XL)"
+                value={customSizeInput}
+                onChange={(e) => setCustomSizeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCustomSize();
+                  }
+                }}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:border-navy focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleAddCustomSize}
+                className="px-3 py-1.5 bg-navy text-white text-xs font-bold rounded-lg hover:bg-navy/90 cursor-pointer"
+              >
+                + Add Size
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Variant Matrix Table */}
+        {variantMode !== 'NONE' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-navy uppercase tracking-wider">
+                Variant Inventory Matrix ({formData.variants.length} combinations)
+              </span>
+              <span className="text-[10px] text-slate-500 font-mono">
+                Total Stock: {formData.stock} pcs
+              </span>
+            </div>
+
+            {formData.variants.length === 0 ? (
+              <div className="p-6 text-center text-slate-400 text-xs font-medium border border-dashed border-slate-200 rounded-xl">
+                Select colors or sizes above to generate variant matrix automatically.
+              </div>
+            ) : (
+              <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
+                    <tr>
+                      {(variantMode === 'COLOR_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
+                        <th className="p-3">Color</th>
+                      )}
+                      {(variantMode === 'SIZE_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
+                        <th className="p-3">Size</th>
+                      )}
+                      <th className="p-3">Price (₹)</th>
+                      <th className="p-3">Stock</th>
+                      <th className="p-3">Variant SKU</th>
+                      <th className="p-3 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white">
+                    {formData.variants.map((v: any, idx: number) => (
+                      <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                        {(variantMode === 'COLOR_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
+                          <td className="p-3 font-bold text-navy">{v.color || '-'}</td>
+                        )}
+                        {(variantMode === 'SIZE_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
+                          <td className="p-3 font-bold text-slate-800">{v.size || '-'}</td>
+                        )}
+                        <td className="p-3">
+                          <input
+                            type="number"
+                            min={1}
+                            value={v.price}
+                            onChange={(e) => {
+                              const val = parseFloat(e.target.value) || 0;
+                              setFormData((prev) => ({
+                                ...prev,
+                                variants: prev.variants.map((varItem: any, i: number) =>
+                                  i === idx ? { ...varItem, price: val } : varItem,
+                                ),
+                              }));
+                            }}
+                            className="w-24 bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-emerald-700 font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
+                          />
+                        </td>
+                        <td className="p-3">
+                          <input
+                            type="number"
+                            min={0}
+                            value={v.stock}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10) || 0;
+                              setFormData((prev) => {
+                                const newVariants = prev.variants.map((varItem: any, i: number) =>
+                                  i === idx ? { ...varItem, stock: val } : varItem,
+                                );
+                                const total = newVariants.reduce(
+                                  (sum: number, item: any) => sum + Number(item.stock || 0),
+                                  0,
+                                );
+                                return {
+                                  ...prev,
+                                  variants: newVariants,
+                                  stock: total,
+                                };
+                              });
+                            }}
+                            className="w-20 bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-slate-900 font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
+                          />
+                        </td>
+                        <td className="p-3 font-mono text-[11px] text-slate-500 uppercase">
+                          {v.sku ||
+                            `NVC-AUTO-${(v.color || '').substring(0, 3).toUpperCase()}-${v.size || 'V'}`}
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVariantRow(idx)}
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>

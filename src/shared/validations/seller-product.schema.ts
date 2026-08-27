@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const variantSchema = z.object({
   size: z.string().optional(),
   color: z.string().optional(),
-  sku: z.string().min(2, 'Variant SKU required'),
+  sku: z.string().optional(),
   barcode: z.string().optional(),
   price: z.number().positive('Price must be greater than 0'),
   compareAtPrice: z.number().optional(),
@@ -18,7 +18,7 @@ export const imageSchema = z.object({
 
 export const sellerProductSchema = z.object({
   name: z.string().min(3, 'Product name must be at least 3 characters'),
-  sku: z.string().min(2, 'Product SKU is required'),
+  sku: z.string().optional(),
   barcode: z.string().optional(),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   price: z.number().positive('Price must be greater than 0'),

@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
+import { generateParentSku, generateVariantSku } from '@/backend/lib/sku-generator';
 import { prisma } from '@/lib/prisma';
 
 import { CreateProductInput, UpdateProductInput } from '../schemas/product.schema';
@@ -188,13 +189,17 @@ export class ProductRepository {
     const { images = [], variants = [], ...productData } = data;
 
     const validCatId = await resolveValidCategoryId(productData.categoryId);
+    const parentSku =
+      productData.sku && productData.sku.trim().length > 0
+        ? productData.sku.trim().toUpperCase()
+        : await generateParentSku();
 
     try {
       return await prisma.product.create({
         data: {
           name: productData.name,
           slug: computedSlug,
-          sku: productData.sku.toUpperCase(),
+          sku: parentSku,
           description: productData.description,
           price: new Prisma.Decimal(productData.price),
           compareAtPrice: productData.compareAtPrice
@@ -216,9 +221,14 @@ export class ProductRepository {
             })),
           },
           variants: {
-            create: variants.map((v) => ({
-              name: v.name,
-              sku: v.sku.toUpperCase(),
+            create: variants.map((v, index) => ({
+              name:
+                (v.name || `${productData.name} - ${v.color || ''} ${v.size || ''}`).trim() ||
+                'Variant',
+              sku:
+                v.sku && v.sku.trim().length > 0
+                  ? v.sku.trim().toUpperCase()
+                  : generateVariantSku(parentSku, v.color, v.size, index),
               price: new Prisma.Decimal(v.price),
               stock: v.stock,
               size: v.size || null,
@@ -249,7 +259,8 @@ export class ProductRepository {
 
       if (productData.name !== undefined) updatePayload.name = productData.name;
       if (computedSlug !== undefined) updatePayload.slug = computedSlug;
-      if (productData.sku !== undefined) updatePayload.sku = productData.sku.toUpperCase();
+      if (productData.sku !== undefined && productData.sku)
+        updatePayload.sku = productData.sku.toUpperCase();
       if (productData.description !== undefined)
         updatePayload.description = productData.description;
       if (productData.price !== undefined)
@@ -287,11 +298,24 @@ export class ProductRepository {
       }
 
       if (variants !== undefined) {
+        const existingProd = await prisma.product.findUnique({
+          where: { id },
+          select: { sku: true, name: true },
+        });
+        const parentSku = existingProd?.sku || 'NVC-000000';
+
         updatePayload.variants = {
           deleteMany: {},
-          create: variants.map((v) => ({
-            name: v.name,
-            sku: v.sku.toUpperCase(),
+          create: variants.map((v, index) => ({
+            name:
+              (
+                v.name ||
+                `${productData.name || existingProd?.name || 'Product'} - ${v.color || ''} ${v.size || ''}`
+              ).trim() || 'Variant',
+            sku:
+              v.sku && v.sku.trim().length > 0
+                ? v.sku.trim().toUpperCase()
+                : generateVariantSku(parentSku, v.color, v.size, index),
             price: new Prisma.Decimal(v.price),
             stock: v.stock,
             size: v.size || null,

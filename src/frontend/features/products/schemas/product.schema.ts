@@ -8,12 +8,12 @@ export const productImageSchema = z.object({
 });
 
 export const productVariantSchema = z.object({
-  name: z.string().trim().min(1, 'Variant name is required'),
+  name: z.string().trim().optional(),
   sku: z
     .string()
     .trim()
-    .min(1, 'Variant SKU is required')
-    .transform((v) => v.toUpperCase()),
+    .optional()
+    .transform((v) => (v ? v.toUpperCase() : undefined)),
   price: z.number().positive('Variant price must be greater than zero'),
   stock: z.number().int().min(0, 'Variant stock cannot be negative').default(0),
   size: z.string().trim().optional(),
@@ -25,8 +25,8 @@ export const createProductSchema = z.object({
   sku: z
     .string()
     .trim()
-    .min(3, 'SKU must be at least 3 characters')
-    .transform((v) => v.toUpperCase()),
+    .optional()
+    .transform((v) => (v ? v.toUpperCase() : undefined)),
   slug: z
     .string()
     .trim()

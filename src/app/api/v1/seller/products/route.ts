@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
+import { generateParentSku, generateVariantSku } from '@/backend/lib/sku-generator';
 import { prisma } from '@/lib/prisma';
 import { sellerProductSchema } from '@/shared/validations/seller-product.schema';
 
@@ -158,18 +159,6 @@ export async function POST(request: NextRequest) {
 
     const data = validation.data;
 
-    // Check SKU uniqueness
-    const existingSku = await prisma.product.findFirst({
-      where: { sku: data.sku, deletedAt: null },
-    });
-
-    if (existingSku) {
-      return NextResponse.json(
-        { success: false, message: `Product SKU "${data.sku}" is already in use.` },
-        { status: 400 },
-      );
-    }
-
     // Generate unique slug
     let baseSlug = data.name
       .toLowerCase()
@@ -187,18 +176,27 @@ export async function POST(request: NextRequest) {
 
     // Atomic transaction for Product, ProductImages, ProductVariants, and AuditLog
     const result = await prisma.$transaction(async (tx) => {
+      // Auto-generate permanent parent SKU if not explicitly passed
+      const parentSku =
+        data.sku && data.sku.trim().length > 0 ? data.sku.trim() : await generateParentSku(tx);
+
+      const hasVariants = data.variants && data.variants.length > 0;
+      const totalStock = hasVariants
+        ? data.variants!.reduce((sum, v) => sum + Number(v.stock || 0), 0)
+        : Number(data.stock || 0);
+
       // 1. Create Product
       const product = await tx.product.create({
         data: {
           shopId: shop.id,
           name: data.name,
           slug: uniqueSlug,
-          sku: data.sku,
+          sku: parentSku,
           description: data.description,
           price: data.price,
           compareAtPrice: data.compareAtPrice || null,
           costPrice: data.costPrice || null,
-          stock: data.stock,
+          stock: totalStock,
           categoryId: validCategoryId,
           status: data.status === 'draft' ? 'draft' : 'pending_approval',
           isFeatured: data.isFeatured,
@@ -227,22 +225,29 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // 3. Create Product Variants
-      if (data.variants && data.variants.length > 0) {
+      // 3. Create Product Variants with Auto-Generated Variant SKUs
+      if (hasVariants) {
         await tx.productVariant.createMany({
-          data: data.variants.map((v) => ({
-            productId: product.id,
-            name: `${data.name} - ${v.size || ''} ${v.color || ''}`.trim(),
-            sku: v.sku,
-            barcode: v.barcode || data.barcode || null,
-            price: v.price,
-            compareAtPrice: v.compareAtPrice || null,
-            stock: v.stock,
-            availableStock: v.stock,
-            size: v.size || null,
-            color: v.color || null,
-            status: 'active',
-          })),
+          data: data.variants!.map((v, index) => {
+            const variantSku =
+              v.sku && v.sku.trim().length > 0
+                ? v.sku.trim()
+                : generateVariantSku(parentSku, v.color, v.size, index);
+
+            return {
+              productId: product.id,
+              name: `${data.name} - ${v.color || ''} ${v.size || ''}`.trim(),
+              sku: variantSku,
+              barcode: v.barcode || data.barcode || null,
+              price: v.price,
+              compareAtPrice: v.compareAtPrice || null,
+              stock: Number(v.stock || 0),
+              availableStock: Number(v.stock || 0),
+              size: v.size || null,
+              color: v.color || null,
+              status: 'active',
+            };
+          }),
         });
       }
 

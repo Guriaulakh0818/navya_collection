@@ -53,14 +53,16 @@ export class ProductService {
         // Fallback for offline mode
       }
 
-      // 2. Check SKU Uniqueness
-      const existingSku = await ProductRepository.findBySku(input.sku);
-      if (existingSku) {
-        return {
-          success: false,
-          message: `Product with SKU '${input.sku.toUpperCase()}' already exists.`,
-          statusCode: 409,
-        };
+      // 2. Check SKU Uniqueness (if SKU is explicitly provided)
+      if (input.sku) {
+        const existingSku = await ProductRepository.findBySku(input.sku);
+        if (existingSku) {
+          return {
+            success: false,
+            message: `Product with SKU '${input.sku.toUpperCase()}' already exists.`,
+            statusCode: 409,
+          };
+        }
       }
 
       // 3. Compute and Check Slug Uniqueness
