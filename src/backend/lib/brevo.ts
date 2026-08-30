@@ -14,18 +14,36 @@ export type BrevoEmailResult = EmailResult;
 export async function sendEmailOtp(toEmail: string, otp: string): Promise<EmailResult> {
   const apiKey = process.env.BREVO_API_KEY || process.env.EMAIL_API_KEY || '';
   const senderEmail =
-    process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_SENDER || 'noreply@navyacollection.store';
+    process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_SENDER || 'gurvindersingh0218@gmail.com';
   const senderName = 'Navya Collection';
 
   if (!apiKey || apiKey.trim().length === 0) {
-    console.warn(
-      `[EMAIL_DISPATCH] API key is missing. Email OTP to ${toEmail} logged in development: ${otp}`,
-    );
+    console.warn(`[EMAIL_DISPATCH] API key is missing. Email OTP to ${toEmail} logged: ${otp}`);
     return {
       success: true,
       messageId: `simulated_email_otp_${Date.now()}`,
     };
   }
+
+  const emailHtml = `
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h1 style="color: #183A73; font-size: 24px; font-weight: 800; tracking-spacing: 2px; margin: 0;">NAVYA COLLECTION</h1>
+        <p style="color: #F15A25; font-size: 11px; font-weight: 700; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
+      </div>
+      
+      <p style="font-size: 15px; color: #1e1e1e; font-weight: 500;">Hello,</p>
+      <p style="font-size: 14px; color: #4b5563; leading-height: 1.5;">Use the single-use 6-digit verification code below to sign in to your Navya Collection account:</p>
+      
+      <div style="background-color: #FAFAFA; border: 2px dashed #183A73; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
+        <span style="font-size: 34px; font-weight: 800; letter-spacing: 10px; color: #F15A25; font-family: monospace;">${otp}</span>
+      </div>
+      
+      <p style="font-size: 12px; color: #6b7280; margin-bottom: 20px;">This code is valid for <strong>5 minutes</strong>. For your security, do not share this verification code with anyone.</p>
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+      <p style="font-size: 11px; color: #9ca3af; text-align: center; margin: 0;">© ${new Date().getFullYear()} Navya Collection. All rights reserved.<br />navyacollection.store</p>
+    </div>
+  `;
 
   try {
     const response = await axios.post(
@@ -34,25 +52,7 @@ export async function sendEmailOtp(toEmail: string, otp: string): Promise<EmailR
         sender: { name: senderName, email: senderEmail },
         to: [{ email: toEmail.trim().toLowerCase() }],
         subject: `${otp} is your Navya Collection verification code`,
-        htmlContent: `
-          <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff;">
-            <div style="text-align: center; margin-bottom: 24px;">
-              <h1 style="color: #183A73; font-size: 24px; font-weight: 800; tracking-spacing: 2px; margin: 0;">NAVYA COLLECTION</h1>
-              <p style="color: #F15A25; font-size: 11px; font-weight: 700; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
-            </div>
-            
-            <p style="font-size: 15px; color: #1e1e1e; font-weight: 500;">Hello,</p>
-            <p style="font-size: 14px; color: #4b5563; leading-height: 1.5;">Use the single-use 6-digit verification code below to sign in to your Navya Collection account:</p>
-            
-            <div style="background-color: #FAFAFA; border: 2px dashed #183A73; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
-              <span style="font-size: 34px; font-weight: 800; letter-spacing: 10px; color: #F15A25; font-family: monospace;">${otp}</span>
-            </div>
-            
-            <p style="font-size: 12px; color: #6b7280; margin-bottom: 20px;">This code is valid for <strong>5 minutes</strong>. For your security, do not share this verification code with anyone.</p>
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-            <p style="font-size: 11px; color: #9ca3af; text-align: center; margin: 0;">© ${new Date().getFullYear()} Navya Collection. All rights reserved.<br />navyacollection.store</p>
-          </div>
-        `,
+        htmlContent: emailHtml,
       },
       {
         headers: {
@@ -71,6 +71,35 @@ export async function sendEmailOtp(toEmail: string, otp: string): Promise<EmailR
   } catch (error: any) {
     const errorDetails = error?.response?.data?.message || error.message || 'Brevo API call failed';
     console.error('[BREVO_API_ERROR]', errorDetails);
+
+    // If sender was unvalidated and was not the default gmail, attempt fallback
+    if (senderEmail !== 'gurvindersingh0218@gmail.com') {
+      try {
+        const retryRes = await axios.post(
+          'https://api.brevo.com/v3/smtp/email',
+          {
+            sender: { name: senderName, email: 'gurvindersingh0218@gmail.com' },
+            to: [{ email: toEmail.trim().toLowerCase() }],
+            subject: `${otp} is your Navya Collection verification code`,
+            htmlContent: emailHtml,
+          },
+          {
+            headers: {
+              accept: 'application/json',
+              'api-key': apiKey.trim(),
+              'content-type': 'application/json',
+            },
+            timeout: 10000,
+          },
+        );
+        return {
+          success: true,
+          messageId: retryRes.data?.messageId || `brevo_retry_${Date.now()}`,
+        };
+      } catch (retryErr: any) {
+        console.error('[BREVO_RETRY_ERROR]', retryErr?.response?.data?.message || retryErr.message);
+      }
+    }
 
     if (process.env.NODE_ENV !== 'production') {
       console.warn(

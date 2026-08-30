@@ -71,7 +71,18 @@ export function validateEnvironment(forceReload = false): EnvConfig {
   // STRICT ENVIRONMENT SAFETY GUARD
   // Prevent local development / testing from EVER connecting to production DB
   // =========================================================================
-  const isLocalDev = data.DATABASE_ENV === 'local' || data.NODE_ENV === 'development';
+  const isDeployedProduction =
+    process.env.VERCEL === '1' ||
+    process.env.NODE_ENV === 'production' ||
+    data.DATABASE_ENV === 'production';
+
+  // Strict check: Only treat as local development if NOT running in deployed production
+  const isLocalDev =
+    !isDeployedProduction &&
+    (data.DATABASE_ENV === 'local' ||
+      data.NODE_ENV === 'development' ||
+      data.DATABASE_ENV === 'development');
+
   const pointsToProduction =
     isProductionDatabaseUrl(data.DATABASE_URL) || isProductionDatabaseUrl(data.DIRECT_URL);
 
@@ -83,7 +94,11 @@ export function validateEnvironment(forceReload = false): EnvConfig {
     throw new Error(errorMsg);
   }
 
-  if (data.DATABASE_ENV === 'production' && data.NODE_ENV !== 'production') {
+  if (
+    data.DATABASE_ENV === 'production' &&
+    data.NODE_ENV === 'development' &&
+    !process.env.VERCEL
+  ) {
     const errorMsg =
       '⛔ [DATABASE_SAFETY_FATAL] DATABASE_ENV is set to "production" but NODE_ENV is not "production".\n' +
       'Operation blocked for safety.';
