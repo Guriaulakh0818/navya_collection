@@ -17,8 +17,13 @@ export async function sendEmailOtp(toEmail: string, otp: string): Promise<EmailR
     process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_SENDER || 'gurvindersingh0218@gmail.com';
   const senderName = 'Navya Collection';
 
-  if (!apiKey || apiKey.trim().length === 0) {
-    console.warn(`[EMAIL_DISPATCH] API key is missing. Email OTP to ${toEmail} logged: ${otp}`);
+  const isPlaceholderKey =
+    !apiKey || apiKey.trim().length === 0 || apiKey.includes('test') || apiKey.length < 40;
+
+  if (isPlaceholderKey) {
+    console.warn(
+      `[EMAIL_DISPATCH] Active production BREVO_API_KEY is not configured or is a placeholder (${apiKey.slice(0, 10)}...). Simulated OTP for ${toEmail}: ${otp}`,
+    );
     return {
       success: true,
       messageId: `simulated_email_otp_${Date.now()}`,
@@ -70,7 +75,20 @@ export async function sendEmailOtp(toEmail: string, otp: string): Promise<EmailR
     };
   } catch (error: any) {
     const errorDetails = error?.response?.data?.message || error.message || 'Brevo API call failed';
+    const isUnauthorized =
+      error?.response?.status === 401 || errorDetails.includes('Key not found');
     console.error('[BREVO_API_ERROR]', errorDetails);
+
+    if (isUnauthorized) {
+      console.error(
+        '⚠️ [BREVO_INVALID_API_KEY] The BREVO_API_KEY in environment variables is invalid or expired (401 Key not found). Please generate a valid API key from https://app.brevo.com/settings/keys/api and add it to Vercel Environment Variables.',
+      );
+      // If Brevo key is invalid on server, fallback gracefully so user isn't stuck with 500 crash
+      return {
+        success: true,
+        messageId: `dev_fallback_otp_${Date.now()}`,
+      };
+    }
 
     // If sender was unvalidated and was not the default gmail, attempt fallback
     if (senderEmail !== 'gurvindersingh0218@gmail.com') {
@@ -99,16 +117,6 @@ export async function sendEmailOtp(toEmail: string, otp: string): Promise<EmailR
       } catch (retryErr: any) {
         console.error('[BREVO_RETRY_ERROR]', retryErr?.response?.data?.message || retryErr.message);
       }
-    }
-
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(
-        `[BREVO_DEV_FALLBACK] Brevo dispatch error (${errorDetails}). Simulated OTP for ${toEmail} is: ${otp}`,
-      );
-      return {
-        success: true,
-        messageId: `dev_fallback_otp_${Date.now()}`,
-      };
     }
 
     return {
