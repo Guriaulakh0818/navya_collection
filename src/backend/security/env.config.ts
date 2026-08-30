@@ -106,6 +106,26 @@ export function validateEnvironment(forceReload = false): EnvConfig {
     throw new Error(errorMsg);
   }
 
+  // =========================================================================
+  // PRODUCTION ENVIRONMENT INTEGRITY CHECKS
+  // Prevent misconfigured development credentials from running in production
+  // =========================================================================
+  if (isDeployedProduction && !process.env.SKIP_PROD_ENV_VALIDATION) {
+    const dbUrlLower = (data.DATABASE_URL || '').toLowerCase();
+    if (dbUrlLower.includes('localhost') || dbUrlLower.includes('127.0.0.1')) {
+      const errorMsg =
+        '⛔ [PRODUCTION_CONFIG_FATAL] Production database URL cannot point to localhost/127.0.0.1.';
+      console.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    if (data.RAZORPAY_KEY_ID && data.RAZORPAY_KEY_ID.startsWith('rzp_test_')) {
+      console.warn(
+        '⚠️ [PRODUCTION_PAYMENT_WARNING] RAZORPAY_KEY_ID is configured with a test key (rzp_test_*) in production. Ensure live keys (rzp_live_*) are set before processing real payments.',
+      );
+    }
+  }
+
   parsedEnv = data;
   return parsedEnv;
 }

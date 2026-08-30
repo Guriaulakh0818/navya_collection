@@ -13,18 +13,28 @@ import {
 // ==========================================
 // ENVIRONMENT SAFETY GUARD: STRICTLY LOCAL ONLY
 // ==========================================
-const dbEnv = process.env.DATABASE_ENV || 'local';
-const isProd = process.env.NODE_ENV === 'production' || dbEnv === 'production';
+const dbEnv = (process.env.DATABASE_ENV || 'local').toLowerCase();
+const nodeEnv = (process.env.NODE_ENV || 'development').toLowerCase();
+const appEnv = (process.env.APP_ENV || '').toLowerCase();
+const allowSeeding = process.env.ALLOW_DATABASE_SEEDING === 'true';
 const rawDbUrl = (process.env.DIRECT_URL || process.env.DATABASE_URL || '').toLowerCase();
 
-if (isProd || dbEnv !== 'local' || rawDbUrl.includes('zisieyoodosjbuocrjqd')) {
+const isProduction =
+  nodeEnv === 'production' ||
+  dbEnv === 'production' ||
+  appEnv === 'production' ||
+  rawDbUrl.includes('zisieyoodosjbuocrjqd') ||
+  (rawDbUrl.includes('supabase.com') && !rawDbUrl.includes('localhost'));
+
+if (isProduction || !allowSeeding || dbEnv !== 'local') {
+  console.error('\n⛔ [CRITICAL_SAFETY_ERROR] Database seeding is BLOCKED.');
   console.error(
-    '\n⛔ [CRITICAL_SAFETY_ERROR] Database seed is strictly permitted ONLY against the LOCAL database.',
+    `Reason: Seeding is only permitted when DATABASE_ENV="local" AND ALLOW_DATABASE_SEEDING="true".`,
   );
   console.error(
-    `Current Environment: NODE_ENV=${process.env.NODE_ENV}, DATABASE_ENV=${process.env.DATABASE_ENV}`,
+    `Current: NODE_ENV=${nodeEnv}, DATABASE_ENV=${dbEnv}, ALLOW_DATABASE_SEEDING=${process.env.ALLOW_DATABASE_SEEDING}`,
   );
-  console.error('Operation aborted to prevent modifying production database.\n');
+  console.error('Operation aborted to protect database integrity.\n');
   process.exit(1);
 }
 
@@ -66,8 +76,8 @@ async function main() {
   const initialAdminPassword = process.env.ADMIN_INITIAL_PASSWORD || 'ChangeMe@123';
   const defaultAdminPasswordHash = await bcrypt.default.hash(initialAdminPassword, 10);
 
-  const ownerEmail = 'gurvindersingh0218@gmail.com';
-  const ownerPassword = 'SaniyaBatra@68182';
+  const ownerEmail = process.env.OWNER_INITIAL_EMAIL || 'gurvindersingh0218@gmail.com';
+  const ownerPassword = process.env.OWNER_INITIAL_PASSWORD || initialAdminPassword;
   const ownerPasswordHash = await bcrypt.default.hash(ownerPassword, 10);
 
   // Default Owner Account per Spec

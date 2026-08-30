@@ -10,7 +10,16 @@ export const SESSION_EXPIRY_DAYS = 7;
 export const SESSION_EXPIRY_SECONDS = SESSION_EXPIRY_DAYS * 24 * 60 * 60; // 604,800 seconds
 
 function getJwtSecret(): string {
-  return process.env.JWT_SECRET || 'navya_collection_jwt_secret_key_2026_min_32chars';
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret.trim().length === 0) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        '⛔ [AUTH_FATAL] JWT_SECRET is not defined in production environment variables.',
+      );
+    }
+    return 'dev_jwt_secret_key_change_in_production_32chars';
+  }
+  return secret;
 }
 
 /**

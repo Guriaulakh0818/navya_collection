@@ -7,10 +7,14 @@ export function getRazorpayConfig() {
   const keyId =
     process.env.RAZORPAY_KEY_ID ||
     process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
-    'rzp_test_TUSsl0DgRczLN7';
+    (process.env.NODE_ENV === 'production' ? '' : 'rzp_test_placeholder');
 
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || 'a6z4ZPaOIyai9gc1Twwsq8sU';
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || 'a6z4ZPaOIyai9gc1Twwsq8sU';
+  const keySecret =
+    process.env.RAZORPAY_KEY_SECRET ||
+    (process.env.NODE_ENV === 'production' ? '' : 'dev_key_secret_placeholder');
+  const webhookSecret =
+    process.env.RAZORPAY_WEBHOOK_SECRET ||
+    (process.env.NODE_ENV === 'production' ? '' : 'dev_webhook_secret_placeholder');
 
   return { keyId, keySecret, webhookSecret };
 }

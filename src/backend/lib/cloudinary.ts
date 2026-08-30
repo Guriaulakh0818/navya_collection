@@ -58,13 +58,19 @@ export interface CloudinaryUploadResult {
  * navya-collection/banners/{banner-slug}/
  */
 export function buildCloudinaryFolderPath(options: CloudinaryUploadOptions): string {
+  const isProduction =
+    process.env.NODE_ENV === 'production' || process.env.DATABASE_ENV === 'production';
+  const defaultRoot = isProduction ? 'navya-collection' : 'navya-collection-dev';
+  const root = process.env.CLOUDINARY_ROOT_FOLDER || defaultRoot;
+
   const folder = options.folder || 'products';
 
-  if (typeof folder === 'string' && folder.startsWith('navya-collection/')) {
+  if (
+    typeof folder === 'string' &&
+    (folder.startsWith('navya-collection/') || folder.startsWith('navya-collection-dev/'))
+  ) {
     return folder;
   }
-
-  const root = 'navya-collection';
 
   switch (folder) {
     case 'products': {
