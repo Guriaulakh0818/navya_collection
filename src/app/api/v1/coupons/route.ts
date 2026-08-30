@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 
 import { CouponService } from '@/features/coupons/services/coupon.service';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/v1/coupons
  * Returns active public coupons for customer checkout & promo code picker

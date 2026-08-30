@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/health
  * Production System & Database Health Check Endpoint.
