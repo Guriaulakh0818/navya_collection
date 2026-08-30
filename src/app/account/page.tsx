@@ -42,8 +42,8 @@ export default function AccountPage() {
             if (json.user.name) setName(json.user.name);
             if (json.user.mobile) setMobile(json.user.mobile);
             if (json.user.email) setEmail(json.user.email);
-            const baseUser = (user || {}) as any;
-            setUser({ ...baseUser, ...json.user });
+            const currentUser = useAuthStore.getState().user || ({} as any);
+            useAuthStore.getState().setUser({ ...currentUser, ...json.user });
           }
         }
       } catch (err) {
