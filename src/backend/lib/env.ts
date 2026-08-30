@@ -1,5 +1,6 @@
 export interface Env {
   DATABASE_URL: string;
+  DATABASE_ENV: string;
   NEXTAUTH_SECRET: string;
   NEXTAUTH_URL: string;
   CLOUDINARY_CLOUD_NAME: string;
@@ -23,6 +24,7 @@ export interface Env {
 
 export const env: Env = {
   DATABASE_URL: process.env.DATABASE_URL || '',
+  DATABASE_ENV: process.env.DATABASE_ENV || 'local',
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || '',
   NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || '',

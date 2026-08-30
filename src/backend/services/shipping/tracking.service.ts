@@ -1,7 +1,9 @@
+import { shiprocketClient } from '@/backend/lib/shiprocket';
 import { prisma } from '@/lib/prisma';
-import shiprocketClient from '@/lib/shiprocket';
 
 import { SHIPROCKET_CONSTANTS } from './constants';
+import { ShiprocketLogger } from './logger';
+import { StatusAggregatorService } from './status-aggregator.service';
 import type {
   NormalizedTrackingStatus,
   OrderTimelineItem,
@@ -20,20 +22,12 @@ const trackingCache = new Map<
 >();
 
 export class TrackingService {
-  /**
-   * Clears the in-memory tracking response cache.
-   */
   static clearCache(): void {
     trackingCache.clear();
-    console.log('[TRACKING_SERVICE] In-memory tracking cache cleared.');
   }
 
-  /**
-   * Maps raw Shiprocket status string or status code to standard application status.
-   */
   static normalizeStatus(statusRaw?: string | number): NormalizedTrackingStatus {
     if (!statusRaw) return 'PENDING';
-
     const strStatus = String(statusRaw).toUpperCase().trim();
 
     if (strStatus.includes('DELIVERED')) return 'DELIVERED';
@@ -70,9 +64,6 @@ export class TrackingService {
     return 'PENDING';
   }
 
-  /**
-   * Builds an 8-step chronological Order Timeline with activity checkpoints.
-   */
   static buildTimeline(
     currentStatus: NormalizedTrackingStatus,
     checkpoints: ShiprocketTrackingCheckpoint[],
@@ -118,7 +109,6 @@ export class TrackingService {
         !isAbnormal && (idx <= activeStatusIndex || (activeStatusIndex === -1 && idx === 0));
       const isCurrent = !isAbnormal && idx === activeStatusIndex;
 
-      // Find matching checkpoint date/location if present
       const matchingCheck = checkpoints.find((c) => this.normalizeStatus(c.status) === st);
 
       return {
@@ -152,180 +142,145 @@ export class TrackingService {
   }
 
   /**
-   * Tracks a shipment by Order ID, Order Number, or AWB Code.
-   * Syncs status in database, constructs order timeline, and returns cached/live response.
+   * Tracks a Shipment by Shipment ID, Shipment Number, or AWB Code.
    */
   static async trackShipment(
-    orderIdOrAwb: string,
+    idOrAwb: string,
     options?: { skipCache?: boolean },
   ): Promise<StandardShippingResponse<TrackingResult>> {
-    const timestamp = new Date().toISOString();
-    const queryKey = orderIdOrAwb.trim().toUpperCase();
+    const queryKey = idOrAwb.trim().toUpperCase();
 
-    // 1. Check In-Memory Cache
+    // Check cache
     if (!options?.skipCache && trackingCache.has(queryKey)) {
       const cachedEntry = trackingCache.get(queryKey)!;
       if (Date.now() < cachedEntry.expiresAt) {
-        console.log(`[TRACKING_CACHE_HIT] Key: ${queryKey}`);
-        return {
-          ...cachedEntry.result,
-          data: cachedEntry.result.data
-            ? { ...cachedEntry.result.data, isCachedResponse: true }
-            : undefined,
-        };
+        return cachedEntry.result;
       }
       trackingCache.delete(queryKey);
     }
 
-    console.log(`[TRACKING_INIT] Fetching tracking for: ${queryKey}...`);
-
-    // 2. Lookup Order in Database
-    const order = await prisma.order.findFirst({
+    // Lookup Shipment
+    const shipment = await prisma.shipment.findFirst({
       where: {
         OR: [
-          { id: orderIdOrAwb },
-          { orderNumber: orderIdOrAwb },
-          { awbCode: orderIdOrAwb },
-          { shiprocketShipmentId: orderIdOrAwb },
-          { trackingNumber: orderIdOrAwb },
+          { id: idOrAwb },
+          { shipmentNumber: idOrAwb },
+          { awbCode: idOrAwb },
+          { shiprocketShipmentId: idOrAwb },
         ],
+      },
+      include: {
+        masterOrder: true,
+        shop: true,
+        trackingEvents: { orderBy: { eventTimestamp: 'desc' } },
       },
     });
 
-    if (!order) {
+    if (!shipment) {
+      // Fallback lookup on master order
+      const order = await prisma.order.findFirst({
+        where: { OR: [{ id: idOrAwb }, { orderNumber: idOrAwb }] },
+        include: { shipments: true },
+      });
+
+      if (order && order.shipments && order.shipments.length > 0) {
+        return this.trackShipment(order.shipments[0].id, options);
+      }
+
       return {
         success: false,
         message: SHIPROCKET_CONSTANTS.ERRORS.ORDER_NOT_FOUND,
         statusCode: 404,
-        error: {
-          code: 'ORDER_NOT_FOUND',
-          details: `No order record matching '${orderIdOrAwb}'.`,
-        },
       };
     }
 
-    const awbCode = order.awbCode || order.trackingNumber;
-    const shipmentId = order.shiprocketShipmentId;
+    const awbCode = shipment.awbCode;
+    const shipmentId = shipment.shiprocketShipmentId;
 
-    if (!awbCode && !shipmentId) {
-      return {
-        success: false,
-        message: SHIPROCKET_CONSTANTS.ERRORS.NO_AWB_OR_SHIPMENT,
-        statusCode: 400,
-        error: {
-          code: 'UNSHIPPED_ORDER',
-          details: 'Order has not been assigned an AWB code or shipment ID yet.',
-        },
-      };
-    }
-
-    // 3. Attempt Live Shiprocket Tracking API Call
-    let liveTrackingData: any = null;
-    let apiError: any = null;
-
-    try {
-      if (awbCode) {
-        const url = `${SHIPROCKET_CONSTANTS.ENDPOINTS.TRACK_AWB}/${awbCode}`;
-        liveTrackingData = await shiprocketClient.get(url);
-      } else if (shipmentId) {
-        const url = `${SHIPROCKET_CONSTANTS.ENDPOINTS.TRACK_SHIPMENT}/${shipmentId}`;
-        liveTrackingData = await shiprocketClient.get(url);
-      }
-    } catch (err: any) {
-      apiError = err;
-      console.warn(
-        `[TRACKING_API_WARNING] Live API call failed for ${order.orderNumber}:`,
-        err?.message,
-      );
-    }
-
-    // Extract Tracking Payload & Checkpoints
-    const trackData = liveTrackingData?.data?.tracking_data || liveTrackingData?.tracking_data;
-    const rawStatus =
-      trackData?.shipment_track?.[0]?.current_status ||
-      trackData?.track_status ||
-      order.shippingStatus;
-    const checkpointsRaw: any[] = trackData?.shipment_track_activities || [];
-
-    const checkpoints: ShiprocketTrackingCheckpoint[] = checkpointsRaw.map((cp: any) => ({
-      date: cp.date || cp['sr-status-label-date'] || new Date().toISOString(),
-      status: cp.status || cp['sr-status'] || 'IN_TRANSIT',
-      activity: cp.activity || cp['sr-status-label'] || 'Package updated',
-      location: cp.location || cp.city || 'Transit Hub',
-      sr_status_label: cp['sr-status-label'],
+    let checkpoints: ShiprocketTrackingCheckpoint[] = shipment.trackingEvents.map((te) => ({
+      date: te.eventTimestamp.toISOString(),
+      status: te.status,
+      activity: te.activity || '',
+      location: te.location || '',
     }));
 
-    // Normalize Status
-    const normalizedStatus = this.normalizeStatus(rawStatus);
+    let currentStatusNormalized = this.normalizeStatus(shipment.status);
 
-    // Development Fallback if live tracking API returned error or empty data
-    const isDev = process.env.NODE_ENV === 'development';
-    const isDevFallback = Boolean(isDev && (!liveTrackingData || apiError));
+    // Call live Shiprocket tracking API if AWB or shipmentId is available
+    if (awbCode || shipmentId) {
+      try {
+        let liveTrackingData: any = null;
+        if (awbCode) {
+          const url = `${SHIPROCKET_CONSTANTS.ENDPOINTS.TRACK_AWB}/${awbCode}`;
+          liveTrackingData = await shiprocketClient.get(url);
+        } else if (shipmentId) {
+          const url = `${SHIPROCKET_CONSTANTS.ENDPOINTS.TRACK_SHIPMENT}/${shipmentId}`;
+          liveTrackingData = await shiprocketClient.get(url);
+        }
 
-    const finalStatus: NormalizedTrackingStatus = isDevFallback
-      ? (order.shippingStatus as NormalizedTrackingStatus) || 'PICKUP_SCHEDULED'
-      : normalizedStatus;
+        const trackData = liveTrackingData?.data?.tracking_data || liveTrackingData?.tracking_data;
+        const rawStatus = trackData?.shipment_track?.[0]?.current_status || trackData?.track_status;
+        const activities: any[] = trackData?.shipment_track_activities || [];
 
-    // 4. Update Database Order Record & Status Timeline
-    const updateData: any = {
-      shippingStatus: finalStatus,
-    };
+        if (rawStatus) {
+          currentStatusNormalized = this.normalizeStatus(rawStatus);
 
-    if (finalStatus === 'DELIVERED') {
-      updateData.orderStatus = 'DELIVERED';
-    } else if (finalStatus === 'CANCELLED') {
-      updateData.orderStatus = 'CANCELLED';
-    } else if (finalStatus === 'RTO') {
-      updateData.orderStatus = 'RETURNED';
-    } else if (finalStatus === 'IN_TRANSIT' && order.orderStatus === 'CONFIRMED') {
-      updateData.orderStatus = 'SHIPPED';
+          // Update status on shipment
+          await prisma.shipment.update({
+            where: { id: shipment.id },
+            data: {
+              status: currentStatusNormalized,
+              trackingStatus: currentStatusNormalized,
+              ...(currentStatusNormalized === 'DELIVERED' ? { deliveredAt: new Date() } : {}),
+            },
+          });
+        }
+
+        if (activities && activities.length > 0) {
+          checkpoints = activities.map((a: any) => ({
+            date: a.date,
+            status: a.status || a.activity,
+            activity: a.activity,
+            location: a.location,
+          }));
+        }
+      } catch (err: any) {
+        ShiprocketLogger.warn('[TRACKING_LIVE_API_WARNING]', undefined, { error: err.message });
+      }
     }
 
-    const updatedOrder = await prisma.order.update({
-      where: { id: order.id },
-      data: updateData,
-    });
-
-    const timeline = this.buildTimeline(finalStatus, checkpoints, updatedOrder.createdAt);
+    const timeline = this.buildTimeline(currentStatusNormalized, checkpoints, shipment.createdAt);
+    const trackingUrl = awbCode
+      ? `${SHIPROCKET_CONSTANTS.DEFAULTS.TRACKING_BASE_URL}${awbCode}`
+      : '';
 
     const result: StandardShippingResponse<TrackingResult> = {
       success: true,
-      message: isDevFallback
-        ? 'Tracking details retrieved successfully (development fallback).'
-        : 'Tracking details retrieved successfully via Shiprocket.',
+      message: 'Tracking details retrieved successfully.',
       statusCode: 200,
       data: {
-        orderId: updatedOrder.id,
-        orderNumber: updatedOrder.orderNumber,
-        shiprocketShipmentId: updatedOrder.shiprocketShipmentId || undefined,
-        awbCode: updatedOrder.awbCode || updatedOrder.trackingNumber || 'N/A',
-        courierName: updatedOrder.courierName || 'Standard Courier',
-        currentStatus: finalStatus,
-        rawShiprocketStatus: String(rawStatus),
-        statusCode: liveTrackingData?.data?.shipment_status || 200,
-        origin: trackData?.origin || 'Warehouse',
-        destination: trackData?.destination || 'Customer Address',
-        estimatedDeliveryDate:
-          updatedOrder.estimatedDelivery?.toISOString() || trackData?.etd || undefined,
-        lastUpdated: new Date().toISOString(),
-        isCachedResponse: false,
-        isDevFallback,
+        orderId: shipment.masterOrderId,
+        orderNumber: shipment.shipmentNumber,
+        shiprocketShipmentId: shipment.shiprocketShipmentId || 'N/A',
+        awbCode: shipment.awbCode || 'N/A',
+        courierName: shipment.courierName || 'Standard Courier',
+        trackingUrl,
+        status: currentStatusNormalized,
+        currentStatus: currentStatusNormalized,
+        statusCode: 1,
+        etd: undefined,
+        originCity: (shipment.pickupAddressSnapshot as any)?.city || 'Seller Hub',
+        destinationCity: (shipment.deliveryAddressSnapshot as any)?.city || 'Customer City',
+        checkpoints,
         timeline,
-        checkpoints:
-          checkpoints.length > 0
-            ? checkpoints
-            : [
-                {
-                  date: updatedOrder.updatedAt.toISOString(),
-                  status: finalStatus,
-                  activity: `Package status: ${finalStatus}`,
-                  location: 'Fulfilment Center',
-                },
-              ],
+        lastUpdated: new Date().toISOString(),
+        isDelivered: currentStatusNormalized === 'DELIVERED',
+        isCancelled: currentStatusNormalized === 'CANCELLED',
+        isRTO: currentStatusNormalized === 'RTO',
+        isCachedResponse: false,
       },
     };
 
-    // Store in Cache
     trackingCache.set(queryKey, {
       result,
       expiresAt: Date.now() + SHIPROCKET_CONSTANTS.TRACKING_CACHE_TTL_MS,

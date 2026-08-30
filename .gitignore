@@ -17,8 +17,10 @@ build/
 dist/
 
 # env files
-.env*.local
 .env
+.env.*
+.env*.local
+!.env.example
 
 # vercel
 .vercel
@@ -43,6 +45,7 @@ pnpm-debug.log*
 
 # misc
 *.pem
+scratch/
 
 # cache
 .cache/

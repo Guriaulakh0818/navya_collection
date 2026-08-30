@@ -86,6 +86,36 @@ export async function GET(request: Request, { params }: { params: { id: string }
             pincode: order.address.pincode,
           }
         : null,
+      shipments: (order.shipments || []).map((shp: any) => ({
+        id: shp.id,
+        shipmentNumber: shp.shipmentNumber,
+        shopName: shp.shop?.name || 'Navya Boutique',
+        shopCode: shp.shop?.shopCode || null,
+        status: shp.status,
+        trackingStatus: shp.trackingStatus,
+        courierName: shp.courierName || 'Standard Courier',
+        awbCode: shp.awbCode || null,
+        trackingUrl: shp.awbCode ? `https://shiprocket.co/tracking/${shp.awbCode}` : null,
+        pickupCity: (shp.pickupAddressSnapshot as any)?.city || shp.shop?.city || 'Jaipur Hub',
+        itemCount: shp.itemCount,
+        items: (shp.items || []).map((itm: any) => ({
+          id: itm.id,
+          name: itm.name,
+          sku: itm.sku,
+          size: itm.size,
+          color: itm.color,
+          price: Number(itm.price),
+          quantity: itm.quantity,
+          total: Number(itm.total),
+        })),
+        trackingEvents: (shp.trackingEvents || []).map((te: any) => ({
+          id: te.id,
+          status: te.status,
+          activity: te.activity,
+          location: te.location,
+          timestamp: te.eventTimestamp.toISOString(),
+        })),
+      })),
       trackingEvents: [
         {
           id: 't1',

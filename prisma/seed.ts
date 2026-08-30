@@ -10,6 +10,24 @@ import {
   ShippingStatus,
 } from '@prisma/client';
 
+// ==========================================
+// ENVIRONMENT SAFETY GUARD: STRICTLY LOCAL ONLY
+// ==========================================
+const dbEnv = process.env.DATABASE_ENV || 'local';
+const isProd = process.env.NODE_ENV === 'production' || dbEnv === 'production';
+const rawDbUrl = (process.env.DIRECT_URL || process.env.DATABASE_URL || '').toLowerCase();
+
+if (isProd || dbEnv !== 'local' || rawDbUrl.includes('zisieyoodosjbuocrjqd')) {
+  console.error(
+    '\n⛔ [CRITICAL_SAFETY_ERROR] Database seed is strictly permitted ONLY against the LOCAL database.',
+  );
+  console.error(
+    `Current Environment: NODE_ENV=${process.env.NODE_ENV}, DATABASE_ENV=${process.env.DATABASE_ENV}`,
+  );
+  console.error('Operation aborted to prevent modifying production database.\n');
+  process.exit(1);
+}
+
 const prisma = new PrismaClient({
   datasources: {
     db: {
@@ -19,7 +37,7 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  console.log('🚀 Starting Navya Collection database seeding...');
+  console.log('🚀 Starting Navya Collection database seeding against LOCAL database...');
 
   // Check connection string placeholders
   const dbUrl = process.env.DATABASE_URL || '';
@@ -28,7 +46,7 @@ async function main() {
       '\n⚠️ DATABASE_URL contains placeholder credentials (YOUR_PROJECT_REF / YOUR_PASSWORD).',
     );
     console.warn(
-      '👉 Please update your .env file with your actual Supabase PostgreSQL connection string to seed a live database.',
+      '👉 Please update your .env.local file with your actual local PostgreSQL connection string to seed.',
     );
     console.warn('💡 Seed script logic & structure verified successfully!\n');
     return;

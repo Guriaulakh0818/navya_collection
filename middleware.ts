@@ -10,6 +10,7 @@ import {
 } from '@/backend/security';
 
 const SESSION_COOKIE_NAME = 'navya_session';
+const ADMIN_COOKIE = 'navya_admin_session';
 
 const CUSTOMER_PROTECTED_PREFIXES = [
   '/account',
@@ -52,7 +53,7 @@ export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
 
-  // 1. Skip static assets and internal routes
+  // 1. Skip static assets, internal Next.js files, and public favicon
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/static') ||
@@ -62,26 +63,90 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. CSRF Origin Verification on state-mutating requests
+  // 2. Extract Hostname and Detect Subdomains
+  const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+  const currentHost = rawHost.split(':')[0].toLowerCase();
+
+  const isAdminSubdomain =
+    currentHost === 'admin.navyacollection.store' ||
+    currentHost === 'admin.navyacollection.in' ||
+    currentHost.startsWith('admin.');
+
+  const isSellerSubdomain =
+    currentHost === 'seller.navyacollection.store' ||
+    currentHost === 'seller.navyacollection.in' ||
+    currentHost.startsWith('seller.');
+
+  // 3. PRODUCTION CANONICAL REDIRECTION:
+  // If accessing /admin from the main domain or vercel.app, redirect immediately to custom admin subdomain
+  if (
+    process.env.NODE_ENV === 'production' &&
+    !isAdminSubdomain &&
+    (pathname === '/admin' || pathname.startsWith('/admin/'))
+  ) {
+    const subPath = pathname.replace(/^\/admin/, '') || '/';
+    const targetUrl = new URL(subPath, 'https://admin.navyacollection.store');
+    req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+    return NextResponse.redirect(targetUrl, 307);
+  }
+
+  // 4. Subdomain Path Normalization and Rewriting
+  let effectivePathname = pathname;
+  let shouldRewrite = false;
+  const rewriteUrl = req.nextUrl.clone();
+
+  if (isAdminSubdomain) {
+    if (pathname === '/') {
+      rewriteUrl.pathname = '/admin/dashboard';
+      effectivePathname = '/admin/dashboard';
+      shouldRewrite = true;
+    } else if (pathname === '/login') {
+      rewriteUrl.pathname = '/admin/login';
+      effectivePathname = '/admin/login';
+      shouldRewrite = true;
+    } else if (!pathname.startsWith('/admin') && !pathname.startsWith('/api')) {
+      rewriteUrl.pathname = `/admin${pathname}`;
+      effectivePathname = `/admin${pathname}`;
+      shouldRewrite = true;
+    }
+  } else if (isSellerSubdomain) {
+    if (pathname === '/') {
+      rewriteUrl.pathname = '/become-seller';
+      effectivePathname = '/become-seller';
+      shouldRewrite = true;
+    } else if (
+      !pathname.startsWith('/seller') &&
+      !pathname.startsWith('/become-seller') &&
+      !pathname.startsWith('/api')
+    ) {
+      rewriteUrl.pathname = `/seller${pathname}`;
+      effectivePathname = `/seller${pathname}`;
+      shouldRewrite = true;
+    }
+  }
+
+  // 5. CSRF Origin Verification on state-mutating requests
   const isCsrfValid = validateCsrfOrigin(
-    pathname,
+    effectivePathname,
     req.method,
     req.headers.get('origin'),
     req.headers.get('referer'),
   );
 
   if (!isCsrfValid) {
-    logSecurityEvent('CSRF_VIOLATION', `CSRF validation failed on ${req.method} ${pathname}`, {
-      ip,
-    });
+    logSecurityEvent(
+      'CSRF_VIOLATION',
+      `CSRF validation failed on ${req.method} ${effectivePathname}`,
+      { ip },
+    );
     return NextResponse.json(
       { success: false, message: 'Invalid origin or referer header. CSRF check failed.' },
       { status: 403 },
     );
   }
 
-  // 3. Rate Limiting Checks for sensitive endpoints
-  if (pathname.includes('/auth/send-otp')) {
+  // 6. Rate Limiting Checks for sensitive endpoints
+  if (effectivePathname.includes('/auth/send-otp')) {
     const rateCheck = checkRateLimit(
       `otp:${ip}`,
       RATE_LIMIT_POLICIES.OTP.limit,
@@ -98,7 +163,10 @@ export default async function middleware(req: NextRequest) {
         { status: 429 },
       );
     }
-  } else if (pathname.includes('/auth/login') || pathname.includes('/admin/login')) {
+  } else if (
+    effectivePathname.includes('/auth/login') ||
+    effectivePathname.includes('/admin/login')
+  ) {
     const rateCheck = checkRateLimit(
       `login:${ip}`,
       RATE_LIMIT_POLICIES.LOGIN.limit,
@@ -111,7 +179,7 @@ export default async function middleware(req: NextRequest) {
         { status: 429 },
       );
     }
-  } else if (pathname.startsWith('/api/v1/checkout')) {
+  } else if (effectivePathname.startsWith('/api/v1/checkout')) {
     const rateCheck = checkRateLimit(
       `checkout:${ip}`,
       RATE_LIMIT_POLICIES.CHECKOUT.limit,
@@ -124,7 +192,7 @@ export default async function middleware(req: NextRequest) {
         { status: 429 },
       );
     }
-  } else if (pathname.startsWith('/api/v1/contact')) {
+  } else if (effectivePathname.startsWith('/api/v1/contact')) {
     const rateCheck = checkRateLimit(
       `contact:${ip}`,
       RATE_LIMIT_POLICIES.CONTACT.limit,
@@ -136,7 +204,7 @@ export default async function middleware(req: NextRequest) {
         { status: 429 },
       );
     }
-  } else if (pathname.startsWith('/api/v1/reviews')) {
+  } else if (effectivePathname.startsWith('/api/v1/reviews')) {
     const rateCheck = checkRateLimit(
       `reviews:${ip}`,
       RATE_LIMIT_POLICIES.REVIEWS.limit,
@@ -148,7 +216,7 @@ export default async function middleware(req: NextRequest) {
         { status: 429 },
       );
     }
-  } else if (pathname.startsWith('/api/v1/search')) {
+  } else if (effectivePathname.startsWith('/api/v1/search')) {
     const rateCheck = checkRateLimit(
       `search:${ip}`,
       RATE_LIMIT_POLICIES.SEARCH.limit,
@@ -160,7 +228,7 @@ export default async function middleware(req: NextRequest) {
         { status: 429 },
       );
     }
-  } else if (pathname.startsWith('/api/v1/admin')) {
+  } else if (effectivePathname.startsWith('/api/v1/admin')) {
     const rateCheck = checkRateLimit(
       `admin_api:${ip}`,
       RATE_LIMIT_POLICIES.ADMIN_API.limit,
@@ -175,9 +243,9 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 4. Edge JWT Verification (Separate cookies for Admin and Customer)
-  const ADMIN_COOKIE = 'navya_admin_session';
-  const isAdminPath = pathname.startsWith('/admin') || pathname.startsWith('/api/v1/admin');
+  // 7. Edge JWT Verification (Separate cookies for Admin and Customer)
+  const isAdminPath =
+    effectivePathname.startsWith('/admin') || effectivePathname.startsWith('/api/v1/admin');
   const token = isAdminPath
     ? req.cookies.get(ADMIN_COOKIE)?.value || req.cookies.get(SESSION_COOKIE_NAME)?.value
     : req.cookies.get(SESSION_COOKIE_NAME)?.value;
@@ -201,20 +269,26 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 5. API Route Protection
-  const isProtectedApi = PROTECTED_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
-  const isPublicApiException = PUBLIC_API_EXCEPTIONS.some((path) => pathname.startsWith(path));
+  // 8. API Route Protection
+  const isProtectedApi = PROTECTED_API_PREFIXES.some((prefix) =>
+    effectivePathname.startsWith(prefix),
+  );
+  const isPublicApiException = PUBLIC_API_EXCEPTIONS.some((path) =>
+    effectivePathname.startsWith(path),
+  );
 
   if (isProtectedApi && !isPublicApiException) {
     if (!isAuthenticated) {
-      logSecurityEvent('AUTH_FAILURE', `Unauthenticated access attempt to ${pathname}`, { ip });
+      logSecurityEvent('AUTH_FAILURE', `Unauthenticated access attempt to ${effectivePathname}`, {
+        ip,
+      });
       return NextResponse.json(
         { success: false, message: 'Authentication required.' },
         { status: 401 },
       );
     }
 
-    if (pathname.startsWith('/api/v1/admin')) {
+    if (effectivePathname.startsWith('/api/v1/admin')) {
       const allowedIpsEnv = process.env.ADMIN_ALLOWED_IPS;
       const isIpRestrictionEnabled = process.env.ENABLE_ADMIN_IP_RESTRICTION === 'true';
       if (allowedIpsEnv || isIpRestrictionEnabled) {
@@ -229,7 +303,7 @@ export default async function middleware(req: NextRequest) {
         if (!isIpAllowed) {
           logSecurityEvent('SUSPICIOUS_ACTIVITY', `Admin API IP allowlist block for IP ${ip}`, {
             ip,
-            pathname,
+            pathname: effectivePathname,
           });
           return NextResponse.json(
             { success: false, message: 'Access denied. IP address not allowed.' },
@@ -255,7 +329,7 @@ export default async function middleware(req: NextRequest) {
         logSecurityEvent('AUTH_FAILURE', `Delete attempt blocked for non-owner role ${userRole}`, {
           ip,
           userId,
-          pathname,
+          pathname: effectivePathname,
         });
         return NextResponse.json(
           {
@@ -270,12 +344,12 @@ export default async function middleware(req: NextRequest) {
       if (
         userRole === 'SUPERVISOR' &&
         ['POST', 'PUT', 'PATCH'].includes(req.method) &&
-        !pathname.includes('/orders')
+        !effectivePathname.includes('/orders')
       ) {
         logSecurityEvent('AUTH_FAILURE', `Catalog mutation blocked for SUPERVISOR`, {
           ip,
           userId,
-          pathname,
+          pathname: effectivePathname,
         });
         return NextResponse.json(
           {
@@ -288,9 +362,9 @@ export default async function middleware(req: NextRequest) {
     }
 
     if (
-      pathname.startsWith('/api/v1/seller') &&
-      !pathname.startsWith('/api/v1/seller/register') &&
-      !pathname.startsWith('/api/v1/seller/status')
+      effectivePathname.startsWith('/api/v1/seller') &&
+      !effectivePathname.startsWith('/api/v1/seller/register') &&
+      !effectivePathname.startsWith('/api/v1/seller/status')
     ) {
       const validSellerRoles = ['SELLER', 'OWNER', 'ADMIN', 'SUPER_ADMIN'];
       if (!validSellerRoles.includes(userRole)) {
@@ -306,8 +380,8 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 6. Admin Page Protection
-  if (pathname.startsWith('/admin')) {
+  // 9. Admin Page Protection
+  if (effectivePathname.startsWith('/admin')) {
     const allowedIpsEnv = process.env.ADMIN_ALLOWED_IPS;
     const isIpRestrictionEnabled = process.env.ENABLE_ADMIN_IP_RESTRICTION === 'true';
     if (allowedIpsEnv || isIpRestrictionEnabled) {
@@ -322,7 +396,7 @@ export default async function middleware(req: NextRequest) {
       if (!isIpAllowed) {
         logSecurityEvent('SUSPICIOUS_ACTIVITY', `Admin Page IP allowlist block for IP ${ip}`, {
           ip,
-          pathname,
+          pathname: effectivePathname,
         });
         return new NextResponse(
           'Access Denied: Your IP address is not authorized to access the Admin Panel.',
@@ -331,8 +405,15 @@ export default async function middleware(req: NextRequest) {
       }
     }
 
-    if (pathname !== '/admin/login') {
+    if (effectivePathname !== '/admin/login') {
       if (!isAuthenticated) {
+        if (isAdminSubdomain) {
+          const loginUrl = new URL('/login', req.url);
+          if (pathname !== '/' && pathname !== '/dashboard') {
+            loginUrl.searchParams.set('redirectUrl', pathname);
+          }
+          return NextResponse.redirect(loginUrl);
+        }
         const loginUrl = new URL('/admin/login', req.url);
         loginUrl.searchParams.set('redirectUrl', pathname);
         return NextResponse.redirect(loginUrl);
@@ -345,8 +426,8 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 7. Seller Page Protection
-  if (pathname.startsWith('/seller')) {
+  // 10. Seller Page Protection
+  if (effectivePathname.startsWith('/seller')) {
     if (!isAuthenticated) {
       const loginUrl = new URL('/login', req.url);
       loginUrl.searchParams.set('redirectUrl', pathname);
@@ -364,9 +445,9 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 8. Customer Protected Page Protection
+  // 11. Customer Protected Page Protection
   const isCustomerProtected = CUSTOMER_PROTECTED_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix),
+    effectivePathname.startsWith(prefix),
   );
 
   if (isCustomerProtected && !isAuthenticated) {
@@ -375,18 +456,24 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Pass request headers downstream with user context
+  // 12. Build Final Response & Security Headers
   const requestHeaders = new Headers(req.headers);
   if (isAuthenticated) {
     requestHeaders.set('x-user-id', userId);
     requestHeaders.set('x-user-role', userRole);
   }
 
-  const response = NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  const response = shouldRewrite
+    ? NextResponse.rewrite(rewriteUrl, {
+        request: {
+          headers: requestHeaders,
+        },
+      })
+    : NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
 
   // OWASP Production Security Headers
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');

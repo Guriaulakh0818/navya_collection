@@ -2,7 +2,10 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  NEXT_PUBLIC_APP_URL: z.string().url().default('https://navyacollection.in'),
+  DATABASE_ENV: z.enum(['local', 'development', 'test', 'staging', 'production']).default('local'),
+  NEXT_PUBLIC_APP_URL: z.string().url().default('https://navyacollection.store'),
+  NEXT_PUBLIC_ADMIN_URL: z.string().url().default('https://admin.navyacollection.store'),
+  NEXT_PUBLIC_SELLER_URL: z.string().url().default('https://seller.navyacollection.store'),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   DIRECT_URL: z.string().optional(),
   JWT_SECRET: z
@@ -33,8 +36,21 @@ export type EnvConfig = z.infer<typeof envSchema>;
 
 let parsedEnv: EnvConfig;
 
-export function validateEnvironment(): EnvConfig {
-  if (parsedEnv) return parsedEnv;
+/**
+ * Checks for production database markers to prevent accidental connections from local dev.
+ */
+function isProductionDatabaseUrl(url?: string): boolean {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  // Supabase project ref or host markers for the live production database
+  return (
+    lower.includes('zisieyoodosjbuocrjqd') ||
+    (lower.includes('supabase.com') && !lower.includes('localhost'))
+  );
+}
+
+export function validateEnvironment(forceReload = false): EnvConfig {
+  if (parsedEnv && !forceReload) return parsedEnv;
 
   const result = envSchema.safeParse(process.env);
 
@@ -49,7 +65,33 @@ export function validateEnvironment(): EnvConfig {
     }
   }
 
-  parsedEnv = result.success ? result.data : (process.env as unknown as EnvConfig);
+  const data = result.success ? result.data : (process.env as unknown as EnvConfig);
+
+  // =========================================================================
+  // STRICT ENVIRONMENT SAFETY GUARD
+  // Prevent local development / testing from EVER connecting to production DB
+  // =========================================================================
+  const isLocalDev = data.DATABASE_ENV === 'local' || data.NODE_ENV === 'development';
+  const pointsToProduction =
+    isProductionDatabaseUrl(data.DATABASE_URL) || isProductionDatabaseUrl(data.DIRECT_URL);
+
+  if (isLocalDev && pointsToProduction) {
+    const errorMsg =
+      '⛔ [DATABASE_SAFETY_FATAL] Refusing to connect to production database from local development environment.\n' +
+      'Please update your .env.local with your isolated local PostgreSQL database URL.';
+    console.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+
+  if (data.DATABASE_ENV === 'production' && data.NODE_ENV !== 'production') {
+    const errorMsg =
+      '⛔ [DATABASE_SAFETY_FATAL] DATABASE_ENV is set to "production" but NODE_ENV is not "production".\n' +
+      'Operation blocked for safety.';
+    console.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+
+  parsedEnv = data;
   return parsedEnv;
 }
 

@@ -17,6 +17,7 @@ const navigation = [
   { name: 'Product Approvals', href: '/admin/products/approvals', icon: 'products' },
   { name: 'Products Catalog', href: '/admin/products', icon: 'products' },
   { name: 'Orders', href: '/admin/orders', icon: 'orders' },
+  { name: 'Shipping & Logistics', href: '/admin/shipping', icon: 'shipping' },
   { name: 'Commission Revenue', href: '/admin/finance/commission', icon: 'dashboard' },
   { name: 'Manual Settlements', href: '/admin/finance/settlements', icon: 'sellers' },
   { name: 'Review Moderation', href: '/admin/reviews', icon: 'products' },
@@ -25,6 +26,24 @@ const navigation = [
 ];
 
 function NavIcon({ type }: { type: string }) {
+  if (type === 'shipping') {
+    return (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"
+        />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
+        />
+      </svg>
+    );
+  }
   if (type === 'users') {
     return (
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

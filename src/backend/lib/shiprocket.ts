@@ -1,8 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 
-import { clearShiprocketTokenCache, getShiprocketToken } from '@/services/shipping/auth';
-import { SHIPROCKET_CONSTANTS } from '@/services/shipping/constants';
-import { ShiprocketLogger } from '@/services/shipping/logger';
+import { clearShiprocketTokenCache, getShiprocketToken } from '@/backend/services/shipping/auth';
+import { SHIPROCKET_CONSTANTS } from '@/backend/services/shipping/constants';
+import { ShiprocketLogger } from '@/backend/services/shipping/logger';
 
 // Rate Limiting Metrics
 const requestTimestamps: number[] = [];

@@ -4,7 +4,7 @@ import {
   generateVariantSku,
   normalizeColorCode,
   normalizeSizeCode,
-} from '@/backend/lib/sku-generator';
+} from '../../src/backend/lib/sku-generator';
 
 describe('SKU Generator Utility', () => {
   it('normalizes color codes into 3-character uppercase codes', () => {

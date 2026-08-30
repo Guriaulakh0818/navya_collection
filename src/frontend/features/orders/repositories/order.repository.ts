@@ -1,5 +1,6 @@
 import { OrderStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 
+import { MultiSellerShipmentService } from '@/backend/services/shipping/multi-seller-shipment.service';
 import { prisma } from '@/lib/prisma';
 
 export interface CreateOrderInput {
@@ -19,6 +20,7 @@ export interface CreateOrderInput {
   items: {
     productId: string;
     variantId?: string | null;
+    shopId?: string | null;
     name: string;
     sku: string;
     price: number;
@@ -47,6 +49,13 @@ export class OrderRepository {
       include: {
         items: true,
         address: true,
+        vendorOrders: true,
+        shipments: {
+          include: {
+            items: true,
+            trackingEvents: { orderBy: { eventTimestamp: 'desc' } },
+          },
+        },
         paymentTransactions: true,
       },
     });
@@ -69,6 +78,9 @@ export class OrderRepository {
                   where: { isPrimary: true },
                   take: 1,
                 },
+                shop: {
+                  select: { id: true, name: true, shopCode: true, city: true, state: true },
+                },
               },
             },
             variant: true,
@@ -82,6 +94,26 @@ export class OrderRepository {
             email: true,
             mobile: true,
           },
+        },
+        vendorOrders: {
+          include: {
+            shop: {
+              select: { id: true, name: true, shopCode: true, city: true, state: true },
+            },
+          },
+        },
+        shipments: {
+          include: {
+            items: true,
+            shop: {
+              select: { id: true, name: true, shopCode: true, city: true, state: true },
+            },
+            pickupLocation: true,
+            trackingEvents: {
+              orderBy: { eventTimestamp: 'desc' },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
         },
         paymentTransactions: {
           orderBy: { createdAt: 'desc' },
@@ -110,13 +142,21 @@ export class OrderRepository {
           },
         },
         address: true,
+        shipments: {
+          include: {
+            shop: { select: { id: true, name: true, shopCode: true } },
+            items: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
   }
 
   /**
-   * Atomic Order Creation Transaction:
-   * Creates Order, OrderItems, PaymentTransaction, decrements stock, and clears Cart.
+   * Atomic Multi-Vendor Order Creation Transaction:
+   * Creates Master Order, VendorOrders, OrderItems, discrete Shipments with frozen snapshots,
+   * PaymentTransaction, decrements stock, and clears Cart.
    */
   static async createOrderWithItems(input: CreateOrderInput) {
     // 1. Idempotency Check
@@ -132,15 +172,15 @@ export class OrderRepository {
       input.orderStatus ||
       (input.paymentStatus === PaymentStatus.PAID ? OrderStatus.CONFIRMED : OrderStatus.PENDING);
 
-    // Pre-resolve product IDs in a single query outside transaction to prevent transaction timeout
-    const productMap = new Map<string, { id: string; sku: string }>();
+    // Pre-resolve product IDs & shop IDs in a single query outside transaction
+    const productMap = new Map<string, { id: string; sku: string; shopId: string | null }>();
     try {
       const dbProducts = await prisma.product.findMany({
-        select: { id: true, slug: true, sku: true },
+        select: { id: true, slug: true, sku: true, shopId: true },
       });
       for (const p of dbProducts) {
-        productMap.set(p.id, { id: p.id, sku: p.sku });
-        if (p.slug) productMap.set(p.slug, { id: p.id, sku: p.sku });
+        productMap.set(p.id, { id: p.id, sku: p.sku, shopId: p.shopId });
+        if (p.slug) productMap.set(p.slug, { id: p.id, sku: p.sku, shopId: p.shopId });
       }
     } catch {}
 
@@ -150,10 +190,12 @@ export class OrderRepository {
       const match = productMap.get(item.productId);
       const resolvedProductId = match?.id || firstProduct?.id || item.productId;
       const resolvedSku = match?.sku || firstProduct?.sku || item.sku || 'SKU-ITEM';
+      const resolvedShopId = item.shopId || match?.shopId || firstProduct?.shopId || null;
 
       return {
         productId: resolvedProductId,
         variantId: item.variantId || undefined,
+        shopId: resolvedShopId,
         name: item.name,
         sku: resolvedSku,
         price: item.price,
@@ -162,9 +204,9 @@ export class OrderRepository {
       };
     });
 
-    return prisma.$transaction(
+    const result = await prisma.$transaction(
       async (tx) => {
-        // a. Create Order Record
+        // a. Create Master Order Record
         const order = await tx.order.create({
           data: {
             orderNumber,
@@ -184,23 +226,71 @@ export class OrderRepository {
           },
         });
 
-        // b. Create Order Items
-        const orderItemsToCreate = preparedItems.map((item) => ({
-          orderId: order.id,
-          productId: item.productId,
-          variantId: item.variantId,
-          name: item.name,
-          sku: item.sku,
-          price: item.price,
-          quantity: item.quantity,
-          total: item.total,
-        }));
+        // b. Group items by Shop to create child VendorOrders
+        const shopItemsMap = new Map<string, typeof preparedItems>();
+        for (const item of preparedItems) {
+          const sId = item.shopId || 'DEFAULT_SHOP';
+          if (!shopItemsMap.has(sId)) {
+            shopItemsMap.set(sId, []);
+          }
+          shopItemsMap.get(sId)!.push(item);
+        }
 
-        await tx.orderItem.createMany({
-          data: orderItemsToCreate,
-        });
+        const vendorOrderMap = new Map<string, string>();
+        let vIndex = 1;
 
-        // c. Create Payment Transaction Record
+        for (const [sId, sItems] of Array.from(shopItemsMap.entries())) {
+          const sSubtotal = sItems.reduce((sum, i) => sum + Number(i.total), 0);
+          const vendorOrderNumber = `${orderNumber}-V${vIndex++}`;
+
+          // Check if valid DB shop
+          let targetShopId = sId;
+          if (sId !== 'DEFAULT_SHOP') {
+            const valid = await tx.shop.findUnique({ where: { id: sId }, select: { id: true } });
+            if (!valid)
+              targetShopId = (await tx.shop.findFirst({ select: { id: true } }))?.id || sId;
+          } else {
+            targetShopId = (await tx.shop.findFirst({ select: { id: true } }))?.id || sId;
+          }
+
+          const vo = await tx.vendorOrder.create({
+            data: {
+              masterOrderId: order.id,
+              shopId: targetShopId,
+              vendorOrderNumber,
+              totalAmount: sSubtotal,
+              commissionAmount: sSubtotal * 0.1, // 10% marketplace commission
+              vendorPayoutAmount: sSubtotal * 0.9,
+              status: finalOrderStatus,
+              shippingStatus: 'PENDING',
+            },
+          });
+
+          vendorOrderMap.set(sId, vo.id);
+        }
+
+        // c. Create Order Items linked to VendorOrder
+        for (const item of preparedItems) {
+          const sId = item.shopId || 'DEFAULT_SHOP';
+          const vendorOrderId = vendorOrderMap.get(sId);
+
+          await tx.orderItem.create({
+            data: {
+              orderId: order.id,
+              vendorOrderId,
+              shopId: item.shopId,
+              productId: item.productId,
+              variantId: item.variantId,
+              name: item.name,
+              sku: item.sku,
+              price: item.price,
+              quantity: item.quantity,
+              total: item.total,
+            },
+          });
+        }
+
+        // d. Create Payment Transaction Record
         await tx.paymentTransaction.create({
           data: {
             orderId: order.id,
@@ -214,12 +304,15 @@ export class OrderRepository {
           },
         });
 
-        // d. Decrement Stock Inventory (Safely)
-        for (const item of orderItemsToCreate) {
+        // e. Create Discrete Multi-Seller Shipments with Frozen Address Snapshots
+        await MultiSellerShipmentService.createShipmentsForOrder(order.id, tx);
+
+        // f. Decrement Stock Inventory (Safely)
+        for (const item of preparedItems) {
           try {
             if (item.variantId) {
-              await tx.productVariant.update({
-                where: { id: item.variantId },
+              await tx.productVariant.updateMany({
+                where: { id: item.variantId, availableStock: { gte: item.quantity } },
                 data: {
                   availableStock: { decrement: item.quantity },
                   stock: { decrement: item.quantity },
@@ -228,18 +321,18 @@ export class OrderRepository {
               });
             }
 
-            await tx.product.update({
-              where: { id: item.productId },
+            await tx.product.updateMany({
+              where: { id: item.productId, stock: { gte: item.quantity } },
               data: {
                 stock: { decrement: item.quantity },
               },
             });
           } catch {
-            // Continue if mock or custom item
+            // Continue if custom item
           }
         }
 
-        // e. Clear Customer Cart
+        // g. Clear Customer Cart
         const cart = await tx.cart.findUnique({
           where: { userId: input.userId },
         });
@@ -255,12 +348,27 @@ export class OrderRepository {
           include: {
             items: true,
             address: true,
+            vendorOrders: true,
+            shipments: {
+              include: { items: true },
+            },
             paymentTransactions: true,
           },
         });
       },
-      { maxWait: 10000, timeout: 20000 },
+      { maxWait: 10000, timeout: 25000 },
     );
+
+    // Background Dispatch to Shiprocket if credentials configured
+    if (result && result.shipments && result.shipments.length > 0) {
+      for (const shp of result.shipments) {
+        MultiSellerShipmentService.dispatchShipmentToShiprocket(shp.id).catch((err) => {
+          console.warn(`[BACKGROUND_SHIPROCKET_DISPATCH_FAILED] Shipment: ${shp.id}`, err);
+        });
+      }
+    }
+
+    return result;
   }
 
   /**

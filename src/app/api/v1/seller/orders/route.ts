@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/backend/lib/session';
+import { AwbService } from '@/backend/services/shipping/awb.service';
+import { LabelService } from '@/backend/services/shipping/label.service';
+import { MultiSellerShipmentService } from '@/backend/services/shipping/multi-seller-shipment.service';
+import { PickupService } from '@/backend/services/shipping/pickup.service';
+import { StatusAggregatorService } from '@/backend/services/shipping/status-aggregator.service';
 import { prisma } from '@/lib/prisma';
 
 /**
  * GET /api/v1/seller/orders
- * Returns Vendor Orders belonging to the authenticated seller's shop with status filtering and search.
+ * Returns Vendor Orders & Shipments belonging to the authenticated seller's shop.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -62,16 +67,20 @@ export async function GET(request: NextRequest) {
       include: {
         shop: {
           select: {
+            id: true,
+            shopCode: true,
             name: true,
             slug: true,
             logo: true,
             city: true,
             state: true,
+            pincode: true,
             sellerProfile: { select: { gstin: true, legalName: true, businessAddress: true } },
           },
         },
         masterOrder: {
           select: {
+            id: true,
             orderNumber: true,
             paymentStatus: true,
             paymentMethod: true,
@@ -79,6 +88,14 @@ export async function GET(request: NextRequest) {
             address: true,
             user: { select: { name: true, email: true, mobile: true } },
           },
+        },
+        shipments: {
+          include: {
+            items: true,
+            pickupLocation: true,
+            trackingEvents: { orderBy: { eventTimestamp: 'desc' } },
+          },
+          orderBy: { createdAt: 'desc' },
         },
         items: {
           include: {
@@ -105,7 +122,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * PATCH /api/v1/seller/orders
- * Allows seller to update status of their vendor order (e.g., PENDING -> PACKED -> SHIPPED -> DELIVERED).
+ * Action dispatcher for seller order fulfillment: PACK, GENERATE_AWB, GENERATE_LABEL, SCHEDULE_PICKUP, CANCEL.
  */
 export async function PATCH(request: NextRequest) {
   try {
@@ -118,29 +135,41 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { vendorOrderId, status, shippingStatus, awbCode, courierName } = body;
+    const { vendorOrderId, shipmentId, action, status, shippingStatus, awbCode, courierName } =
+      body;
 
-    if (!vendorOrderId) {
+    if (!vendorOrderId && !shipmentId) {
       return NextResponse.json(
-        { success: false, message: 'Vendor Order ID is required.' },
+        { success: false, message: 'vendorOrderId or shipmentId is required.' },
         { status: 400 },
       );
     }
 
-    const existing = await prisma.vendorOrder.findUnique({
-      where: { id: vendorOrderId },
-      include: { shop: { select: { ownerId: true } } },
-    });
+    let shipment = shipmentId
+      ? await prisma.shipment.findUnique({
+          where: { id: shipmentId },
+          include: { shop: true, masterOrder: { include: { shipments: true } } },
+        })
+      : await prisma.shipment.findFirst({
+          where: { vendorOrderId },
+          include: { shop: true, masterOrder: { include: { shipments: true } } },
+        });
 
-    if (!existing) {
-      return NextResponse.json(
-        { success: false, message: 'Vendor Order not found.' },
-        { status: 404 },
-      );
-    }
+    const vendorOrder = vendorOrderId
+      ? await prisma.vendorOrder.findUnique({
+          where: { id: vendorOrderId },
+          include: { shop: true },
+        })
+      : shipment?.vendorOrderId
+        ? await prisma.vendorOrder.findUnique({
+            where: { id: shipment.vendorOrderId },
+            include: { shop: true },
+          })
+        : null;
 
+    const shopOwnerId = shipment?.shop?.ownerId || vendorOrder?.shop?.ownerId;
     const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(currentUser.role);
-    const isShopOwner = existing.shop.ownerId === currentUser.id;
+    const isShopOwner = shopOwnerId === currentUser.id;
 
     if (!isShopOwner && !isAdmin) {
       return NextResponse.json(
@@ -149,21 +178,78 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const updated = await prisma.vendorOrder.update({
-      where: { id: vendorOrderId },
-      data: {
-        ...(status ? { status } : {}),
-        ...(shippingStatus ? { shippingStatus } : {}),
-        ...(awbCode ? { awbCode } : {}),
-        ...(courierName ? { courierName } : {}),
-      },
-    });
+    // 1. Action: GENERATE_AWB
+    if (action === 'GENERATE_AWB' && shipment) {
+      const res = await AwbService.generateAwbForShipment(shipment.id);
+      return NextResponse.json(res, { status: res.statusCode || 200 });
+    }
 
-    return NextResponse.json({
-      success: true,
-      message: `Vendor order status updated to ${status || shippingStatus}.`,
-      data: updated,
-    });
+    // 2. Action: GENERATE_LABEL
+    if (action === 'GENERATE_LABEL' && shipment) {
+      const res = await LabelService.generateLabelForShipment(shipment.id);
+      return NextResponse.json(res, { status: res.statusCode || 200 });
+    }
+
+    // 3. Action: SCHEDULE_PICKUP
+    if (action === 'SCHEDULE_PICKUP' && shipment) {
+      const res = await PickupService.schedulePickupForShipment(shipment.id);
+      return NextResponse.json(res, { status: res.statusCode || 200 });
+    }
+
+    // 4. Action: CANCEL
+    if (action === 'CANCEL' && shipment) {
+      const res = await MultiSellerShipmentService.cancelShipment(shipment.id);
+      return NextResponse.json({
+        success: true,
+        message: 'Shipment cancelled successfully and inventory restored.',
+        data: res,
+      });
+    }
+
+    // 5. Action: PACK / Manual Status Update
+    if (shipment) {
+      const newStatus = action === 'PACK' ? 'PACKED' : status || shipment.status;
+      const updatedShipment = await prisma.shipment.update({
+        where: { id: shipment.id },
+        data: {
+          status: newStatus,
+          trackingStatus: newStatus,
+          ...(awbCode ? { awbCode } : {}),
+          ...(courierName ? { courierName } : {}),
+        },
+      });
+
+      if (vendorOrder) {
+        await prisma.vendorOrder.update({
+          where: { id: vendorOrder.id },
+          data: {
+            status: newStatus === 'PACKED' ? 'PROCESSING' : (newStatus as any),
+            shippingStatus: shippingStatus || (newStatus === 'PACKED' ? 'PROCESSING' : 'PENDING'),
+            ...(awbCode ? { awbCode } : {}),
+            ...(courierName ? { courierName } : {}),
+          },
+        });
+      }
+
+      // Recalculate master order status
+      const allShipments = shipment.masterOrder.shipments.map((s) =>
+        s.id === shipment.id ? { ...s, status: newStatus } : s,
+      );
+      const masterStatus = StatusAggregatorService.calculateMasterOrderStatus(allShipments);
+
+      await prisma.order.update({
+        where: { id: shipment.masterOrderId },
+        data: { orderStatus: masterStatus },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Shipment status updated to ${newStatus}.`,
+        data: updatedShipment,
+      });
+    }
+
+    return NextResponse.json({ success: true, message: 'Vendor order updated.' });
   } catch (error: any) {
     console.error('❌ PATCH Seller Order Status Error:', error);
     return NextResponse.json(

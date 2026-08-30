@@ -145,3 +145,42 @@ export function generateVariantSku(
 
   return parts.join('-');
 }
+
+/**
+ * Concurrency-safe Shop Code generator.
+ * Uses atomic DB sequence counter (`sku_sequences`) with name 'SHOP_ID'.
+ * Generates permanent Shop Codes formatted as `NAVYA-SHOP-000001`, `NAVYA-SHOP-000002`, etc.
+ */
+export async function generateShopCode(
+  txClient?: PrismaClient | Prisma.TransactionClient,
+): Promise<string> {
+  const client = txClient || prisma;
+
+  let attempts = 0;
+  while (attempts < 100) {
+    attempts++;
+
+    // Atomic increment in sequence table
+    const seq = await client.skuSequence.upsert({
+      where: { name: 'SHOP_ID' },
+      update: { nextVal: { increment: 1 } },
+      create: { name: 'SHOP_ID', nextVal: 1 },
+    });
+
+    const seqNum = seq.nextVal;
+    const formattedShopCode = `NAVYA-SHOP-${String(seqNum).padStart(6, '0')}`;
+
+    // Verify database uniqueness
+    const existing = await client.shop.findFirst({
+      where: { shopCode: formattedShopCode },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return formattedShopCode;
+    }
+  }
+
+  // Fallback random collision-free Shop Code
+  return `NAVYA-SHOP-${Math.floor(100000 + Math.random() * 900000)}`;
+}

@@ -165,7 +165,7 @@ export async function sendAdminAccessGrantedEmail(
   const senderEmail =
     process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_SENDER || 'noreply@navyacollection.store';
   const senderName = 'Navya Collection Governance';
-  const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://navya-collection-pi.vercel.app'}/login`;
+  const loginUrl = `${process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.navyacollection.store'}/login`;
 
   if (!apiKey || apiKey.trim().length === 0) {
     console.warn(

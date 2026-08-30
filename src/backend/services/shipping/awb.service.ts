@@ -1,8 +1,8 @@
+import { shiprocketClient } from '@/backend/lib/shiprocket';
 import { prisma } from '@/lib/prisma';
-import shiprocketClient from '@/lib/shiprocket';
 
 import { SHIPROCKET_CONSTANTS } from './constants';
-import { PickupService } from './pickup.service';
+import { ShiprocketLogger } from './logger';
 import type {
   AwbGenerationResult,
   GenerateAwbOptions,
@@ -12,96 +12,81 @@ import type {
 } from './types';
 
 export class AwbService {
-  /**
-   * Helper function for delayed retry execution
-   */
   private static sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
-   * Generates and assigns an Air Waybill (AWB) code to a shipment with automated retry logic.
-   * Updates database with awb_code, courier_name, shipment_id, tracking_url, and order status.
+   * Generates and assigns an Air Waybill (AWB) code to a Shipment.
+   * Updates database with awbCode, courierName, courierCompanyId, and status.
    */
-  static async generateAwbForOrder(
-    orderIdOrNumber: string,
+  static async generateAwbForShipment(
+    shipmentIdOrNumber: string,
     options?: GenerateAwbOptions,
   ): Promise<StandardShippingResponse<AwbGenerationResult>> {
     const maxRetries = options?.maxRetries ?? SHIPROCKET_CONSTANTS.AWB_RETRY.MAX_RETRIES;
     const initialDelay = options?.retryDelayMs ?? SHIPROCKET_CONSTANTS.AWB_RETRY.INITIAL_DELAY_MS;
 
     try {
-      console.log(`[AWB_GENERATE_INIT] Initiating AWB assignment for order: ${orderIdOrNumber}...`);
+      ShiprocketLogger.info(
+        `[AWB_GENERATE_INIT] Generating AWB for shipment: ${shipmentIdOrNumber}`,
+      );
 
-      // 1. Fetch Order from DB
-      const order = await prisma.order.findFirst({
+      // 1. Fetch Shipment from DB
+      const shipment = await prisma.shipment.findFirst({
         where: {
-          OR: [{ id: orderIdOrNumber }, { orderNumber: orderIdOrNumber }],
-          deletedAt: null,
+          OR: [{ id: shipmentIdOrNumber }, { shipmentNumber: shipmentIdOrNumber }],
+        },
+        include: {
+          masterOrder: true,
+          shop: true,
         },
       });
 
-      if (!order) {
-        return {
-          success: false,
-          message: `${SHIPROCKET_CONSTANTS.ERRORS.ORDER_NOT_FOUND}: '${orderIdOrNumber}'`,
-          statusCode: 404,
-        };
+      if (!shipment) {
+        // Backward compatibility fallback to Order
+        return this.generateAwbForOrder(shipmentIdOrNumber, options);
       }
 
-      if (!order.shiprocketShipmentId) {
+      if (!shipment.shiprocketShipmentId) {
         return {
           success: false,
-          message: SHIPROCKET_CONSTANTS.ERRORS.NO_SHIPMENT_FOUND,
+          message: 'Shipment has not been registered on Shiprocket yet.',
           statusCode: 400,
-          error: {
-            code: 'NO_SHIPMENT_ID',
-            details: 'Shipment creation must be executed prior to AWB generation.',
-          },
         };
       }
 
-      // Idempotency check: Return existing AWB if already assigned
-      if (order.awbCode && order.courierName) {
-        console.log(
-          `[AWB_EXISTS] Order ${order.orderNumber} already has AWB Code ${order.awbCode}`,
-        );
-        const trackingUrl =
-          order.trackingUrl || `${SHIPROCKET_CONSTANTS.DEFAULTS.TRACKING_BASE_URL}${order.awbCode}`;
-
+      // Return stored AWB if already present
+      if (shipment.awbCode && shipment.courierName) {
+        const trackingUrl = `${SHIPROCKET_CONSTANTS.DEFAULTS.TRACKING_BASE_URL}${shipment.awbCode}`;
         return {
           success: true,
-          message: 'AWB code already generated and assigned to this order.',
+          message: 'AWB code already generated and assigned.',
           statusCode: 200,
           data: {
-            orderId: order.id,
-            orderNumber: order.orderNumber,
-            shiprocketShipmentId: order.shiprocketShipmentId,
-            awbCode: order.awbCode,
-            courierName: order.courierName,
+            orderId: shipment.masterOrderId,
+            orderNumber: shipment.shipmentNumber,
+            shiprocketShipmentId: shipment.shiprocketShipmentId,
+            awbCode: shipment.awbCode,
+            courierName: shipment.courierName,
             trackingUrl,
-            shippingStatus: order.shippingStatus,
-            orderStatus: order.orderStatus,
-            assignedAt: order.updatedAt.toISOString(),
+            shippingStatus: shipment.status as any,
+            orderStatus: shipment.masterOrder.orderStatus,
+            assignedAt: shipment.updatedAt.toISOString(),
             retriesAttempted: 0,
           },
         };
       }
 
-      // 2. Execute AWB generation with Retry Loop
+      // 2. Call Shiprocket AWB Assignment API
       let attempt = 0;
-      let lastError: any = null;
-      let awbResponse: ShiprocketAwbAssignResponse | null = null;
+      let awbResponse: any = null;
 
       while (attempt <= maxRetries) {
         try {
           attempt++;
-          console.log(
-            `[AWB_ASSIGN_ATTEMPT] Order ${order.orderNumber} - Attempt ${attempt} of ${maxRetries + 1}...`,
-          );
-
           const payload: ShiprocketAwbAssignPayload = {
-            shipment_id: order.shiprocketShipmentId,
+            shipment_id: shipment.shiprocketShipmentId,
             courier_id: options?.courierId ? String(options.courierId) : undefined,
           };
 
@@ -118,134 +103,111 @@ export class AwbService {
             break;
           }
 
-          throw new Error(
-            response.data?.response?.data?.awb_code
-              ? 'Success'
-              : 'Shiprocket API returned unexpected AWB response format.',
-          );
+          throw new Error('Unexpected AWB response format from Shiprocket.');
         } catch (err: any) {
-          lastError = err;
-          console.warn(`[AWB_ASSIGN_ATTEMPT_FAILED] Attempt ${attempt} failed: ${err.message}`);
-
+          ShiprocketLogger.warn(`[AWB_ASSIGN_ATTEMPT_${attempt}_FAILED]`, undefined, {
+            error: err.message,
+          });
           if (attempt <= maxRetries) {
-            const backoffMs = initialDelay * Math.pow(2, attempt - 1);
-            console.log(`[AWB_RETRY_BACKOFF] Waiting ${backoffMs}ms before retrying...`);
-            await this.sleep(backoffMs);
+            await this.sleep(initialDelay * Math.pow(2, attempt - 1));
           }
         }
       }
 
-      // Handle Dev Fallback if API fails in non-production environment
-      if (!awbResponse && process.env.NODE_ENV !== 'production') {
-        console.warn(
-          '[AWB_GENERATION_FALLBACK] Using mock AWB generation for development environment.',
-        );
-        const mockAwb = `AWB-${Date.now().toString().slice(-8)}`;
-        const mockCourier = 'Delhivery Express Surface';
-        const mockTrackingUrl = `${SHIPROCKET_CONSTANTS.DEFAULTS.TRACKING_BASE_URL}${mockAwb}`;
+      let finalAwb = awbResponse?.response?.data?.awb_code || awbResponse?.awb_code;
+      let finalCourier =
+        awbResponse?.response?.data?.courier_name ||
+        awbResponse?.courier_name ||
+        'Standard Courier';
+      let courierCompanyId = awbResponse?.response?.data?.courier_company_id || undefined;
 
-        const updatedOrder = await prisma.order.update({
-          where: { id: order.id },
-          data: {
-            awbCode: mockAwb,
-            courierName: mockCourier,
-            trackingNumber: mockAwb,
-            trackingUrl: mockTrackingUrl,
-            shippingStatus: 'PICKUP_SCHEDULED',
-            orderStatus: order.orderStatus === 'PENDING' ? 'CONFIRMED' : order.orderStatus,
-          },
-        });
-
-        return {
-          success: true,
-          message: 'AWB generated successfully (development fallback).',
-          statusCode: 200,
-          data: {
-            orderId: updatedOrder.id,
-            orderNumber: updatedOrder.orderNumber,
-            shiprocketShipmentId: updatedOrder.shiprocketShipmentId!,
-            awbCode: mockAwb,
-            courierName: mockCourier,
-            trackingUrl: mockTrackingUrl,
-            shippingStatus: updatedOrder.shippingStatus,
-            orderStatus: updatedOrder.orderStatus,
-            assignedAt: updatedOrder.updatedAt.toISOString(),
-            retriesAttempted: attempt - 1,
-          },
-        };
-      }
-
-      if (!awbResponse) {
-        const errorDetails = lastError?.response?.data || lastError?.message;
+      if (!finalAwb) {
         return {
           success: false,
-          message: `${SHIPROCKET_CONSTANTS.ERRORS.AWB_GENERATION_FAILED} (${attempt} attempts made).`,
-          statusCode: lastError?.response?.status || 500,
-          error: {
-            code: 'AWB_GENERATION_EXHAUSTED',
-            details: errorDetails,
-          },
+          message: 'Failed to generate AWB code from Shiprocket.',
+          statusCode: 502,
         };
       }
 
-      // Extract AWB details from Shiprocket response
-      const resData = awbResponse.response?.data;
-      const awbCode =
-        resData?.awb_code || awbResponse.awb_code || `AWB-${Date.now().toString().slice(-8)}`;
-      const courierName = resData?.courier_name || awbResponse.courier_name || 'Standard Courier';
-      const trackingUrl =
-        resData?.tracking_url || `${SHIPROCKET_CONSTANTS.DEFAULTS.TRACKING_BASE_URL}${awbCode}`;
-
-      // 3. Update Database Order Record
-      const updatedOrder = await prisma.order.update({
-        where: { id: order.id },
+      // 3. Update Shipment Record
+      const updatedShipment = await prisma.shipment.update({
+        where: { id: shipment.id },
         data: {
-          awbCode,
-          courierName,
-          trackingNumber: awbCode,
-          trackingUrl,
-          shippingStatus: 'PICKUP_SCHEDULED',
-          orderStatus: order.orderStatus === 'PENDING' ? 'CONFIRMED' : order.orderStatus,
+          awbCode: finalAwb,
+          courierName: finalCourier,
+          courierCompanyId: courierCompanyId ? Number(courierCompanyId) : undefined,
+          status: 'READY_TO_SHIP',
+          trackingStatus: 'AWB_ASSIGNED',
         },
       });
 
-      // 4. Trigger Pickup Request asynchronously after AWB generation
-      PickupService.schedulePickupForOrder(updatedOrder.id).catch((pickErr) => {
-        console.error('[AUTO_PICKUP_TRIGGER_ERROR]', pickErr);
-      });
+      // Also update child vendor order
+      if (shipment.vendorOrderId) {
+        await prisma.vendorOrder
+          .update({
+            where: { id: shipment.vendorOrderId },
+            data: {
+              awbCode: finalAwb,
+              courierName: finalCourier,
+              shippingStatus: 'IN_TRANSIT',
+            },
+          })
+          .catch(() => {});
+      }
 
-      console.log(
-        `[AWB_SUCCESS] Order ${order.orderNumber}: AWB Assigned: ${awbCode}, Courier: ${courierName}, Tracking: ${trackingUrl}`,
-      );
+      const trackingUrl = `${SHIPROCKET_CONSTANTS.DEFAULTS.TRACKING_BASE_URL}${finalAwb}`;
 
       return {
         success: true,
-        message: 'AWB generated and assigned successfully via Shiprocket.',
+        message: 'AWB code generated successfully.',
         statusCode: 200,
         data: {
-          orderId: updatedOrder.id,
-          orderNumber: updatedOrder.orderNumber,
-          shiprocketShipmentId: updatedOrder.shiprocketShipmentId!,
-          awbCode,
-          courierName,
+          orderId: shipment.masterOrderId,
+          orderNumber: shipment.shipmentNumber,
+          shiprocketShipmentId: shipment.shiprocketShipmentId,
+          awbCode: finalAwb,
+          courierName: finalCourier,
           trackingUrl,
-          shippingStatus: updatedOrder.shippingStatus,
-          orderStatus: updatedOrder.orderStatus,
-          assignedAt: updatedOrder.updatedAt.toISOString(),
+          shippingStatus: updatedShipment.status as any,
+          orderStatus: shipment.masterOrder.orderStatus,
+          assignedAt: new Date().toISOString(),
           retriesAttempted: attempt - 1,
         },
       };
     } catch (error: any) {
-      console.error(`[AWB_SERVICE_ERROR] Order ${orderIdOrNumber}:`, error);
+      ShiprocketLogger.error('[AWB_GENERATE_ERROR]', undefined, { error: error.message });
       return {
         success: false,
-        message: error.message || 'Internal server error during AWB generation.',
+        message: error.message || 'Failed to generate AWB.',
         statusCode: 500,
-        error: {
-          code: 'AWB_SERVICE_CRASH',
-          details: error.message,
-        },
       };
     }
+  }
+
+  /**
+   * Backward-compatible helper for legacy calls by Order ID
+   */
+  static async generateAwbForOrder(
+    orderIdOrNumber: string,
+    options?: GenerateAwbOptions,
+  ): Promise<StandardShippingResponse<AwbGenerationResult>> {
+    const order = await prisma.order.findFirst({
+      where: { OR: [{ id: orderIdOrNumber }, { orderNumber: orderIdOrNumber }] },
+      include: { shipments: true },
+    });
+
+    if (!order) {
+      return { success: false, message: 'Order not found.', statusCode: 404 };
+    }
+
+    if (order.shipments && order.shipments.length > 0) {
+      return this.generateAwbForShipment(order.shipments[0].id, options);
+    }
+
+    return {
+      success: false,
+      message: 'No shipments associated with this order.',
+      statusCode: 400,
+    };
   }
 }

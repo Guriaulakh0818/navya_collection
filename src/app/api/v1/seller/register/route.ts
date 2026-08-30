@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
 
 import { createUserSession } from '@/backend/lib/session';
+import { generateShopCode } from '@/backend/lib/sku-generator';
 import { NotificationService } from '@/backend/services/notification.service';
 import { prisma } from '@/lib/prisma';
 import { sellerRegistrationSchema } from '@/shared/validations/seller-registration.schema';
@@ -142,9 +143,14 @@ export async function POST(req: Request) {
 
       let shop;
       if (existingShop) {
+        let shopCode = existingShop.shopCode;
+        if (!shopCode) {
+          shopCode = await generateShopCode(tx);
+        }
         shop = await tx.shop.update({
           where: { id: existingShop.id },
           data: {
+            shopCode,
             sellerProfileId: sellerProfile.id,
             name: shopDetails.shopName,
             description: shopDetails.description,
@@ -166,8 +172,10 @@ export async function POST(req: Request) {
           },
         });
       } else {
+        const shopCode = await generateShopCode(tx);
         shop = await tx.shop.create({
           data: {
+            shopCode,
             ownerId: user.id,
             sellerProfileId: sellerProfile.id,
             name: shopDetails.shopName,
@@ -197,7 +205,7 @@ export async function POST(req: Request) {
         });
       }
 
-      // 4. Upsert ShopAddress
+      // 4. Upsert ShopAddress & Primary PickupLocation
       const existingShopAddress = await tx.shopAddress.findFirst({
         where: { shopId: shop.id },
       });
@@ -221,6 +229,47 @@ export async function POST(req: Request) {
             city: address.city,
             state: address.state,
             pincode: address.pincode,
+            isPrimary: true,
+          },
+        });
+      }
+
+      // 4b. Upsert Primary PickupLocation for Shiprocket
+      const existingPickup = await tx.pickupLocation.findFirst({
+        where: { shopId: shop.id },
+      });
+
+      if (existingPickup) {
+        await tx.pickupLocation.update({
+          where: { id: existingPickup.id },
+          data: {
+            name: `${shop.name} - Primary Hub`,
+            addressLine1: address.fullAddress,
+            city: address.city,
+            state: address.state,
+            pincode: address.pincode,
+            contactName: bankDetails.accountHolderName || shop.name,
+            contactPhone: shopDetails.phone,
+            contactEmail: shopDetails.email,
+          },
+        });
+      } else {
+        await tx.pickupLocation.create({
+          data: {
+            shopId: shop.id,
+            locationCode: `${shop.shopCode || shop.id}-PKP1`,
+            name: `${shop.name} - Primary Hub`,
+            addressLine1: address.fullAddress,
+            city: address.city,
+            state: address.state,
+            pincode: address.pincode,
+            country: 'India',
+            contactName: bankDetails.accountHolderName || shop.name,
+            contactPhone: shopDetails.phone,
+            contactEmail: shopDetails.email,
+            status: 'ACTIVE',
+            shiprocketPickupName: `${shop.shopCode || 'SHOP'}-PKP1`,
+            shiprocketStatus: 'PENDING',
             isPrimary: true,
           },
         });

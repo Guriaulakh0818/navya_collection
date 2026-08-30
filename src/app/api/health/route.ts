@@ -19,8 +19,10 @@ export async function GET() {
         status: 'UP',
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'production',
+        databaseEnv: process.env.DATABASE_ENV || 'local',
         database: {
           status: 'CONNECTED',
+          environment: (process.env.DATABASE_ENV || 'local').toUpperCase(),
           latencyMs: latency,
         },
         version: '1.0.0',
