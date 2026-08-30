@@ -28,7 +28,7 @@ export function ShopManagementForm() {
   const tabParam = searchParams ? searchParams.get('tab') : null;
 
   const [activeTab, setActiveTab] = useState<
-    'branding' | 'identity' | 'address' | 'policies' | 'seo' | 'vacation'
+    'branding' | 'identity' | 'address' | 'kyc' | 'policies' | 'seo' | 'vacation'
   >('branding');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -52,6 +52,12 @@ export function ShopManagementForm() {
     city: '',
     state: '',
     pincode: '',
+    gstin: '',
+    panNumber: '',
+    bankAccountHolder: '',
+    bankAccountNumber: '',
+    bankIfscCode: '',
+    bankName: '',
     shippingPolicy: '',
     returnPolicy: '',
     metaTitle: '',
@@ -84,6 +90,12 @@ export function ShopManagementForm() {
           city: s.city || p.city || 'Hisar',
           state: s.state || p.state || 'Haryana',
           pincode: s.pincode || p.pincode || '125001',
+          gstin: s.gstin || p.gstin || '',
+          panNumber: s.panNumber || p.panNumber || '',
+          bankAccountHolder: s.bankAccountHolder || p.bankAccountHolder || '',
+          bankAccountNumber: s.bankAccountNumber || p.bankAccountNumber || '',
+          bankIfscCode: s.bankIfscCode || p.bankIfscCode || '',
+          bankName: s.bankName || p.bankName || '',
           shippingPolicy:
             s.shippingPolicy ||
             'Standard Pan-India delivery within 3-5 business days via Shiprocket Express.',
@@ -112,18 +124,23 @@ export function ShopManagementForm() {
   }, []);
 
   useEffect(() => {
-    if (tabParam === 'vacation') {
-      setActiveTab('vacation');
+    if (tabParam) {
+      const validTabs = ['branding', 'identity', 'address', 'kyc', 'policies', 'seo', 'vacation'];
+      if (validTabs.includes(tabParam)) {
+        setActiveTab(tabParam as any);
+      }
     }
   }, [tabParam]);
 
-  const showToast = (text: string, type: 'success' | 'error' = 'success') => {
-    setToastMessage({ type, text });
-    setTimeout(() => setToastMessage(null), 5000);
+  const showToast = (text: string, type: 'success' | 'error') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
-  // Cloudinary Image Upload Handler
+  // Image Upload Handler
   const handleImageUpload = async (file: File, type: 'logo' | 'banner') => {
+    if (!file) return;
+
     if (type === 'logo') setIsUploadingLogo(true);
     else setIsUploadingBanner(true);
 
@@ -218,42 +235,35 @@ export function ShopManagementForm() {
   if (isLoading) {
     return (
       <div className="p-12 text-center text-slate-400 flex items-center justify-center gap-2">
-        <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-        <span>Loading Boutique Customization Studio...</span>
+        <div className="w-5 h-5 border-2 border-navy border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm font-semibold">Loading Boutique Settings...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Toast Alert */}
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Toast Notification */}
       {toastMessage && (
         <div
-          className={`p-4 rounded-xl text-sm font-medium border flex items-center justify-between transition-all ${
-            toastMessage.type === 'error'
-              ? 'bg-rose-950/80 border-rose-500/30 text-rose-200'
-              : 'bg-emerald-950/80 border-emerald-500/30 text-emerald-200'
+          className={`p-4 rounded-xl text-xs font-bold flex items-center gap-2.5 shadow-md animate-in fade-in slide-in-from-top-2 ${
+            toastMessage.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
           }`}
         >
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{toastMessage.text}</span>
-          <button
-            onClick={() => setToastMessage(null)}
-            className="text-xs opacity-70 hover:opacity-100"
-          >
-            ✕
-          </button>
         </div>
       )}
 
-      {/* Top Banner */}
-      <div className="pb-5 sm:pb-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5 sm:gap-3">
             <Store className="w-5 h-5 sm:w-6 sm:h-6 text-navy shrink-0" />
             Shop Customization & Settings
           </h1>
           <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-            Manage your boutique profile, shop URL, policies, and SEO settings.
+            Manage your boutique profile, shop URL, policies, KYC, and SEO settings.
           </p>
         </div>
 
@@ -284,6 +294,12 @@ export function ShopManagementForm() {
             icon: LinkIcon,
           },
           { id: 'address', shortLabel: 'Address', fullLabel: 'Address & Contact', icon: MapPin },
+          {
+            id: 'kyc',
+            shortLabel: 'KYC & Bank',
+            fullLabel: 'KYC & Bank Payouts',
+            icon: ShieldCheck,
+          },
           { id: 'policies', shortLabel: 'Policies', fullLabel: 'Shop Policies', icon: Truck },
           { id: 'seo', shortLabel: 'SEO', fullLabel: 'SEO Metadata', icon: Globe },
           { id: 'vacation', shortLabel: 'Vacation', fullLabel: 'Vacation Mode 🌴', icon: Palmtree },
@@ -517,7 +533,133 @@ export function ShopManagementForm() {
           </div>
         )}
 
-        {/* TAB 4: BOUTIQUE POLICIES */}
+        {/* TAB 4: KYC & BANK PAYOUTS */}
+        {activeTab === 'kyc' && (
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-amber-600" /> Seller Tax & Bank Payout Details
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Required for statutory compliance, GST/TCS documentation, and direct bank settlement
+                payouts.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+              {/* GSTIN */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  GSTIN Number (Optional / If Registered)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 06AAAAA0000A1Z5"
+                  maxLength={15}
+                  value={formData.gstin}
+                  onChange={(e) =>
+                    setFormData({ ...formData, gstin: e.target.value.toUpperCase() })
+                  }
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono focus:border-amber-500 focus:outline-none uppercase shadow-xs"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  Exempted if turnover &lt; ₹40L and only selling within your state.
+                </span>
+              </div>
+
+              {/* PAN Number */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Business / Proprietor PAN *
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. ABCDE1234F"
+                  maxLength={10}
+                  value={formData.panNumber}
+                  onChange={(e) =>
+                    setFormData({ ...formData, panNumber: e.target.value.toUpperCase() })
+                  }
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono focus:border-amber-500 focus:outline-none uppercase shadow-xs"
+                />
+              </div>
+
+              {/* Beneficiary Name */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Bank Account Beneficiary Name *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Name as registered with Bank"
+                  value={formData.bankAccountHolder}
+                  onChange={(e) => setFormData({ ...formData, bankAccountHolder: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-amber-500 focus:outline-none shadow-xs"
+                />
+              </div>
+
+              {/* Bank Name */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Bank Name &amp; Branch *
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. HDFC Bank / SBI"
+                  value={formData.bankName}
+                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-amber-500 focus:outline-none shadow-xs"
+                />
+              </div>
+
+              {/* Bank Account Number */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Account Number *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Bank Account Number"
+                  value={formData.bankAccountNumber}
+                  onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono font-semibold focus:border-amber-500 focus:outline-none shadow-xs"
+                />
+              </div>
+
+              {/* IFSC Code */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Bank IFSC Code *
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. HDFC0001234"
+                  maxLength={11}
+                  value={formData.bankIfscCode}
+                  onChange={(e) =>
+                    setFormData({ ...formData, bankIfscCode: e.target.value.toUpperCase() })
+                  }
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono focus:border-amber-500 focus:outline-none uppercase shadow-xs"
+                />
+              </div>
+            </div>
+
+            {/* Payout Information Note */}
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1">
+              <div className="flex items-center gap-2 font-bold text-navy">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                Automated Settlement Schedule: Weekly (T+7 Days)
+              </div>
+              <p className="text-[11px] text-slate-600">
+                Net proceeds from completed and delivered orders (deducting the standard marketplace
+                commission &amp; statutory 1% TCS) are credited directly to this bank account every
+                week.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: BOUTIQUE POLICIES */}
         {activeTab === 'policies' && (
           <div className="space-y-6">
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-amber-600 flex items-center gap-2">

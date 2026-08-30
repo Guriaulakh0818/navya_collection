@@ -34,8 +34,14 @@ export function CategoryCard({ category }: CategoryCardProps) {
             )}
           </div>
           {category.productCount !== undefined && (
-            <Badge className="absolute top-3 right-3 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm">
-              {category.productCount}
+            <Badge
+              className={`absolute top-3 right-3 backdrop-blur-md font-bold text-xs shadow-xs ${
+                category.productCount === 0
+                  ? 'bg-amber-500 text-slate-950 hover:bg-amber-400'
+                  : 'bg-white/20 text-white hover:bg-white/30'
+              }`}
+            >
+              {category.productCount === 0 ? 'Coming Soon ✨' : `${category.productCount} items`}
             </Badge>
           )}
         </div>

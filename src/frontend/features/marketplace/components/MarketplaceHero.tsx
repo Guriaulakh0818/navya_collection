@@ -61,19 +61,19 @@ export function MarketplaceHero() {
         <div className="pt-8 border-t border-slate-200 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold text-slate-700">
           <div className="flex items-center justify-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-xs">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>100% Verified Stores</span>
+            <span>100% Authentic Quality</span>
           </div>
           <div className="flex items-center justify-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-xs">
             <Truck className="w-4 h-4 text-amber-600 shrink-0" />
             <span>Pan-India Express Shipping</span>
           </div>
           <div className="flex items-center justify-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-xs">
-            <Star className="w-4 h-4 text-amber-500 shrink-0 fill-amber-500" />
-            <span>4.9★ Average Rating</span>
+            <Store className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>Direct From Local Boutiques</span>
           </div>
           <div className="flex items-center justify-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-xs">
             <Building2 className="w-4 h-4 text-indigo-600 shrink-0" />
-            <span>Direct Vendor Payouts</span>
+            <span>Secure COD & Online Pay</span>
           </div>
         </div>
       </div>

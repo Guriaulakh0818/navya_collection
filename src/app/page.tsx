@@ -64,20 +64,19 @@ export default async function MultiVendorMarketplaceHomePage() {
               </div>
               <div>
                 <h3 className="font-extrabold text-navy text-sm sm:text-base">
-                  Marketplace Festive Deal
+                  Welcome Launch Offer
                 </h3>
                 <p className="text-xs text-slate-600 font-medium">
-                  Save up to ₹{Number(coupons[0]?.discountValue || 500)} OFF on your first couture
-                  purchase!
+                  Flat 10% OFF (max ₹500) on your first purchase! Use coupon at checkout.
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="px-3 py-1.5 bg-white border border-amber-300 text-amber-800 font-mono font-extrabold text-xs rounded-xl shadow-xs">
-                CODE: {coupons[0]?.code || 'NAVYA15'}
+                CODE: {coupons[0]?.code || 'WELCOME10'}
               </span>
-              <CopyCouponButton code={coupons[0]?.code || 'NAVYA15'} />
+              <CopyCouponButton code={coupons[0]?.code || 'WELCOME10'} />
             </div>
           </div>
         )}
@@ -91,25 +90,35 @@ export default async function MultiVendorMarketplaceHomePage() {
             actionLink="/category"
             actionText="View All"
           >
-            {categories.map((cat: any) => (
-              <Link
-                key={cat.id}
-                href={`/category/${cat.slug}`}
-                className="group bg-white border border-slate-200 rounded-2xl p-4 hover:border-amber-500/50 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 w-[150px] xs:w-[170px] sm:w-[200px] shrink-0 snap-start"
-              >
-                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 font-bold group-hover:scale-110 transition-transform shadow-xs">
-                  <Tag className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-navy text-xs sm:text-sm group-hover:text-amber-600 transition-colors line-clamp-1">
-                    {cat.name}
-                  </h3>
-                  <span className="text-[11px] text-slate-500 font-semibold">
-                    {cat._count?.products ?? 0} Items
-                  </span>
-                </div>
-              </Link>
-            ))}
+            {categories.map((cat: any) => {
+              const productCount = cat._count?.products ?? 0;
+              return (
+                <Link
+                  key={cat.id}
+                  href={`/category/${cat.slug}`}
+                  className="group bg-white border border-slate-200 rounded-2xl p-4 hover:border-amber-500/50 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 w-[150px] xs:w-[170px] sm:w-[200px] shrink-0 snap-start"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 font-bold group-hover:scale-110 transition-transform shadow-xs">
+                      <Tag className="w-5 h-5" />
+                    </div>
+                    {productCount === 0 && (
+                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
+                        Coming Soon ✨
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-navy text-xs sm:text-sm group-hover:text-amber-600 transition-colors line-clamp-1">
+                      {cat.name}
+                    </h3>
+                    <span className="text-[11px] text-slate-500 font-semibold">
+                      {productCount > 0 ? `${productCount} Items` : 'Catalog updating'}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
           </HorizontalCarousel>
         )}
 
