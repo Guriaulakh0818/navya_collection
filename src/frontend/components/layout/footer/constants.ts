@@ -4,8 +4,8 @@ export const footerLinks = {
   company: [
     { href: '/about', label: 'About Us' },
     { href: '/contact', label: 'Contact' },
-    { href: '/shipping-policy', label: 'Shipping Policy' },
-    { href: '/return-policy', label: 'Return Policy' },
+    { href: '/become-seller', label: 'Sell on Navya' },
+    { href: '/seller-agreement', label: 'Seller Agreement' },
   ],
   quickLinks: [
     { href: '/shop', label: 'Shop' },
@@ -25,5 +25,6 @@ export const footerLinks = {
     { href: '/terms-and-conditions', label: 'Terms & Conditions' },
     { href: '/shipping-policy', label: 'Shipping Policy' },
     { href: '/return-policy', label: 'Return Policy' },
+    { href: '/cancellation-policy', label: 'Cancellation Policy' },
   ],
 };
