@@ -77,11 +77,18 @@ export async function clearAuthCookie(): Promise<void> {
  * and sets a secure HTTP-Only cookie.
  */
 export async function createUserSession(
-  user: { id: string; phone?: string | null; role?: string },
+  user: {
+    id: string;
+    phone?: string | null;
+    email?: string | null;
+    name?: string | null;
+    role?: string;
+  },
   metadata?: SessionMetadata,
 ) {
   const secret = getJwtSecret();
   const phone = user.phone || '';
+  const email = user.email || '';
   const role = user.role || 'USER';
 
   // 1. Generate signed JWT
@@ -89,6 +96,7 @@ export async function createUserSession(
     {
       userId: user.id,
       phone,
+      email,
       role,
     },
     secret,
@@ -157,7 +165,8 @@ export async function getCurrentUser(targetCookieName?: string): Promise<Session
     const secret = getJwtSecret();
     const decoded = jwt.verify(token, secret) as {
       userId: string;
-      phone: string;
+      phone?: string;
+      email?: string;
       role: string;
     };
 
@@ -237,12 +246,14 @@ export async function getCurrentUser(targetCookieName?: string): Promise<Session
       return {
         id: decoded.userId,
         phone: decoded.phone || '',
+        email: decoded.email || null,
         role: decoded.role || 'USER',
       };
     } catch {
       return {
         id: decoded.userId,
         phone: decoded.phone || '',
+        email: decoded.email || null,
         role: decoded.role || 'USER',
       };
     }

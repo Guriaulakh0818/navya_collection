@@ -21,13 +21,40 @@ export default function AccountPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean>(true);
 
+  // Sync when store user updates
   useEffect(() => {
     if (user) {
-      setName(user.name || '');
-      setMobile(user.mobile || '');
-      setEmail(user.email || '');
+      if (user.name) setName(user.name);
+      if (user.mobile) setMobile(user.mobile);
+      if (user.email) setEmail(user.email);
     }
   }, [user]);
+
+  // Fetch fresh database profile on page mount
+  useEffect(() => {
+    let isMounted = true;
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/v1/auth/profile');
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.success && json?.user && isMounted) {
+            if (json.user.name) setName(json.user.name);
+            if (json.user.mobile) setMobile(json.user.mobile);
+            if (json.user.email) setEmail(json.user.email);
+            const baseUser = (user || {}) as any;
+            setUser({ ...baseUser, ...json.user });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      }
+    }
+    loadProfile();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

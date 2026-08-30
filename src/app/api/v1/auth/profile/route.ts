@@ -4,6 +4,52 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/session';
 
 /**
+ * GET /api/v1/auth/profile
+ *
+ * Retrieves the authenticated customer's Full Name, Mobile, and verified Email from database.
+ */
+export async function GET(request: Request) {
+  try {
+    const user = await getCurrentUser();
+    const userIdHeader = request.headers.get('x-user-id');
+    const userId = user?.id || userIdHeader;
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required.' },
+        { status: 401 },
+      );
+    }
+
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true },
+    });
+
+    if (!dbUser) {
+      return NextResponse.json({ success: false, message: 'User not found.' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: dbUser.id,
+        name: dbUser.name || dbUser.profile?.name || user?.name || '',
+        email: dbUser.email || user?.email || '',
+        mobile: dbUser.mobile || user?.phone || '',
+        role: dbUser.role,
+      },
+    });
+  } catch (error: any) {
+    console.error('[API_GET_PROFILE_ERROR]', error);
+    return NextResponse.json(
+      { success: false, message: error?.message || 'Failed to fetch profile.' },
+      { status: 500 },
+    );
+  }
+}
+
+/**
  * PUT /api/v1/auth/profile
  *
  * Permanently updates the customer's Full Name, Mobile, and Email in PostgreSQL database.
