@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { generateParentSku, generateVariantSku } from '@/backend/lib/sku-generator';
+import { NotificationService } from '@/backend/services/notification.service';
 import { prisma } from '@/lib/prisma';
 import { sellerProductSchema } from '@/shared/validations/seller-product.schema';
 
@@ -134,6 +135,9 @@ export async function POST(request: NextRequest) {
 
     const shop = await prisma.shop.findFirst({
       where: { ownerId: userId, deletedAt: null },
+      include: {
+        owner: { select: { name: true, email: true, mobile: true } },
+      },
     });
 
     if (!shop) {
@@ -272,6 +276,32 @@ export async function POST(request: NextRequest) {
 
       return product;
     });
+
+    // Dispatch Admin Notification & Email if product is pending approval
+    if (result.status === 'pending_approval') {
+      try {
+        const category = await prisma.category.findUnique({
+          where: { id: validCategoryId },
+          select: { name: true },
+        });
+
+        await NotificationService.notifyAdminNewProductSubmission({
+          productId: result.id,
+          productName: result.name,
+          sku: result.sku,
+          price: Number(result.price),
+          stock: Number(result.stock),
+          categoryName: category?.name,
+          shopName: shop.name,
+          sellerName: shop.owner?.name || shop.name,
+          sellerEmail: shop.owner?.email || shop.email || '',
+          sellerMobile: shop.owner?.mobile || shop.phone || '',
+          imageUrl: data.images?.[0]?.imageUrl,
+        });
+      } catch (notifErr) {
+        console.warn('⚠️ Non-critical Admin Product Submission Email Alert Error:', notifErr);
+      }
+    }
 
     return NextResponse.json(
       {

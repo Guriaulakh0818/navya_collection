@@ -26,6 +26,20 @@ export interface AdminSellerRegistrationEmailOptions {
   shopId: string;
 }
 
+export interface AdminProductSubmissionEmailOptions {
+  productId: string;
+  productName: string;
+  sku: string;
+  price: number;
+  stock: number;
+  categoryName?: string;
+  shopName: string;
+  sellerName: string;
+  sellerEmail: string;
+  sellerMobile?: string;
+  imageUrl?: string;
+}
+
 export class NotificationService {
   /**
    * Core notification dispatcher storing in Prisma database table.
@@ -169,6 +183,145 @@ export class NotificationService {
     } else {
       console.log(
         `📧 [DEV_ADMIN_EMAIL_LOG] Admin submission alert for ${options.shopName} to ${adminEmail}. Review Link: ${reviewLink}`,
+      );
+    }
+  }
+
+  /**
+   * Sends admin email alert & in-app notifications immediately when a seller creates or submits a product for approval.
+   */
+  static async notifyAdminNewProductSubmission(options: AdminProductSubmissionEmailOptions) {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || 'https://navyacollection.store';
+    const reviewLink = `${baseUrl.replace(/\/$/, '')}/admin/products`;
+
+    // 1. Create in-app notifications for Admin & Owner users
+    try {
+      const adminUsers = await prisma.user.findMany({
+        where: { role: { in: [Role.OWNER, Role.ADMIN, Role.SUPER_ADMIN] } },
+        select: { id: true },
+      });
+
+      if (adminUsers.length > 0) {
+        await prisma.notification.createMany({
+          data: adminUsers.map((admin) => ({
+            userId: admin.id,
+            type: 'SYSTEM',
+            title: `New Product Pending Approval: "${options.productName}"`,
+            message: `Seller "${options.shopName}" (${options.sellerName}) submitted product "${options.productName}" (₹${options.price.toLocaleString('en-IN')}) for approval.`,
+            link: `/admin/products`,
+          })),
+        });
+      }
+    } catch (err) {
+      console.warn('⚠️ Non-critical Admin In-App Notification Error for Product:', err);
+    }
+
+    // 2. Dispatch Email Notification to Platform Owner / Admin (gurvindersingh0218@gmail.com)
+    const adminEmail =
+      process.env.ADMIN_ALERT_EMAIL ||
+      process.env.BREVO_SENDER_EMAIL ||
+      NOTIFICATION_CONSTANTS.ADMIN.EMAIL ||
+      'gurvindersingh0218@gmail.com';
+    const apiKey = process.env.BREVO_API_KEY || process.env.EMAIL_API_KEY || '';
+
+    const htmlContent = `
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+        <div style="text-align: center; margin-bottom: 24px; background-color: #0f172a; padding: 20px; border-radius: 12px;">
+          <h2 style="color: #f59e0b; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px;">NAVYA COLLECTION ADMIN GOVERNANCE</h2>
+          <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">New Product Approval Required</p>
+        </div>
+        
+        <p style="font-size: 15px; color: #1e293b; font-weight: 600;">Hello Administrator,</p>
+        <p style="font-size: 14px; color: #475569; line-height: 1.5;">A boutique merchant partner has submitted a new product listing for your review and approval before going live on the marketplace:</p>
+        
+        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px; margin: 20px 0;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;">
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold; width: 140px;">Product Name:</td>
+              <td style="padding: 6px 0; font-weight: 700; color: #0f172a;">${options.productName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold;">Shop / Seller:</td>
+              <td style="padding: 6px 0; font-weight: 700; color: #b45309;">${options.shopName} (${options.sellerName})</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold;">Price:</td>
+              <td style="padding: 6px 0; font-weight: 800; color: #059669;">₹${options.price.toLocaleString('en-IN')}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold;">Stock Units:</td>
+              <td style="padding: 6px 0; font-weight: 600;">${options.stock} units</td>
+            </tr>
+            ${
+              options.categoryName
+                ? `<tr>
+              <td style="padding: 6px 0; font-weight: bold;">Category:</td>
+              <td style="padding: 6px 0;">${options.categoryName}</td>
+            </tr>`
+                : ''
+            }
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold;">SKU:</td>
+              <td style="padding: 6px 0; font-family: monospace;">${options.sku}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold;">Seller Contact:</td>
+              <td style="padding: 6px 0;">${options.sellerEmail} ${options.sellerMobile ? `| ${options.sellerMobile}` : ''}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="${reviewLink}" style="background-color: #b45309; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 14px; font-weight: 800; border-radius: 10px; display: inline-block; box-shadow: 0 4px 12px rgba(180, 83, 9, 0.3);">
+            Inspect &amp; Approve Product in Admin Panel →
+          </a>
+        </div>
+
+        <p style="font-size: 12px; color: #64748b; line-height: 1.4;">
+          Direct Link: <a href="${reviewLink}" style="color: #2563eb;">${reviewLink}</a>
+        </p>
+
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">© ${new Date().getFullYear()} Navya Collection Marketplace Governance Engine</p>
+      </div>
+    `;
+
+    if (apiKey) {
+      try {
+        const emailConfig = NOTIFICATION_CONSTANTS.EMAIL_PROVIDER || NOTIFICATION_CONSTANTS.BREVO;
+        await axios.post(
+          `${emailConfig.API_URL}${emailConfig.EMAIL_ENDPOINT}`,
+          {
+            sender: {
+              name: 'Navya Product Governance',
+              email:
+                process.env.BREVO_SENDER_EMAIL ||
+                emailConfig.SENDER_EMAIL ||
+                'gurvindersingh0218@gmail.com',
+            },
+            to: [{ email: adminEmail, name: 'Marketplace Admin' }],
+            subject: `🚨 [Product Approval Required] ${options.productName} by ${options.shopName}`,
+            htmlContent,
+          },
+          {
+            timeout: 10000,
+            headers: {
+              'Content-Type': 'application/json',
+              'api-key': apiKey,
+            },
+          },
+        );
+        console.log(`✅ [ADMIN_PRODUCT_EMAIL_SENT] Product approval alert sent to ${adminEmail}`);
+      } catch (emailErr: any) {
+        console.warn(
+          '⚠️ Failed to dispatch Admin Product Approval Email:',
+          emailErr?.response?.data || emailErr?.message || emailErr,
+        );
+      }
+    } else {
+      console.log(
+        `📧 [DEV_ADMIN_PRODUCT_EMAIL_LOG] Product approval alert for "${options.productName}" to ${adminEmail}.`,
       );
     }
   }

@@ -273,12 +273,22 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           image: '/logo.png',
           order_id: razorpayOrderId,
           prefill: {
-            name: customer.name || 'Customer',
-            email: customer.email || 'customer@navyacollection.com',
-            contact: customer.mobile || '9876543210',
+            name: (address as any)?.fullName || address?.name || customer?.name || 'Customer',
+            email: customer?.email || 'customer@navyacollection.store',
+            contact: address?.mobile || customer?.mobile || '',
           },
           theme: {
             color: '#1B2A4A',
+          },
+          retry: {
+            enabled: true,
+            max_count: 3,
+          },
+          modal: {
+            confirm_close: true,
+            ondismiss: function () {
+              handlePaymentFailure('Payment cancelled or popup closed.');
+            },
           },
           handler: async function (response: any) {
             setIsPlacing(true);
@@ -313,11 +323,6 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
             } catch (err: any) {
               handlePaymentFailure(err.message || 'Verification error occurred.');
             }
-          },
-          modal: {
-            ondismiss: function () {
-              handlePaymentFailure('Payment popup closed by user.');
-            },
           },
         };
 
