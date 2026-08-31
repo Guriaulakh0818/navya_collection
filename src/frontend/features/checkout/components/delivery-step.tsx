@@ -18,20 +18,20 @@ export function DeliveryStep() {
 
   const methodsToRender: (DeliveryMethod & { originalPrice: number })[] = [
     {
-      id: 'express',
-      name: 'Express Delivery',
-      description: 'Delivered within 2-3 business days',
-      originalPrice: 99,
-      price: isBaseFree ? 0 : 99,
-      estimatedDays: '2-3 business days',
-    },
-    {
       id: 'standard',
       name: 'Standard Delivery',
       description: 'Delivered within 5-7 business days',
       originalPrice: 49,
       price: isBaseFree ? 0 : 49,
       estimatedDays: '5-7 business days',
+    },
+    {
+      id: 'express',
+      name: 'Express Delivery',
+      description: 'Delivered within 2-3 business days',
+      originalPrice: 99,
+      price: isBaseFree ? 0 : 99,
+      estimatedDays: '2-3 business days',
     },
     {
       id: 'same-day',
@@ -43,23 +43,23 @@ export function DeliveryStep() {
     },
   ];
 
-  const defaultMethod = methodsToRender[0]; // Express Delivery by default
+  const defaultMethod = methodsToRender[0];
 
   const [selectedId, setSelectedId] = useState<string>(deliveryMethod?.id || defaultMethod.id);
 
-  // Auto-select Express Delivery on mount if none selected, so "Continue to Payment" is immediately active!
   useEffect(() => {
     if (!deliveryMethod) {
       setDeliveryMethod(defaultMethod);
       setSelectedId(defaultMethod.id);
     } else {
-      // Re-sync price if threshold changed
       const current = methodsToRender.find((m) => m.id === deliveryMethod.id) || defaultMethod;
-      setDeliveryMethod(current);
+      if (current.price !== deliveryMethod.price || current.name !== deliveryMethod.name) {
+        setDeliveryMethod(current);
+      }
       setSelectedId(current.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subtotal]);
+  }, [subtotal, deliveryMethod?.id]);
 
   const handleSelect = (method: DeliveryMethod) => {
     setSelectedId(method.id);

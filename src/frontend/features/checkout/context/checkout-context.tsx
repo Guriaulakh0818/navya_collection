@@ -175,6 +175,12 @@ export const CheckoutProvider: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address?.id, itemsKey, appliedCoupon?.code, deliveryMethod?.id]);
 
+  const handleSetDeliveryMethod = (newMethod: DeliveryMethod | null) => {
+    setDeliveryMethod(newMethod);
+    const cartAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    setShippingData(calculateInstantShippingData(cartAmount, address?.pincode, newMethod?.id));
+  };
+
   const handleSetAddress = (newAddress: Address | null) => {
     setAddress(newAddress);
     recalculateShipping(newAddress);
@@ -230,7 +236,7 @@ export const CheckoutProvider: React.FC<{
         updateItemQuantity,
         removeItem,
         setAddress: handleSetAddress,
-        setDeliveryMethod,
+        setDeliveryMethod: handleSetDeliveryMethod,
         setPaymentMethod,
         setAppliedCoupon: handleSetAppliedCoupon,
         recalculateShipping,

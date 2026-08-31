@@ -121,7 +121,7 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
         body: JSON.stringify({
           addressId: address?.id,
           couponCode: appliedCoupon?.code,
-          shippingMethodCode: deliveryMethod?.id ? deliveryMethod.id.toUpperCase() : 'EXPRESS',
+          shippingMethodCode: deliveryMethod?.id ? deliveryMethod.id.toUpperCase() : 'STANDARD',
           items: clientItems.map((i) => ({
             productId: i.productId,
             variantId: i.variantId || undefined,
@@ -246,6 +246,7 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           body: JSON.stringify({
             addressId: address.id,
             couponCode: appliedCoupon?.code,
+            shippingMethodCode: deliveryMethod?.id ? deliveryMethod.id.toUpperCase() : 'STANDARD',
             items: clientItemsPayload,
           }),
         });
@@ -358,6 +359,7 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
         body: JSON.stringify({
           addressId: address.id,
           couponCode: appliedCoupon?.code,
+          shippingMethodCode: deliveryMethod?.id ? deliveryMethod.id.toUpperCase() : 'STANDARD',
           items: clientItemsPayload,
         }),
       });
@@ -522,14 +524,15 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
 
           <div className="text-sm space-y-1">
             <p className="font-extrabold text-navy text-base">
-              {deliveryMethod?.name || 'Express Delivery'}
+              {deliveryMethod?.name ||
+                (previewData.shipping === 49 ? 'Standard Delivery' : 'Express Delivery')}
             </p>
             <p className="text-xs text-slate-600 font-medium">
               Estimated Arrival:{' '}
               <strong className="text-emerald-700 font-extrabold">
                 {deliveryMethod?.estimatedDays ||
                   previewData.estimatedDelivery ||
-                  '2-3 business days'}
+                  (previewData.shipping === 49 ? '5-7 business days' : '2-3 business days')}
               </strong>
             </p>
             <p className="text-xs font-medium text-slate-600">

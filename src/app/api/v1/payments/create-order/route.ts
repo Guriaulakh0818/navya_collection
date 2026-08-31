@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const validUserId = await ensureUserExists(userId);
 
     const body = await request.json().catch(() => ({}));
-    const { addressId, couponCode, items } = body;
+    const { addressId, couponCode, items, shippingMethodCode } = body;
 
     if (!addressId) {
       return NextResponse.json(
@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     const result = await PaymentService.createPaymentOrder(validUserId, {
       addressId,
       couponCode,
+      shippingMethodCode,
       items,
     });
 

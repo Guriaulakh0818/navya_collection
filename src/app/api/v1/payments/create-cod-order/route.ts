@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { addressId, couponCode, items } = body;
+    const { addressId, couponCode, items, shippingMethodCode } = body;
 
     let validAddressId = addressId;
     if (!validAddressId) {
@@ -64,6 +64,7 @@ export async function POST(request: Request) {
     const result = await PaymentService.createCodOrder(userId, {
       addressId: validAddressId,
       couponCode,
+      shippingMethodCode,
       items,
     });
 

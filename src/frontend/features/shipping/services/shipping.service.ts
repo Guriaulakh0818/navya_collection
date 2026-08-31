@@ -68,18 +68,34 @@ export class ShippingService {
       const selectedMethodCode = (input.shippingMethodCode || 'STANDARD').toUpperCase();
       const activeRule = rules.find((r: any) => r.methodCode === selectedMethodCode) ||
         rules[0] || {
-          methodName: 'Standard Delivery',
-          methodCode: 'STANDARD',
-          shippingCharge: 99,
-          freeShippingThreshold: 999,
-          estimatedDeliveryDays: '3-5 business days',
+          methodName:
+            selectedMethodCode === 'EXPRESS'
+              ? 'Express Delivery'
+              : selectedMethodCode === 'SAME-DAY'
+                ? 'Same Day Delivery'
+                : 'Standard Delivery',
+          methodCode: selectedMethodCode,
+          shippingCharge:
+            selectedMethodCode === 'EXPRESS' ? 99 : selectedMethodCode === 'SAME-DAY' ? 149 : 49,
+          freeShippingThreshold: selectedMethodCode === 'SAME-DAY' ? 1999 : 999,
+          estimatedDeliveryDays:
+            selectedMethodCode === 'EXPRESS'
+              ? '2-3 business days'
+              : selectedMethodCode === 'SAME-DAY'
+                ? 'Same day'
+                : '5-7 business days',
           isCodAvailable: true,
         };
 
       // 5. Evaluate Free Shipping Rules
-      const freeThreshold = Number(activeRule.freeShippingThreshold || 999);
+      const freeThreshold = Number(
+        activeRule.freeShippingThreshold || (selectedMethodCode === 'SAME-DAY' ? 1999 : 999),
+      );
       const isFree = cartSubtotal >= freeThreshold;
-      const baseCharge = Number(activeRule.shippingCharge || 99);
+      const baseCharge = Number(
+        activeRule.shippingCharge ??
+          (selectedMethodCode === 'EXPRESS' ? 99 : selectedMethodCode === 'SAME-DAY' ? 149 : 49),
+      );
       const finalShippingCharge = isFree ? 0 : baseCharge;
       const savedShipping = isFree ? baseCharge : 0;
       const freeRemaining = Math.max(0, freeThreshold - cartSubtotal);

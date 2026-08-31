@@ -16,6 +16,7 @@ export interface ServiceResponse<T = any> {
 export interface CreatePaymentOrderInput {
   addressId: string;
   couponCode?: string;
+  shippingMethodCode?: string;
   items?: any[];
 }
 
@@ -25,6 +26,7 @@ export interface VerifyPaymentInput {
   razorpaySignature: string;
   addressId: string;
   couponCode?: string;
+  shippingMethodCode?: string;
   items?: any[];
 }
 
@@ -49,7 +51,7 @@ export class PaymentService {
       const previewRes = await OrderPreviewService.generatePreview(userId, {
         addressId: input.addressId,
         couponCode: input.couponCode,
-        shippingMethodCode: 'STANDARD',
+        shippingMethodCode: input.shippingMethodCode || 'STANDARD',
         items: input.items,
       });
 
@@ -266,7 +268,7 @@ export class PaymentService {
       const previewRes = await OrderPreviewService.generatePreview(userId, {
         addressId: input.addressId,
         couponCode: input.couponCode,
-        shippingMethodCode: 'STANDARD',
+        shippingMethodCode: input.shippingMethodCode || 'STANDARD',
         items: input.items,
       });
 

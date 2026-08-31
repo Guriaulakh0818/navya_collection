@@ -150,11 +150,14 @@ function OrderSummary() {
   const netSubtotal = Math.max(0, subtotal - discountAmount);
 
   // Dynamic Shipping & Tax Calculations
-  const shippingCharge = shippingData
-    ? shippingData.shippingCharge
-    : netSubtotal >= 999 || netSubtotal === 0
-      ? 0
-      : 99;
+  const shippingCharge =
+    deliveryMethod?.price !== undefined
+      ? deliveryMethod.price
+      : shippingData
+        ? shippingData.shippingCharge
+        : netSubtotal >= 999 || netSubtotal === 0
+          ? 0
+          : 49;
 
   // Validate that server taxData matches current subtotal to prevent stale calculations
   const isTaxDataValid = taxData && taxData.subtotal === subtotal;
@@ -165,7 +168,7 @@ function OrderSummary() {
     : Math.round(((netSubtotal * taxRate) / 100) * 100) / 100;
 
   const grandTotal = isTaxDataValid
-    ? taxData.grandTotal
+    ? Math.round((netSubtotal + shippingCharge + taxData.tax) * 100) / 100
     : Math.round((netSubtotal + shippingCharge + taxAmount) * 100) / 100;
 
   return (
