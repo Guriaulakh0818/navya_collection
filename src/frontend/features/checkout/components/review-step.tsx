@@ -424,31 +424,31 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
   if (!previewData) return null;
 
   return (
-    <div className="rounded-3xl border border-slate-200/80 bg-white p-6 md:p-8 shadow-sm space-y-6">
+    <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-white p-4 sm:p-6 md:p-8 shadow-card space-y-5 sm:space-y-6 overflow-hidden">
       {/* Title */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
         <div>
-          <h2 className="font-heading text-2xl font-bold text-navy">
+          <h2 className="font-heading text-xl sm:text-2xl font-bold text-navy">
             Order Preview & Final Review
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1 leading-relaxed">
             Please verify your delivery address, order items, and payment method before completing
             your purchase.
           </p>
         </div>
-        <span className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-          <ShieldCheck className="h-4 w-4" /> Secure 256-Bit SSL Checkout
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-center shrink-0">
+          <ShieldCheck className="h-3.5 w-3.5" /> Secure 256-Bit SSL Checkout
         </span>
       </div>
 
       {/* Notifications & Error Alerts */}
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-red-50 border-2 border-red-300 text-red-800 text-xs font-semibold flex items-start justify-between gap-3 shadow-md">
-          <div className="space-y-1">
-            <span className="font-extrabold text-sm text-red-900 flex items-center gap-1.5">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-red-50 border-2 border-red-300 text-red-800 text-xs font-semibold flex items-start justify-between gap-3 shadow-md">
+          <div className="space-y-1 min-w-0">
+            <span className="font-extrabold text-xs sm:text-sm text-red-900 flex items-center gap-1.5">
               ⚠️ Payment Failed / Declined
             </span>
-            <p className="text-xs text-red-700 font-bold leading-relaxed">{errorMsg}</p>
+            <p className="text-xs text-red-700 font-bold leading-relaxed break-words">{errorMsg}</p>
           </div>
           <button
             type="button"
@@ -461,7 +461,7 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
       )}
 
       {paymentNotice && (
-        <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold flex items-center gap-2 shadow-xs">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-semibold flex items-center gap-2 shadow-xs break-words">
           <Loader size="sm" />
           <span>{paymentNotice}</span>
         </div>
@@ -473,7 +473,7 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           {previewData.warnings.map((w, idx) => (
             <div
               key={idx}
-              className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2"
+              className="p-3 sm:p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2 break-words"
             >
               <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
               <span>{w}</span>
@@ -483,11 +483,11 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
       )}
 
       {/* Section 1: Delivery Address & Estimate */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-              <MapPin className="h-4 w-4 text-navy" /> Delivery Address
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5 sm:p-4 space-y-2 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 shrink-0">
+              <MapPin className="h-4 w-4 text-navy shrink-0" /> Delivery Address
             </span>
             <button
               type="button"
@@ -499,12 +499,12 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           </div>
 
           {displayAddress ? (
-            <div className="text-sm text-slate-700 space-y-0.5">
+            <div className="text-xs sm:text-sm text-slate-700 space-y-0.5 break-words">
               <p className="font-bold text-navy">
                 {displayAddress.fullName} ({displayAddress.type || 'HOME'})
               </p>
               <p className="text-xs font-medium text-slate-600">📱 {displayAddress.mobile}</p>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed break-words">
                 {displayAddress.addressLine1}
                 {displayAddress.addressLine2 ? `, ${displayAddress.addressLine2}` : ''}
                 <br />
@@ -517,13 +517,13 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 space-y-2">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5 sm:p-4 space-y-2 min-w-0">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <Truck className="h-4 w-4 text-navy" /> Shipping & Delivery
+            <Truck className="h-4 w-4 text-navy shrink-0" /> Shipping & Delivery
           </span>
 
-          <div className="text-sm space-y-1">
-            <p className="font-extrabold text-navy text-base">
+          <div className="text-xs sm:text-sm space-y-1 break-words">
+            <p className="font-extrabold text-navy text-sm sm:text-base">
               {deliveryMethod?.name ||
                 (previewData.shipping === 49 ? 'Standard Delivery' : 'Express Delivery')}
             </p>
@@ -565,9 +565,9 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           {previewData.items.map((item) => (
             <div
               key={item.id || item.productId}
-              className="flex items-center justify-between rounded-2xl border border-slate-200 p-3.5 bg-white"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-200 p-3 sm:p-3.5 bg-white min-w-0"
             >
-              <div className="flex items-center gap-3.5">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div className="relative h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
                   <Image
                     src={
@@ -580,11 +580,11 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
                   />
                 </div>
 
-                <div>
-                  <h4 className="text-sm font-semibold text-navy">
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-xs sm:text-sm font-semibold text-navy line-clamp-1 break-words">
                     {item.productName || item.name}
                   </h4>
-                  <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <div className="flex flex-wrap items-center gap-1.5 mt-1">
                     {item.size && (
                       <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
                         Size: {item.size}
@@ -595,15 +595,15 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
                         Color: {item.color}
                       </span>
                     )}
-                    <span className="text-xs text-slate-500 font-medium">
+                    <span className="text-[11px] text-slate-500 font-medium">
                       Qty: {item.quantity} × ₹{item.price.toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="text-right">
-                <span className="font-bold text-navy text-sm block">
+              <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 shrink-0">
+                <span className="font-bold text-navy text-xs sm:text-sm block">
                   ₹{item.subtotal.toLocaleString('en-IN')}
                 </span>
                 {item.inStock ? (
@@ -620,15 +620,15 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
       {/* Section 3: Payment Method Selection */}
       <div className="space-y-3 pt-2 border-t border-slate-100">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-          <CreditCard className="h-4 w-4 text-navy" /> Choose Payment Option
+          <CreditCard className="h-4 w-4 text-navy shrink-0" /> Choose Payment Option
         </h3>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-2.5 sm:gap-3 sm:grid-cols-2">
           {previewData.paymentMethods.map((method) => (
             <label
               key={method.id}
               onClick={() => method.isAvailable && handleSelectPayment(method.id as any)}
-              className={`flex items-start gap-3 rounded-2xl border p-4 transition cursor-pointer ${
+              className={`flex items-start gap-2.5 sm:gap-3 rounded-2xl border p-3 sm:p-4 transition cursor-pointer min-w-0 ${
                 selectedPaymentMethod === method.id
                   ? 'border-navy ring-2 ring-navy/15 bg-slate-50/80'
                   : 'border-slate-200 hover:border-slate-300'
@@ -640,18 +640,20 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
                 checked={selectedPaymentMethod === method.id}
                 disabled={!method.isAvailable}
                 onChange={() => handleSelectPayment(method.id as any)}
-                className="mt-1 h-4 w-4 accent-navy cursor-pointer"
+                className="mt-0.5 h-4 w-4 accent-navy shrink-0 cursor-pointer"
               />
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-navy text-sm">{method.name}</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="font-bold text-navy text-xs sm:text-sm">{method.name}</span>
                   {method.badge && (
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
                       {method.badge}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 mt-1 font-medium">{method.description}</p>
+                <p className="text-xs text-slate-500 mt-1 font-medium leading-relaxed break-words">
+                  {method.description}
+                </p>
               </div>
             </label>
           ))}
@@ -660,34 +662,34 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
 
       {/* Section 4: Terms Agreement & Confirm CTA */}
       <div className="space-y-4 pt-4 border-t border-slate-100">
-        <label className="flex items-center gap-2 cursor-pointer select-none">
+        <label className="flex items-start gap-2.5 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={agreedTerms}
             onChange={(e) => setAgreedTerms(e.target.checked)}
-            className="h-4 w-4 rounded accent-navy cursor-pointer"
+            className="mt-0.5 h-4 w-4 rounded accent-navy shrink-0 cursor-pointer"
           />
-          <span className="text-xs text-slate-600 font-medium">
+          <span className="text-xs text-slate-600 font-medium leading-normal break-words">
             I agree to the <strong className="text-navy underline">Terms of Sale</strong>, Privacy
             Policy, and Return Policy.
           </span>
         </label>
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
           <Button
             variant="outline"
-            className="rounded-full text-xs font-semibold"
+            className="rounded-full text-xs font-semibold py-3 sm:py-2.5 px-5 w-full sm:w-auto"
             onClick={prevStep}
             disabled={isPlacing}
           >
-            Back
+            ← Back to Payment
           </Button>
 
           <button
             type="button"
             onClick={handleConfirmOrder}
             disabled={isPlacing || !previewData.isServiceable}
-            className="rounded-full font-extrabold text-sm px-8 py-4 bg-orange hover:bg-orange-600 text-white min-w-[240px] shadow-lg transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2"
+            className="w-full sm:w-auto flex-1 sm:flex-initial rounded-full font-extrabold text-xs sm:text-sm px-6 py-3.5 sm:py-4 bg-orange hover:bg-orange-600 text-white shadow-lg transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2 text-center break-words"
           >
             {isPlacing ? (
               <Loader light size="sm" text="Processing Order..." />
