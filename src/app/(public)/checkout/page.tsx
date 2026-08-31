@@ -188,9 +188,18 @@ function OrderSummary() {
           </div>
         )}
 
-        <div className="flex justify-between">
-          <span>Shipping</span>
-          <span>{shippingCharge === 0 ? 'FREE' : `₹${shippingCharge}`}</span>
+        <div className="flex justify-between items-center">
+          <span className="flex items-center gap-1.5">
+            Shipping
+            {shippingData?.isFirstOrderFreeDelivery && (
+              <span className="text-[10px] bg-indigo-50 text-indigo-700 font-extrabold px-2 py-0.5 rounded-full border border-indigo-200">
+                ⭐ First Order
+              </span>
+            )}
+          </span>
+          <span className={shippingCharge === 0 ? 'font-bold text-emerald-600' : ''}>
+            {shippingCharge === 0 ? 'FREE' : `₹${shippingCharge}`}
+          </span>
         </div>
 
         <div className="flex justify-between items-center text-slate-600">

@@ -11,4 +11,7 @@ export interface ShippingCalculationData {
   shippingMethod: string;
   shippingMethodCode?: string;
   isCodAvailable?: boolean;
+  isFirstOrderFreeDelivery?: boolean;
+  offerTitle?: string | null;
+  guestOfferPrompt?: string | null;
 }

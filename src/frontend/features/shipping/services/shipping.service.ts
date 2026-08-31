@@ -87,16 +87,26 @@ export class ShippingService {
           isCodAvailable: true,
         };
 
-      // 5. Evaluate Free Shipping Rules
+      // 5. Evaluate Free Shipping Rules & Dynamic Offers
       const freeThreshold = Number(
         activeRule.freeShippingThreshold || (selectedMethodCode === 'SAME-DAY' ? 1999 : 999),
       );
-      const isFree = cartSubtotal >= freeThreshold;
+      const isBaseFree = cartSubtotal >= freeThreshold;
       const baseCharge = Number(
         activeRule.shippingCharge ??
           (selectedMethodCode === 'EXPRESS' ? 99 : selectedMethodCode === 'SAME-DAY' ? 149 : 49),
       );
-      const finalShippingCharge = isFree ? 0 : baseCharge;
+
+      // Evaluate admin promotional offers (e.g. Free Delivery on First Order)
+      const { OfferService } = await import('@/backend/services/offer.service');
+      const offerEvaluation = await OfferService.evaluateShippingOffer(
+        userId,
+        cartSubtotal,
+        isBaseFree ? 0 : baseCharge,
+      );
+
+      const isFree = isBaseFree || offerEvaluation.isFreeDelivery;
+      const finalShippingCharge = offerEvaluation.finalShippingCharge;
       const savedShipping = isFree ? baseCharge : 0;
       const freeRemaining = Math.max(0, freeThreshold - cartSubtotal);
 
@@ -104,7 +114,7 @@ export class ShippingService {
       const availableMethods = rules.map((r: any) => {
         const rCharge = Number(r.shippingCharge || 99);
         const rThreshold = Number(r.freeShippingThreshold || 999);
-        const rIsFree = cartSubtotal >= rThreshold;
+        const rIsFree = cartSubtotal >= rThreshold || offerEvaluation.isFreeDelivery;
         return {
           id: r.id || r.methodCode.toLowerCase(),
           code: r.methodCode,
@@ -135,6 +145,9 @@ export class ShippingService {
           shippingMethod: activeRule.methodName || 'Standard Delivery',
           shippingMethodCode: activeRule.methodCode || 'STANDARD',
           isCodAvailable: activeRule.isCodAvailable ?? true,
+          isFirstOrderFreeDelivery: offerEvaluation.isFreeDelivery,
+          offerTitle: offerEvaluation.message || null,
+          guestOfferPrompt: offerEvaluation.guestPrompt || null,
           availableMethods,
         },
       };

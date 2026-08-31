@@ -297,6 +297,7 @@ export class OrderPreviewService {
           appliedCoupon: appliedCouponData,
           taxBreakdown,
           isServiceable,
+          shippingData: shipRes.data || null,
           paymentMethods,
           warnings,
         },

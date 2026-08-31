@@ -540,7 +540,14 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
               {(deliveryMethod?.price !== undefined
                 ? deliveryMethod.price
                 : previewData.shipping) === 0 ? (
-                <span className="font-black text-emerald-600">FREE</span>
+                <span className="inline-flex items-center gap-1.5 font-black text-emerald-600">
+                  <span>FREE</span>
+                  {(previewData as any)?.shippingData?.isFirstOrderFreeDelivery && (
+                    <span className="text-[10px] bg-indigo-50 text-indigo-700 font-extrabold px-2 py-0.5 rounded-full border border-indigo-200">
+                      🎉 First Order Free Delivery
+                    </span>
+                  )}
+                </span>
               ) : (
                 <strong className="font-extrabold text-navy">
                   ₹

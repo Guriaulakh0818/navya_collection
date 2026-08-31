@@ -9,10 +9,12 @@ import { useCheckout } from '@/features/checkout/context/checkout-context';
 import type { DeliveryMethod } from '../types';
 
 export function DeliveryStep() {
-  const { items, deliveryMethod, setDeliveryMethod, nextStep, prevStep } = useCheckout();
+  const { items, deliveryMethod, shippingData, setDeliveryMethod, nextStep, prevStep } =
+    useCheckout();
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  const isFirstOrderFree = Boolean(shippingData?.isFirstOrderFreeDelivery);
   const isBaseFree = subtotal >= 999;
   const isSameDayFree = subtotal >= 1999;
 
@@ -22,7 +24,7 @@ export function DeliveryStep() {
       name: 'Standard Delivery',
       description: 'Delivered within 5-7 business days',
       originalPrice: 49,
-      price: isBaseFree ? 0 : 49,
+      price: isFirstOrderFree || isBaseFree ? 0 : 49,
       estimatedDays: '5-7 business days',
     },
     {
@@ -30,7 +32,7 @@ export function DeliveryStep() {
       name: 'Express Delivery',
       description: 'Delivered within 2-3 business days',
       originalPrice: 99,
-      price: isBaseFree ? 0 : 99,
+      price: isFirstOrderFree || isBaseFree ? 0 : 99,
       estimatedDays: '2-3 business days',
     },
     {
@@ -38,7 +40,7 @@ export function DeliveryStep() {
       name: 'Same Day Delivery',
       description: 'Order before 2 PM for same day delivery',
       originalPrice: 149,
-      price: isSameDayFree ? 0 : 149,
+      price: isFirstOrderFree || isSameDayFree ? 0 : 149,
       estimatedDays: 'Same day',
     },
   ];
@@ -59,7 +61,7 @@ export function DeliveryStep() {
       setSelectedId(current.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subtotal, deliveryMethod?.id]);
+  }, [subtotal, deliveryMethod?.id, isFirstOrderFree]);
 
   const handleSelect = (method: DeliveryMethod) => {
     setSelectedId(method.id);
@@ -77,10 +79,38 @@ export function DeliveryStep() {
         </p>
       </div>
 
+      {/* Guest Login Prompt for First Order Free Delivery */}
+      {shippingData?.guestOfferPrompt && (
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-950 text-xs sm:text-sm font-semibold flex items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🎁</span>
+            <span>{shippingData.guestOfferPrompt}</span>
+          </div>
+          <a
+            href="/login?callbackUrl=/checkout"
+            className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-full font-bold shrink-0 transition"
+          >
+            Log In
+          </a>
+        </div>
+      )}
+
+      {/* First Order Free Delivery Active Banner */}
+      {isFirstOrderFree && (
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs sm:text-sm font-extrabold flex items-center gap-2.5 shadow-xs">
+          <span className="text-base">🎉</span>
+          <span>
+            {shippingData?.offerTitle ||
+              'First order — Free delivery applied on all delivery options!'}
+          </span>
+        </div>
+      )}
+
       <div className="space-y-3 sm:space-y-3.5">
         {methodsToRender.map((method) => {
           const isSelected = selectedId === method.id;
-          const isThisMethodFree = method.id === 'same-day' ? isSameDayFree : isBaseFree;
+          const isThisMethodFree =
+            isFirstOrderFree || (method.id === 'same-day' ? isSameDayFree : isBaseFree);
 
           return (
             <label
@@ -109,11 +139,15 @@ export function DeliveryStep() {
                       <span className="font-extrabold text-navy text-xs sm:text-base block leading-tight">
                         {method.name}
                       </span>
-                      {isThisMethodFree && (
+                      {isFirstOrderFree ? (
+                        <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200 inline-block mt-0.5">
+                          ⭐ First Order — Free Delivery
+                        </span>
+                      ) : isThisMethodFree ? (
                         <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-block mt-0.5">
                           ✓ Free Shipping Unlocked!
                         </span>
-                      )}
+                      ) : null}
                     </div>
                   </div>
 
