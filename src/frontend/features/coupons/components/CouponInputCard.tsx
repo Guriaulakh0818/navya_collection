@@ -135,21 +135,21 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
     <div className={`space-y-3 ${className}`}>
       {/* If Coupon Applied: Display Pure Light Emerald High-Contrast Active Coupon Card */}
       {appliedCoupon ? (
-        <div className="rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-4 flex items-center justify-between shadow-sm animate-fade-in">
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white font-extrabold shadow-xs">
-              <CheckCircle2 className="h-5 w-5" />
+        <div className="rounded-xl sm:rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-3 sm:p-4 flex items-center justify-between gap-2.5 shadow-sm animate-fade-in">
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-emerald-600 text-white font-extrabold shadow-xs">
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-black text-emerald-950 text-base tracking-wider">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <span className="font-black text-emerald-950 text-xs sm:text-base tracking-wider truncate">
                   {appliedCoupon.code}
                 </span>
-                <span className="text-xs font-black px-3 py-0.5 rounded-full bg-emerald-700 text-white shadow-xs">
+                <span className="text-[10px] sm:text-xs font-black px-2 sm:px-3 py-0.5 rounded-full bg-emerald-700 text-white shadow-xs shrink-0">
                   SAVED ₹{appliedCoupon.discountAmount.toLocaleString('en-IN')}
                 </span>
               </div>
-              <p className="text-xs text-emerald-800 font-extrabold mt-1">
+              <p className="text-[11px] sm:text-xs text-emerald-800 font-extrabold mt-0.5 sm:mt-1 truncate">
                 {appliedCoupon.title || `₹${appliedCoupon.discountAmount} Discount Applied`}
               </p>
             </div>
@@ -159,7 +159,7 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
             type="button"
             onClick={handleRemove}
             disabled={isLoading}
-            className="text-xs font-black text-rose-600 hover:text-rose-700 bg-rose-100 hover:bg-rose-200 border border-rose-300 px-3.5 py-1.5 rounded-full transition-all active:scale-95 shrink-0 cursor-pointer"
+            className="text-[11px] sm:text-xs font-black text-rose-600 hover:text-rose-700 bg-rose-100 hover:bg-rose-200 border border-rose-300 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full transition-all active:scale-95 shrink-0 cursor-pointer"
           >
             Remove
           </button>

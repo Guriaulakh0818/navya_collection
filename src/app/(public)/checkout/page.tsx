@@ -122,8 +122,8 @@ function CheckoutSteps() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-border bg-white p-6 shadow-premium h-fit space-y-4">
-            <h3 className="font-heading text-xl text-navy">Order Summary</h3>
+          <div className="rounded-2xl border border-border bg-white p-4 sm:p-6 shadow-premium h-fit space-y-4">
+            <h3 className="font-heading text-lg sm:text-xl font-bold text-navy">Order Summary</h3>
             <OrderSummary />
           </div>
         </div>
