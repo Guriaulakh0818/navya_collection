@@ -55,9 +55,11 @@ export async function POST(req: NextRequest) {
 
     const queryIdentifier = order_id || shipment_id || awb;
     if (!queryIdentifier) {
+      // Acknowledge test pings / verification handshakes from Shiprocket with 200 OK
+      ShiprocketLogger.info('[SHIPROCKET_WEBHOOK_TEST_HANDSHAKE_RECEIVED]', undefined, body);
       return NextResponse.json(
-        { success: false, message: 'Missing order_id, shipment_id, or awb in webhook payload.' },
-        { status: 400 },
+        { success: true, message: 'Webhook endpoint active (handshake/test ping verified).' },
+        { status: 200 },
       );
     }
 
