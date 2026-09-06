@@ -71,7 +71,7 @@
     "husky": "^9.1.7",
     "jsdom": "^25.0.1",
     "lint-staged": "^17.2.0",
-    "postcss": "8.4.41",
+    "postcss": "8.5.23",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "prisma": "^5.22.0",
