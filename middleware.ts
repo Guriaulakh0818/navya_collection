@@ -50,6 +50,11 @@ function getJwtSecretKey(): Uint8Array {
 }
 
 export default async function middleware(req: NextRequest) {
+  // CVE-2025-29927: Mitigate middleware bypass attacks by blocking external x-middleware-subrequest header
+  if (req.headers.has('x-middleware-subrequest')) {
+    return new NextResponse('Forbidden: Invalid middleware header', { status: 403 });
+  }
+
   const { pathname } = req.nextUrl;
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
 
