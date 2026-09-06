@@ -55,17 +55,29 @@ export function validateEnvironment(forceReload = false): EnvConfig {
   const result = envSchema.safeParse(process.env);
 
   if (!result.success) {
-    console.error('❌ [SECURITY_FATAL] Invalid or missing environment variables:');
+    console.warn('⚠️ [CONFIG_WARNING] Missing or invalid environment variables:');
     result.error.issues.forEach((err) => {
-      console.error(`  - ${err.path.join('.')}: ${err.message}`);
+      console.warn(`  - ${err.path.join('.')}: ${err.message}`);
     });
 
-    if (process.env.NODE_ENV === 'production') {
+    const isBuildPhase =
+      process.env.NEXT_PHASE === 'phase-production-build' ||
+      process.env.npm_lifecycle_event === 'build' ||
+      process.env.CI === '1';
+
+    if (process.env.NODE_ENV === 'production' && !isBuildPhase) {
       throw new Error('Application failed to start due to missing environment variables.');
     }
   }
 
-  const data = result.success ? result.data : (process.env as unknown as EnvConfig);
+  const data = result.success
+    ? result.data
+    : ({
+        ...process.env,
+        DATABASE_URL:
+          process.env.DATABASE_URL ||
+          'postgresql://placeholder:placeholder@localhost:5432/placeholder',
+      } as unknown as EnvConfig);
 
   // =========================================================================
   // STRICT ENVIRONMENT SAFETY GUARD
