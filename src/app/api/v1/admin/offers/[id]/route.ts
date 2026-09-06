@@ -7,7 +7,7 @@ import { OfferService } from '@/backend/services/offer.service';
  * PUT /api/v1/admin/offers/[id]
  * Updates or toggles an offer.
  */
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const currentUser = await getCurrentUser();
     if (
@@ -20,7 +20,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     const updated = await OfferService.updateOffer(id, body);
@@ -42,7 +42,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
  * DELETE /api/v1/admin/offers/[id]
  * Deletes an offer permanently.
  */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const currentUser = await getCurrentUser();
     if (
@@ -55,7 +58,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     await OfferService.deleteOffer(id);
 
     return NextResponse.json({

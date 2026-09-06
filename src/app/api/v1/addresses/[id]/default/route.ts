@@ -8,7 +8,7 @@ import { getCurrentUser } from '@/lib/session';
  *
  * Sets a specific address as default for the authenticated customer.
  */
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getCurrentUser();
     const userIdHeader = request.headers.get('x-user-id');
@@ -21,7 +21,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       );
     }
 
-    const response = await AddressService.setDefaultAddress(userId, params.id);
+    const { id } = await params;
+    const response = await AddressService.setDefaultAddress(userId, id);
     return NextResponse.json(response, { status: response.statusCode });
   } catch (error: any) {
     console.error('[API_SET_DEFAULT_ADDRESS_ERROR]', error);

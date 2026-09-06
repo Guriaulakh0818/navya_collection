@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { ProtectedRoute } from '@/features/auth/components/protected-route';
 import { OrderRepository } from '@/features/orders/repositories/order.repository';
 
-export default async function OrderSuccessPage({ params }: { params: { id: string } }) {
-  const order = await OrderRepository.findByIdOrNumber(params.id);
+export default async function OrderSuccessPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const order = await OrderRepository.findByIdOrNumber(id);
 
   return (
     <ProtectedRoute>
@@ -38,9 +39,7 @@ export default async function OrderSuccessPage({ params }: { params: { id: strin
           <div className="inline-flex items-center gap-3 pt-2">
             <span className="text-xs font-bold text-navy bg-slate-100 px-4 py-2 rounded-full border border-slate-200">
               Order #:{' '}
-              <strong className="text-navy font-extrabold">
-                {order?.orderNumber || params.id}
-              </strong>
+              <strong className="text-navy font-extrabold">{order?.orderNumber || id}</strong>
             </span>
             <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-3.5 py-2 rounded-full border border-emerald-200">
               Status: {order?.orderStatus || 'CONFIRMED'}

@@ -7,9 +7,12 @@ import { TrackingService } from '@/services/shipping/tracking.service';
  * Fetches shipment tracking status, order timeline, and syncs status in PostgreSQL DB.
  * Query Params: ?refresh=true to bypass cache
  */
-export async function GET(request: NextRequest, { params }: { params: { orderId: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ orderId: string }> },
+) {
   try {
-    const orderId = params.orderId;
+    const { orderId } = await params;
     const { searchParams } = new URL(request.url);
     const refresh = searchParams.get('refresh') === 'true';
 

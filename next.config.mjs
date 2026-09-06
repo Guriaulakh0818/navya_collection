@@ -4,7 +4,6 @@ const isProd = process.env.NODE_ENV === 'production';
 const nextConfig = {
   reactStrictMode: true,
   compress: true,
-  swcMinify: true,
   webpack: (config, { dev }) => {
     if (dev) {
       config.cache = false;

@@ -11,7 +11,10 @@ import { prisma } from '@/lib/prisma';
  * 2. Hides the shop from public marketplace queries.
  * 3. PRESERVES the owner User account (User is NEVER deleted).
  */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const admin = await getCurrentUser();
     if (!admin || !['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(admin.role?.toUpperCase())) {
@@ -21,7 +24,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       );
     }
 
-    const shopId = params.id;
+    const { id: shopId } = await params;
     if (!shopId) {
       return NextResponse.json(
         { success: false, message: 'Shop ID parameter is required.' },

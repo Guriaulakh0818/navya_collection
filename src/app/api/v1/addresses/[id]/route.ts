@@ -7,13 +7,14 @@ import { getCurrentUser } from '@/lib/session';
 /**
  * GET /api/v1/addresses/[id]
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getCurrentUser();
     const userIdHeader = request.headers.get('x-user-id');
     const userId = user?.id || userIdHeader || 'guest_customer_session';
 
-    const response = await AddressService.getAddressById(userId, params.id);
+    const { id } = await params;
+    const response = await AddressService.getAddressById(userId, id);
     return NextResponse.json(response, { status: response.statusCode });
   } catch (error: any) {
     console.error('[API_GET_ADDRESS_BY_ID_ERROR]', error);
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 /**
  * PUT /api/v1/addresses/[id]
  */
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getCurrentUser();
     const userIdHeader = request.headers.get('x-user-id');
@@ -42,7 +43,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ success: false, message: errorMsg }, { status: 400 });
     }
 
-    const response = await AddressService.updateAddress(userId, params.id, validationResult.data);
+    const { id } = await params;
+    const response = await AddressService.updateAddress(userId, id, validationResult.data);
     return NextResponse.json(response, { status: response.statusCode });
   } catch (error: any) {
     console.error('[API_UPDATE_ADDRESS_ERROR]', error);
@@ -56,13 +58,17 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 /**
  * DELETE /api/v1/addresses/[id]
  */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
     const user = await getCurrentUser();
     const userIdHeader = request.headers.get('x-user-id');
     const userId = user?.id || userIdHeader || 'guest_customer_session';
 
-    const response = await AddressService.deleteAddress(userId, params.id);
+    const { id } = await params;
+    const response = await AddressService.deleteAddress(userId, id);
     return NextResponse.json(response, { status: response.statusCode });
   } catch (error: any) {
     console.error('[API_DELETE_ADDRESS_ERROR]', error);

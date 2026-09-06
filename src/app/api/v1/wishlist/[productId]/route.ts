@@ -8,7 +8,10 @@ import { getCurrentUser } from '@/lib/session';
  *
  * Removes a product from customer's database wishlist.
  */
-export async function DELETE(request: NextRequest, { params }: { params: { productId: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ productId: string }> },
+) {
   try {
     const user = await getCurrentUser();
     const userIdHeader = request.headers.get('x-user-id');
@@ -21,7 +24,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { produ
       );
     }
 
-    const { productId } = params;
+    const { productId } = await params;
     const response = await WishlistService.removeFromWishlist(userId, productId);
     return NextResponse.json(response, { status: response.statusCode });
   } catch (error: any) {

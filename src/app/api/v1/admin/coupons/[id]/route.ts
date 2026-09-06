@@ -6,7 +6,7 @@ import { CouponService } from '@/features/coupons/services/coupon.service';
 /**
  * PUT /api/v1/admin/coupons/[id]
  */
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const body = await request.json();
     const validationResult = updateCouponSchema.safeParse(body);
@@ -17,7 +17,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ success: false, message: errorMsg }, { status: 400 });
     }
 
-    const response = await CouponService.updateCoupon(params.id, validationResult.data);
+    const { id } = await params;
+    const response = await CouponService.updateCoupon(id, validationResult.data);
     return NextResponse.json(response, { status: response.statusCode });
   } catch (error: any) {
     console.error('[API_ADMIN_UPDATE_COUPON_ERROR]', error);
@@ -31,9 +32,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 /**
  * DELETE /api/v1/admin/coupons/[id]
  */
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   try {
-    const response = await CouponService.deleteCoupon(params.id);
+    const { id } = await params;
+    const response = await CouponService.deleteCoupon(id);
     return NextResponse.json(response, { status: response.statusCode });
   } catch (error: any) {
     console.error('[API_ADMIN_DELETE_COUPON_ERROR]', error);

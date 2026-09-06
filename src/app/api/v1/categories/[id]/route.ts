@@ -5,9 +5,9 @@ import { CategoryService } from '@/features/categories/services/category.service
 import { getCurrentUser } from '@/lib/auth-guards';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 /**
@@ -17,7 +17,7 @@ interface RouteParams {
  */
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -69,7 +69,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json().catch(() => ({}));
     const validation = updateCategorySchema.safeParse(body);
 
@@ -132,7 +132,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const result = await CategoryService.deleteCategory(id);
 
     return NextResponse.json(

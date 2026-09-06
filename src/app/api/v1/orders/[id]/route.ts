@@ -8,9 +8,9 @@ import { OrderRepository } from '@/features/orders/repositories/order.repository
  *
  * Fetches order details by Order ID or Order Number with strict authorization.
  */
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const idOrNumber = params.id;
+    const { id: idOrNumber } = await params;
     if (!idOrNumber) {
       return NextResponse.json(
         { success: false, message: 'Order ID or Number is required.' },

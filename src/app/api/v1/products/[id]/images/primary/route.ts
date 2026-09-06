@@ -5,9 +5,9 @@ import { ImageService } from '@/features/images/services/image.service';
 import { getCurrentUser } from '@/lib/auth-guards';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 /**
@@ -29,7 +29,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const productId = params.id;
+    const { id: productId } = await params;
     const body = await request.json().catch(() => ({}));
     const validation = setPrimaryImageSchema.safeParse(body);
 

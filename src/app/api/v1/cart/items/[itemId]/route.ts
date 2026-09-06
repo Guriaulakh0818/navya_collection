@@ -9,7 +9,10 @@ import { getCurrentUser } from '@/lib/session';
  *
  * Updates quantity for a cart item.
  */
-export async function PATCH(request: NextRequest, { params }: { params: { itemId: string } }) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ itemId: string }> },
+) {
   try {
     const user = await getCurrentUser();
     const userIdHeader = request.headers.get('x-user-id');
@@ -22,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { itemId
       );
     }
 
-    const { itemId } = params;
+    const { itemId } = await params;
     const body = await request.json();
     const validationResult = updateCartItemSchema.safeParse(body);
 
@@ -47,7 +50,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { itemId
  *
  * Removes a cart item.
  */
-export async function DELETE(request: NextRequest, { params }: { params: { itemId: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ itemId: string }> },
+) {
   try {
     const user = await getCurrentUser();
     const userIdHeader = request.headers.get('x-user-id');
@@ -60,7 +66,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { itemI
       );
     }
 
-    const { itemId } = params;
+    const { itemId } = await params;
     const response = await CartService.removeItem(userId, itemId);
     return NextResponse.json(response, { status: response.statusCode });
   } catch (error: any) {

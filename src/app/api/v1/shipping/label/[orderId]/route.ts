@@ -9,9 +9,12 @@ import { LabelService } from '@/backend/services/shipping/label.service';
  * - ?refresh=true (forces fresh label generation)
  * - ?download=true (returns attachment disposition headers for browser download/printing)
  */
-export async function GET(request: NextRequest, { params }: { params: { orderId: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ orderId: string }> },
+) {
   try {
-    const orderId = params.orderId;
+    const { orderId } = await params;
     const { searchParams } = new URL(request.url);
     const refresh = searchParams.get('refresh') === 'true';
     const download = searchParams.get('download') === 'true';

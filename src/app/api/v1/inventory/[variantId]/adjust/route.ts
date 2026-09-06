@@ -5,9 +5,9 @@ import { InventoryService } from '@/features/inventory/services/inventory.servic
 import { getCurrentUser } from '@/lib/auth-guards';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     variantId: string;
-  };
+  }>;
 }
 
 /**
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { variantId } = params;
+    const { variantId } = await params;
     const body = await request.json().catch(() => ({}));
     const validation = adjustStockSchema.safeParse(body);
 

@@ -5,10 +5,10 @@ import { VariantService } from '@/features/variants/services/variant.service';
 import { getCurrentUser } from '@/lib/auth-guards';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
     variantId: string;
-  };
+  }>;
 }
 
 /**
@@ -18,7 +18,7 @@ interface RouteParams {
  */
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
-    const { variantId } = params;
+    const { variantId } = await params;
 
     if (!variantId) {
       return NextResponse.json(
@@ -70,8 +70,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const productId = params.id;
-    const { variantId } = params;
+    const { id: productId } = await params;
+    const { variantId } = await params;
     const body = await request.json().catch(() => ({}));
     const validation = updateVariantSchema.safeParse(body);
 
@@ -134,8 +134,8 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const productId = params.id;
-    const { variantId } = params;
+    const { id: productId } = await params;
+    const { variantId } = await params;
     const result = await VariantService.deleteVariant(productId, variantId);
 
     return NextResponse.json(

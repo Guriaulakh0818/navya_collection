@@ -5,9 +5,9 @@ import { InventoryService } from '@/features/inventory/services/inventory.servic
 import { getCurrentUser } from '@/lib/auth-guards';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     variantId: string;
-  };
+  }>;
 }
 
 /**
@@ -17,7 +17,7 @@ interface RouteParams {
  */
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
-    const { variantId } = params;
+    const { variantId } = await params;
 
     if (!variantId) {
       return NextResponse.json(
@@ -72,7 +72,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { variantId } = params;
+    const { variantId } = await params;
     const body = await request.json().catch(() => ({}));
     const validation = updateInventorySchema.safeParse(body);
 

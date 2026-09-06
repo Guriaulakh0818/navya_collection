@@ -6,9 +6,9 @@ import { NotificationService } from '@/features/notifications/services/notificat
  * PATCH /api/v1/notifications/[id]/read
  * Marks a notification as read.
  */
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const notificationId = params.id;
+    const { id: notificationId } = await params;
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId') || 'guest_customer_session';
 

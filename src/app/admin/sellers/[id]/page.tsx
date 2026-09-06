@@ -12,9 +12,9 @@ export const metadata: Metadata = {
 };
 
 interface AdminSellerReviewPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function AdminSellerReviewPage({ params }: AdminSellerReviewPageProps) {
@@ -27,7 +27,7 @@ export default async function AdminSellerReviewPage({ params }: AdminSellerRevie
     redirect('/admin/login');
   }
 
-  const shopId = params.id;
+  const { id: shopId } = await params;
 
   const shop = await prisma.shop.findUnique({
     where: { id: shopId },

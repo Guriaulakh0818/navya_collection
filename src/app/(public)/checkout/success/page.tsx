@@ -9,12 +9,13 @@ export const metadata: Metadata = {
 };
 
 interface PageProps {
-  searchParams: { orderNumber?: string };
+  searchParams: Promise<{ orderNumber?: string }>;
 }
 
-export default function CheckoutSuccessPage({ searchParams }: PageProps) {
+export default async function CheckoutSuccessPage({ searchParams }: PageProps) {
+  const resolvedParams = await searchParams;
   const displayOrderNumber =
-    searchParams?.orderNumber || `NC-2026-${Date.now().toString().slice(-6)}`;
+    resolvedParams?.orderNumber || `NC-2026-${Date.now().toString().slice(-6)}`;
   const estimatedDelivery = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString(
     'en-IN',
     {

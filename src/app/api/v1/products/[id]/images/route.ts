@@ -8,9 +8,9 @@ import { ImageService } from '@/features/images/services/image.service';
 import { getCurrentUser } from '@/lib/auth-guards';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 /**
@@ -20,7 +20,7 @@ interface RouteParams {
  */
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
-    const productId = params.id;
+    const { id: productId } = await params;
 
     if (!productId) {
       return NextResponse.json(
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const productId = params.id;
+    const { id: productId } = await params;
     const body = await request.json().catch(() => ({}));
 
     // Check if multiple images upload payload

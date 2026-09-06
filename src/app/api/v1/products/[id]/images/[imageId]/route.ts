@@ -5,10 +5,10 @@ import { ImageService } from '@/features/images/services/image.service';
 import { getCurrentUser } from '@/lib/auth-guards';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
     imageId: string;
-  };
+  }>;
 }
 
 /**
@@ -30,8 +30,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const productId = params.id;
-    const { imageId } = params;
+    const { id: productId } = await params;
+    const { imageId } = await params;
     const body = await request.json().catch(() => ({}));
     const validation = updateImageSchema.safeParse(body);
 
@@ -95,8 +95,8 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const productId = params.id;
-    const { imageId } = params;
+    const { id: productId } = await params;
+    const { imageId } = await params;
 
     const result = await ImageService.deleteImage(productId, imageId);
 
