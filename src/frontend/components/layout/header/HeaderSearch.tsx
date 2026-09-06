@@ -2,6 +2,7 @@
 
 import { Building2, Search, ShoppingBag, Tag, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -148,10 +149,12 @@ export function HeaderSearch({ className }: HeaderSearchProps) {
                       >
                         <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-400 select-none">
                           {p.images?.[0]?.imageUrl ? (
-                            <img
+                            <Image
                               src={p.images[0].imageUrl}
                               alt={p.name}
-                              className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
+                              width={40}
+                              height={40}
+                              className="w-full h-full object-cover select-none overflow-hidden"
                             />
                           ) : (
                             <ShoppingBag className="w-5 h-5" />
@@ -190,10 +193,12 @@ export function HeaderSearch({ className }: HeaderSearchProps) {
                       >
                         <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-amber-500 select-none">
                           {s.logo ? (
-                            <img
+                            <Image
                               src={s.logo}
                               alt={s.name}
-                              className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
+                              width={32}
+                              height={32}
+                              className="w-full h-full object-cover select-none overflow-hidden"
                             />
                           ) : (
                             <Building2 className="w-4 h-4" />

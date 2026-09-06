@@ -21,6 +21,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 
 export function ShopManagementForm() {
@@ -348,10 +349,12 @@ export function ShopManagementForm() {
                 </p>
               </div>
               <div className="relative w-full h-28 rounded-xl overflow-hidden border border-amber-200/80 shadow-xs">
-                <img
+                <Image
                   src="/images/default-shop-banner.png"
                   alt="Official Banner"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 800px"
+                  className="object-cover"
                 />
               </div>
             </div>
@@ -362,9 +365,15 @@ export function ShopManagementForm() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                   Boutique Logo Badge
                 </label>
-                <div className="w-28 h-28 bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden relative group flex items-center justify-center shadow-xs">
+                <div className="relative w-28 h-28 bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden group flex items-center justify-center shadow-xs">
                   {formData.logo ? (
-                    <img src={formData.logo} alt="Logo" className="w-full h-full object-cover" />
+                    <Image
+                      src={formData.logo}
+                      alt="Logo"
+                      width={112}
+                      height={112}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <Building2 className="w-8 h-8 text-amber-600" />
                   )}

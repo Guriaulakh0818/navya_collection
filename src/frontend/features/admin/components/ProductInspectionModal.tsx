@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { useState } from 'react';
+import Image from 'next/image';
 
 import { useAuthStore } from '@/stores';
 
@@ -121,12 +122,14 @@ export function ProductInspectionModal({
               <span className="font-extrabold text-navy block uppercase tracking-wider text-[11px]">
                 Product Gallery ({product.images?.length || 0})
               </span>
-              <div className="aspect-[3/4] bg-slate-100 border border-slate-200 rounded-2xl overflow-hidden shadow-2xs select-none">
+              <div className="relative aspect-[3/4] bg-slate-100 border border-slate-200 rounded-2xl overflow-hidden shadow-2xs select-none">
                 {primaryImg?.imageUrl ? (
-                  <img
+                  <Image
                     src={primaryImg.imageUrl}
                     alt={product.name}
-                    className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 300px"
+                    className="object-cover select-none overflow-hidden"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">
@@ -138,12 +141,14 @@ export function ProductInspectionModal({
                 {product.images?.map((img: any) => (
                   <div
                     key={img.id}
-                    className="w-14 h-14 bg-slate-100 border border-slate-200 rounded-xl overflow-hidden shrink-0 select-none"
+                    className="relative w-14 h-14 bg-slate-100 border border-slate-200 rounded-xl overflow-hidden shrink-0 select-none"
                   >
-                    <img
+                    <Image
                       src={img.imageUrl}
                       alt={product.name || ''}
-                      className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
+                      width={56}
+                      height={56}
+                      className="w-full h-full object-cover select-none overflow-hidden"
                     />
                   </div>
                 ))}

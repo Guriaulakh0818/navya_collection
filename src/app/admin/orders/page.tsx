@@ -10,7 +10,7 @@ import {
   Truck,
   XCircle,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -86,7 +86,7 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const fetchRealOrders = async () => {
+  const fetchRealOrders = useCallback(async () => {
     setIsLoading(true);
     try {
       const url = new URL('/api/v1/admin/orders', window.location.origin);
@@ -104,11 +104,11 @@ export default function AdminOrdersPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [search, statusFilter]);
 
   useEffect(() => {
     fetchRealOrders();
-  }, [search, statusFilter]);
+  }, [fetchRealOrders]);
 
   const handleUpdateStatus = async (orderId: string, nextStatus: string) => {
     setUpdatingId(orderId);

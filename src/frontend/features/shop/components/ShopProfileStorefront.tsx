@@ -18,6 +18,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export function ShopProfileStorefront({
@@ -98,10 +99,13 @@ export function ShopProfileStorefront({
       {/* 2. STORE COVER BANNER */}
       <div className="relative w-full h-48 sm:h-64 lg:h-80 bg-slate-100 border-b border-slate-200 overflow-hidden select-none">
         {shop.banner ? (
-          <img
+          <Image
             src={shop.banner}
             alt={shop.name}
-            className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover select-none overflow-hidden"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-r from-amber-500/10 via-orange/10 to-amber-500/10 flex items-center justify-center">
@@ -116,12 +120,14 @@ export function ShopProfileStorefront({
         <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-md backdrop-blur-xl space-y-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-50 border-2 border-amber-300 overflow-hidden shrink-0 flex items-center justify-center shadow-md select-none">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-50 border-2 border-amber-300 overflow-hidden shrink-0 flex items-center justify-center shadow-md select-none">
                 {shop.logo ? (
-                  <img
+                  <Image
                     src={shop.logo}
                     alt={shop.name}
-                    className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-cover select-none overflow-hidden"
                   />
                 ) : (
                   <Building2 className="w-10 h-10 text-amber-600" />
@@ -306,10 +312,12 @@ export function ShopProfileStorefront({
                   >
                     <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
                       {product.images?.[0]?.imageUrl ? (
-                        <img
+                        <Image
                           src={product.images[0].imageUrl}
                           alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-400">
@@ -445,10 +453,12 @@ export function ShopProfileStorefront({
                 >
                   <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden">
                     {rel.images?.[0]?.imageUrl ? (
-                      <img
+                      <Image
                         src={rel.images[0].imageUrl}
                         alt={rel.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        fill
+                        sizes="(max-width: 640px) 50vw, 25vw"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-400">

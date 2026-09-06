@@ -1,7 +1,7 @@
 'use client';
 
 import { IndianRupee, Loader2, Sparkles, Store, Truck, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { SellerRegistrationWizard } from '@/frontend/features/seller/components/SellerRegistrationWizard';
@@ -16,7 +16,7 @@ export function BecomeSellerContent() {
   const [statusData, setStatusData] = useState<SellerStatusData | null>(null);
   const [forceNewForm, setForceNewForm] = useState(false);
 
-  const fetchSellerStatus = async () => {
+  const fetchSellerStatus = useCallback(async () => {
     setIsLoadingStatus(true);
     try {
       const res = await fetch('/api/v1/seller/status', {
@@ -47,11 +47,11 @@ export function BecomeSellerContent() {
     } finally {
       setIsLoadingStatus(false);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     fetchSellerStatus();
-  }, []);
+  }, [fetchSellerStatus]);
 
   if (isLoadingStatus) {
     return (

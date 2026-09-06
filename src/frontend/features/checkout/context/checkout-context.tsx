@@ -81,7 +81,7 @@ export const CheckoutProvider: React.FC<{
     if (cartAppliedCoupon && (!appliedCoupon || appliedCoupon.code !== cartAppliedCoupon.code)) {
       setAppliedCouponState(cartAppliedCoupon);
     }
-  }, [cartAppliedCoupon]);
+  }, [cartAppliedCoupon, appliedCoupon]);
 
   const initialSubtotal = (cartItems.length > 0 ? cartItems : initialItems).reduce(
     (sum, item) => sum + item.price * item.quantity,

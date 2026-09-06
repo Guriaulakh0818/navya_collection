@@ -12,6 +12,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useState } from 'react';
+import Image from 'next/image';
 
 import { PendingApprovalCard } from './PendingApprovalCard';
 
@@ -766,11 +767,13 @@ export function SellerRegistrationWizard() {
               </label>
               <div className="border-2 border-dashed border-slate-300 hover:border-amber-500 rounded-2xl p-4 bg-slate-50 flex items-center justify-between gap-4 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 relative flex items-center justify-center shadow-xs">
+                  <div className="relative w-14 h-14 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
                     {formData.shopDetails.logo ? (
-                      <img
+                      <Image
                         src={formData.shopDetails.logo}
                         alt="Logo"
+                        width={56}
+                        height={56}
                         className="w-full h-full object-cover"
                       />
                     ) : (

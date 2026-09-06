@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 export default function AdminManualSettlementsPage() {
   const [data, setData] = useState<any | null>(null);
@@ -225,9 +226,11 @@ export default function AdminManualSettlementsPage() {
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-amber-600 font-bold">
                               {b.shopLogo ? (
-                                <img
+                                <Image
                                   src={b.shopLogo}
                                   alt={b.shopName}
+                                  width={40}
+                                  height={40}
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
