@@ -26,7 +26,8 @@ export function withApiSecurity<T = any>(
   options: SecurityOptions<T> = {},
 ) {
   return async (req: NextRequest): Promise<NextResponse> => {
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
+    const ip =
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || (req as any).ip || '127.0.0.1';
     const userId = req.headers.get('x-user-id') || undefined;
     const userRole = req.headers.get('x-user-role') || undefined;
 

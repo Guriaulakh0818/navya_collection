@@ -56,7 +56,8 @@ export default async function middleware(req: NextRequest) {
   }
 
   const { pathname } = req.nextUrl;
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.ip || '127.0.0.1';
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || (req as any).ip || '127.0.0.1';
 
   // 1. Skip static assets, internal Next.js files, and public favicon
   if (

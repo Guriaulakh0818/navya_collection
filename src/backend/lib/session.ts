@@ -294,7 +294,7 @@ export async function isAuthenticated(): Promise<boolean> {
  */
 export async function refreshSession(): Promise<boolean> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
     if (!token) return false;
@@ -333,7 +333,7 @@ export async function refreshSession(): Promise<boolean> {
  */
 export async function destroySession(): Promise<boolean> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
     if (token) {
