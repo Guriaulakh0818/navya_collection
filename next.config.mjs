@@ -4,6 +4,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const nextConfig = {
   reactStrictMode: true,
   compress: true,
+  turbopack: {},
   webpack: (config, { dev }) => {
     if (dev) {
       config.cache = false;
@@ -88,28 +89,17 @@ const nextConfig = {
       },
     ];
 
-    // Only set immutable static asset caching in production to prevent browser HMR chunk caching in dev mode
+    // Only set immutable asset caching in production
     if (isProd) {
-      routes.push(
-        {
-          source: '/_next/static/:path*',
-          headers: [
-            {
-              key: 'Cache-Control',
-              value: 'public, max-age=31536000, immutable',
-            },
-          ],
-        },
-        {
-          source: '/images/:path*',
-          headers: [
-            {
-              key: 'Cache-Control',
-              value: 'public, max-age=86400, stale-while-revalidate=604800',
-            },
-          ],
-        },
-      );
+      routes.push({
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      });
     }
 
     return routes;
