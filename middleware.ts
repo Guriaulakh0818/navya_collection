@@ -63,34 +63,54 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. Extract Hostname and Detect Subdomains
+  // 2. Extract Hostname, Protocol and Detect Subdomains
   const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
   const currentHost = rawHost.split(':')[0].toLowerCase();
+  const proto = req.headers.get('x-forwarded-proto')?.toLowerCase();
 
-  const isAdminSubdomain =
-    currentHost === 'admin.navyacollection.store' ||
-    currentHost === 'admin.navyacollection.in' ||
-    currentHost.startsWith('admin.');
-
-  const isSellerSubdomain =
-    currentHost === 'seller.navyacollection.store' ||
-    currentHost === 'seller.navyacollection.in' ||
-    currentHost.startsWith('seller.');
-
-  // 3. PRODUCTION CANONICAL REDIRECTION:
-  // If accessing /admin from the main domain or vercel.app, redirect immediately to custom admin subdomain
-  if (
-    process.env.NODE_ENV === 'production' &&
-    !isAdminSubdomain &&
-    (pathname === '/admin' || pathname.startsWith('/admin/'))
-  ) {
-    const subPath = pathname.replace(/^\/admin/, '') || '/';
-    const targetUrl = new URL(subPath, 'https://admin.navyacollection.store');
-    req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
-    return NextResponse.redirect(targetUrl, 307);
+  // 3. PRODUCTION HTTP → HTTPS ENFORCEMENT
+  if (process.env.NODE_ENV === 'production' && proto === 'http') {
+    const httpsUrl = new URL(
+      `${pathname}${req.nextUrl.search}`,
+      `https://${currentHost || 'navyacollection.store'}`,
+    );
+    return NextResponse.redirect(httpsUrl, 308);
   }
 
-  // 4. Subdomain Path Normalization and Rewriting
+  // 4. WWW CANONICALIZATION (www.navyacollection.store → navyacollection.store)
+  if (currentHost === 'www.navyacollection.store') {
+    const canonicalUrl = new URL(
+      `${pathname}${req.nextUrl.search}`,
+      'https://navyacollection.store',
+    );
+    return NextResponse.redirect(canonicalUrl, 308);
+  }
+
+  const isAdminSubdomain =
+    currentHost === 'admin.navyacollection.store' || currentHost.startsWith('admin.');
+
+  const isSellerSubdomain =
+    currentHost === 'seller.navyacollection.store' || currentHost.startsWith('seller.');
+
+  // 5. PRODUCTION SUBDOMAIN CANONICAL REDIRECTIONS:
+  // If accessing /admin or /seller from the main customer domain, redirect to respective subdomains
+  if (process.env.NODE_ENV === 'production' && !isAdminSubdomain && !isSellerSubdomain) {
+    if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+      const subPath = pathname.replace(/^\/admin/, '') || '/';
+      const targetUrl = new URL(subPath, 'https://admin.navyacollection.store');
+      req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+      return NextResponse.redirect(targetUrl, 307);
+    }
+
+    if (pathname === '/seller' || pathname.startsWith('/seller/')) {
+      const subPath = pathname.replace(/^\/seller/, '') || '/';
+      const targetUrl = new URL(subPath, 'https://seller.navyacollection.store');
+      req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+      return NextResponse.redirect(targetUrl, 307);
+    }
+  }
+
+  // 6. Subdomain Path Normalization and Rewriting
   let effectivePathname = pathname;
   let shouldRewrite = false;
   const rewriteUrl = req.nextUrl.clone();
@@ -111,8 +131,12 @@ export default async function middleware(req: NextRequest) {
     }
   } else if (isSellerSubdomain) {
     if (pathname === '/') {
-      rewriteUrl.pathname = '/become-seller';
-      effectivePathname = '/become-seller';
+      rewriteUrl.pathname = '/seller/dashboard';
+      effectivePathname = '/seller/dashboard';
+      shouldRewrite = true;
+    } else if (pathname === '/login') {
+      rewriteUrl.pathname = '/login';
+      effectivePathname = '/login';
       shouldRewrite = true;
     } else if (
       !pathname.startsWith('/seller') &&

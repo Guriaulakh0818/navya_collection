@@ -32,7 +32,7 @@ export class OrderPreviewService {
       let customer = {
         id: userId,
         name: 'Navya Customer',
-        email: 'customer@navyacollection.com',
+        email: 'customer@navyacollection.store',
         mobile: '9876543210',
       };
 
@@ -45,7 +45,7 @@ export class OrderPreviewService {
           customer = {
             id: userDb.id,
             name: userDb.name || 'Navya Customer',
-            email: userDb.email || 'customer@navyacollection.com',
+            email: userDb.email || 'customer@navyacollection.store',
             mobile: userDb.mobile || '9876543210',
           };
         }

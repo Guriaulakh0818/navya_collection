@@ -1,6 +1,6 @@
 const WEBHOOK_EXEMPT_ROUTES = ['/api/v1/webhooks/razorpay', '/api/v1/shipping/webhook'];
 
-const ALLOWED_DOMAINS = ['localhost', 'navyacollection.in', 'navyacollection.store', 'vercel.app'];
+const ALLOWED_DOMAINS = ['localhost', 'navyacollection.store', 'vercel.app'];
 
 /**
  * Validates request Origin / Referer against whitelist for state-mutating requests

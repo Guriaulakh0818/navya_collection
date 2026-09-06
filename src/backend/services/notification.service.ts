@@ -73,9 +73,8 @@ export class NotificationService {
    * Sends admin email alert & in-app notifications immediately after seller submits registration application.
    */
   static async notifyAdminNewSellerRegistration(options: AdminSellerRegistrationEmailOptions) {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || 'http://localhost:3000';
-    const reviewLink = `${baseUrl.replace(/\/$/, '')}/admin/sellers/${options.shopId}`;
+    const adminBaseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.navyacollection.store';
+    const reviewLink = `${adminBaseUrl.replace(/\/$/, '')}/sellers/${options.shopId}`;
 
     // 1. Create in-app notifications for Admin & Owner users
     try {
@@ -191,9 +190,8 @@ export class NotificationService {
    * Sends admin email alert & in-app notifications immediately when a seller creates or submits a product for approval.
    */
   static async notifyAdminNewProductSubmission(options: AdminProductSubmissionEmailOptions) {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL || 'https://navyacollection.store';
-    const reviewLink = `${baseUrl.replace(/\/$/, '')}/admin/products`;
+    const adminBaseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.navyacollection.store';
+    const reviewLink = `${adminBaseUrl.replace(/\/$/, '')}/products`;
 
     // 1. Create in-app notifications for Admin & Owner users
     try {

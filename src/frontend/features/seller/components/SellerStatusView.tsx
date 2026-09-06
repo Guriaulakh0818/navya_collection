@@ -361,7 +361,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
           </button>
           <span className="flex items-center gap-1.5 text-slate-700 font-bold">
             <Mail className="w-4 h-4 text-amber-600" />
-            sellers@navyacollection.com
+            sellers@navyacollection.store
           </span>
           <span className="flex items-center gap-1.5 text-slate-700 font-bold">
             <Phone className="w-4 h-4 text-amber-600" />
@@ -393,7 +393,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs font-semibold">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Email:</span>
-                <span className="font-bold text-navy">support@navyacollection.in</span>
+                <span className="font-bold text-navy">support@navyacollection.store</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Merchant Desk:</span>

@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
  * Dynamic XML Sitemap Generator for SEO.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.com';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store';
 
   const staticPages: MetadataRoute.Sitemap = [
     {

@@ -155,15 +155,60 @@ export async function GET() {
       },
     });
 
-    // Mock/Generated Monthly Revenue Data for Analytics Chart
-    const monthlyRevenue = [
-      { month: 'Jan', revenue: Math.round(totalRevenue * 0.1) },
-      { month: 'Feb', revenue: Math.round(totalRevenue * 0.15) },
-      { month: 'Mar', revenue: Math.round(totalRevenue * 0.12) },
-      { month: 'Apr', revenue: Math.round(totalRevenue * 0.18) },
-      { month: 'May', revenue: Math.round(totalRevenue * 0.22) },
-      { month: 'Jun', revenue: Math.round(totalRevenue * 0.23) },
+    // Compute Real Monthly Revenue from Vendor Orders across last 6 months
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    const pastOrders = await prisma.vendorOrder.findMany({
+      where: {
+        shopId: shop.id,
+        createdAt: { gte: sixMonthsAgo },
+      },
+      select: {
+        vendorPayoutAmount: true,
+        totalAmount: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
+    const monthlyMap = new Map<string, number>();
+
+    // Initialize 6 months in sequence
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const mName = monthNames[d.getMonth()];
+      monthlyMap.set(mName, 0);
+    }
+
+    // Populate with actual DB vendor orders
+    pastOrders.forEach((o) => {
+      const mName = monthNames[new Date(o.createdAt).getMonth()];
+      const amt = Number(o.vendorPayoutAmount || o.totalAmount || 0);
+      monthlyMap.set(mName, (monthlyMap.get(mName) || 0) + amt);
+    });
+
+    const monthlyRevenue = Array.from(monthlyMap.entries()).map(([month, revenue]) => ({
+      month,
+      revenue: Math.round(revenue),
+    }));
 
     return NextResponse.json({
       success: true,

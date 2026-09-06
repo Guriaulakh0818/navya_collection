@@ -14,7 +14,7 @@ export function renderWelcomeEmail(vars: NotificationTemplateVariables): {
     <p>We are thrilled to have you join India's premier destination for affordable luxury gents & kids fashion.</p>
     <p>As a special welcome gift, use coupon code <strong style="color: #F15A25; background: #FFF7ED; padding: 2px 8px; border-radius: 4px;">FIRST200</strong> on your first order above ₹999 to get instant ₹200 OFF!</p>
     <div style="text-align: center;">
-      <a href="https://navyacollection.in/shop" class="button">Explore Shop Collection →</a>
+      <a href="https://navyacollection.store/shop" class="button">Explore Shop Collection →</a>
     </div>
   `;
   return { subject, html: wrapEmailLayout(subject, body) };
@@ -65,7 +65,7 @@ export function renderOrderConfirmationEmail(vars: NotificationTemplateVariables
     ${vars.shippingAddress ? `<p><strong>Delivery Address:</strong><br/>${vars.shippingAddress}</p>` : ''}
 
     <div style="text-align: center;">
-      <a href="https://navyacollection.in/account/orders" class="button">Track Order Status →</a>
+      <a href="https://navyacollection.store/account/orders" class="button">Track Order Status →</a>
     </div>
   `;
   return { subject, html: wrapEmailLayout(subject, body) };
@@ -93,7 +93,7 @@ export function renderShippingConfirmationEmail(vars: NotificationTemplateVariab
     </div>
 
     <div style="text-align: center;">
-      <a href="https://navyacollection.in/tracking?awb=${tracking}" class="button">Live Shipment Tracking →</a>
+      <a href="https://navyacollection.store/tracking?awb=${tracking}" class="button">Live Shipment Tracking →</a>
     </div>
   `;
   return { subject, html: wrapEmailLayout(subject, body) };
@@ -114,7 +114,7 @@ export function renderDeliveredEmail(vars: NotificationTemplateVariables): {
     <p>We hope you love your new outfit! If you have a moment, please rate your items and share your feedback.</p>
 
     <div style="text-align: center;">
-      <a href="https://navyacollection.in/account/orders" class="button">Write a Product Review →</a>
+      <a href="https://navyacollection.store/account/orders" class="button">Write a Product Review →</a>
     </div>
   `;
   return { subject, html: wrapEmailLayout(subject, body) };

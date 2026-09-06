@@ -166,8 +166,8 @@ export async function testSecurityModule() {
   const validCsrf = validateCsrfOrigin(
     '/api/v1/orders',
     'POST',
-    'https://navyacollection.in',
-    'https://navyacollection.in/checkout',
+    'https://navyacollection.store',
+    'https://navyacollection.store/checkout',
   );
   if (!validCsrf) {
     throw new Error('validateCsrfOrigin rejected valid matching origin domain.');

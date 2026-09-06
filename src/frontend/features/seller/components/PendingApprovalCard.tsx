@@ -128,7 +128,7 @@ export function PendingApprovalCard({
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5 text-slate-700 font-bold">
             <Mail className="w-4 h-4 text-amber-700" />
-            sellers@navyacollection.com
+            sellers@navyacollection.store
           </span>
           <span className="flex items-center gap-1.5 text-slate-700 font-bold">
             <Phone className="w-4 h-4 text-amber-700" />

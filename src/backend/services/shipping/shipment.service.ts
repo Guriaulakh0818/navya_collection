@@ -273,7 +273,7 @@ export class ShipmentService {
         billing_pincode: order.address.pincode,
         billing_state: order.address.state,
         billing_country: 'India',
-        billing_email: order.user?.email || 'customer@navyacollection.com',
+        billing_email: order.user?.email || 'customer@navyacollection.store',
         billing_phone: cleanMobile,
         shipping_is_billing: true,
         order_items: shiprocketItems,

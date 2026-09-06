@@ -4,18 +4,18 @@ export const SEO_CONSTANTS = {
   TITLE_TEMPLATE: '%s | Navya Collection',
   DEFAULT_DESCRIPTION:
     'Navya Collection is an affordable premium fashion brand for gents and kids, offering modern shirts, trousers, ethnic wear, and kids clothing built on trust and superior quality.',
-  SITE_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.in',
-  DEFAULT_OG_IMAGE: 'https://navyacollection.in/og-image.jpg',
+  SITE_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store',
+  DEFAULT_OG_IMAGE: 'https://navyacollection.store/og-image.jpg',
   TWITTER_HANDLE: '@navyacollection',
   THEME_COLOR: '#183A73',
   ORGANIZATION: {
     NAME: 'Navya Collection',
     LEGAL_NAME: 'Navya Collection Fashion LLP',
-    URL: 'https://navyacollection.in',
-    LOGO: 'https://navyacollection.in/logo.png',
+    URL: 'https://navyacollection.store',
+    LOGO: 'https://navyacollection.store/logo.png',
     FOUNDING_DATE: '2022',
     TELEPHONE: '+91-9991983125',
-    EMAIL: 'support@navyacollection.in',
+    EMAIL: 'support@navyacollection.store',
     SAME_AS: [
       'https://facebook.com/navyacollection',
       'https://instagram.com/navyacollection',

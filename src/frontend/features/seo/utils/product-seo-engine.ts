@@ -5,7 +5,7 @@ import type { ProductSeoInput, SeoContext } from '../types/product-seo.types';
 import { generateBreadcrumbSchema, generateOrganizationSchema } from './schema-generators';
 import { generateSeoSlug } from './slug-generator';
 
-const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.in';
+const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store';
 
 /**
  * Truncates text smartly to target char limit without breaking words

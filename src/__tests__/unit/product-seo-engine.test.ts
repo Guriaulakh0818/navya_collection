@@ -98,7 +98,7 @@ export async function testProductSeoEngine() {
 
   // 5. Canonical URL Generator
   const canonical = generateProductCanonicalUrl(productSample);
-  if (canonical !== 'https://navyacollection.in/product/black-premium-cotton-shirt') {
+  if (canonical !== 'https://navyacollection.store/product/black-premium-cotton-shirt') {
     throw new Error(`generateProductCanonicalUrl failed: '${canonical}'`);
   }
 
@@ -108,7 +108,7 @@ export async function testProductSeoEngine() {
     !metadata.title ||
     !metadata.description ||
     metadata.alternates?.canonical !==
-      'https://navyacollection.in/product/black-premium-cotton-shirt' ||
+      'https://navyacollection.store/product/black-premium-cotton-shirt' ||
     (metadata.openGraph as any)?.type !== 'article'
   ) {
     throw new Error('generateProductMetadata failed Next.js 15 metadata structure check.');

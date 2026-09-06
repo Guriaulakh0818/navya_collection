@@ -5,28 +5,10 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  if (
-    searchParams.get('action') === 'reject_all' &&
-    searchParams.get('secret') === 'navya_secret_purge_2026'
-  ) {
-    try {
-      const updateResult = await prisma.shop.updateMany({
-        data: { status: 'REJECTED' },
-      });
-      return NextResponse.json({
-        success: true,
-        message: `Updated ${updateResult.count} shops to REJECTED in Vercel DB`,
-      });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
-    }
-  }
-
+export async function GET() {
   try {
     // Execute all 7 queries concurrently via Promise.all for sub-60ms database response
-    let [
+    const [
       featuredShops,
       recentShops,
       trendingProducts,
@@ -136,12 +118,14 @@ export async function GET(request: Request) {
       // 6. Active Categories
       prisma.category.findMany({
         where: {
+          status: 'active',
+          deletedAt: null,
           slug: {
             notIn: ['jewellery-accessories', 'kundan-necklaces', 'jhumkas-earrings'],
           },
         },
         take: 8,
-        orderBy: { name: 'asc' },
+        orderBy: { displayOrder: 'asc' },
         select: {
           id: true,
           name: true,
@@ -152,7 +136,7 @@ export async function GET(request: Request) {
       }),
       // 7. Active Coupons/Promotions
       prisma.coupon.findMany({
-        where: { isActive: true },
+        where: { isActive: true, deletedAt: null },
         take: 2,
         select: {
           id: true,
@@ -163,93 +147,6 @@ export async function GET(request: Request) {
         },
       }),
     ]);
-
-    // When database returns empty arrays (e.g. all shops rejected), do NOT inject mock/fake shops
-    featuredShops = featuredShops || [];
-    recentShops = recentShops || [];
-    trendingProducts = trendingProducts || [];
-    newArrivals = newArrivals || [];
-    bestSellers = bestSellers || [];
-
-    if (!categories || categories.length === 0) {
-      categories = [
-        {
-          id: 'cat_anarkali',
-          name: 'Anarkalis & Suits',
-          slug: 'anarkalis-suits',
-          image: '',
-          _count: { products: 12 },
-        },
-        {
-          id: 'cat_banarasi',
-          name: 'Banarasi Sarees',
-          slug: 'banarasi-sarees',
-          image: '',
-          _count: { products: 15 },
-        },
-        {
-          id: 'cat_bridal',
-          name: 'Bridal Lehengas',
-          slug: 'bridal-lehengas',
-          image: '',
-          _count: { products: 10 },
-        },
-        {
-          id: 'cat_chanderi',
-          name: 'Chanderi Sarees',
-          slug: 'chanderi-sarees',
-          image: '',
-          _count: { products: 8 },
-        },
-        {
-          id: 'cat_indowestern',
-          name: 'Indo-Western & Fusion',
-          slug: 'indo-western-fusion',
-          image: '',
-          _count: { products: 14 },
-        },
-        {
-          id: 'cat_gents',
-          name: 'Gents & Mens Couture',
-          slug: 'gents-mens-couture',
-          image: '',
-          _count: { products: 9 },
-        },
-        {
-          id: 'cat_kurtis',
-          name: 'Kurtis & Tunics',
-          slug: 'kurtis-tunics',
-          image: '',
-          _count: { products: 18 },
-        },
-        {
-          id: 'cat_kanjeevaram',
-          name: 'Kanjeevaram Silk Sarees',
-          slug: 'kanjeevaram-silk-sarees',
-          image: '',
-          _count: { products: 11 },
-        },
-      ] as any;
-    }
-
-    if (!coupons || coupons.length === 0) {
-      coupons = [
-        {
-          id: 'c1',
-          code: 'NAVYA15',
-          discountType: 'PERCENTAGE',
-          discountValue: 15,
-          minOrderAmount: 2999,
-        },
-        {
-          id: 'c2',
-          code: 'WELCOME500',
-          discountType: 'FLAT',
-          discountValue: 500,
-          minOrderAmount: 1999,
-        },
-      ] as any;
-    }
 
     return NextResponse.json(
       {

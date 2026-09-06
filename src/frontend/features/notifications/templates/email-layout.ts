@@ -30,7 +30,7 @@ export function wrapEmailLayout(title: string, bodyHtml: string): string {
     </div>
     <div class="footer">
       <p style="margin: 0 0 8px 0;"><strong>Navya Collection</strong> • Affordable Luxury Fashion for Gents & Kids</p>
-      <p style="margin: 0 0 12px 0;">Have questions? Contact support at <a href="mailto:support@navyacollection.in">support@navyacollection.in</a></p>
+      <p style="margin: 0 0 12px 0;">Have questions? Contact support at <a href="mailto:support@navyacollection.store">support@navyacollection.store</a></p>
       <p style="margin: 0; font-size: 11px; color: #94A3B8;">&copy; ${new Date().getFullYear()} Navya Collection. All rights reserved.</p>
     </div>
   </div>
