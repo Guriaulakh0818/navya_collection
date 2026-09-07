@@ -1,12 +1,16 @@
 'use client';
 
 import {
+  AlertCircle,
   Building2,
   CheckCircle2,
   FileCheck,
   FileText,
+  Loader2,
   Mail,
   MapPin,
+  ShieldCheck,
+  Sparkles,
   Upload,
   User,
   Wallet,
@@ -44,6 +48,39 @@ export function SellerRegistrationWizard() {
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+
+  // Instant Verification States
+  const [isVerifyingPan, setIsVerifyingPan] = useState(false);
+  const [panVerifiedData, setPanVerifiedData] = useState<{
+    isValid: boolean;
+    pan: string;
+    entityType: string;
+    message: string;
+  } | null>(null);
+
+  const [isVerifyingGst, setIsVerifyingGst] = useState(false);
+  const [gstVerifiedData, setGstVerifiedData] = useState<{
+    isValid: boolean;
+    gstin: string;
+    stateName: string;
+    message: string;
+  } | null>(null);
+
+  const [isVerifyingIfsc, setIsVerifyingIfsc] = useState(false);
+  const [ifscVerifiedData, setIfscVerifiedData] = useState<{
+    isValid: boolean;
+    bank: string;
+    branch: string;
+    city: string;
+  } | null>(null);
+
+  const [isVerifyingBank, setIsVerifyingBank] = useState(false);
+  const [bankVerifiedData, setBankVerifiedData] = useState<{
+    isValid: boolean;
+    bankName: string;
+    branch: string;
+    message: string;
+  } | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -91,6 +128,182 @@ export function SellerRegistrationWizard() {
   const showToast = (text: string, type: 'error' | 'success' = 'error') => {
     setToastMessage({ type, text });
     setTimeout(() => setToastMessage(null), 5000);
+  };
+
+  // Instant PAN Verification Handler
+  const handleVerifyPan = async () => {
+    const cleanPan = formData.businessType.pan.trim().toUpperCase();
+    if (!cleanPan || cleanPan.length !== 10) {
+      showToast('Please enter a 10-character PAN Card number.');
+      return;
+    }
+
+    setIsVerifyingPan(true);
+    try {
+      const res = await fetch('/api/v1/seller/verify/pan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pan: cleanPan,
+          legalName: formData.businessType.legalName || formData.basicInfo.fullName,
+        }),
+      });
+      const json = await res.json();
+
+      if (json.success && json.data) {
+        setPanVerifiedData({
+          isValid: true,
+          pan: cleanPan,
+          entityType: json.data.entityType,
+          message: json.data.message,
+        });
+        showToast(`✓ PAN Verified: ${json.data.entityType}`, 'success');
+      } else {
+        setPanVerifiedData(null);
+        showToast(json.message || 'Invalid PAN Card Number format.', 'error');
+      }
+    } catch {
+      showToast('Failed to verify PAN. Please try again.', 'error');
+    } finally {
+      setIsVerifyingPan(false);
+    }
+  };
+
+  // Instant GSTIN Verification Handler
+  const handleVerifyGst = async () => {
+    const cleanGst = formData.businessType.gstin.trim().toUpperCase();
+    if (!cleanGst || cleanGst.length !== 15) {
+      showToast('Please enter a valid 15-character GSTIN Number.');
+      return;
+    }
+
+    setIsVerifyingGst(true);
+    try {
+      const res = await fetch('/api/v1/seller/verify/gst', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gstin: cleanGst,
+          pan: formData.businessType.pan.trim().toUpperCase(),
+        }),
+      });
+      const json = await res.json();
+
+      if (json.success && json.data) {
+        setGstVerifiedData({
+          isValid: true,
+          gstin: cleanGst,
+          stateName: json.data.stateName,
+          message: json.data.message,
+        });
+        showToast(`✓ GSTIN Verified: ${json.data.stateName}`, 'success');
+      } else {
+        setGstVerifiedData(null);
+        showToast(json.message || 'Invalid GSTIN Number.', 'error');
+      }
+    } catch {
+      showToast('Failed to verify GSTIN. Please try again.', 'error');
+    } finally {
+      setIsVerifyingGst(false);
+    }
+  };
+
+  // Instant IFSC Code Lookup Handler
+  const handleLookupIfsc = async (customIfsc?: string) => {
+    const cleanIfsc = (customIfsc || formData.bankDetails.ifscCode).trim().toUpperCase();
+    if (!cleanIfsc || cleanIfsc.length !== 11) {
+      return;
+    }
+
+    setIsVerifyingIfsc(true);
+    try {
+      const res = await fetch('/api/v1/seller/verify/ifsc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ifsc: cleanIfsc }),
+      });
+      const json = await res.json();
+
+      if (json.success && json.data) {
+        setIfscVerifiedData({
+          isValid: true,
+          bank: json.data.bank,
+          branch: json.data.branch,
+          city: json.data.city,
+        });
+        setFormData((prev) => ({
+          ...prev,
+          bankDetails: {
+            ...prev.bankDetails,
+            bankName: json.data.bank || prev.bankDetails.bankName,
+          },
+        }));
+        showToast(`✓ Bank Found: ${json.data.bank} (${json.data.branch})`, 'success');
+      } else {
+        setIfscVerifiedData(null);
+      }
+    } catch {
+      // Graceful fallback
+    } finally {
+      setIsVerifyingIfsc(false);
+    }
+  };
+
+  // Instant Bank Account Verification Handler
+  const handleVerifyBank = async () => {
+    const cleanAccount = formData.bankDetails.accountNumber.trim();
+    const cleanIfsc = formData.bankDetails.ifscCode.trim().toUpperCase();
+
+    if (!cleanAccount || cleanAccount.length < 9) {
+      showToast('Please enter a valid Bank Account Number (minimum 9 digits).');
+      return;
+    }
+
+    if (!cleanIfsc || cleanIfsc.length !== 11) {
+      showToast('Please enter an 11-character IFSC Code.');
+      return;
+    }
+
+    setIsVerifyingBank(true);
+    try {
+      const res = await fetch('/api/v1/seller/verify/bank', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accountNumber: cleanAccount,
+          ifscCode: cleanIfsc,
+          accountHolderName:
+            formData.bankDetails.accountHolderName ||
+            formData.businessType.legalName ||
+            formData.basicInfo.fullName,
+        }),
+      });
+      const json = await res.json();
+
+      if (json.success && json.data) {
+        setBankVerifiedData({
+          isValid: true,
+          bankName: json.data.bankName,
+          branch: json.data.branch,
+          message: json.data.message,
+        });
+        setFormData((prev) => ({
+          ...prev,
+          bankDetails: {
+            ...prev.bankDetails,
+            bankName: json.data.bankName || prev.bankDetails.bankName,
+          },
+        }));
+        showToast(`✓ Bank Account Validated (${json.data.bankName})`, 'success');
+      } else {
+        setBankVerifiedData(null);
+        showToast(json.message || 'Invalid Bank Account details.', 'error');
+      }
+    } catch {
+      showToast('Failed to verify bank details.', 'error');
+    } finally {
+      setIsVerifyingBank(false);
+    }
   };
 
   // Step 1: Send Email OTP
@@ -831,10 +1044,16 @@ export function SellerRegistrationWizard() {
       {/* STEP 4: Business Type & Tax Identifiers */}
       {currentStep === 4 && (
         <div className="space-y-6">
-          <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
-            <FileText className="w-5 h-5 text-amber-600" />
-            Step 4: Business Structure &amp; Tax Identifiers (GSTIN/PAN)
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
+              <FileText className="w-5 h-5 text-amber-600" />
+              Step 4: Business Structure &amp; Tax Identifiers (GSTIN/PAN)
+            </h2>
+            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+              <span>Instant Tax KYC Enabled</span>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -877,42 +1096,144 @@ export function SellerRegistrationWizard() {
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                PAN Card Number *
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. ABCDE1234F"
-                maxLength={10}
-                value={formData.businessType.pan}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    businessType: { ...prev.businessType, pan: e.target.value.toUpperCase() },
-                  }))
-                }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono uppercase focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
-              />
+            {/* PAN Card Verification Input */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  PAN Card Number *
+                </label>
+                {panVerifiedData?.isValid && (
+                  <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Verified
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. ABCDE1234F"
+                  maxLength={10}
+                  value={formData.businessType.pan}
+                  onChange={(e) => {
+                    setPanVerifiedData(null);
+                    setFormData((prev) => ({
+                      ...prev,
+                      businessType: { ...prev.businessType, pan: e.target.value.toUpperCase() },
+                    }));
+                  }}
+                  className={`flex-1 bg-white border rounded-xl px-4 py-3 text-navy font-mono uppercase focus:outline-none transition-all placeholder:text-slate-400 ${
+                    panVerifiedData?.isValid
+                      ? 'border-emerald-400 bg-emerald-50/20'
+                      : 'border-slate-200 focus:border-amber-500'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={handleVerifyPan}
+                  disabled={isVerifyingPan || formData.businessType.pan.length !== 10}
+                  className="px-4 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 flex items-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  {isVerifyingPan ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : panVerifiedData?.isValid ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-950" />
+                      <span>Verified ✓</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Verify PAN</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* PAN Status Badge */}
+              {panVerifiedData && (
+                <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-900 flex items-center gap-2 shadow-2xs animate-fadeIn">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="font-extrabold block">{panVerifiedData.entityType}</span>
+                    <span className="text-[11px] text-emerald-700">{panVerifiedData.message}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div>
-              <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                GSTIN Number (Optional)
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. 06ABCDE1234F1Z5"
-                maxLength={15}
-                value={formData.businessType.gstin}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    businessType: { ...prev.businessType, gstin: e.target.value.toUpperCase() },
-                  }))
-                }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono uppercase focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
-              />
+            {/* GSTIN Verification Input */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  GSTIN Number (Optional)
+                </label>
+                {gstVerifiedData?.isValid && (
+                  <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Verified
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. 06ABCDE1234F1Z5"
+                  maxLength={15}
+                  value={formData.businessType.gstin}
+                  onChange={(e) => {
+                    setGstVerifiedData(null);
+                    setFormData((prev) => ({
+                      ...prev,
+                      businessType: { ...prev.businessType, gstin: e.target.value.toUpperCase() },
+                    }));
+                  }}
+                  className={`flex-1 bg-white border rounded-xl px-4 py-3 text-navy font-mono uppercase focus:outline-none transition-all placeholder:text-slate-400 ${
+                    gstVerifiedData?.isValid
+                      ? 'border-emerald-400 bg-emerald-50/20'
+                      : 'border-slate-200 focus:border-amber-500'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={handleVerifyGst}
+                  disabled={isVerifyingGst || formData.businessType.gstin.length !== 15}
+                  className="px-4 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 flex items-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  {isVerifyingGst ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : gstVerifiedData?.isValid ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-950" />
+                      <span>Verified ✓</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Verify GSTIN</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* GSTIN Status Badge */}
+              {gstVerifiedData && (
+                <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-900 flex items-center gap-2 shadow-2xs animate-fadeIn">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="font-extrabold block">
+                      State Registered: {gstVerifiedData.stateName}
+                    </span>
+                    <span className="text-[11px] text-emerald-700">{gstVerifiedData.message}</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1029,10 +1350,16 @@ export function SellerRegistrationWizard() {
       {/* STEP 6: Bank & UPI Settlement */}
       {currentStep === 6 && (
         <div className="space-y-6">
-          <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-amber-600" />
-            Step 6: Bank Account &amp; UPI Settlement Details
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-amber-600" />
+              Step 6: Bank Account &amp; UPI Settlement Details
+            </h2>
+            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+              <span>Real-Time Bank Verification</span>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -1051,6 +1378,71 @@ export function SellerRegistrationWizard() {
                 }
                 className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
               />
+            </div>
+
+            {/* IFSC Code Input with Instant RBI Directory Lookup */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  IFSC Code *
+                </label>
+                {ifscVerifiedData?.isValid && (
+                  <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Valid IFSC
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. SBIN0001234"
+                  maxLength={11}
+                  value={formData.bankDetails.ifscCode}
+                  onChange={(e) => {
+                    const val = e.target.value.toUpperCase();
+                    setIfscVerifiedData(null);
+                    setBankVerifiedData(null);
+                    setFormData((prev) => ({
+                      ...prev,
+                      bankDetails: { ...prev.bankDetails, ifscCode: val },
+                    }));
+                    if (val.length === 11) {
+                      handleLookupIfsc(val);
+                    }
+                  }}
+                  className={`flex-1 bg-white border rounded-xl px-4 py-3 text-navy font-mono uppercase focus:outline-none transition-all placeholder:text-slate-400 ${
+                    ifscVerifiedData?.isValid
+                      ? 'border-emerald-400 bg-emerald-50/20'
+                      : 'border-slate-200 focus:border-amber-500'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleLookupIfsc()}
+                  disabled={isVerifyingIfsc || formData.bankDetails.ifscCode.length !== 11}
+                  className="px-3.5 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 flex items-center gap-1 shrink-0 cursor-pointer"
+                >
+                  {isVerifyingIfsc ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <span>Lookup</span>
+                  )}
+                </button>
+              </div>
+
+              {/* IFSC Result Badge */}
+              {ifscVerifiedData && (
+                <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="font-extrabold block">{ifscVerifiedData.bank}</span>
+                    <span className="text-[11px] text-emerald-700">
+                      Branch: {ifscVerifiedData.branch} ({ifscVerifiedData.city})
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
@@ -1073,42 +1465,87 @@ export function SellerRegistrationWizard() {
 
             <div>
               <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                Account Number *
+                Bank Account Number *
               </label>
               <input
                 type="text"
                 placeholder="123456789012"
+                maxLength={18}
                 value={formData.bankDetails.accountNumber}
-                onChange={(e) =>
+                onChange={(e) => {
+                  setBankVerifiedData(null);
                   setFormData((prev) => ({
                     ...prev,
                     bankDetails: {
                       ...prev.bankDetails,
                       accountNumber: e.target.value.replace(/\D/g, ''),
                     },
-                  }))
-                }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                  }));
+                }}
+                className={`w-full bg-white border rounded-xl px-4 py-3 text-navy font-mono focus:outline-none transition-all placeholder:text-slate-400 ${
+                  bankVerifiedData?.isValid
+                    ? 'border-emerald-400 bg-emerald-50/20'
+                    : 'border-slate-200 focus:border-amber-500'
+                }`}
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                IFSC Code *
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. SBIN0001234"
-                maxLength={11}
-                value={formData.bankDetails.ifscCode}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    bankDetails: { ...prev.bankDetails, ifscCode: e.target.value.toUpperCase() },
-                  }))
-                }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono uppercase focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
-              />
+            {/* Instant Bank Account Verification Button */}
+            <div className="md:col-span-2 pt-1 pb-1">
+              <div className="border border-slate-200 bg-slate-50/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-5 h-5 text-amber-700" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-extrabold text-navy">Verify Bank Account Details</p>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Validates account structure &amp; matches branch IFSC with RBI database.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleVerifyBank}
+                  disabled={
+                    isVerifyingBank ||
+                    formData.bankDetails.accountNumber.length < 9 ||
+                    formData.bankDetails.ifscCode.length !== 11
+                  }
+                  className="w-full sm:w-auto px-5 py-2.5 bg-navy hover:bg-slate-900 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  {isVerifyingBank ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : bankVerifiedData?.isValid ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Account Verified ✓</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Verify Account Now</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Bank Verified Status Badge */}
+              {bankVerifiedData && (
+                <div className="mt-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-900 flex items-center gap-2.5 shadow-2xs animate-fadeIn">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="font-extrabold block">
+                      {bankVerifiedData.bankName} Account Validated
+                    </span>
+                    <span className="text-[11px] text-emerald-700">{bankVerifiedData.message}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="md:col-span-2">
@@ -1240,9 +1677,31 @@ export function SellerRegistrationWizard() {
               </div>
               <div>
                 <span className="text-slate-500 block text-xs font-semibold">PAN / GSTIN</span>
-                <span className="font-mono font-bold text-navy">
-                  {formData.businessType.pan} / {formData.businessType.gstin || 'N/A'}
-                </span>
+                <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                  <span className="font-mono font-bold text-navy">{formData.businessType.pan}</span>
+                  {panVerifiedData?.isValid ? (
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded-md border border-emerald-300">
+                      ✓ PAN Verified
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md">
+                      Pending Verification
+                    </span>
+                  )}
+                  {formData.businessType.gstin && (
+                    <>
+                      <span className="text-slate-400">|</span>
+                      <span className="font-mono font-bold text-navy">
+                        {formData.businessType.gstin}
+                      </span>
+                      {gstVerifiedData?.isValid && (
+                        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded-md border border-emerald-300">
+                          ✓ GST Verified
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
               <div>
                 <span className="text-slate-500 block text-xs font-semibold">
@@ -1257,12 +1716,27 @@ export function SellerRegistrationWizard() {
                 <span className="text-slate-500 block text-xs font-semibold">
                   Settlement Bank &amp; UPI
                 </span>
-                <span className="font-bold text-navy">
-                  {formData.bankDetails.bankName} ({formData.bankDetails.accountNumber}) |{' '}
-                  <span className="text-amber-700 font-mono font-bold">
-                    {formData.bankDetails.upiId || 'N/A'}
-                  </span>
-                </span>
+                <div className="space-y-1 mt-0.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="font-bold text-navy">
+                      {formData.bankDetails.bankName} ({formData.bankDetails.accountNumber})
+                    </span>
+                    {bankVerifiedData?.isValid ? (
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded-md border border-emerald-300">
+                        ✓ Bank Verified
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md">
+                        {formData.bankDetails.ifscCode}
+                      </span>
+                    )}
+                  </div>
+                  {formData.bankDetails.upiId && (
+                    <div className="text-xs text-amber-700 font-mono font-bold">
+                      UPI: {formData.bankDetails.upiId}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
