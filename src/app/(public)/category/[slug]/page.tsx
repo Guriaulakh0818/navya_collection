@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { CategoryBanner } from '@/features/categories/components/CategoryBanner';
@@ -104,12 +105,12 @@ export default async function CategoryPage({ params }: Props) {
             Showing <span className="font-bold text-navy">{allProducts.length}</span> products in{' '}
             <span className="font-bold text-navy">{category.name}</span>
           </p>
-          <a
+          <Link
             href="/category"
             className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-semibold text-navy hover:bg-slate-100 transition-colors shadow-2xs"
           >
             Explore All Categories
-          </a>
+          </Link>
         </div>
 
         <ProductGrid products={allProducts} />
