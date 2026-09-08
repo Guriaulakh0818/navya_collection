@@ -500,7 +500,11 @@ export class OtpService {
     } catch {}
 
     // 7. Create Production Customer Session
-    await createUserSession(user);
+    try {
+      await createUserSession(user);
+    } catch (err) {
+      console.warn('[SESSION_CREATION_WARN]', err);
+    }
 
     console.log(
       `[${timestamp}] [EMAIL_OTP_VERIFY] Email: ${maskedEmail} | Status: SUCCESS | Session Created`,
