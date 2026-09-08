@@ -123,7 +123,7 @@ export default async function middleware(req: NextRequest) {
 
   // 6. Subdomain Landing & Path Normalization
   if (isAdminSubdomain && pathname === '/') {
-    const targetUrl = new URL('/dashboard', req.url);
+    const targetUrl = new URL('/login', req.url);
     req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
     return NextResponse.redirect(targetUrl, 307);
   }

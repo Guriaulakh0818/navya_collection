@@ -2,6 +2,7 @@ import { Building2, Grid, ShoppingBag, Sparkles, Store, Tag } from 'lucide-react
 import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { HorizontalCarousel } from '@/frontend/components/ui/HorizontalCarousel';
 import { CopyCouponButton } from '@/frontend/features/marketplace/components/CopyCouponButton';
@@ -17,6 +18,11 @@ export const revalidate = 0;
 export default async function MultiVendorMarketplaceHomePage() {
   const headersList = await headers();
   const host = (headersList.get('x-forwarded-host') || headersList.get('host') || '').toLowerCase();
+
+  // If accessed via admin.navyacollection.store or admin subdomain, redirect to admin login
+  if (host.startsWith('admin.') || host.includes('admin.navyacollection.store')) {
+    redirect('/login');
+  }
 
   // If accessed via seller.navyacollection.store or seller subdomain, render the Become Seller portal
   if (host.startsWith('seller.') || host.includes('seller.navyacollection.store')) {
