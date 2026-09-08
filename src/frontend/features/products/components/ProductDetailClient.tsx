@@ -64,8 +64,8 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     return { label: 'In Stock', color: 'bg-emerald-600' };
   }, [activeVariant, product]);
 
-  const price = activeVariant?.price ?? product.price ?? 0;
-  const compareAtPrice = product.compareAtPrice ?? null;
+  const price = Number(activeVariant?.price ?? product.price ?? 0);
+  const compareAtPrice = product.compareAtPrice ? Number(product.compareAtPrice) : null;
   const discountPercent =
     compareAtPrice && compareAtPrice > price
       ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
@@ -205,15 +205,15 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
           </p>
 
           {/* Color & Size Variant Selector */}
-          {product.variants && product.variants.length > 0 && (
+          {product.variants && product.variants.length > 1 && (
             <div className="space-y-3 pt-3 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
-                    Select Color Variant
+                    Select Variant
                   </h3>
                   <span className="text-[11px] font-bold text-amber-900 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 shadow-xs">
-                    {activeVariant?.color || activeVariant?.name || 'Free Size'}
+                    {activeVariant?.color || activeVariant?.name || 'Standard'}
                   </span>
                 </div>
                 <button
@@ -227,19 +227,8 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 {product.variants.map((v: any, idx: number) => {
-                  const defaultColors = [
-                    'Royal Blue',
-                    'Emerald Green',
-                    'Wine Red',
-                    'Golden Mustard',
-                    'Magenta Pink',
-                  ];
-                  const variantColorName =
-                    v.color ||
-                    v.colorName ||
-                    (v.name && !v.name.includes('Free Size')
-                      ? v.name
-                      : defaultColors[idx % defaultColors.length]);
+                  const variantName =
+                    v.name || v.color || v.colorName || v.size || `Option ${idx + 1}`;
                   const variantStock = v.stock !== undefined && v.stock !== null ? v.stock : 10;
                   const isOut = variantStock <= 0;
 
@@ -257,7 +246,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                     >
                       <div className="flex items-center justify-between w-full gap-1">
                         <span className="font-extrabold text-xs tracking-tight truncate">
-                          {variantColorName}
+                          {variantName}
                         </span>
                         <span
                           className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${
@@ -271,13 +260,15 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                           {isOut ? 'Sold Out' : `${variantStock} in stock`}
                         </span>
                       </div>
-                      <span
-                        className={`text-[10px] mt-1 font-semibold ${
-                          selectedVariant === v.id ? 'text-amber-200' : 'text-slate-500'
-                        }`}
-                      >
-                        {v.size || 'Free Size'}
-                      </span>
+                      {v.size && (
+                        <span
+                          className={`text-[10px] mt-1 font-semibold ${
+                            selectedVariant === v.id ? 'text-amber-200' : 'text-slate-500'
+                          }`}
+                        >
+                          {v.size}
+                        </span>
+                      )}
                     </button>
                   );
                 })}

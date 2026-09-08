@@ -99,13 +99,6 @@ async function getFormattedProduct(slug: string) {
     const res = await ProductService.getProductByIdOrSlug(slug);
     if (res?.success && res?.data) {
       const dbProd = res.data;
-      const defaultColors = [
-        'Royal Blue',
-        'Emerald Green',
-        'Wine Red',
-        'Golden Mustard',
-        'Magenta Pink',
-      ];
       return {
         id: dbProd.id,
         name: dbProd.name,
@@ -133,21 +126,16 @@ async function getFormattedProduct(slug: string) {
             : fallbackSampleProduct.images,
         variants:
           dbProd.variants && dbProd.variants.length > 0
-            ? dbProd.variants.map((v: any, idx: number) => ({
+            ? dbProd.variants.map((v: any) => ({
                 id: v.id,
-                sku: v.sku,
-                name:
-                  v.color ||
-                  v.colorName ||
-                  (v.name && !v.name.includes('Free Size')
-                    ? v.name
-                    : defaultColors[idx % defaultColors.length]),
-                color: v.color || v.colorName || defaultColors[idx % defaultColors.length],
-                price: Number(v.price || dbProd.price),
-                stock: v.stock !== undefined && v.stock !== null ? v.stock : 10,
-                size: v.size || 'Free Size',
+                sku: v.sku || `${dbProd.sku}-${v.id}`,
+                name: v.name || v.color || v.size || 'Standard',
+                color: v.color || v.colorName || null,
+                price: Number(v.price !== undefined && v.price !== null ? v.price : dbProd.price),
+                stock: v.stock !== undefined && v.stock !== null ? v.stock : dbProd.stock || 10,
+                size: v.size || null,
               }))
-            : fallbackSampleProduct.variants,
+            : [],
         reviews:
           dbProd.reviews && dbProd.reviews.length > 0
             ? dbProd.reviews.map((r: any) => ({
@@ -157,7 +145,7 @@ async function getFormattedProduct(slug: string) {
                 comment: r.comment,
                 createdAt: new Date(r.createdAt),
               }))
-            : fallbackSampleProduct.reviews,
+            : [],
         shop: dbProd.shop || null,
       };
     }
