@@ -29,6 +29,39 @@ interface ProductDetailClientProps {
   relatedProducts?: any[];
 }
 
+function getCleanVariantLabel(v: any, productName?: string): { main: string; sub?: string } {
+  if (!v) return { main: 'Standard' };
+
+  const size = v.size?.trim();
+  const color = (v.color || v.colorName)?.trim();
+
+  // If size is distinct (like M, L, XL, 38, 40)
+  if (size && color && size !== color) {
+    return { main: `${color} (${size})`, sub: size };
+  }
+  if (size) {
+    return { main: size, sub: size };
+  }
+  if (color) {
+    return { main: color, sub: color };
+  }
+
+  // If name has product name prefix or dash
+  let name = (v.name || '').trim();
+  if (productName && name.toLowerCase().startsWith(productName.toLowerCase())) {
+    name = name
+      .slice(productName.length)
+      .replace(/^[\s\-–—:]+/, '')
+      .trim();
+  } else if (name.includes(' - ')) {
+    name = name.split(' - ').pop()?.trim() || name;
+  } else if (name.includes(' – ')) {
+    name = name.split(' – ').pop()?.trim() || name;
+  }
+
+  return { main: name || 'Option' };
+}
+
 export function ProductDetailClient({ product, relatedProducts = [] }: ProductDetailClientProps) {
   const addItem = useCartStore((s) => s.addItem);
   const { toggleItem: toggleWishlist, isInWishlist } = useWishlistStore();
@@ -207,30 +240,30 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
           {/* Color & Size Variant Selector */}
           {product.variants && product.variants.length > 1 && (
             <div className="space-y-3 pt-3 border-t border-slate-100">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
-                    Select Variant
+                    Select Variant:
                   </h3>
-                  <span className="text-[11px] font-bold text-amber-900 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 shadow-xs">
-                    {activeVariant?.color || activeVariant?.name || 'Standard'}
+                  <span className="text-xs font-bold text-amber-950 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-300 shadow-2xs">
+                    {getCleanVariantLabel(activeVariant, product.name).main}
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsSizeGuideOpen(true)}
-                  className="inline-flex items-center text-xs font-bold text-amber-700 hover:text-amber-600 gap-1 cursor-pointer"
+                  className="inline-flex items-center text-xs font-bold text-amber-700 hover:text-amber-800 gap-1.5 cursor-pointer transition-colors"
                 >
                   <HelpCircle className="h-3.5 w-3.5" /> Size Chart Guide
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              <div className="flex flex-wrap gap-2 sm:gap-2.5">
                 {product.variants.map((v: any, idx: number) => {
-                  const variantName =
-                    v.name || v.color || v.colorName || v.size || `Option ${idx + 1}`;
+                  const { main: variantLabel } = getCleanVariantLabel(v, product.name);
                   const variantStock = v.stock !== undefined && v.stock !== null ? v.stock : 10;
                   const isOut = variantStock <= 0;
+                  const isSelected = selectedVariant === v.id;
 
                   return (
                     <button
@@ -238,37 +271,37 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                       type="button"
                       onClick={() => setSelectedVariant(v.id)}
                       disabled={isOut}
-                      className={`flex flex-col items-start p-3 rounded-2xl border transition-all text-left cursor-pointer active:scale-98 ${
-                        selectedVariant === v.id
-                          ? 'border-navy bg-navy text-white shadow-md ring-2 ring-navy/20'
+                      className={`group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border transition-all text-left cursor-pointer active:scale-95 ${
+                        isSelected
+                          ? 'border-navy bg-navy text-white shadow-sm ring-2 ring-navy/20'
                           : 'border-slate-200 bg-white text-slate-800 hover:border-amber-500 hover:bg-amber-50/40'
                       } ${isOut ? 'opacity-40 cursor-not-allowed line-through' : ''}`}
                     >
-                      <div className="flex items-center justify-between w-full gap-1">
-                        <span className="font-extrabold text-xs tracking-tight truncate">
-                          {variantName}
-                        </span>
+                      <span className="font-extrabold text-xs sm:text-sm tracking-tight whitespace-nowrap">
+                        {variantLabel}
+                      </span>
+                      {v.price && Number(v.price) !== Number(product.price) && (
                         <span
-                          className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${
-                            selectedVariant === v.id
-                              ? 'bg-amber-400 text-slate-950 font-black'
-                              : isOut
-                                ? 'bg-rose-100 text-rose-700'
-                                : 'bg-emerald-100 text-emerald-800'
+                          className={`text-xs font-semibold font-mono ${
+                            isSelected ? 'text-amber-300' : 'text-slate-500'
                           }`}
                         >
-                          {isOut ? 'Sold Out' : `${variantStock} in stock`}
-                        </span>
-                      </div>
-                      {v.size && (
-                        <span
-                          className={`text-[10px] mt-1 font-semibold ${
-                            selectedVariant === v.id ? 'text-amber-200' : 'text-slate-500'
-                          }`}
-                        >
-                          {v.size}
+                          ₹{Number(v.price).toLocaleString('en-IN')}
                         </span>
                       )}
+                      <span
+                        className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${
+                          isSelected
+                            ? 'bg-amber-400 text-slate-950 font-black'
+                            : isOut
+                              ? 'bg-rose-100 text-rose-700'
+                              : variantStock <= 3
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-emerald-100 text-emerald-800'
+                        }`}
+                      >
+                        {isOut ? 'Sold Out' : `${variantStock} in stock`}
+                      </span>
                     </button>
                   );
                 })}
