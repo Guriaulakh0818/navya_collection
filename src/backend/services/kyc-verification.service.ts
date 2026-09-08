@@ -1,7 +1,6 @@
 /**
- * Smart Hybrid KYC & Verification Engine for Navya Collection
- * Supports instant free IFSC validation, algorithmic PAN & GST verification,
- * and pluggable live API adapters (Sandbox.co.in / Surepass / Cashfree / RazorpayX).
+ * Live Government & Banking KYC Verification Engine for Navya Collection
+ * Powered by Sandbox.co.in (NSDL PAN Database, GSTN Portal, and RBI Bank IMPS)
  */
 
 export interface IfscLookupResult {
@@ -21,13 +20,13 @@ export interface PanVerificationResult {
   pan: string;
   entityType: string;
   entityCategory: 'INDIVIDUAL' | 'BUSINESS' | 'TRUST' | 'OTHER';
-  status: 'VERIFIED_ACTIVE' | 'INVALID_FORMAT' | 'NAME_MISMATCH';
+  status: 'VERIFIED_ACTIVE' | 'INVALID_PAN' | 'INVALID_FORMAT' | 'NAME_MISMATCH';
   message: string;
   details?: {
-    letter4: string;
-    letter5: string;
-    surnameInitialMatch?: boolean;
+    letter4?: string;
+    letter5?: string;
     registeredName?: string;
+    surnameInitialMatch?: boolean;
   };
 }
 
@@ -38,12 +37,14 @@ export interface GstVerificationResult {
   stateName: string;
   panFromGst: string;
   panMatchesEnteredPan: boolean;
-  status: 'VERIFIED_ACTIVE' | 'INVALID_FORMAT' | 'PAN_MISMATCH';
+  status: 'VERIFIED_ACTIVE' | 'INVALID_GSTIN' | 'INVALID_FORMAT' | 'PAN_MISMATCH';
   message: string;
   details?: {
-    entityType: string;
+    entityType?: string;
     legalName?: string;
     tradeName?: string;
+    taxpayerType?: string;
+    status?: string;
   };
 }
 
@@ -55,7 +56,7 @@ export interface BankVerificationResult {
   state: string;
   ifsc: string;
   accountNumberMasked: string;
-  status: 'VERIFIED' | 'INVALID_IFSC' | 'INVALID_ACCOUNT';
+  status: 'VERIFIED' | 'INVALID_IFSC' | 'INVALID_ACCOUNT' | 'ACCOUNT_DOES_NOT_EXIST';
   message: string;
   beneficiaryName?: string;
 }
@@ -119,7 +120,61 @@ const PAN_ENTITY_MAP: Record<
   G: { type: 'Government Entity', category: 'OTHER' },
 };
 
+// Token cache to avoid re-authenticating on every API call
+let cachedAccessToken: string | null = null;
+let tokenExpiresAt = 0;
+
 export class KycVerificationService {
+  /**
+   * Helper: Obtains a valid JWT access token from Sandbox.co.in
+   */
+  private static async getSandboxAccessToken(): Promise<string | null> {
+    const apiKey = process.env.SANDBOX_API_KEY || 'key_live_be2766d441724763a474592e2efce7c1';
+    const apiSecret =
+      process.env.SANDBOX_API_SECRET ||
+      process.env.SANDBOX_AUTH_TOKEN ||
+      'secret_live_3096d4232e764874baa17b0672cacccb';
+
+    if (!apiKey || !apiSecret) return null;
+
+    const now = Date.now();
+    if (cachedAccessToken && now < tokenExpiresAt - 60000) {
+      return cachedAccessToken;
+    }
+
+    try {
+      const res = await fetch('https://api.sandbox.co.in/authenticate', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'x-api-secret': apiSecret,
+          'x-api-version': '1.0',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (!res.ok) {
+        console.error('[SANDBOX_AUTH_ERROR] Failed with status:', res.status);
+        return null;
+      }
+
+      const json = await res.json();
+      const token = json.access_token || json.data?.access_token;
+
+      if (token) {
+        cachedAccessToken = token;
+        // Sandbox token is valid for 24 hours (86400 seconds)
+        tokenExpiresAt = now + 23 * 60 * 60 * 1000;
+        return token;
+      }
+      return null;
+    } catch (err) {
+      console.error('[SANDBOX_AUTH_EXCEPTION]', err);
+      return null;
+    }
+  }
+
   /**
    * 1. Real-Time Public IFSC Lookup (Free, instant, reliable)
    */
@@ -155,7 +210,7 @@ export class KycVerificationService {
       if (!res.ok) {
         return {
           isValid: false,
-          error: `IFSC Code '${cleanIfsc}' was not found in RBI bank directory. Please verify with your bank passbook.`,
+          error: `IFSC Code '${cleanIfsc}' was not found in RBI bank directory. Please check your bank passbook.`,
         };
       }
 
@@ -171,21 +226,16 @@ export class KycVerificationService {
         ifsc: data.IFSC || cleanIfsc,
         micr: data.MICR || '',
       };
-    } catch (err: any) {
-      // Fallback: If network times out, extract bank prefix
-      const bankCode = cleanIfsc.substring(0, 4);
+    } catch {
       return {
-        isValid: true,
-        bank: `${bankCode} Bank`,
-        branch: 'Branch Verified',
-        city: 'Verified',
-        ifsc: cleanIfsc,
+        isValid: false,
+        error: `Could not verify IFSC Code '${cleanIfsc}'. Please check the code or try again.`,
       };
     }
   }
 
   /**
-   * 2. Smart PAN Verification (Algorithmic + Pluggable Live API)
+   * 2. Live NSDL Government PAN Verification
    */
   static async verifyPan(rawPan: string, legalName?: string): Promise<PanVerificationResult> {
     const cleanPan = (rawPan || '').trim().toUpperCase();
@@ -204,78 +254,91 @@ export class KycVerificationService {
     }
 
     const fourthChar = cleanPan.charAt(3);
-    const fifthChar = cleanPan.charAt(4);
     const entityInfo = PAN_ENTITY_MAP[fourthChar] || {
       type: 'Registered Taxpayer',
       category: 'OTHER' as const,
     };
 
-    // Check surname / name match heuristic
-    let surnameInitialMatch = true;
-    if (legalName && legalName.trim().length > 0) {
-      const nameParts = legalName.trim().toUpperCase().split(/\s+/);
-      const lastName = nameParts[nameParts.length - 1] || '';
-      if (lastName.length > 0) {
-        surnameInitialMatch = lastName.charAt(0) === fifthChar;
-      }
-    }
+    // Query Live NSDL Database via Sandbox.co.in
+    const token = await this.getSandboxAccessToken();
+    const apiKey = process.env.SANDBOX_API_KEY || 'key_live_be2766d441724763a474592e2efce7c1';
 
-    // Check for Live KYC provider keys if configured (Sandbox.co.in / Surepass)
-    const sandboxKey = process.env.SANDBOX_API_KEY;
-    const surepassKey = process.env.SUREPASS_API_KEY;
-
-    if (sandboxKey) {
+    if (token) {
       try {
-        const liveRes = await fetch('https://api.sandbox.co.in/kyc/pan/verify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': sandboxKey,
-            Authorization: process.env.SANDBOX_AUTH_TOKEN || '',
+        const liveRes = await fetch(
+          `https://api.sandbox.co.in/pans/${cleanPan}/verify?consent=Y&reason=Seller%20KYC%20Verification`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: token,
+              'x-api-key': apiKey,
+              'x-api-version': '1.0',
+              'Content-Type': 'application/json',
+            },
           },
-          body: JSON.stringify({ pan: cleanPan }),
-        });
-        if (liveRes.ok) {
-          const liveData = await liveRes.json();
-          if (liveData?.data?.status === 'VALID' || liveData?.data?.valid) {
+        );
+
+        const liveJson = await liveRes.json().catch(() => ({}));
+
+        if (liveRes.ok && liveJson.data) {
+          const panStatus = liveJson.data.status;
+          const registeredName =
+            liveJson.data.full_name || liveJson.data.name || liveJson.data.name_as_per_pan;
+
+          if (panStatus === 'VALID') {
             return {
               isValid: true,
               pan: cleanPan,
               entityType: entityInfo.type,
               entityCategory: entityInfo.category,
               status: 'VERIFIED_ACTIVE',
-              message: `PAN actively verified with NSDL database as ${entityInfo.type}.`,
+              message: `PAN actively verified with Income Tax Department as ${entityInfo.type}.`,
               details: {
                 letter4: fourthChar,
-                letter5: fifthChar,
-                registeredName: liveData.data.full_name || legalName,
+                registeredName: registeredName || legalName,
               },
+            };
+          } else {
+            return {
+              isValid: false,
+              pan: cleanPan,
+              entityType: entityInfo.type,
+              entityCategory: entityInfo.category,
+              status: 'INVALID_PAN',
+              message: `PAN '${cleanPan}' is marked as INVALID in Income Tax Department records.`,
             };
           }
         }
-      } catch {
-        // Fall back to algorithmic verification
+
+        if (liveRes.status === 422 || liveRes.status === 404) {
+          return {
+            isValid: false,
+            pan: cleanPan,
+            entityType: entityInfo.type,
+            entityCategory: entityInfo.category,
+            status: 'INVALID_PAN',
+            message:
+              liveJson.message || `PAN '${cleanPan}' does not exist in NSDL / Income Tax records.`,
+          };
+        }
+      } catch (err) {
+        console.error('[LIVE_PAN_CHECK_ERROR]', err);
       }
     }
 
+    // Fallback if API unreachable
     return {
-      isValid: true,
+      isValid: false,
       pan: cleanPan,
       entityType: entityInfo.type,
       entityCategory: entityInfo.category,
-      status: 'VERIFIED_ACTIVE',
-      message: `PAN Card validated successfully (${entityInfo.type}).`,
-      details: {
-        letter4: fourthChar,
-        letter5: fifthChar,
-        surnameInitialMatch,
-        registeredName: legalName || undefined,
-      },
+      status: 'INVALID_PAN',
+      message: `Could not verify PAN with NSDL live database. Please ensure PAN number is correct.`,
     };
   }
 
   /**
-   * 3. Smart GSTIN Verification (State Lookup, Embedded PAN validation & Pluggable Live API)
+   * 3. Live GST Portal Verification
    */
   static async verifyGstin(rawGstin: string, enteredPan?: string): Promise<GstVerificationResult> {
     const cleanGstin = (rawGstin || '').trim().toUpperCase();
@@ -317,26 +380,91 @@ export class KycVerificationService {
       };
     }
 
-    const fourthCharOfPan = panFromGst.charAt(3);
-    const entityInfo = PAN_ENTITY_MAP[fourthCharOfPan] || { type: 'Registered Business' };
+    // Query Live GST Portal via Sandbox.co.in
+    const token = await this.getSandboxAccessToken();
+    const apiKey = process.env.SANDBOX_API_KEY || 'key_live_be2766d441724763a474592e2efce7c1';
+
+    if (token) {
+      try {
+        const liveRes = await fetch(`https://api.sandbox.co.in/gsp/public/gstin/${cleanGstin}`, {
+          method: 'GET',
+          headers: {
+            Authorization: token,
+            'x-api-key': apiKey,
+            'x-api-version': '1.0',
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const liveJson = await liveRes.json().catch(() => ({}));
+
+        if (liveRes.ok && liveJson.data) {
+          const gstData = liveJson.data;
+          const status = gstData.status || gstData.sts || 'Active';
+          const legalName = gstData.legal_name_of_business || gstData.lgnm || '';
+          const tradeName = gstData.trade_name || gstData.tradeNam || '';
+
+          if (status.toLowerCase().includes('active')) {
+            return {
+              isValid: true,
+              gstin: cleanGstin,
+              stateCode,
+              stateName,
+              panFromGst,
+              panMatchesEnteredPan: true,
+              status: 'VERIFIED_ACTIVE',
+              message: `GSTIN verified on GST Portal: ${tradeName || legalName} (${stateName}).`,
+              details: {
+                legalName,
+                tradeName,
+                status: 'Active',
+              },
+            };
+          } else {
+            return {
+              isValid: false,
+              gstin: cleanGstin,
+              stateCode,
+              stateName,
+              panFromGst,
+              panMatchesEnteredPan: true,
+              status: 'INVALID_GSTIN',
+              message: `GSTIN '${cleanGstin}' status is '${status}' (Not Active on GST Portal).`,
+            };
+          }
+        }
+
+        if (liveRes.status === 404 || liveRes.status === 422) {
+          return {
+            isValid: false,
+            gstin: cleanGstin,
+            stateCode,
+            stateName,
+            panFromGst,
+            panMatchesEnteredPan: true,
+            status: 'INVALID_GSTIN',
+            message: `GSTIN '${cleanGstin}' was not found on the official GST Portal.`,
+          };
+        }
+      } catch (err) {
+        console.error('[LIVE_GST_CHECK_ERROR]', err);
+      }
+    }
 
     return {
-      isValid: true,
+      isValid: false,
       gstin: cleanGstin,
       stateCode,
       stateName,
       panFromGst,
       panMatchesEnteredPan: true,
-      status: 'VERIFIED_ACTIVE',
-      message: `GSTIN verified for ${stateName} (${entityInfo.type}).`,
-      details: {
-        entityType: entityInfo.type,
-      },
+      status: 'INVALID_GSTIN',
+      message: `Could not verify GSTIN with official GST Portal. Please check your GST number.`,
     };
   }
 
   /**
-   * 4. Smart Bank Account Verification (IFSC + Account Pattern + Pluggable Penny Drop)
+   * 4. Live Bank Account Verification (Penny Drop & RBI Account Validation)
    */
   static async verifyBankAccount(
     accountNumber: string,
@@ -346,7 +474,7 @@ export class KycVerificationService {
     const cleanAccount = (accountNumber || '').trim();
     const cleanIfsc = (ifscCode || '').trim().toUpperCase();
 
-    // 1. Verify IFSC
+    // 1. Verify IFSC with RBI directory
     const ifscResult = await this.lookupIfsc(cleanIfsc);
     if (!ifscResult.isValid) {
       return {
@@ -379,17 +507,92 @@ export class KycVerificationService {
 
     const maskedAccount = `XXXXXX${cleanAccount.slice(-4)}`;
 
+    // Query Live Bank via Sandbox.co.in Penny Drop / Account Verification
+    const token = await this.getSandboxAccessToken();
+    const apiKey = process.env.SANDBOX_API_KEY || 'key_live_be2766d441724763a474592e2efce7c1';
+
+    if (token) {
+      try {
+        const liveRes = await fetch(
+          `https://api.sandbox.co.in/bank/${cleanIfsc}/accounts/${cleanAccount}/verify`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: token,
+              'x-api-key': apiKey,
+              'x-api-version': '1.0',
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+
+        const liveJson = await liveRes.json().catch(() => ({}));
+
+        if (liveRes.ok && liveJson.data) {
+          const bankData = liveJson.data;
+
+          if (bankData.account_exists === true) {
+            const beneficiaryName =
+              bankData.full_name || bankData.name_at_bank || accountHolderName;
+
+            return {
+              isValid: true,
+              bankName: ifscResult.bank || 'Bank',
+              branch: ifscResult.branch || 'Branch',
+              city: ifscResult.city || '',
+              state: ifscResult.state || '',
+              ifsc: cleanIfsc,
+              accountNumberMasked: maskedAccount,
+              status: 'VERIFIED',
+              message: `Bank account actively verified with ${ifscResult.bank} (${ifscResult.branch}). Beneficiary: ${beneficiaryName}.`,
+              beneficiaryName,
+            };
+          } else {
+            return {
+              isValid: false,
+              bankName: ifscResult.bank || '',
+              branch: ifscResult.branch || '',
+              city: ifscResult.city || '',
+              state: ifscResult.state || '',
+              ifsc: cleanIfsc,
+              accountNumberMasked: maskedAccount,
+              status: 'ACCOUNT_DOES_NOT_EXIST',
+              message:
+                bankData.message ||
+                `Account number '${cleanAccount}' does not exist at ${ifscResult.bank} (${ifscResult.branch}).`,
+            };
+          }
+        }
+
+        if (liveRes.status === 422 || liveRes.status === 400) {
+          return {
+            isValid: false,
+            bankName: ifscResult.bank || '',
+            branch: ifscResult.branch || '',
+            city: ifscResult.city || '',
+            state: ifscResult.state || '',
+            ifsc: cleanIfsc,
+            accountNumberMasked: maskedAccount,
+            status: 'ACCOUNT_DOES_NOT_EXIST',
+            message:
+              liveJson.message || `Bank account validation failed for account '${cleanAccount}'.`,
+          };
+        }
+      } catch (err) {
+        console.error('[LIVE_BANK_CHECK_ERROR]', err);
+      }
+    }
+
     return {
-      isValid: true,
-      bankName: ifscResult.bank || 'Bank',
-      branch: ifscResult.branch || 'Main Branch',
+      isValid: false,
+      bankName: ifscResult.bank || '',
+      branch: ifscResult.branch || '',
       city: ifscResult.city || '',
       state: ifscResult.state || '',
       ifsc: cleanIfsc,
       accountNumberMasked: maskedAccount,
-      status: 'VERIFIED',
-      message: `Bank account verified successfully with ${ifscResult.bank} (${ifscResult.branch}).`,
-      beneficiaryName: accountHolderName || undefined,
+      status: 'ACCOUNT_DOES_NOT_EXIST',
+      message: `Could not verify bank account with banking network. Please verify your account number and IFSC.`,
     };
   }
 }
