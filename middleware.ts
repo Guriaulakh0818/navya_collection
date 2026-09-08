@@ -128,15 +128,29 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(targetUrl, 307);
   }
 
-  if (isSellerSubdomain && pathname === '/register') {
-    const targetUrl = new URL('/become-seller', req.url);
-    req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
-    return NextResponse.redirect(targetUrl, 307);
+  if (isSellerSubdomain) {
+    if (pathname === '/home') {
+      const targetUrl = new URL('/', 'https://navyacollection.store');
+      req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+      return NextResponse.redirect(targetUrl, 307);
+    }
+    if (pathname === '/register') {
+      const targetUrl = new URL('/become-seller', req.url);
+      req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+      return NextResponse.redirect(targetUrl, 307);
+    }
   }
 
   let effectivePathname = pathname;
   let shouldRewrite = false;
   const rewriteUrl = req.nextUrl.clone();
+
+  // Support /home path on main store
+  if (!isAdminSubdomain && !isSellerSubdomain && pathname === '/home') {
+    rewriteUrl.pathname = '/';
+    effectivePathname = '/';
+    shouldRewrite = true;
+  }
 
   if (isAdminSubdomain) {
     if (pathname === '/login') {
