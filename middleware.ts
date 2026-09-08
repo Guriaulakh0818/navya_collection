@@ -70,9 +70,14 @@ export default async function middleware(req: NextRequest) {
   }
 
   // 2. Extract Hostname, Protocol and Detect Subdomains
-  const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
-  const currentHost = rawHost.split(':')[0].toLowerCase();
-  const proto = req.headers.get('x-forwarded-proto')?.toLowerCase();
+  const rawHost =
+    req.nextUrl.hostname || req.headers.get('host') || req.headers.get('x-forwarded-host') || '';
+  const currentHost = rawHost.split(',')[0].split(':')[0].trim().toLowerCase();
+  const proto = (
+    req.headers.get('x-forwarded-proto') ||
+    req.nextUrl.protocol.replace(':', '') ||
+    'https'
+  ).toLowerCase();
 
   // 3. PRODUCTION HTTP → HTTPS ENFORCEMENT
   if (process.env.NODE_ENV === 'production' && proto === 'http') {
@@ -123,7 +128,7 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(targetUrl, 307);
   }
 
-  if (isSellerSubdomain && (pathname === '/' || pathname === '/register')) {
+  if (isSellerSubdomain && pathname === '/register') {
     const targetUrl = new URL('/become-seller', req.url);
     req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
     return NextResponse.redirect(targetUrl, 307);

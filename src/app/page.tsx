@@ -1,4 +1,5 @@
 import { Building2, Grid, ShoppingBag, Sparkles, Store, Tag } from 'lucide-react';
+import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -8,11 +9,20 @@ import { FeaturedShopsGrid } from '@/frontend/features/marketplace/components/Fe
 import { MarketplaceHero } from '@/frontend/features/marketplace/components/MarketplaceHero';
 import { RecentlyAddedShops } from '@/frontend/features/marketplace/components/RecentlyAddedShops';
 import { getMarketplaceHomeData } from '@/frontend/features/marketplace/services/marketplace-data';
+import { BecomeSellerContent } from '@/frontend/features/seller/components/BecomeSellerContent';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function MultiVendorMarketplaceHomePage() {
+  const headersList = await headers();
+  const host = (headersList.get('x-forwarded-host') || headersList.get('host') || '').toLowerCase();
+
+  // If accessed via seller.navyacollection.store or seller subdomain, render the Become Seller portal
+  if (host.startsWith('seller.') || host.includes('seller.navyacollection.store')) {
+    return <BecomeSellerContent />;
+  }
+
   const data = await getMarketplaceHomeData();
 
   const featuredShops = data?.featuredShops || [];
