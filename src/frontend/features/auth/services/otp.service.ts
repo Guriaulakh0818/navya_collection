@@ -1,11 +1,16 @@
 import crypto from 'crypto';
 import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 import { sendEmailOtp } from '@/lib/brevo';
 import { ensureUserExists } from '@/lib/ensure-user';
 import { prisma } from '@/lib/prisma';
 import { createUserSession } from '@/lib/session';
+
+function getJwtSecret(): string {
+  return process.env.JWT_SECRET || 'navya_collection_jwt_secret_key_2026_min_32chars';
+}
 
 // Fallback memory store if database is unreachable or offline
 const memoryEmailOtpVerificationStore = new Map<
@@ -26,6 +31,7 @@ export interface SendOtpResult {
   message: string;
   statusCode: number;
   remainingSeconds?: number;
+  otpTicket?: string;
 }
 
 export interface VerifyOtpResult {
@@ -222,6 +228,17 @@ export class OtpService {
     const OTP_EXPIRY_MINUTES = 5;
     const expiresAt = new Date(now.getTime() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
+    // Generate stateless signed ticket for serverless reliability
+    const otpTicket = jwt.sign(
+      {
+        email,
+        otpHash,
+        expiresAt: expiresAt.toISOString(),
+      },
+      getJwtSecret(),
+      { expiresIn: '10m' },
+    );
+
     const isStillActive = Boolean(existingRecord && existingRecord.expiresAt > now);
     const resendCount = existingRecord && isStillActive ? existingRecord.resendCount + 1 : 1;
 
@@ -280,15 +297,21 @@ export class OtpService {
       status: 'SUCCESS',
       message: `Verification code sent to ${maskedEmail}`,
       statusCode: 200,
+      otpTicket,
     };
   }
 
   /**
-   * Verifies submitted OTP against hashed bcrypt value in OtpVerification table.
+   * Verifies submitted OTP against hashed bcrypt value in OtpVerification table
+   * or stateless JWT signed verification ticket.
    * Manages failed attempt counters (max 5 attempts before deletion), expiry,
    * OTP deletion on success, Prisma User provision, and UserSession creation.
    */
-  static async verifyOtp(rawEmail: string, plainOtp: string): Promise<VerifyOtpResult> {
+  static async verifyOtp(
+    rawEmail: string,
+    plainOtp: string,
+    otpTicket?: string,
+  ): Promise<VerifyOtpResult> {
     const timestamp = new Date().toISOString();
     const email = rawEmail.trim().toLowerCase();
 
@@ -314,7 +337,7 @@ export class OtpService {
       plainOtp === '123456';
 
     if (!isDevTestBypass) {
-      // 1. Retrieve OTP Verification record
+      // 1. Retrieve OTP Verification record from DB or Memory
       let record: {
         id?: string;
         phone: string;
@@ -332,6 +355,28 @@ export class OtpService {
       } catch {
         const memRecord = memoryEmailOtpVerificationStore.get(email);
         if (memRecord) record = { phone: email, ...memRecord };
+      }
+
+      // Stateless JWT ticket fallback across serverless lambdas
+      if ((!record || record.isVerified) && otpTicket) {
+        try {
+          const decoded = jwt.verify(otpTicket, getJwtSecret()) as {
+            email: string;
+            otpHash: string;
+            expiresAt: string;
+          };
+          if (decoded && decoded.email === email && new Date(decoded.expiresAt) > now) {
+            record = {
+              phone: email,
+              otpHash: decoded.otpHash,
+              expiresAt: new Date(decoded.expiresAt),
+              attempts: 0,
+              isVerified: false,
+            };
+          }
+        } catch {
+          // Token expired or invalid signature
+        }
       }
 
       if (!record || record.isVerified) {

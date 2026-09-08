@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 import { verifyOtpSchema } from '@/features/auth/schemas/auth.schemas';
@@ -29,7 +30,10 @@ export async function POST(request: Request) {
     const email = validation.data.email;
     const otp = validation.data.otp;
 
-    const result = await OtpService.verifyOtp(email, otp);
+    const cookieStore = await cookies();
+    const otpTicket = cookieStore.get('navya_otp_ticket')?.value;
+
+    const result = await OtpService.verifyOtp(email, otp, otpTicket);
 
     if (result.status === 'SUCCESS' && result.user) {
       // 1. Generate session token for authenticated user
@@ -44,6 +48,15 @@ export async function POST(request: Request) {
         },
         { status: 200 },
       );
+
+      // Clear the temporary OTP ticket cookie
+      response.cookies.set('navya_otp_ticket', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 0,
+      });
 
       if (sessionResult?.token) {
         response.cookies.set(SESSION_COOKIE_NAME, sessionResult.token, {

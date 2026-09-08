@@ -45,13 +45,25 @@ export async function POST(request: NextRequest) {
     const result = await OtpService.sendOtp(email);
 
     if (result.status === 'SUCCESS') {
-      return NextResponse.json(
+      const response = NextResponse.json(
         {
           success: true,
           message: result.message,
         },
         { status: 200 },
       );
+
+      if (result.otpTicket) {
+        response.cookies.set('navya_otp_ticket', result.otpTicket, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: 10 * 60, // 10 minutes
+        });
+      }
+
+      return response;
     }
 
     return NextResponse.json(
