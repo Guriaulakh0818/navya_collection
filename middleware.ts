@@ -116,17 +116,25 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 6. Subdomain Path Normalization and Rewriting
+  // 6. Subdomain Landing & Path Normalization
+  if (isAdminSubdomain && pathname === '/') {
+    const targetUrl = new URL('/dashboard', req.url);
+    req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+    return NextResponse.redirect(targetUrl, 307);
+  }
+
+  if (isSellerSubdomain && (pathname === '/' || pathname === '/register')) {
+    const targetUrl = new URL('/become-seller', req.url);
+    req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+    return NextResponse.redirect(targetUrl, 307);
+  }
+
   let effectivePathname = pathname;
   let shouldRewrite = false;
   const rewriteUrl = req.nextUrl.clone();
 
   if (isAdminSubdomain) {
-    if (pathname === '/') {
-      rewriteUrl.pathname = '/admin/dashboard';
-      effectivePathname = '/admin/dashboard';
-      shouldRewrite = true;
-    } else if (pathname === '/login') {
+    if (pathname === '/login') {
       rewriteUrl.pathname = '/admin/login';
       effectivePathname = '/admin/login';
       shouldRewrite = true;
@@ -136,11 +144,7 @@ export default async function middleware(req: NextRequest) {
       shouldRewrite = true;
     }
   } else if (isSellerSubdomain) {
-    if (pathname === '/' || pathname === '/become-seller' || pathname === '/register') {
-      rewriteUrl.pathname = '/become-seller';
-      effectivePathname = '/become-seller';
-      shouldRewrite = true;
-    } else if (pathname === '/login') {
+    if (pathname === '/login') {
       rewriteUrl.pathname = '/login';
       effectivePathname = '/login';
       shouldRewrite = true;
