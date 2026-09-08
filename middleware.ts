@@ -136,9 +136,9 @@ export default async function middleware(req: NextRequest) {
       shouldRewrite = true;
     }
   } else if (isSellerSubdomain) {
-    if (pathname === '/') {
-      rewriteUrl.pathname = '/seller/dashboard';
-      effectivePathname = '/seller/dashboard';
+    if (pathname === '/' || pathname === '/become-seller' || pathname === '/register') {
+      rewriteUrl.pathname = '/become-seller';
+      effectivePathname = '/become-seller';
       shouldRewrite = true;
     } else if (pathname === '/login') {
       rewriteUrl.pathname = '/login';
@@ -471,7 +471,8 @@ export default async function middleware(req: NextRequest) {
         `Customer attempt to access seller dashboard by user ${userId}`,
         { ip, role: userRole },
       );
-      return NextResponse.redirect(new URL('/become-seller', req.url));
+      const targetPath = isSellerSubdomain ? '/' : '/become-seller';
+      return NextResponse.redirect(new URL(targetPath, req.url));
     }
   }
 
