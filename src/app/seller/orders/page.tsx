@@ -22,6 +22,7 @@ export default function SellerOrdersPage() {
   const [activeTab, setActiveTab] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [trackingOrder, setTrackingOrder] = useState<any | null>(null);
 
   const fetchOrders = useCallback(async () => {
@@ -53,6 +54,12 @@ export default function SellerOrdersPage() {
   };
 
   const handleUpdateStatus = async (vendorOrderId: string, newStatus: string) => {
+    setUpdatingOrderId(vendorOrderId);
+    // Optimistic UI update
+    setOrders((prev) =>
+      prev.map((o) => (o.id === vendorOrderId ? { ...o, status: newStatus } : o)),
+    );
+
     try {
       const res = await fetch('/api/v1/seller/orders', {
         method: 'PATCH',
@@ -65,17 +72,21 @@ export default function SellerOrdersPage() {
               ? 'SHIPPED'
               : newStatus === 'DELIVERED'
                 ? 'DELIVERED'
-                : 'IN_TRANSIT',
+                : newStatus === 'PACKED' || newStatus === 'PROCESSING'
+                  ? 'PROCESSING'
+                  : 'PENDING',
         }),
       });
       const data = await res.json();
-      if (data.success) {
-        fetchOrders();
-      } else {
+      if (!data.success) {
         alert(data.message || 'Failed to update order status.');
       }
+      fetchOrders();
     } catch (err) {
       console.error('Status update failed:', err);
+      fetchOrders();
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -225,63 +236,95 @@ export default function SellerOrdersPage() {
 
                       <td className="px-4 py-4 border-r border-slate-200 text-center whitespace-nowrap">
                         <span
-                          className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
+                          className={`px-3 py-1 rounded-full text-[11px] font-extrabold border ${
                             order.status === 'DELIVERED'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                               : order.status === 'SHIPPED'
-                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                                : order.status === 'PACKED' || order.status === 'READY'
-                                  ? 'bg-amber-50 text-amber-800 border-amber-300'
-                                  : 'bg-slate-100 text-slate-700 border-slate-200'
+                                ? 'bg-sky-50 text-sky-800 border-sky-300'
+                                : order.status === 'OUT_FOR_DELIVERY'
+                                  ? 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                                  : order.status === 'CONFIRMED' ||
+                                      order.status === 'PROCESSING' ||
+                                      order.status === 'PACKED' ||
+                                      order.status === 'READY'
+                                    ? 'bg-amber-50 text-amber-900 border-amber-300'
+                                    : order.status === 'CANCELLED'
+                                      ? 'bg-rose-50 text-rose-800 border-rose-300'
+                                      : 'bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                         >
                           {order.status}
                         </span>
                       </td>
 
-                      <td className="px-4 py-4 text-right space-x-2 whitespace-nowrap">
-                        {/* Status Transition Select */}
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                          className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-[11px] text-white focus:border-amber-500 focus:outline-none"
-                        >
-                          <option value="PENDING">Set: Pending</option>
-                          <option value="PACKED">Set: Packed</option>
-                          <option value="READY">Set: Ready for Pickup</option>
-                          <option value="SHIPPED">Set: Shipped</option>
-                          <option value="DELIVERED">Set: Delivered</option>
-                          <option value="CANCELLED">Set: Cancelled</option>
-                        </select>
+                      <td className="px-4 py-4 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center justify-end gap-2">
+                          {/* Status Transition Select Dropdown */}
+                          <div className="relative inline-block">
+                            <select
+                              value={order.status || 'PENDING'}
+                              disabled={updatingOrderId === order.id}
+                              onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
+                              className="appearance-none bg-slate-900 hover:bg-slate-800 disabled:opacity-60 border border-slate-700 hover:border-amber-500 rounded-xl pl-3 pr-7 py-1.5 text-[11px] font-bold text-amber-300 focus:border-amber-500 focus:outline-none shadow-xs transition-colors cursor-pointer"
+                            >
+                              <option value="PENDING">Pending</option>
+                              <option value="CONFIRMED">Confirmed</option>
+                              <option value="PROCESSING">Processing</option>
+                              <option value="PACKED">Packed</option>
+                              <option value="READY">Ready for Pickup</option>
+                              <option value="SHIPPED">Shipped</option>
+                              <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                              <option value="DELIVERED">Delivered</option>
+                              <option value="CANCELLED">Cancelled</option>
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-slate-400">
+                              {updatingOrderId === order.id ? (
+                                <div className="w-3 h-3 border border-amber-400 border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <svg
+                                  className="w-3.5 h-3.5 text-amber-400"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              )}
+                            </div>
+                          </div>
 
-                        {/* Print Invoice Button */}
-                        <Link
-                          href={`/seller/orders/${order.id}/invoice`}
-                          target="_blank"
-                          className="p-1.5 inline-flex bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
-                          title="Print Tax Invoice"
-                        >
-                          <FileText className="w-4 h-4 text-amber-400" />
-                        </Link>
+                          {/* Print Invoice Button */}
+                          <Link
+                            href={`/seller/orders/${order.id}/invoice`}
+                            target="_blank"
+                            className="p-1.5 inline-flex bg-slate-100 hover:bg-amber-50 text-slate-700 hover:text-amber-900 border border-slate-200 rounded-xl transition-colors shadow-2xs"
+                            title="Print Tax Invoice"
+                          >
+                            <FileText className="w-4 h-4 text-amber-600" />
+                          </Link>
 
-                        {/* Print Label Button */}
-                        <Link
-                          href={`/seller/orders/${order.id}/label`}
-                          target="_blank"
-                          className="p-1.5 inline-flex bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
-                          title="Print 4x6 Shipping Label"
-                        >
-                          <Printer className="w-4 h-4 text-indigo-400" />
-                        </Link>
+                          {/* Print Label Button */}
+                          <Link
+                            href={`/seller/orders/${order.id}/label`}
+                            target="_blank"
+                            className="p-1.5 inline-flex bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-900 border border-slate-200 rounded-xl transition-colors shadow-2xs"
+                            title="Print 4x6 Shipping Label"
+                          >
+                            <Printer className="w-4 h-4 text-indigo-600" />
+                          </Link>
 
-                        {/* Track Button */}
-                        <button
-                          onClick={() => setTrackingOrder(order)}
-                          className="p-1.5 inline-flex bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
-                          title="Live Track Shipment"
-                        >
-                          <Truck className="w-4 h-4 text-emerald-400" />
-                        </button>
+                          {/* Track Button */}
+                          <button
+                            onClick={() => setTrackingOrder(order)}
+                            className="p-1.5 inline-flex bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 border border-slate-200 rounded-xl transition-colors shadow-2xs cursor-pointer"
+                            title="Live Track Shipment"
+                          >
+                            <Truck className="w-4 h-4 text-emerald-600" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

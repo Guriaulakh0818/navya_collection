@@ -218,8 +218,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     // 5. Action: PACK / Manual Status Update
+    const newStatus =
+      action === 'PACK' ? 'PACKED' : status || (shipment ? shipment.status : vendorOrder?.status);
+
     if (shipment) {
-      const newStatus = action === 'PACK' ? 'PACKED' : status || shipment.status;
       const updatedShipment = await prisma.shipment.update({
         where: { id: shipment.id },
         data: {
@@ -235,7 +237,15 @@ export async function PATCH(request: NextRequest) {
           where: { id: vendorOrder.id },
           data: {
             status: newStatus === 'PACKED' ? 'PROCESSING' : (newStatus as any),
-            shippingStatus: shippingStatus || (newStatus === 'PACKED' ? 'PROCESSING' : 'PENDING'),
+            shippingStatus:
+              shippingStatus ||
+              (newStatus === 'PACKED'
+                ? 'PROCESSING'
+                : newStatus === 'SHIPPED'
+                  ? 'SHIPPED'
+                  : newStatus === 'DELIVERED'
+                    ? 'DELIVERED'
+                    : 'PENDING'),
             ...(awbCode ? { awbCode } : {}),
             ...(courierName ? { courierName } : {}),
           },
@@ -261,8 +271,51 @@ export async function PATCH(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: `Shipment status updated to ${newStatus}.`,
+        message: `Order status updated to ${newStatus}.`,
         data: updatedShipment,
+      });
+    }
+
+    if (vendorOrder) {
+      const updatedVendorOrder = await prisma.vendorOrder.update({
+        where: { id: vendorOrder.id },
+        data: {
+          status: newStatus as any,
+          shippingStatus:
+            shippingStatus ||
+            (newStatus === 'PACKED'
+              ? 'PROCESSING'
+              : newStatus === 'SHIPPED'
+                ? 'SHIPPED'
+                : newStatus === 'DELIVERED'
+                  ? 'DELIVERED'
+                  : 'PENDING'),
+          ...(awbCode ? { awbCode } : {}),
+          ...(courierName ? { courierName } : {}),
+        },
+      });
+
+      if (vendorOrder.masterOrderId) {
+        await prisma.order.update({
+          where: { id: vendorOrder.masterOrderId },
+          data: { orderStatus: newStatus as any },
+        });
+
+        // Trigger Lifecycle Email
+        OrderEmailNotificationService.notifyOrderStatusChanged(
+          vendorOrder.masterOrderId,
+          newStatus,
+          {
+            trackingNumber: awbCode,
+            courierName,
+          },
+        ).catch((err) => console.warn('[SELLER_STATUS_EMAIL_ERR]', err));
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Order status updated to ${newStatus}.`,
+        data: updatedVendorOrder,
       });
     }
 
