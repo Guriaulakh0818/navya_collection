@@ -1,5 +1,6 @@
 import { OrderStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 
+import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { MultiSellerShipmentService } from '@/backend/services/shipping/multi-seller-shipment.service';
 import { prisma } from '@/lib/prisma';
 
@@ -366,6 +367,13 @@ export class OrderRepository {
           console.warn(`[BACKGROUND_SHIPROCKET_DISPATCH_FAILED] Shipment: ${shp.id}`, err);
         });
       }
+    }
+
+    // Automated Transactional Email Dispatch (Seller, Admin, Customer)
+    if (result?.id) {
+      OrderEmailNotificationService.notifyOrderCreated(result.id).catch((emailErr) => {
+        console.warn(`[ORDER_EMAIL_NOTIFICATION_ERROR] Order: ${result.id}`, emailErr);
+      });
     }
 
     return result;

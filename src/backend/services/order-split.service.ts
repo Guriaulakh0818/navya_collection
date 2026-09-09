@@ -3,6 +3,7 @@ import { OrderStatus, PaymentMethod, PaymentStatus, ShippingStatus } from '@pris
 import { prisma } from '@/lib/prisma';
 
 import { CommissionService } from './commission.service';
+import { OrderEmailNotificationService } from './order-email.service';
 
 export interface CreateSplitOrderPayload {
   userId: string;
@@ -87,7 +88,7 @@ export class OrderSplitService {
       paymentMethod === 'COD' ? 'PENDING' : razorpayPaymentId ? 'PAID' : 'PENDING';
 
     // 3. Execute Atomic Database Transaction
-    return await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       // Step A: Create Master Order
       const masterOrder = await tx.order.create({
         data: {
@@ -212,5 +213,13 @@ export class OrderSplitService {
         paymentTx,
       };
     });
+
+    if (result?.masterOrder?.id) {
+      OrderEmailNotificationService.notifyOrderCreated(result.masterOrder.id).catch((emailErr) => {
+        console.warn(`[ORDER_SPLIT_EMAIL_ERROR] Master Order: ${result.masterOrder.id}`, emailErr);
+      });
+    }
+
+    return result;
   }
 }

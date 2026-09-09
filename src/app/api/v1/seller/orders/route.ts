@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/backend/lib/session';
+import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { AwbService } from '@/backend/services/shipping/awb.service';
 import { LabelService } from '@/backend/services/shipping/label.service';
 import { MultiSellerShipmentService } from '@/backend/services/shipping/multi-seller-shipment.service';
@@ -181,6 +182,12 @@ export async function PATCH(request: NextRequest) {
     // 1. Action: GENERATE_AWB
     if (action === 'GENERATE_AWB' && shipment) {
       const res = await AwbService.generateAwbForShipment(shipment.id);
+      if (res.success && res.data?.awbCode) {
+        OrderEmailNotificationService.notifyOrderStatusChanged(shipment.masterOrderId, 'SHIPPED', {
+          trackingNumber: res.data.awbCode,
+          courierName: res.data.courierName || 'Shiprocket Partner',
+        }).catch((err) => console.warn('[AWB_EMAIL_TRIGGER_ERR]', err));
+      }
       return NextResponse.json(res, { status: res.statusCode || 200 });
     }
 
@@ -199,6 +206,10 @@ export async function PATCH(request: NextRequest) {
     // 4. Action: CANCEL
     if (action === 'CANCEL' && shipment) {
       const res = await MultiSellerShipmentService.cancelShipment(shipment.id);
+      OrderEmailNotificationService.notifyOrderStatusChanged(shipment.masterOrderId, 'CANCELLED', {
+        reason: 'Cancelled by seller or boutique store.',
+      }).catch((err) => console.warn('[SELLER_CANCEL_EMAIL_ERR]', err));
+
       return NextResponse.json({
         success: true,
         message: 'Shipment cancelled successfully and inventory restored.',
@@ -241,6 +252,12 @@ export async function PATCH(request: NextRequest) {
         where: { id: shipment.masterOrderId },
         data: { orderStatus: masterStatus },
       });
+
+      // Trigger Lifecycle Email
+      OrderEmailNotificationService.notifyOrderStatusChanged(shipment.masterOrderId, masterStatus, {
+        trackingNumber: awbCode || shipment.awbCode,
+        courierName: courierName || shipment.courierName,
+      }).catch((err) => console.warn('[SELLER_STATUS_EMAIL_ERR]', err));
 
       return NextResponse.json({
         success: true,

@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { ShiprocketLogger } from '@/backend/services/shipping/logger';
 import { StatusAggregatorService } from '@/backend/services/shipping/status-aggregator.service';
 import { TrackingService } from '@/backend/services/shipping/tracking.service';
@@ -182,6 +183,18 @@ export async function POST(req: NextRequest) {
 
     // Clear Tracking in-memory cache for this shipment
     TrackingService.clearCache();
+
+    // Trigger Automated Lifecycle Email to Customer (and Seller if cancelled)
+    OrderEmailNotificationService.notifyOrderStatusChanged(
+      shipment.masterOrderId,
+      normalizedStatus,
+      {
+        trackingNumber: awb || shipment.awbCode,
+        courierName: courier_name || shipment.courierName,
+      },
+    ).catch((emailErr) => {
+      ShiprocketLogger.warn('[SHIPROCKET_WEBHOOK_EMAIL_NOTIFY_ERROR]', undefined, emailErr);
+    });
 
     ShiprocketLogger.info(
       `[SHIPROCKET_WEBHOOK_PROCESSED_SUCCESS] Shipment: ${shipment.shipmentNumber} -> ${normalizedStatus}`,

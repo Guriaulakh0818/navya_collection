@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/backend/lib/session';
+import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -149,6 +150,13 @@ export async function PATCH(request: NextRequest) {
       where: { id: orderId },
       data: updateData,
     });
+
+    // Trigger Automated Lifecycle Email to Customer/Seller if status changed
+    if (orderStatus) {
+      OrderEmailNotificationService.notifyOrderStatusChanged(orderId, orderStatus).catch((err) => {
+        console.warn(`[ADMIN_ORDER_STATUS_EMAIL_ERR] Order: ${orderId}`, err);
+      });
+    }
 
     return NextResponse.json({
       success: true,
