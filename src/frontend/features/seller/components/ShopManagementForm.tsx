@@ -42,6 +42,7 @@ export function ShopManagementForm() {
 
   // Form State
   const [formData, setFormData] = useState({
+    shopId: '',
     name: '',
     slug: '',
     logo: '',
@@ -80,6 +81,7 @@ export function ShopManagementForm() {
         const owner = data.data.owner || {};
 
         setFormData({
+          shopId: s.id || '',
           name: s.name || '',
           slug: s.slug || '',
           logo: s.logo || '',
