@@ -159,13 +159,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const user = useAdminAuthStore((s) => s.user);
   const logout = useAdminAuthStore((s) => s.logout);
 
-  if (pathname === '/admin/login' || pathname === '/admin/unauthorized') {
+  if (
+    pathname === '/admin/login' ||
+    pathname === '/admin/unauthorized' ||
+    pathname === '/login' ||
+    pathname === '/unauthorized'
+  ) {
     return <>{children}</>;
   }
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/admin/login';
+    if (typeof window !== 'undefined' && window.location.hostname.startsWith('admin.')) {
+      window.location.href = '/login';
+    } else {
+      window.location.href = '/admin/login';
+    }
   };
 
   return (
