@@ -62,9 +62,33 @@ export async function GET(request: NextRequest) {
             id: true,
             shopCode: true,
             name: true,
+            fullAddress: true,
             city: true,
             state: true,
             pincode: true,
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                mobile: true,
+              },
+            },
+            pickupLocations: {
+              select: {
+                id: true,
+                locationCode: true,
+                name: true,
+                addressLine1: true,
+                city: true,
+                state: true,
+                pincode: true,
+                contactName: true,
+                contactPhone: true,
+                shiprocketStatus: true,
+                isPrimary: true,
+              },
+            },
           },
         },
         masterOrder: {
@@ -80,8 +104,12 @@ export async function GET(request: NextRequest) {
             id: true,
             locationCode: true,
             name: true,
+            addressLine1: true,
             city: true,
+            state: true,
             pincode: true,
+            contactName: true,
+            contactPhone: true,
             shiprocketStatus: true,
           },
         },
@@ -91,6 +119,73 @@ export async function GET(request: NextRequest) {
           take: 5,
         },
       },
+    });
+
+    // Enrich shipments with live shop details and primary pickup location to ensure updated address is always displayed
+    const enrichedShipments = shipments.map((shp) => {
+      const activeShop = shp.shop;
+      const primaryPickup =
+        activeShop?.pickupLocations?.find((p) => p.isPrimary) ||
+        activeShop?.pickupLocations?.[0] ||
+        shp.pickupLocation;
+
+      const shopName = activeShop?.name || (shp.pickupAddressSnapshot as any)?.shopName || 'Shop';
+      const shopCode = activeShop?.shopCode || (shp.pickupAddressSnapshot as any)?.shopCode || '';
+      const addressLine1 =
+        primaryPickup?.addressLine1 ||
+        activeShop?.fullAddress ||
+        (shp.pickupAddressSnapshot as any)?.addressLine1 ||
+        '';
+      const city =
+        primaryPickup?.city || activeShop?.city || (shp.pickupAddressSnapshot as any)?.city || '';
+      const state =
+        primaryPickup?.state ||
+        activeShop?.state ||
+        (shp.pickupAddressSnapshot as any)?.state ||
+        '';
+      const pincode =
+        primaryPickup?.pincode ||
+        activeShop?.pincode ||
+        (shp.pickupAddressSnapshot as any)?.pincode ||
+        '';
+      const contactName =
+        primaryPickup?.contactName ||
+        activeShop?.owner?.name ||
+        (shp.pickupAddressSnapshot as any)?.contactName ||
+        '';
+      const contactPhone =
+        primaryPickup?.contactPhone ||
+        activeShop?.owner?.mobile ||
+        (shp.pickupAddressSnapshot as any)?.contactPhone ||
+        '';
+
+      return {
+        ...shp,
+        shop: activeShop
+          ? {
+              ...activeShop,
+              shopCode,
+              name: shopName,
+              fullAddress: addressLine1,
+              city,
+              state,
+              pincode,
+            }
+          : null,
+        pickupAddressSnapshot: {
+          ...(typeof shp.pickupAddressSnapshot === 'object' && shp.pickupAddressSnapshot !== null
+            ? shp.pickupAddressSnapshot
+            : {}),
+          shopName,
+          shopCode,
+          addressLine1,
+          city,
+          state,
+          pincode,
+          contactName,
+          contactPhone,
+        },
+      };
     });
 
     // Fetch all active shops with their pickup locations
@@ -170,7 +265,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        shipments,
+        shipments: enrichedShipments,
         shops,
         stats: {
           totalShipments,

@@ -553,17 +553,24 @@ export default function AdminShippingPage() {
 
                           <td className="p-4">
                             <div className="font-bold text-slate-800 flex items-center gap-1">
-                              <Building2 className="w-3 h-3 text-amber-600" />
-                              {shp.shop?.name || pickupSnap.shopName || 'Shop'}
+                              <Building2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                              <span className="truncate">
+                                {shp.shop?.name || pickupSnap.shopName || 'Shop'}
+                              </span>
                             </div>
-                            <div className="text-[11px] text-slate-500">
-                              {shp.shop?.shopCode && (
-                                <span className="font-mono text-amber-700 mr-1">
-                                  {shp.shop.shopCode}
+                            <div className="text-[11px] text-slate-500 mt-0.5">
+                              {(shp.shop?.shopCode || pickupSnap.shopCode) && (
+                                <span className="font-mono text-amber-700 font-semibold mr-1">
+                                  {shp.shop?.shopCode || pickupSnap.shopCode}
                                 </span>
                               )}
-                              {pickupSnap.city || shp.shop?.city},{' '}
-                              {pickupSnap.state || shp.shop?.state}
+                              {[
+                                shp.shop?.city || pickupSnap.city,
+                                shp.shop?.state || pickupSnap.state,
+                                shp.shop?.pincode || pickupSnap.pincode,
+                              ]
+                                .filter(Boolean)
+                                .join(', ')}
                             </div>
                           </td>
 
@@ -674,18 +681,50 @@ export default function AdminShippingPage() {
 
             {/* Address Snapshots Grid */}
             <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="bg-slate-50 p-3 rounded-2xl space-y-1">
-                <p className="font-extrabold text-amber-800">Pickup Origin Snapshot</p>
-                <p className="font-bold text-slate-800">
-                  {(selectedShipment.pickupAddressSnapshot as any)?.shopName}
+              <div className="bg-slate-50 p-3.5 rounded-2xl space-y-1.5 border border-slate-100">
+                <p className="font-extrabold text-amber-800 text-xs">
+                  Pickup Origin (Shop Address)
                 </p>
-                <p className="text-slate-600">
-                  {(selectedShipment.pickupAddressSnapshot as any)?.addressLine1}
+                <p className="font-bold text-slate-800 text-sm">
+                  {selectedShipment.shop?.name ||
+                    (selectedShipment.pickupAddressSnapshot as any)?.shopName ||
+                    'Shop'}
                 </p>
-                <p className="text-slate-600">
-                  {(selectedShipment.pickupAddressSnapshot as any)?.city},{' '}
-                  {(selectedShipment.pickupAddressSnapshot as any)?.pincode}
+                {(selectedShipment.shop?.shopCode ||
+                  (selectedShipment.pickupAddressSnapshot as any)?.shopCode) && (
+                  <p className="font-mono text-[11px] text-amber-700 font-bold">
+                    Code:{' '}
+                    {selectedShipment.shop?.shopCode ||
+                      (selectedShipment.pickupAddressSnapshot as any)?.shopCode}
+                  </p>
+                )}
+                <p className="text-slate-600 text-xs">
+                  {selectedShipment.shop?.fullAddress ||
+                    (selectedShipment.pickupAddressSnapshot as any)?.addressLine1}
                 </p>
+                <p className="text-slate-600 text-xs font-medium">
+                  {[
+                    selectedShipment.shop?.city ||
+                      (selectedShipment.pickupAddressSnapshot as any)?.city,
+                    selectedShipment.shop?.state ||
+                      (selectedShipment.pickupAddressSnapshot as any)?.state,
+                    selectedShipment.shop?.pincode ||
+                      (selectedShipment.pickupAddressSnapshot as any)?.pincode,
+                  ]
+                    .filter(Boolean)
+                    .join(', ')}
+                </p>
+                {((selectedShipment.pickupAddressSnapshot as any)?.contactName ||
+                  selectedShipment.shop?.owner?.name) && (
+                  <p className="text-slate-500 text-[11px]">
+                    Contact:{' '}
+                    {(selectedShipment.pickupAddressSnapshot as any)?.contactName ||
+                      selectedShipment.shop?.owner?.name}
+                    {((selectedShipment.pickupAddressSnapshot as any)?.contactPhone ||
+                      selectedShipment.shop?.owner?.mobile) &&
+                      ` (${(selectedShipment.pickupAddressSnapshot as any)?.contactPhone || selectedShipment.shop?.owner?.mobile})`}
+                  </p>
+                )}
               </div>
 
               <div className="bg-slate-50 p-3 rounded-2xl space-y-1">
