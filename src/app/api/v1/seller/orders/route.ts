@@ -11,19 +11,27 @@ import { StatusAggregatorService } from '@/backend/services/shipping/status-aggr
 import { prisma } from '@/lib/prisma';
 
 function getValidOrderStatus(status: string): OrderStatus {
-  switch (status) {
+  const s = (status || '').toUpperCase();
+  switch (s) {
+    case 'CONFIRMED':
+    case 'CREATED':
+      return 'CONFIRMED';
     case 'PACKED':
     case 'PROCESSING':
+    case 'READY':
+    case 'READY_TO_SHIP':
+    case 'PICKUP_SCHEDULED':
       return 'PROCESSING';
     case 'SHIPPED':
     case 'IN_TRANSIT':
+    case 'OUT_FOR_DELIVERY':
+    case 'PICKED_UP':
+    case 'DISPATCHED':
       return 'SHIPPED';
     case 'DELIVERED':
       return 'DELIVERED';
     case 'CANCELLED':
       return 'CANCELLED';
-    case 'CONFIRMED':
-      return 'CONFIRMED';
     case 'RETURN_REQUESTED':
       return 'RETURN_REQUESTED';
     case 'RETURNED':
@@ -56,14 +64,19 @@ function getValidShippingStatus(status: string, explicitShippingStatus?: string)
     return explicitShippingStatus as ShippingStatus;
   }
 
-  switch (status) {
+  const s = (status || '').toUpperCase();
+  switch (s) {
     case 'PACKED':
     case 'PROCESSING':
       return 'PACKED';
+    case 'READY':
+    case 'READY_TO_SHIP':
     case 'PICKUP_SCHEDULED':
       return 'PICKUP_SCHEDULED';
     case 'SHIPPED':
     case 'IN_TRANSIT':
+    case 'PICKED_UP':
+    case 'DISPATCHED':
       return 'IN_TRANSIT';
     case 'OUT_FOR_DELIVERY':
       return 'OUT_FOR_DELIVERY';
@@ -76,6 +89,7 @@ function getValidShippingStatus(status: string, explicitShippingStatus?: string)
     case 'FAILED':
       return 'FAILED';
     case 'CONFIRMED':
+    case 'CREATED':
     case 'PENDING':
     default:
       return 'PENDING';
@@ -334,7 +348,10 @@ export async function PATCH(request: NextRequest) {
 
       await prisma.order.update({
         where: { id: shipment.masterOrderId },
-        data: { orderStatus: masterStatus },
+        data: {
+          orderStatus: masterStatus,
+          shippingStatus: validShippingStatus,
+        },
       });
 
       // Trigger Lifecycle Email
@@ -345,7 +362,7 @@ export async function PATCH(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: `Order status updated to ${requestedStatus}.`,
+        message: `Order status updated to ${validOrderStatus}.`,
         data: updatedShipment,
       });
     }
@@ -362,15 +379,40 @@ export async function PATCH(request: NextRequest) {
       });
 
       if (vendorOrder.masterOrderId) {
+        const allVendorOrders = await prisma.vendorOrder.findMany({
+          where: { masterOrderId: vendorOrder.masterOrderId },
+        });
+        const vendorStatuses = allVendorOrders.map((vo) =>
+          vo.id === vendorOrder.id ? validOrderStatus : vo.status,
+        );
+
+        let calculatedMasterStatus: OrderStatus = validOrderStatus;
+        if (vendorStatuses.every((s) => s === 'CANCELLED')) {
+          calculatedMasterStatus = 'CANCELLED';
+        } else if (vendorStatuses.every((s) => s === 'DELIVERED')) {
+          calculatedMasterStatus = 'DELIVERED';
+        } else if (vendorStatuses.some((s) => s === 'SHIPPED')) {
+          calculatedMasterStatus = 'SHIPPED';
+        } else if (vendorStatuses.some((s) => s === 'PROCESSING')) {
+          calculatedMasterStatus = 'PROCESSING';
+        } else if (vendorStatuses.some((s) => s === 'CONFIRMED')) {
+          calculatedMasterStatus = 'CONFIRMED';
+        } else {
+          calculatedMasterStatus = 'PENDING';
+        }
+
         await prisma.order.update({
           where: { id: vendorOrder.masterOrderId },
-          data: { orderStatus: validOrderStatus },
+          data: {
+            orderStatus: calculatedMasterStatus,
+            shippingStatus: validShippingStatus,
+          },
         });
 
         // Trigger Lifecycle Email
         OrderEmailNotificationService.notifyOrderStatusChanged(
           vendorOrder.masterOrderId,
-          validOrderStatus,
+          calculatedMasterStatus,
           {
             trackingNumber: awbCode,
             courierName,
@@ -380,7 +422,7 @@ export async function PATCH(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: `Order status updated to ${requestedStatus}.`,
+        message: `Order status updated to ${validOrderStatus}.`,
         data: updatedVendorOrder,
       });
     }

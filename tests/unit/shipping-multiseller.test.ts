@@ -34,6 +34,11 @@ describe('Multi-Seller Shipping & Status Aggregator Engine', () => {
       expect(StatusAggregatorService.calculateMasterOrderStatus(shipments)).toBe('SHIPPED');
     });
 
+    it('returns PROCESSING when shipments are packed, processing or ready for pickup', () => {
+      const shipments = [{ status: 'PROCESSING' }, { status: 'READY' }];
+      expect(StatusAggregatorService.calculateMasterOrderStatus(shipments)).toBe('PROCESSING');
+    });
+
     it('returns PROCESSING when shipments are packed or pickup scheduled without dispatch', () => {
       const shipments = [{ status: 'PACKED' }, { status: 'PICKUP_SCHEDULED' }];
       expect(StatusAggregatorService.calculateMasterOrderStatus(shipments)).toBe('PROCESSING');

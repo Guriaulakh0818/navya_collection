@@ -34,15 +34,15 @@ export class StatusAggregatorService {
 
     // 3. Any active in transit or out for delivery -> SHIPPED
     const hasShippedOrInTransit = activeStatuses.some((s) =>
-      ['SHIPPED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'PICKED_UP'].includes(s),
+      ['SHIPPED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'PICKED_UP', 'DISPATCHED'].includes(s),
     );
     if (hasShippedOrInTransit) {
       return OrderStatus.SHIPPED;
     }
 
-    // 4. Any packed or pickup scheduled -> PROCESSING
+    // 4. Any packed, processing, ready, or pickup scheduled -> PROCESSING
     const hasProcessing = activeStatuses.some((s) =>
-      ['PACKED', 'READY_TO_SHIP', 'PICKUP_SCHEDULED'].includes(s),
+      ['PACKED', 'PROCESSING', 'READY_TO_SHIP', 'READY', 'PICKUP_SCHEDULED'].includes(s),
     );
     if (hasProcessing) {
       return OrderStatus.PROCESSING;
