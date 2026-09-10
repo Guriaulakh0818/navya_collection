@@ -38,6 +38,7 @@ export default function AdminShippingPage() {
   const [selectedShipment, setSelectedShipment] = useState<any | null>(null);
   const [isSyncingPickups, setIsSyncingPickups] = useState(false);
   const [syncingShopId, setSyncingShopId] = useState<string | null>(null);
+  const [syncingShipmentId, setSyncingShipmentId] = useState<string | null>(null);
   const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
 
   const fetchShippingData = useCallback(async () => {
@@ -108,6 +109,33 @@ export default function AdminShippingPage() {
       setSyncFeedback(`Error pushing ${shopName}: ${err.message}`);
     } finally {
       setSyncingShopId(null);
+    }
+  };
+
+  const handlePushSingleShipment = async (shipmentId: string, shipmentNumber: string) => {
+    setSyncingShipmentId(shipmentId);
+    setSyncFeedback(null);
+    try {
+      const res = await fetch('/api/v1/admin/shipping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'DISPATCH_SHIPMENT', shipmentId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSyncFeedback(
+          `✅ ${shipmentNumber}: ${data.message || 'Shipment registered with Shiprocket successfully!'}`,
+        );
+      } else {
+        setSyncFeedback(
+          `❌ ${shipmentNumber}: ${data.message || 'Failed to dispatch to Shiprocket.'}`,
+        );
+      }
+      await fetchShippingData();
+    } catch (err: any) {
+      setSyncFeedback(`Error dispatching ${shipmentNumber}: ${err.message}`);
+    } finally {
+      setSyncingShipmentId(null);
     }
   };
 
@@ -626,6 +654,29 @@ export default function AdminShippingPage() {
 
                           <td className="p-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
+                              {!shp.shiprocketOrderId ? (
+                                <button
+                                  onClick={() =>
+                                    handlePushSingleShipment(shp.id, shp.shipmentNumber)
+                                  }
+                                  disabled={syncingShipmentId === shp.id}
+                                  className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-extrabold rounded-lg text-[11px] flex items-center gap-1 shadow-xs cursor-pointer disabled:opacity-60 transition-all"
+                                  title="Push Order to Shiprocket"
+                                >
+                                  <RefreshCw
+                                    className={`w-3 h-3 ${syncingShipmentId === shp.id ? 'animate-spin' : ''}`}
+                                  />
+                                  <span>
+                                    {syncingShipmentId === shp.id ? 'Pushing...' : '⚡ Push'}
+                                  </span>
+                                </button>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                  <span>Synced</span>
+                                </span>
+                              )}
+
                               {shp.awbCode && (
                                 <a
                                   href={`https://shiprocket.co/tracking/${shp.awbCode}`}
@@ -767,12 +818,59 @@ export default function AdminShippingPage() {
               </div>
             </div>
 
-            <button
-              onClick={() => setSelectedShipment(null)}
-              className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl cursor-pointer"
-            >
-              Close Details
-            </button>
+            {/* Shiprocket Meta status */}
+            <div className="bg-slate-50 p-3 rounded-2xl flex items-center justify-between text-xs">
+              <div>
+                <p className="font-bold text-slate-700">Shiprocket Status</p>
+                <p className="text-[11px] text-slate-500 font-mono">
+                  {selectedShipment.shiprocketOrderId
+                    ? `Order ID: ${selectedShipment.shiprocketOrderId} • Shipment ID: ${selectedShipment.shiprocketShipmentId || 'N/A'}`
+                    : 'Not yet pushed to Shiprocket'}
+                </p>
+              </div>
+              <div>
+                {selectedShipment.shiprocketOrderId ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Synced
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">
+                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                    Pending Push
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons in Modal */}
+            <div className="flex items-center gap-3 pt-2">
+              {!selectedShipment.shiprocketOrderId && (
+                <button
+                  onClick={() => {
+                    handlePushSingleShipment(selectedShipment.id, selectedShipment.shipmentNumber);
+                    setSelectedShipment(null);
+                  }}
+                  disabled={syncingShipmentId === selectedShipment.id}
+                  className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                >
+                  <RefreshCw
+                    className={`w-3.5 h-3.5 ${syncingShipmentId === selectedShipment.id ? 'animate-spin' : ''}`}
+                  />
+                  <span>
+                    {syncingShipmentId === selectedShipment.id
+                      ? 'Pushing to Shiprocket...'
+                      : '⚡ Push to Shiprocket Now'}
+                  </span>
+                </button>
+              )}
+              <button
+                onClick={() => setSelectedShipment(null)}
+                className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl cursor-pointer"
+              >
+                Close Details
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -339,6 +339,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(regResult);
     }
 
+    if (action === 'DISPATCH_SHIPMENT' && body.shipmentId) {
+      const { MultiSellerShipmentService } =
+        await import('@/backend/services/shipping/multi-seller-shipment.service');
+      const dispatchResult = await MultiSellerShipmentService.dispatchShipmentToShiprocket(
+        body.shipmentId,
+      );
+      return NextResponse.json(dispatchResult);
+    }
+
     return NextResponse.json(
       { success: false, message: 'Invalid action provided.' },
       { status: 400 },
