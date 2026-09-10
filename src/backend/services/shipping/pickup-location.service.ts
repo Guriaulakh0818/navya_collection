@@ -371,16 +371,36 @@ export class PickupLocationService {
 
     let primaryLocation = shop.pickupLocations.find((p) => p.isPrimary) || shop.pickupLocations[0];
 
-    if (!primaryLocation) {
+    const contactName =
+      shop.pickupLocations?.[0]?.contactName ||
+      shop.bankAccountHolder ||
+      shop.sellerProfile?.legalName ||
+      shop.owner?.name ||
+      shop.name ||
+      'Store Manager';
+
+    if (primaryLocation) {
+      primaryLocation = await prisma.pickupLocation.update({
+        where: { id: primaryLocation.id },
+        data: {
+          name: `${shop.name} Hub`,
+          addressLine1: shop.fullAddress || primaryLocation.addressLine1 || 'Main Market Road',
+          city: shop.city || primaryLocation.city || 'Hisar',
+          state: shop.state || primaryLocation.state || 'Haryana',
+          pincode: shop.pincode || primaryLocation.pincode || '125001',
+          contactName: primaryLocation.contactName || contactName,
+          contactPhone:
+            shop.phone || shop.owner?.mobile || primaryLocation.contactPhone || '9991983125',
+          contactEmail:
+            shop.email ||
+            shop.owner?.email ||
+            primaryLocation.contactEmail ||
+            'seller@navyacollection.store',
+        },
+      });
+    } else {
       const shopCode = shop.shopCode || `SHOP_${shop.id.slice(-6).toUpperCase()}`;
       const locationCode = `${shopCode}-PKP1`;
-
-      const contactName =
-        shop.bankAccountHolder ||
-        shop.sellerProfile?.legalName ||
-        shop.owner?.name ||
-        shop.name ||
-        'Store Manager';
 
       primaryLocation = await prisma.pickupLocation.create({
         data: {

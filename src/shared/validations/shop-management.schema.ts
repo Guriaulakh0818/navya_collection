@@ -3,6 +3,8 @@ import { z } from 'zod';
 export const shopManagementSchema = z.object({
   shopId: z.string().optional(),
   name: z.string().min(2, 'Shop Name must be at least 2 characters'),
+  ownerName: z.string().optional().or(z.literal('')),
+  contactPerson: z.string().optional().or(z.literal('')),
   slug: z
     .string()
     .min(2, 'Slug must be at least 2 characters')

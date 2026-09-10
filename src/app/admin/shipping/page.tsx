@@ -333,9 +333,9 @@ export default function AdminShippingPage() {
                         shop.pickupLocations?.[0];
                       const contactName =
                         primaryLocation?.contactName ||
+                        shop.owner?.name ||
                         shop.bankAccountHolder ||
                         shop.sellerProfile?.legalName ||
-                        shop.owner?.name ||
                         'Store Manager';
                       const contactPhone =
                         primaryLocation?.contactPhone ||

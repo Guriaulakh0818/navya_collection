@@ -149,14 +149,30 @@ export async function PUT(req: Request) {
       },
     });
 
-    // 2. Synchronize SellerProfile if linked
+    // 2. Synchronize Owner User Name & SellerProfile if provided
+    const resolvedContactPerson = (
+      data.contactPerson ||
+      data.ownerName ||
+      data.bankAccountHolder ||
+      ''
+    ).trim();
+
+    if (shop.ownerId && resolvedContactPerson) {
+      await prisma.user
+        .update({
+          where: { id: shop.ownerId },
+          data: { name: resolvedContactPerson },
+        })
+        .catch(() => {});
+    }
+
     if (shop.sellerProfileId) {
       await prisma.sellerProfile
         .update({
           where: { id: shop.sellerProfileId },
           data: {
             businessName: data.name,
-            legalName: data.bankAccountHolder || data.name,
+            legalName: resolvedContactPerson || data.name,
             businessAddress: data.fullAddress,
             city: data.city,
             state: data.state,
@@ -174,7 +190,7 @@ export async function PUT(req: Request) {
 
     // 3. Synchronize Primary Pickup Location
     let primaryPickup = shop.pickupLocations?.find((p) => p.isPrimary) || shop.pickupLocations?.[0];
-    const contactName = data.bankAccountHolder || data.name || 'Store Manager';
+    const contactName = resolvedContactPerson || data.name || 'Store Manager';
     const shopCode = shop.shopCode || `NAVYA-SHOP-${shop.id.slice(-6).toUpperCase()}`;
     const locationCode = primaryPickup?.locationCode || `${shopCode}-PKP1`;
 
