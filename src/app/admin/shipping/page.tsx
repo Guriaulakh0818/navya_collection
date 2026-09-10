@@ -332,20 +332,20 @@ export default function AdminShippingPage() {
                         shop.pickupLocations?.find((p: any) => p.isPrimary) ||
                         shop.pickupLocations?.[0];
                       const contactName =
-                        primaryLocation?.contactName ||
                         shop.owner?.name ||
+                        primaryLocation?.contactName ||
                         shop.bankAccountHolder ||
                         shop.sellerProfile?.legalName ||
                         'Store Manager';
                       const contactPhone =
-                        primaryLocation?.contactPhone ||
                         shop.phone ||
                         shop.owner?.mobile ||
+                        primaryLocation?.contactPhone ||
                         '9991983125';
                       const contactEmail =
-                        primaryLocation?.contactEmail ||
                         shop.email ||
                         shop.owner?.email ||
+                        primaryLocation?.contactEmail ||
                         'seller@navyacollection.store';
                       const locationCode =
                         primaryLocation?.locationCode ||

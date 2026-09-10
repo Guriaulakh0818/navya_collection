@@ -85,15 +85,25 @@ export class PickupLocationService {
         location.shiprocketPickupName || location.locationCode || `PKP_${location.id.slice(-6)}`;
       const shiprocketPickupName = rawPickupName.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
 
-      // Clean contact name
+      // Clean contact name - prioritize primary seller account owner name
       const rawContactName =
-        location.contactName ||
-        location.shop?.bankAccountHolder ||
-        location.shop?.sellerProfile?.legalName ||
         location.shop?.owner?.name ||
+        location.shop?.bankAccountHolder ||
+        location.contactName ||
+        location.shop?.sellerProfile?.legalName ||
         location.shop?.name ||
         'Store Manager';
       const contactName = rawContactName.trim().slice(0, 50) || 'Store Manager';
+
+      // Keep local pickup location contact name synchronized with owner name
+      if (location.contactName !== contactName) {
+        await prisma.pickupLocation
+          .update({
+            where: { id: location.id },
+            data: { contactName },
+          })
+          .catch(() => {});
+      }
 
       // Clean phone number (extract 10 digits)
       const rawPhone =
@@ -372,10 +382,10 @@ export class PickupLocationService {
     let primaryLocation = shop.pickupLocations.find((p) => p.isPrimary) || shop.pickupLocations[0];
 
     const contactName =
-      shop.pickupLocations?.[0]?.contactName ||
-      shop.bankAccountHolder ||
-      shop.sellerProfile?.legalName ||
       shop.owner?.name ||
+      shop.bankAccountHolder ||
+      shop.pickupLocations?.[0]?.contactName ||
+      shop.sellerProfile?.legalName ||
       shop.name ||
       'Store Manager';
 
@@ -388,7 +398,7 @@ export class PickupLocationService {
           city: shop.city || primaryLocation.city || 'Hisar',
           state: shop.state || primaryLocation.state || 'Haryana',
           pincode: shop.pincode || primaryLocation.pincode || '125001',
-          contactName: primaryLocation.contactName || contactName,
+          contactName,
           contactPhone:
             shop.phone || shop.owner?.mobile || primaryLocation.contactPhone || '9991983125',
           contactEmail:
