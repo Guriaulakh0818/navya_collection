@@ -534,10 +534,15 @@ export function ShopManagementForm() {
                 </label>
                 <input
                   type="text"
+                  placeholder="e.g. Shop No. 1, Main Market Road, Mandi Adampur"
                   value={formData.fullAddress}
                   onChange={(e) => setFormData({ ...formData, fullAddress: e.target.value })}
                   className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:outline-none font-semibold shadow-xs"
                 />
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  Please include Shop/Plot/House number or Road name for automated Shiprocket pickup
+                  dispatch approval.
+                </span>
               </div>
 
               <div>

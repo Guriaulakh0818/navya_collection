@@ -120,10 +120,19 @@ export class PickupLocationService {
         location.shop?.owner?.email ||
         'seller@navyacollection.store';
 
-      // Clean street address (Shiprocket requires minimum 10 characters)
-      let rawAddress = location.addressLine1 || location.shop?.fullAddress || 'Main Market Road';
-      if (rawAddress.trim().length < 10) {
-        rawAddress = `${rawAddress.trim()}, Near Main Market`;
+      // Clean street address (Shiprocket strictly requires House no / Shop no / Flat no / Road no)
+      let rawAddress = (location.addressLine1 || location.shop?.fullAddress || '').trim();
+      const hasHouseOrRoad =
+        /\b(shop|house|flat|plot|block|ward|no|h\.no|st|street|road|rd|bazar|bazaar|market|gali|lane)\b/i.test(
+          rawAddress,
+        ) || /\d/.test(rawAddress);
+
+      if (!rawAddress) {
+        rawAddress = 'Shop No. 1, Main Market Road';
+      } else if (!hasHouseOrRoad) {
+        rawAddress = `Shop No. 1, Main Road, ${rawAddress}`;
+      } else if (rawAddress.length < 10) {
+        rawAddress = `Shop No. 1, ${rawAddress}, Main Road`;
       }
 
       const cleanCity = (location.city || location.shop?.city || 'Hisar').trim();
