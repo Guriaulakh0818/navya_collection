@@ -139,6 +139,7 @@ export async function GET(request: NextRequest) {
             contactEmail: true,
             shiprocketPickupName: true,
             shiprocketStatus: true,
+            shiprocketResponse: true,
             isPrimary: true,
             updatedAt: true,
           },

@@ -400,22 +400,35 @@ export default function AdminShippingPage() {
                           </td>
 
                           <td className="p-4">
-                            <span
-                              className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold flex items-center gap-1 w-fit ${
-                                isConnected
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
-                                  : shiprocketStatus === 'FAILED'
-                                    ? 'bg-rose-50 text-rose-700 border border-rose-300'
-                                    : 'bg-amber-50 text-amber-800 border border-amber-300'
-                              }`}
-                            >
-                              {isConnected ? (
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                              ) : (
-                                <Clock className="w-3 h-3 text-amber-600" />
-                              )}
-                              {shiprocketStatus}
-                            </span>
+                            <div className="space-y-1">
+                              <span
+                                className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold flex items-center gap-1 w-fit ${
+                                  isConnected
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                                    : shiprocketStatus === 'FAILED'
+                                      ? 'bg-rose-50 text-rose-700 border border-rose-300'
+                                      : 'bg-amber-50 text-amber-800 border border-amber-300'
+                                }`}
+                              >
+                                {isConnected ? (
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                ) : (
+                                  <Clock className="w-3 h-3 text-amber-600" />
+                                )}
+                                {shiprocketStatus}
+                              </span>
+                              {shiprocketStatus === 'FAILED' &&
+                                (primaryLocation?.shiprocketResponse?.message ||
+                                  primaryLocation?.shiprocketResponse?.error) && (
+                                  <p className="text-[10px] text-rose-600 max-w-[200px] leading-tight break-words font-medium">
+                                    {String(
+                                      primaryLocation.shiprocketResponse?.message ||
+                                        primaryLocation.shiprocketResponse?.error ||
+                                        '',
+                                    )}
+                                  </p>
+                                )}
+                            </div>
                           </td>
 
                           <td className="p-4 text-right">

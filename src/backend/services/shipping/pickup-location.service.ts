@@ -247,16 +247,6 @@ export class PickupLocationService {
         };
       }
 
-      await prisma.pickupLocation
-        .update({
-          where: { id: pickupLocationId },
-          data: {
-            shiprocketStatus: 'FAILED',
-            shiprocketResponse: errResponse || { error: error.message },
-          },
-        })
-        .catch(() => {});
-
       let detailedMsg = errResponse.message || error.message;
       if (errResponse.errors) {
         if (typeof errResponse.errors === 'string') {
@@ -268,6 +258,20 @@ export class PickupLocationService {
           detailedMsg += ` - ${errorDetails}`;
         }
       }
+
+      await prisma.pickupLocation
+        .update({
+          where: { id: pickupLocationId },
+          data: {
+            shiprocketStatus: 'FAILED',
+            shiprocketResponse: {
+              ...(typeof errResponse === 'object' ? errResponse : {}),
+              message: detailedMsg,
+              error: error.message,
+            },
+          },
+        })
+        .catch(() => {});
 
       return {
         success: false,
