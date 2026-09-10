@@ -252,6 +252,12 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
+    // 0. Action: DISPATCH_SHIPROCKET (Manual / Retry push to Shiprocket)
+    if (action === 'DISPATCH_SHIPROCKET' && shipment) {
+      const res = await MultiSellerShipmentService.dispatchShipmentToShiprocket(shipment.id);
+      return NextResponse.json(res, { status: res.success ? 200 : 400 });
+    }
+
     // 1. Action: GENERATE_AWB
     if (action === 'GENERATE_AWB' && shipment) {
       const res = await AwbService.generateAwbForShipment(shipment.id);

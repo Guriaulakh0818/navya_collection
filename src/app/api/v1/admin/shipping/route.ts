@@ -140,3 +140,55 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+/**
+ * POST /api/v1/admin/shipping
+ * Supports administrative actions like syncing all shop pickup locations to Shiprocket.
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (
+      !currentUser ||
+      !['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(currentUser.role)
+    ) {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden. Admin access required.' },
+        { status: 403 },
+      );
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const { action, pickupLocationId } = body;
+
+    const { PickupLocationService } =
+      await import('@/backend/services/shipping/pickup-location.service');
+
+    if (action === 'SYNC_ALL_PICKUP_LOCATIONS') {
+      const syncResult = await PickupLocationService.syncAllShopPickupLocations();
+      return NextResponse.json({
+        success: syncResult.success,
+        message: syncResult.success
+          ? `Successfully synced all ${syncResult.synced} shop pickup locations to Shiprocket!`
+          : `Synced ${syncResult.synced} of ${syncResult.totalShops} pickup locations. Some failed.`,
+        data: syncResult,
+      });
+    }
+
+    if (action === 'REGISTER_PICKUP_LOCATION' && pickupLocationId) {
+      const regResult = await PickupLocationService.registerWithShiprocket(pickupLocationId);
+      return NextResponse.json(regResult);
+    }
+
+    return NextResponse.json(
+      { success: false, message: 'Invalid action provided.' },
+      { status: 400 },
+    );
+  } catch (error: any) {
+    console.error('❌ POST Admin Shipping Error:', error);
+    return NextResponse.json(
+      { success: false, message: error.message || 'Failed to execute shipping action.' },
+      { status: 500 },
+    );
+  }
+}

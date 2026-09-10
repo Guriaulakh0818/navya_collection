@@ -34,6 +34,8 @@ export default function AdminShippingPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [paymentFilter, setPaymentFilter] = useState('ALL');
   const [selectedShipment, setSelectedShipment] = useState<any | null>(null);
+  const [isSyncingPickups, setIsSyncingPickups] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
 
   const fetchShippingData = useCallback(async () => {
     setIsLoading(true);
@@ -57,6 +59,29 @@ export default function AdminShippingPage() {
     }
   }, [searchQuery, statusFilter, paymentFilter]);
 
+  const handleSyncPickupLocations = async () => {
+    setIsSyncingPickups(true);
+    setSyncFeedback(null);
+    try {
+      const res = await fetch('/api/v1/admin/shipping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'SYNC_ALL_PICKUP_LOCATIONS' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSyncFeedback(data.message || 'All pickup locations synced successfully!');
+      } else {
+        setSyncFeedback(data.message || 'Failed to sync some pickup locations.');
+      }
+      await fetchShippingData();
+    } catch (err: any) {
+      setSyncFeedback(err.message || 'Error syncing pickup locations.');
+    } finally {
+      setIsSyncingPickups(false);
+    }
+  };
+
   useEffect(() => {
     fetchShippingData();
   }, [fetchShippingData]);
@@ -76,15 +101,38 @@ export default function AdminShippingPage() {
           </p>
         </div>
 
-        <button
-          onClick={fetchShippingData}
-          disabled={isLoading}
-          className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleSyncPickupLocations}
+            disabled={isSyncingPickups}
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer disabled:opacity-60"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncingPickups ? 'animate-spin' : ''}`} />
+            {isSyncingPickups ? 'Syncing with Shiprocket...' : '⚡ Push Shops to Shiprocket'}
+          </button>
+
+          <button
+            onClick={fetchShippingData}
+            disabled={isLoading}
+            className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
       </div>
+
+      {syncFeedback && (
+        <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs font-semibold flex items-center justify-between">
+          <span>{syncFeedback}</span>
+          <button
+            onClick={() => setSyncFeedback(null)}
+            className="text-amber-700 hover:text-amber-950 font-bold ml-2 cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -157,6 +205,14 @@ export default function AdminShippingPage() {
         </div>
 
         <div className="flex items-center gap-4 text-xs">
+          <button
+            onClick={handleSyncPickupLocations}
+            disabled={isSyncingPickups}
+            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncingPickups ? 'animate-spin' : ''}`} />
+            {isSyncingPickups ? 'Registering...' : 'Push All Pickup Hubs'}
+          </button>
           <div className="text-right">
             <p className="text-slate-400 text-[11px]">Webhook Endpoint</p>
             <code className="text-amber-300 font-mono text-[11px]">

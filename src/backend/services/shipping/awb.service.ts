@@ -48,12 +48,23 @@ export class AwbService {
         return this.generateAwbForOrder(shipmentIdOrNumber, options);
       }
 
-      if (!shipment.shiprocketShipmentId) {
-        return {
-          success: false,
-          message: 'Shipment has not been registered on Shiprocket yet.',
-          statusCode: 400,
-        };
+      let currentShiprocketShipmentId = shipment.shiprocketShipmentId;
+
+      if (!currentShiprocketShipmentId) {
+        const { MultiSellerShipmentService } = await import('./multi-seller-shipment.service');
+        const dispatchRes = await MultiSellerShipmentService.dispatchShipmentToShiprocket(
+          shipment.id,
+        );
+        if (!dispatchRes.success || !dispatchRes.shipment?.shiprocketShipmentId) {
+          return {
+            success: false,
+            message:
+              dispatchRes.message ||
+              'Failed to register shipment on Shiprocket. Please verify SHIPROCKET_EMAIL, SHIPROCKET_PASSWORD, and Pickup Location in Shiprocket settings.',
+            statusCode: 400,
+          };
+        }
+        currentShiprocketShipmentId = String(dispatchRes.shipment.shiprocketShipmentId);
       }
 
       // Return stored AWB if already present
@@ -66,7 +77,7 @@ export class AwbService {
           data: {
             orderId: shipment.masterOrderId,
             orderNumber: shipment.shipmentNumber,
-            shiprocketShipmentId: shipment.shiprocketShipmentId,
+            shiprocketShipmentId: currentShiprocketShipmentId,
             awbCode: shipment.awbCode,
             courierName: shipment.courierName,
             trackingUrl,
@@ -86,7 +97,7 @@ export class AwbService {
         try {
           attempt++;
           const payload: ShiprocketAwbAssignPayload = {
-            shipment_id: shipment.shiprocketShipmentId,
+            shipment_id: currentShiprocketShipmentId,
             courier_id: options?.courierId ? String(options.courierId) : undefined,
           };
 
@@ -103,45 +114,52 @@ export class AwbService {
             break;
           }
 
-          throw new Error('Unexpected AWB response format from Shiprocket.');
-        } catch (err: any) {
-          ShiprocketLogger.warn(`[AWB_ASSIGN_ATTEMPT_${attempt}_FAILED]`, undefined, {
-            error: err.message,
-          });
           if (attempt <= maxRetries) {
-            await this.sleep(initialDelay * Math.pow(2, attempt - 1));
+            const delay = initialDelay * Math.pow(2, attempt - 1);
+            ShiprocketLogger.warn(
+              `[AWB_ASSIGN_RETRY] Attempt ${attempt} failed. Retrying in ${delay}ms...`,
+            );
+            await this.sleep(delay);
           }
+        } catch (apiErr: any) {
+          if (attempt > maxRetries) {
+            throw apiErr;
+          }
+          const delay = initialDelay * Math.pow(2, attempt - 1);
+          ShiprocketLogger.warn(
+            `[AWB_ASSIGN_API_ERROR_RETRY] Attempt ${attempt} error: ${apiErr.message}. Retrying in ${delay}ms...`,
+          );
+          await this.sleep(delay);
         }
       }
 
-      let finalAwb = awbResponse?.response?.data?.awb_code || awbResponse?.awb_code;
-      let finalCourier =
-        awbResponse?.response?.data?.courier_name ||
-        awbResponse?.courier_name ||
-        'Standard Courier';
-      let courierCompanyId = awbResponse?.response?.data?.courier_company_id || undefined;
-
-      if (!finalAwb) {
-        return {
-          success: false,
-          message: 'Failed to generate AWB code from Shiprocket.',
-          statusCode: 502,
-        };
+      if (!awbResponse?.response?.data?.awb_code && !awbResponse?.awb_code) {
+        throw new Error(
+          awbResponse?.message ||
+            'Shiprocket failed to assign AWB code after multiple retry attempts.',
+        );
       }
 
-      // 3. Update Shipment Record
+      const rawData = awbResponse.response?.data || awbResponse;
+      const finalAwb = String(rawData.awb_code || '');
+      const finalCourier = String(
+        rawData.courier_name || rawData.courier_company_id || 'Standard Courier',
+      );
+      const finalCourierId = rawData.courier_company_id ? Number(rawData.courier_company_id) : null;
+
+      // 3. Update Database (Shipment)
       const updatedShipment = await prisma.shipment.update({
         where: { id: shipment.id },
         data: {
           awbCode: finalAwb,
           courierName: finalCourier,
-          courierCompanyId: courierCompanyId ? Number(courierCompanyId) : undefined,
+          courierCompanyId: finalCourierId,
           status: 'READY_TO_SHIP',
           trackingStatus: 'AWB_ASSIGNED',
         },
       });
 
-      // Also update child vendor order
+      // Sync AWB & courier info to linked vendor order
       if (shipment.vendorOrderId) {
         await prisma.vendorOrder
           .update({
@@ -149,7 +167,6 @@ export class AwbService {
             data: {
               awbCode: finalAwb,
               courierName: finalCourier,
-              shippingStatus: 'IN_TRANSIT',
             },
           })
           .catch(() => {});
@@ -164,7 +181,7 @@ export class AwbService {
         data: {
           orderId: shipment.masterOrderId,
           orderNumber: shipment.shipmentNumber,
-          shiprocketShipmentId: shipment.shiprocketShipmentId,
+          shiprocketShipmentId: currentShiprocketShipmentId,
           awbCode: finalAwb,
           courierName: finalCourier,
           trackingUrl,

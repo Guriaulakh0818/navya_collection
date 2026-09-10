@@ -49,19 +49,26 @@ export class PickupLocationService {
         };
       }
 
-      const shiprocketPickupName = location.locationCode;
+      // Clean pickup nickname (alphanumeric and hyphens/underscores only, max 30 chars)
+      const rawPickupName =
+        location.shiprocketPickupName || location.locationCode || `PKP_${location.id.slice(-6)}`;
+      const shiprocketPickupName = rawPickupName.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
+
+      // Clean phone number (extract 10 digits)
+      const rawPhone = location.contactPhone || location.shop?.phone || '9991983125';
+      const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10) || '9991983125';
 
       const payload = {
         pickup_location: shiprocketPickupName,
-        name: location.contactName || location.name,
-        email: location.contactEmail || location.shop.email || 'seller@navyacollection.store',
-        phone: location.contactPhone || location.shop.phone,
-        address: location.addressLine1,
+        name: (location.contactName || location.name || 'Store Manager').slice(0, 50),
+        email: location.contactEmail || location.shop?.email || 'seller@navyacollection.store',
+        phone: cleanPhone,
+        address: location.addressLine1 || location.shop?.fullAddress || 'Main Market Road',
         address_2: location.addressLine2 || '',
-        city: location.city,
-        state: location.state,
+        city: location.city || location.shop?.city || 'Hisar',
+        state: location.state || location.shop?.state || 'Haryana',
         country: location.country || 'India',
-        pin_code: location.pincode,
+        pin_code: (location.pincode || location.shop?.pincode || '125001').trim(),
       };
 
       ShiprocketLogger.info(
@@ -71,8 +78,12 @@ export class PickupLocationService {
       );
 
       const response = await shiprocketClient.post('/settings/company/addpickup', payload);
+      const isSuccess = response.status === 200 || response.status === 201;
+      const respMsg = (response.data?.message || response.data?.success || '')
+        .toString()
+        .toLowerCase();
 
-      if (response.status === 200 || response.status === 201) {
+      if (isSuccess || respMsg.includes('already') || respMsg.includes('exist')) {
         await prisma.pickupLocation.update({
           where: { id: location.id },
           data: {
@@ -83,7 +94,7 @@ export class PickupLocationService {
         });
 
         // Also update primary pickup name on Shop for quick lookup
-        if (location.isPrimary) {
+        if (location.isPrimary || !location.shop?.shiprocketPickupName) {
           await prisma.shop.update({
             where: { id: location.shopId },
             data: { shiprocketPickupName },
@@ -111,27 +122,136 @@ export class PickupLocationService {
         data: response.data,
       };
     } catch (error: any) {
+      const errResponse = error.response?.data;
+      const errMsg = (errResponse?.message || error.message || '').toLowerCase();
+
       ShiprocketLogger.error('[SHIPROCKET_ADD_PICKUP_ERROR]', undefined, {
         error: error.message,
-        response: error.response?.data,
+        response: errResponse,
       });
+
+      // If already registered in Shiprocket, treat as CONNECTED
+      if (
+        errMsg.includes('already') ||
+        errMsg.includes('exist') ||
+        errResponse?.status_code === 422
+      ) {
+        await prisma.pickupLocation
+          .update({
+            where: { id: pickupLocationId },
+            data: {
+              shiprocketStatus: 'CONNECTED',
+              shiprocketResponse: errResponse || { note: 'Already registered on Shiprocket' },
+            },
+          })
+          .catch(() => {});
+
+        return {
+          success: true,
+          message: 'Pickup location already exists on Shiprocket and is now connected.',
+          data: errResponse,
+        };
+      }
 
       await prisma.pickupLocation
         .update({
           where: { id: pickupLocationId },
           data: {
             shiprocketStatus: 'FAILED',
-            shiprocketResponse: error.response?.data || { error: error.message },
+            shiprocketResponse: errResponse || { error: error.message },
           },
         })
         .catch(() => {});
 
       return {
         success: false,
-        message:
-          error.response?.data?.message || error.message || 'Error registering pickup location.',
+        message: errResponse?.message || error.message || 'Error registering pickup location.',
       };
     }
+  }
+
+  /**
+   * Syncs and registers pickup locations for all shops in the database.
+   */
+  static async syncAllShopPickupLocations(): Promise<{
+    success: boolean;
+    totalShops: number;
+    synced: number;
+    failed: number;
+    details: Array<{ shopName: string; locationCode: string; status: string; message: string }>;
+  }> {
+    const shops = await prisma.shop.findMany({
+      where: { deletedAt: null },
+      include: { pickupLocations: true },
+    });
+
+    const results: Array<{
+      shopName: string;
+      locationCode: string;
+      status: string;
+      message: string;
+    }> = [];
+    let syncedCount = 0;
+    let failedCount = 0;
+
+    for (const shop of shops) {
+      let primaryLocation =
+        shop.pickupLocations.find((p) => p.isPrimary) || shop.pickupLocations[0];
+
+      // If shop has no pickup location record, create one from shop profile
+      if (!primaryLocation) {
+        const shopCode = shop.shopCode || `SHOP_${shop.id.slice(-6).toUpperCase()}`;
+        const locationCode = `${shopCode}-PKP1`;
+
+        primaryLocation = await prisma.pickupLocation.create({
+          data: {
+            shopId: shop.id,
+            locationCode,
+            name: `${shop.name} Warehouse`,
+            addressLine1: shop.fullAddress || 'Main Market Road',
+            city: shop.city || 'Hisar',
+            state: shop.state || 'Haryana',
+            pincode: shop.pincode || '125001',
+            country: 'India',
+            contactName: shop.bankAccountHolder || shop.name || 'Store Manager',
+            contactPhone: shop.phone || '9991983125',
+            contactEmail: shop.email || 'seller@navyacollection.store',
+            isPrimary: true,
+            status: 'ACTIVE',
+            shiprocketPickupName: locationCode,
+            shiprocketStatus: 'PENDING',
+          },
+        });
+      }
+
+      // Register with Shiprocket
+      const regRes = await this.registerWithShiprocket(primaryLocation.id);
+      if (regRes.success) {
+        syncedCount++;
+        results.push({
+          shopName: shop.name,
+          locationCode: primaryLocation.locationCode,
+          status: 'CONNECTED',
+          message: regRes.message,
+        });
+      } else {
+        failedCount++;
+        results.push({
+          shopName: shop.name,
+          locationCode: primaryLocation.locationCode,
+          status: 'FAILED',
+          message: regRes.message,
+        });
+      }
+    }
+
+    return {
+      success: failedCount === 0,
+      totalShops: shops.length,
+      synced: syncedCount,
+      failed: failedCount,
+      details: results,
+    };
   }
 
   /**
