@@ -1,3 +1,4 @@
+import { OrderStatus, ShippingStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/backend/lib/session';
@@ -8,6 +9,78 @@ import { MultiSellerShipmentService } from '@/backend/services/shipping/multi-se
 import { PickupService } from '@/backend/services/shipping/pickup.service';
 import { StatusAggregatorService } from '@/backend/services/shipping/status-aggregator.service';
 import { prisma } from '@/lib/prisma';
+
+function getValidOrderStatus(status: string): OrderStatus {
+  switch (status) {
+    case 'PACKED':
+    case 'PROCESSING':
+      return 'PROCESSING';
+    case 'SHIPPED':
+    case 'IN_TRANSIT':
+      return 'SHIPPED';
+    case 'DELIVERED':
+      return 'DELIVERED';
+    case 'CANCELLED':
+      return 'CANCELLED';
+    case 'CONFIRMED':
+      return 'CONFIRMED';
+    case 'RETURN_REQUESTED':
+      return 'RETURN_REQUESTED';
+    case 'RETURNED':
+      return 'RETURNED';
+    case 'EXCHANGED':
+      return 'EXCHANGED';
+    case 'PENDING':
+    default:
+      return 'PENDING';
+  }
+}
+
+function getValidShippingStatus(status: string, explicitShippingStatus?: string): ShippingStatus {
+  const validShippingEnums: ShippingStatus[] = [
+    'PENDING',
+    'PACKED',
+    'PICKUP_SCHEDULED',
+    'IN_TRANSIT',
+    'OUT_FOR_DELIVERY',
+    'DELIVERED',
+    'RTO',
+    'CANCELLED',
+    'FAILED',
+  ];
+
+  if (
+    explicitShippingStatus &&
+    validShippingEnums.includes(explicitShippingStatus as ShippingStatus)
+  ) {
+    return explicitShippingStatus as ShippingStatus;
+  }
+
+  switch (status) {
+    case 'PACKED':
+    case 'PROCESSING':
+      return 'PACKED';
+    case 'PICKUP_SCHEDULED':
+      return 'PICKUP_SCHEDULED';
+    case 'SHIPPED':
+    case 'IN_TRANSIT':
+      return 'IN_TRANSIT';
+    case 'OUT_FOR_DELIVERY':
+      return 'OUT_FOR_DELIVERY';
+    case 'DELIVERED':
+      return 'DELIVERED';
+    case 'CANCELLED':
+      return 'CANCELLED';
+    case 'RTO':
+      return 'RTO';
+    case 'FAILED':
+      return 'FAILED';
+    case 'CONFIRMED':
+    case 'PENDING':
+    default:
+      return 'PENDING';
+  }
+}
 
 /**
  * GET /api/v1/seller/orders
@@ -218,15 +291,18 @@ export async function PATCH(request: NextRequest) {
     }
 
     // 5. Action: PACK / Manual Status Update
-    const newStatus =
+    const requestedStatus =
       action === 'PACK' ? 'PACKED' : status || (shipment ? shipment.status : vendorOrder?.status);
+
+    const validOrderStatus = getValidOrderStatus(requestedStatus);
+    const validShippingStatus = getValidShippingStatus(requestedStatus, shippingStatus);
 
     if (shipment) {
       const updatedShipment = await prisma.shipment.update({
         where: { id: shipment.id },
         data: {
-          status: newStatus,
-          trackingStatus: newStatus,
+          status: requestedStatus,
+          trackingStatus: requestedStatus,
           ...(awbCode ? { awbCode } : {}),
           ...(courierName ? { courierName } : {}),
         },
@@ -236,16 +312,8 @@ export async function PATCH(request: NextRequest) {
         await prisma.vendorOrder.update({
           where: { id: vendorOrder.id },
           data: {
-            status: newStatus === 'PACKED' ? 'PROCESSING' : (newStatus as any),
-            shippingStatus:
-              shippingStatus ||
-              (newStatus === 'PACKED'
-                ? 'PROCESSING'
-                : newStatus === 'SHIPPED'
-                  ? 'SHIPPED'
-                  : newStatus === 'DELIVERED'
-                    ? 'DELIVERED'
-                    : 'PENDING'),
+            status: validOrderStatus,
+            shippingStatus: validShippingStatus,
             ...(awbCode ? { awbCode } : {}),
             ...(courierName ? { courierName } : {}),
           },
@@ -254,7 +322,7 @@ export async function PATCH(request: NextRequest) {
 
       // Recalculate master order status
       const allShipments = shipment.masterOrder.shipments.map((s) =>
-        s.id === shipment.id ? { ...s, status: newStatus } : s,
+        s.id === shipment.id ? { ...s, status: requestedStatus } : s,
       );
       const masterStatus = StatusAggregatorService.calculateMasterOrderStatus(allShipments);
 
@@ -271,7 +339,7 @@ export async function PATCH(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: `Order status updated to ${newStatus}.`,
+        message: `Order status updated to ${requestedStatus}.`,
         data: updatedShipment,
       });
     }
@@ -280,16 +348,8 @@ export async function PATCH(request: NextRequest) {
       const updatedVendorOrder = await prisma.vendorOrder.update({
         where: { id: vendorOrder.id },
         data: {
-          status: newStatus as any,
-          shippingStatus:
-            shippingStatus ||
-            (newStatus === 'PACKED'
-              ? 'PROCESSING'
-              : newStatus === 'SHIPPED'
-                ? 'SHIPPED'
-                : newStatus === 'DELIVERED'
-                  ? 'DELIVERED'
-                  : 'PENDING'),
+          status: validOrderStatus,
+          shippingStatus: validShippingStatus,
           ...(awbCode ? { awbCode } : {}),
           ...(courierName ? { courierName } : {}),
         },
@@ -298,13 +358,13 @@ export async function PATCH(request: NextRequest) {
       if (vendorOrder.masterOrderId) {
         await prisma.order.update({
           where: { id: vendorOrder.masterOrderId },
-          data: { orderStatus: newStatus as any },
+          data: { orderStatus: validOrderStatus },
         });
 
         // Trigger Lifecycle Email
         OrderEmailNotificationService.notifyOrderStatusChanged(
           vendorOrder.masterOrderId,
-          newStatus,
+          validOrderStatus,
           {
             trackingNumber: awbCode,
             courierName,
@@ -314,7 +374,7 @@ export async function PATCH(request: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        message: `Order status updated to ${newStatus}.`,
+        message: `Order status updated to ${requestedStatus}.`,
         data: updatedVendorOrder,
       });
     }

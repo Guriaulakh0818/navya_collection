@@ -67,14 +67,6 @@ export default function SellerOrdersPage() {
         body: JSON.stringify({
           vendorOrderId,
           status: newStatus,
-          shippingStatus:
-            newStatus === 'SHIPPED'
-              ? 'SHIPPED'
-              : newStatus === 'DELIVERED'
-                ? 'DELIVERED'
-                : newStatus === 'PACKED' || newStatus === 'PROCESSING'
-                  ? 'PROCESSING'
-                  : 'PENDING',
         }),
       });
       const data = await res.json();
