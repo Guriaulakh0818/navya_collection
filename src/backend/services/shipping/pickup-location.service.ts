@@ -255,6 +255,67 @@ export class PickupLocationService {
   }
 
   /**
+   * Syncs and registers the pickup location for a single shop in the database.
+   */
+  static async syncShopPickupLocation(shopId: string): Promise<{
+    success: boolean;
+    message: string;
+    pickupLocation?: any;
+    data?: any;
+  }> {
+    const shop = await prisma.shop.findUnique({
+      where: { id: shopId },
+      include: { pickupLocations: true, owner: true, sellerProfile: true },
+    });
+
+    if (!shop) {
+      return { success: false, message: 'Shop not found.' };
+    }
+
+    let primaryLocation = shop.pickupLocations.find((p) => p.isPrimary) || shop.pickupLocations[0];
+
+    if (!primaryLocation) {
+      const shopCode = shop.shopCode || `SHOP_${shop.id.slice(-6).toUpperCase()}`;
+      const locationCode = `${shopCode}-PKP1`;
+
+      const contactName =
+        shop.bankAccountHolder ||
+        shop.sellerProfile?.legalName ||
+        shop.owner?.name ||
+        shop.name ||
+        'Store Manager';
+
+      primaryLocation = await prisma.pickupLocation.create({
+        data: {
+          shopId: shop.id,
+          locationCode,
+          name: `${shop.name} Hub`,
+          addressLine1: shop.fullAddress || 'Main Market Road',
+          city: shop.city || 'Hisar',
+          state: shop.state || 'Haryana',
+          pincode: shop.pincode || '125001',
+          country: 'India',
+          contactName,
+          contactPhone: shop.phone || shop.owner?.mobile || '9991983125',
+          contactEmail: shop.email || shop.owner?.email || 'seller@navyacollection.store',
+          isPrimary: true,
+          status: 'ACTIVE',
+          shiprocketPickupName: locationCode,
+          shiprocketStatus: 'PENDING',
+        },
+      });
+    }
+
+    const regRes = await this.registerWithShiprocket(primaryLocation.id);
+    return {
+      success: regRes.success,
+      message: regRes.message,
+      pickupLocation: primaryLocation,
+      data: regRes.data,
+    };
+  }
+
+  /**
    * Creates a new branch pickup location for a seller shop and registers it.
    */
   static async createPickupLocation(input: CreatePickupLocationInput) {

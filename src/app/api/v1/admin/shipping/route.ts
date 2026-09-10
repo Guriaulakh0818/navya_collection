@@ -93,6 +93,59 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Fetch all active shops with their pickup locations
+    const shops = await prisma.shop.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        shopCode: true,
+        name: true,
+        slug: true,
+        phone: true,
+        email: true,
+        fullAddress: true,
+        city: true,
+        state: true,
+        pincode: true,
+        bankAccountHolder: true,
+        shiprocketPickupName: true,
+        status: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            mobile: true,
+          },
+        },
+        sellerProfile: {
+          select: {
+            businessName: true,
+            legalName: true,
+          },
+        },
+        pickupLocations: {
+          select: {
+            id: true,
+            locationCode: true,
+            name: true,
+            addressLine1: true,
+            city: true,
+            state: true,
+            pincode: true,
+            contactName: true,
+            contactPhone: true,
+            contactEmail: true,
+            shiprocketPickupName: true,
+            shiprocketStatus: true,
+            isPrimary: true,
+            updatedAt: true,
+          },
+        },
+      },
+    });
+
     // Compute Logistics Statistics
     const totalShipments = await prisma.shipment.count();
     const inTransitCount = await prisma.shipment.count({
@@ -117,6 +170,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         shipments,
+        shops,
         stats: {
           totalShipments,
           inTransitCount,
@@ -159,7 +213,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { action, pickupLocationId } = body;
+    const { action, pickupLocationId, shopId } = body;
 
     const { PickupLocationService } =
       await import('@/backend/services/shipping/pickup-location.service');
@@ -172,6 +226,15 @@ export async function POST(request: NextRequest) {
           ? `Successfully synced all ${syncResult.synced} shop pickup locations to Shiprocket!`
           : `Synced ${syncResult.synced} of ${syncResult.totalShops} pickup locations. Some failed.`,
         data: syncResult,
+      });
+    }
+
+    if (action === 'PUSH_SHOP_PICKUP_LOCATION' && shopId) {
+      const singleSync = await PickupLocationService.syncShopPickupLocation(shopId);
+      return NextResponse.json({
+        success: singleSync.success,
+        message: singleSync.message,
+        data: singleSync,
       });
     }
 
