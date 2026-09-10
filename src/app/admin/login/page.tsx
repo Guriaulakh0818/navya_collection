@@ -22,14 +22,11 @@ export default function AdminLoginPage() {
   const { toast } = useToast();
 
   const rawRedirect =
-    searchParams.get('redirect') || searchParams.get('redirectUrl') || '/dashboard';
+    searchParams.get('redirect') || searchParams.get('redirectUrl') || '/admin/dashboard';
 
-  const redirectUrl =
-    typeof window !== 'undefined' && window.location.hostname.startsWith('admin.')
-      ? rawRedirect.replace(/^\/admin/, '') || '/dashboard'
-      : rawRedirect.startsWith('/admin')
-        ? rawRedirect
-        : `/admin${rawRedirect}`;
+  const redirectUrl = rawRedirect.startsWith('/admin')
+    ? rawRedirect
+    : `/admin${rawRedirect.startsWith('/') ? rawRedirect : `/${rawRedirect}`}`;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -170,11 +170,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = () => {
     logout();
-    if (typeof window !== 'undefined' && window.location.hostname.startsWith('admin.')) {
-      window.location.href = '/login';
-    } else {
-      window.location.href = '/admin/login';
-    }
+    window.location.href = '/admin/login';
   };
 
   return (

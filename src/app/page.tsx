@@ -19,9 +19,9 @@ export default async function MultiVendorMarketplaceHomePage() {
   const headersList = await headers();
   const host = (headersList.get('x-forwarded-host') || headersList.get('host') || '').toLowerCase();
 
-  // If accessed via admin.navyacollection.store or admin subdomain, redirect to admin login
+  // If accessed via admin.navyacollection.store or admin subdomain, redirect to admin dashboard
   if (host.startsWith('admin.') || host.includes('admin.navyacollection.store')) {
-    redirect('/login');
+    redirect('/admin/dashboard');
   }
 
   // If accessed via seller.navyacollection.store or seller subdomain, render the Become Seller portal
