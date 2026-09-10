@@ -19,6 +19,37 @@ export interface CreatePickupLocationInput {
   isPrimary?: boolean;
 }
 
+function normalizeIndianState(rawState: string): string {
+  const clean = (rawState || '').trim().toLowerCase();
+  if (clean.startsWith('har') || clean === 'hr') return 'Haryana';
+  if (clean.startsWith('pun') || clean === 'pb') return 'Punjab';
+  if (clean.startsWith('del') || clean === 'dl') return 'Delhi';
+  if (clean.startsWith('raj') || clean === 'rj') return 'Rajasthan';
+  if (clean.startsWith('uttar p') || clean === 'up') return 'Uttar Pradesh';
+  if (clean.startsWith('uttarak') || clean.startsWith('uttaranchal') || clean === 'uk')
+    return 'Uttarakhand';
+  if (clean.startsWith('mah') || clean === 'mh') return 'Maharashtra';
+  if (clean.startsWith('guj') || clean === 'gj') return 'Gujarat';
+  if (clean.startsWith('him') || clean === 'hp') return 'Himachal Pradesh';
+  if (clean.startsWith('jam') || clean === 'jk') return 'Jammu and Kashmir';
+  if (clean.startsWith('cha') || clean === 'ch') return 'Chandigarh';
+  if (clean.startsWith('bih') || clean === 'br') return 'Bihar';
+  if (clean.startsWith('mad') || clean === 'mp') return 'Madhya Pradesh';
+  if (clean.startsWith('wes') || clean === 'wb') return 'West Bengal';
+  if (clean.startsWith('kar') || clean === 'ka') return 'Karnataka';
+  if (clean.startsWith('tel') || clean === 'ts' || clean === 'tg') return 'Telangana';
+  if (clean.startsWith('tam') || clean === 'tn') return 'Tamil Nadu';
+  if (clean.startsWith('and') || clean === 'ap') return 'Andhra Pradesh';
+  if (clean.startsWith('ker') || clean === 'kl') return 'Kerala';
+  if (clean.startsWith('odi') || clean.startsWith('ori') || clean === 'od' || clean === 'or')
+    return 'Odisha';
+  if (clean.startsWith('ass') || clean === 'as') return 'Assam';
+  if (clean.startsWith('goa') || clean === 'ga') return 'Goa';
+  if (clean.startsWith('jha') || clean === 'jh') return 'Jharkhand';
+  if (clean.startsWith('chh') || clean === 'cg' || clean === 'ct') return 'Chhattisgarh';
+  return rawState?.trim() || 'Haryana';
+}
+
 export class PickupLocationService {
   /**
    * Registers a Navya Pickup Location with Shiprocket via the official `/settings/company/addpickup` API.
@@ -31,7 +62,7 @@ export class PickupLocationService {
     try {
       const location = await prisma.pickupLocation.findUnique({
         where: { id: pickupLocationId },
-        include: { shop: true },
+        include: { shop: { include: { owner: true, sellerProfile: true } } },
       });
 
       if (!location) {
@@ -54,21 +85,54 @@ export class PickupLocationService {
         location.shiprocketPickupName || location.locationCode || `PKP_${location.id.slice(-6)}`;
       const shiprocketPickupName = rawPickupName.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
 
+      // Clean contact name
+      const rawContactName =
+        location.contactName ||
+        location.shop?.bankAccountHolder ||
+        location.shop?.sellerProfile?.legalName ||
+        location.shop?.owner?.name ||
+        location.shop?.name ||
+        'Store Manager';
+      const contactName = rawContactName.trim().slice(0, 50) || 'Store Manager';
+
       // Clean phone number (extract 10 digits)
-      const rawPhone = location.contactPhone || location.shop?.phone || '9991983125';
+      const rawPhone =
+        location.contactPhone ||
+        location.shop?.phone ||
+        location.shop?.owner?.mobile ||
+        '9991983125';
       const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10) || '9991983125';
+
+      // Clean email
+      const cleanEmail =
+        location.contactEmail ||
+        location.shop?.email ||
+        location.shop?.owner?.email ||
+        'seller@navyacollection.store';
+
+      // Clean street address (Shiprocket requires minimum 10 characters)
+      let rawAddress = location.addressLine1 || location.shop?.fullAddress || 'Main Market Road';
+      if (rawAddress.trim().length < 10) {
+        rawAddress = `${rawAddress.trim()}, Near Main Market`;
+      }
+
+      const cleanCity = (location.city || location.shop?.city || 'Hisar').trim();
+      const cleanState = normalizeIndianState(location.state || location.shop?.state || 'Haryana');
+      const cleanPincode = (location.pincode || location.shop?.pincode || '125001')
+        .replace(/\D/g, '')
+        .slice(0, 6);
 
       const payload = {
         pickup_location: shiprocketPickupName,
-        name: (location.contactName || location.name || 'Store Manager').slice(0, 50),
-        email: location.contactEmail || location.shop?.email || 'seller@navyacollection.store',
+        name: contactName,
+        email: cleanEmail,
         phone: cleanPhone,
-        address: location.addressLine1 || location.shop?.fullAddress || 'Main Market Road',
+        address: rawAddress.trim(),
         address_2: location.addressLine2 || '',
-        city: location.city || location.shop?.city || 'Hisar',
-        state: location.state || location.shop?.state || 'Haryana',
-        country: location.country || 'India',
-        pin_code: (location.pincode || location.shop?.pincode || '125001').trim(),
+        city: cleanCity,
+        state: cleanState,
+        country: 'India',
+        pin_code: cleanPincode,
       };
 
       ShiprocketLogger.info(
@@ -79,17 +143,17 @@ export class PickupLocationService {
 
       const response = await shiprocketClient.post('/settings/company/addpickup', payload);
       const isSuccess = response.status === 200 || response.status === 201;
-      const respMsg = (response.data?.message || response.data?.success || '')
-        .toString()
-        .toLowerCase();
+      const respData = response.data || {};
+      const respMsg = (respData.message || respData.success || '').toString().toLowerCase();
 
-      if (isSuccess || respMsg.includes('already') || respMsg.includes('exist')) {
+      // Verify if successful or already exists
+      if (isSuccess && respData.success !== false) {
         await prisma.pickupLocation.update({
           where: { id: location.id },
           data: {
             shiprocketPickupName,
             shiprocketStatus: 'CONNECTED',
-            shiprocketResponse: response.data,
+            shiprocketResponse: respData,
           },
         });
 
@@ -103,39 +167,59 @@ export class PickupLocationService {
 
         return {
           success: true,
-          message: 'Pickup location registered with Shiprocket successfully.',
-          data: response.data,
+          message: respData.message || 'Pickup location registered with Shiprocket successfully.',
+          data: respData,
         };
       }
 
+      // If already exists on Shiprocket
+      if (respMsg.includes('already exists') || respMsg.includes('already added')) {
+        await prisma.pickupLocation.update({
+          where: { id: location.id },
+          data: {
+            shiprocketPickupName,
+            shiprocketStatus: 'CONNECTED',
+            shiprocketResponse: respData,
+          },
+        });
+
+        return {
+          success: true,
+          message: 'Pickup location is already registered on Shiprocket.',
+          data: respData,
+        };
+      }
+
+      // Failed response from Shiprocket
       await prisma.pickupLocation.update({
         where: { id: location.id },
         data: {
           shiprocketStatus: 'FAILED',
-          shiprocketResponse: response.data,
+          shiprocketResponse: respData,
         },
       });
 
       return {
         success: false,
-        message: response.data?.message || 'Failed to register pickup location with Shiprocket.',
-        data: response.data,
+        message: respData.message || 'Failed to register pickup location with Shiprocket.',
+        data: respData,
       };
     } catch (error: any) {
-      const errResponse = error.response?.data;
-      const errMsg = (errResponse?.message || error.message || '').toLowerCase();
+      const errResponse = error.response?.data || {};
+      const rawErrMsg =
+        errResponse?.message ||
+        (typeof errResponse?.errors === 'object' ? JSON.stringify(errResponse.errors) : '') ||
+        error.message ||
+        '';
+      const errMsg = rawErrMsg.toLowerCase();
 
       ShiprocketLogger.error('[SHIPROCKET_ADD_PICKUP_ERROR]', undefined, {
         error: error.message,
         response: errResponse,
       });
 
-      // If already registered in Shiprocket, treat as CONNECTED
-      if (
-        errMsg.includes('already') ||
-        errMsg.includes('exist') ||
-        errResponse?.status_code === 422
-      ) {
+      // ONLY treat as CONNECTED if Shiprocket explicitly confirms it already exists
+      if (errMsg.includes('already exists') || errMsg.includes('already added')) {
         await prisma.pickupLocation
           .update({
             where: { id: pickupLocationId },
@@ -163,9 +247,22 @@ export class PickupLocationService {
         })
         .catch(() => {});
 
+      let detailedMsg = errResponse.message || error.message;
+      if (errResponse.errors) {
+        if (typeof errResponse.errors === 'string') {
+          detailedMsg += ` (${errResponse.errors})`;
+        } else if (typeof errResponse.errors === 'object') {
+          const errorDetails = Object.entries(errResponse.errors)
+            .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
+            .join('; ');
+          detailedMsg += ` - ${errorDetails}`;
+        }
+      }
+
       return {
         success: false,
-        message: errResponse?.message || error.message || 'Error registering pickup location.',
+        message: detailedMsg || 'Error registering pickup location with Shiprocket.',
+        data: errResponse,
       };
     }
   }
