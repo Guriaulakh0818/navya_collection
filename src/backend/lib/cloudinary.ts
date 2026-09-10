@@ -202,9 +202,7 @@ export async function uploadImageToCloudinary(
   } catch (error: any) {
     console.error('[CLOUDINARY_UPLOAD_ERROR]', error);
     const mockPublicId = `${targetFolder}/${publicIdName || `img_${Date.now()}`}`;
-    const fallbackUrl = fileInput.startsWith('http')
-      ? fileInput
-      : 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800';
+    const fallbackUrl = fileInput;
 
     return {
       publicId: mockPublicId,
@@ -247,22 +245,38 @@ export function getOptimizedImageUrl(
 ): string {
   if (!urlOrPublicId) return '';
 
-  const widthParam = options.width ? `,w_${options.width}` : '';
-  const heightParam = options.height ? `,h_${options.height}` : '';
-  const cropParam = options.crop ? `,c_${options.crop}` : '';
-  const qualityParam = options.quality || 'auto';
-  const dprParam = options.dpr ? `,dpr_${options.dpr}` : ',dpr_auto';
+  // If data URI or blob URI, return as-is
+  if (urlOrPublicId.startsWith('data:') || urlOrPublicId.startsWith('blob:')) {
+    return urlOrPublicId;
+  }
 
   // If already a full Cloudinary URL
   if (urlOrPublicId.includes('res.cloudinary.com')) {
     if (urlOrPublicId.includes('/upload/f_auto,q_auto')) {
       return urlOrPublicId;
     }
+    const widthParam = options.width ? `,w_${options.width}` : '';
+    const heightParam = options.height ? `,h_${options.height}` : '';
+    const cropParam = options.crop ? `,c_${options.crop}` : '';
+    const qualityParam = options.quality || 'auto';
+    const dprParam = options.dpr ? `,dpr_${options.dpr}` : ',dpr_auto';
+
     return urlOrPublicId.replace(
       '/upload/',
       `/upload/f_auto,q_${qualityParam}${widthParam}${heightParam}${cropParam}${dprParam}/`,
     );
   }
+
+  // If it is another external HTTP/HTTPS URL (e.g. unsplash, s3, etc.), don't prepend res.cloudinary.com
+  if (urlOrPublicId.startsWith('http://') || urlOrPublicId.startsWith('https://')) {
+    return urlOrPublicId;
+  }
+
+  const widthParam = options.width ? `,w_${options.width}` : '';
+  const heightParam = options.height ? `,h_${options.height}` : '';
+  const cropParam = options.crop ? `,c_${options.crop}` : '';
+  const qualityParam = options.quality || 'auto';
+  const dprParam = options.dpr ? `,dpr_${options.dpr}` : ',dpr_auto';
 
   // Build Cloudinary URL from publicId
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'demo';
