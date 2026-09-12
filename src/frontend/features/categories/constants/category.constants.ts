@@ -1,4 +1,5 @@
 import type { Category } from '../types/category.types';
+import { MAIN_CATEGORY_GROUPS } from './category-explorer.constants';
 
 export const CATEGORY_ACCENTS = [
   'from-navy to-[#234b8f]',
@@ -215,7 +216,7 @@ export const CATEGORIES: Category[] = [
 ];
 
 export function findCategoryBySlug(slug: string): Category {
-  const normalizedSlug = slug.toLowerCase().trim();
+  const normalizedSlug = (slug || '').toLowerCase().trim();
 
   // Aliases mapping for common variations
   const aliases: Record<string, string> = {
@@ -242,9 +243,81 @@ export function findCategoryBySlug(slug: string): Category {
   };
 
   const targetSlug = aliases[normalizedSlug] || normalizedSlug;
+
+  // 1. Check in static CATEGORIES list first
   const existing = CATEGORIES.find(
     (c) => c.slug === targetSlug || c.id === targetSlug || c.slug === normalizedSlug,
   );
+
+  // 2. Check if matches one of the 5 Main Category Groups
+  const mainGroup = MAIN_CATEGORY_GROUPS.find(
+    (g) =>
+      g.slug === targetSlug ||
+      g.id === targetSlug ||
+      g.slug === normalizedSlug ||
+      (targetSlug === 'men' && g.id === 'group_men') ||
+      (targetSlug === 'women' && g.id === 'group_women') ||
+      (targetSlug === 'kids' && g.id === 'group_kids') ||
+      (targetSlug === 'spotlight' && g.id === 'group_spotlight') ||
+      (targetSlug === 'shops' && g.id === 'group_shops'),
+  );
+
+  if (mainGroup) {
+    const subCategories = mainGroup.subSections.flatMap((s) =>
+      s.items.map((it) => ({
+        id: it.id,
+        name: it.name,
+        slug: it.slug,
+        image: it.image,
+        badge: it.badge,
+      })),
+    );
+
+    return {
+      id: mainGroup.id,
+      name: mainGroup.name,
+      slug: mainGroup.slug,
+      description:
+        mainGroup.banner?.subtitle || `Explore ${mainGroup.name} collection at Navya Collection.`,
+      image: mainGroup.iconImage,
+      banner: mainGroup.banner?.image || mainGroup.iconImage,
+      accent: existing?.accent || 'from-navy to-[#234b8f]',
+      subCategories: subCategories.slice(0, 16),
+    };
+  }
+
+  // 3. Check if matches any subcategory item across all main groups
+  for (const group of MAIN_CATEGORY_GROUPS) {
+    for (const section of group.subSections) {
+      const matchedItem = section.items.find(
+        (it) => it.slug === targetSlug || it.id === targetSlug || it.slug === normalizedSlug,
+      );
+      if (matchedItem) {
+        const siblingSubcategories = section.items.map((it) => ({
+          id: it.id,
+          name: it.name,
+          slug: it.slug,
+          image: it.image,
+          badge: it.badge,
+        }));
+
+        return {
+          id: matchedItem.id,
+          name: matchedItem.name,
+          slug: matchedItem.slug,
+          description: `Shop authentic ${matchedItem.name} in ${group.name} collection at Navya Collection.`,
+          image: matchedItem.image,
+          banner: group.banner?.image || matchedItem.image,
+          parentId: group.id,
+          parentName: group.name,
+          parentSlug: group.slug,
+          accent: 'from-navy to-[#234b8f]',
+          subCategories: siblingSubcategories,
+        };
+      }
+    }
+  }
+
   if (existing) return existing;
 
   // Format slug dynamically if not found

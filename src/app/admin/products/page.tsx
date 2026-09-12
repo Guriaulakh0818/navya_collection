@@ -44,6 +44,7 @@ export default function AdminProductsPage() {
     archived: 0,
   });
   const [activeTab, setActiveTab] = useState<string>('ALL');
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
@@ -73,6 +74,9 @@ export default function AdminProductsPage() {
     try {
       const url = new URL('/api/v1/admin/products', window.location.origin);
       url.searchParams.set('status', activeTab);
+      if (selectedCategory !== 'ALL') {
+        url.searchParams.set('categoryId', selectedCategory);
+      }
       url.searchParams.set('page', String(page));
       url.searchParams.set('limit', '10');
       if (search) url.searchParams.set('q', search);
@@ -92,7 +96,7 @@ export default function AdminProductsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab, page, search, toast]);
+  }, [activeTab, selectedCategory, page, search, toast]);
 
   useEffect(() => {
     fetchProducts();
@@ -296,32 +300,56 @@ export default function AdminProductsPage() {
           })}
         </div>
 
-        {/* Search */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setPage(1);
-            fetchProducts();
-          }}
-          className="flex gap-2 max-w-md"
-        >
-          <div className="relative flex-1 max-w-md">
-            <Input
-              placeholder="Search by name, SKU, category, or shop..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="rounded-full text-xs pl-10"
-            />
-            <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
-          </div>
-          <Button
-            type="submit"
-            size="sm"
-            className="rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold px-5 cursor-pointer"
+        {/* Search & Category Filter Row */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setPage(1);
+              fetchProducts();
+            }}
+            className="flex gap-2 flex-1 max-w-md"
           >
-            Search
-          </Button>
-        </form>
+            <div className="relative flex-1">
+              <Input
+                placeholder="Search by name, SKU, category, or shop..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="rounded-full text-xs pl-10"
+              />
+              <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-400" />
+            </div>
+            <Button
+              type="submit"
+              size="sm"
+              className="rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold px-5 cursor-pointer"
+            >
+              Search
+            </Button>
+          </form>
+
+          {/* Category Dropdown Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-500 whitespace-nowrap hidden md:inline">
+              Category:
+            </span>
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs font-bold text-slate-700 outline-none hover:bg-white focus:border-navy cursor-pointer transition-colors max-w-xs truncate shadow-2xs"
+            >
+              <option value="ALL">All Categories</option>
+              {flattenedCategories.map((opt: any) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.breadcrumb}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {/* Main Table */}
         <div className="overflow-x-auto pt-2">

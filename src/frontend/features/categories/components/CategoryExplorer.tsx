@@ -114,7 +114,11 @@ export function CategoryExplorer({
                 {filteredResults.map(({ group, item }) => (
                   <Link
                     key={`${group.id}_${item.id}`}
-                    href={`/shop?${item.queryParam}`}
+                    href={
+                      group.id === 'group_shops'
+                        ? `/shop?${item.queryParam}`
+                        : `/category/${item.slug}`
+                    }
                     className="group flex flex-col items-center text-center p-2.5 rounded-2xl bg-white border border-slate-200/90 hover:border-[#183A73] hover:shadow-md transition-all active:scale-95"
                   >
                     <div className="relative w-full aspect-square rounded-xl bg-slate-100 overflow-hidden mb-2">
@@ -310,31 +314,38 @@ export function CategoryExplorer({
 
                     {/* 3-Column Variety Grid (Flipkart/Myntra/Meesho Style Pill Cards) */}
                     <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
-                      {displayItems.map((item) => (
-                        <Link
-                          key={item.id}
-                          href={`/shop?${item.queryParam}`}
-                          className="group flex flex-col items-center text-center p-2 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-[#183A73] hover:shadow-md transition-all active:scale-95"
-                        >
-                          <div className="relative w-full aspect-square rounded-xl bg-slate-100/90 overflow-hidden mb-1.5">
-                            <Image
-                              src={item.image}
-                              alt={item.name}
-                              fill
-                              sizes="(max-width: 768px) 33vw, 150px"
-                              className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            {item.badge && (
-                              <span className="absolute top-1 right-1 bg-[#F15A25] text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10.5px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-[#183A73]">
-                            {item.name}
-                          </span>
-                        </Link>
-                      ))}
+                      {displayItems.map((item) => {
+                        const targetHref =
+                          activeGroup.id === 'group_shops'
+                            ? `/shop?${item.queryParam}`
+                            : `/category/${item.slug}`;
+
+                        return (
+                          <Link
+                            key={item.id}
+                            href={targetHref}
+                            className="group flex flex-col items-center text-center p-2 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-[#183A73] hover:shadow-md transition-all active:scale-95"
+                          >
+                            <div className="relative w-full aspect-square rounded-xl bg-slate-100/90 overflow-hidden mb-1.5">
+                              <Image
+                                src={item.image}
+                                alt={item.name}
+                                fill
+                                sizes="(max-width: 768px) 33vw, 150px"
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                              {item.badge && (
+                                <span className="absolute top-1 right-1 bg-[#F15A25] text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10.5px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-[#183A73]">
+                              {item.name}
+                            </span>
+                          </Link>
+                        );
+                      })}
 
                       {/* Expand / Collapse Button Card */}
                       {hasMore && (

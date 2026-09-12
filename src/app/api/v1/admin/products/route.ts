@@ -36,12 +36,27 @@ export async function GET(request: NextRequest) {
       whereCondition.status = status;
     }
 
-    if (query) {
+    const categoryFilter = searchParams.get('categoryId') || searchParams.get('category') || 'ALL';
+
+    if (categoryFilter !== 'ALL') {
       whereCondition.OR = [
-        { name: { contains: query, mode: 'insensitive' } },
-        { sku: { contains: query, mode: 'insensitive' } },
-        { shop: { name: { contains: query, mode: 'insensitive' } } },
-        { category: { name: { contains: query, mode: 'insensitive' } } },
+        { categoryId: categoryFilter },
+        { category: { id: categoryFilter } },
+        { category: { slug: categoryFilter } },
+        { category: { parentId: categoryFilter } },
+      ];
+    }
+
+    if (query) {
+      whereCondition.AND = [
+        {
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { sku: { contains: query, mode: 'insensitive' } },
+            { shop: { name: { contains: query, mode: 'insensitive' } } },
+            { category: { name: { contains: query, mode: 'insensitive' } } },
+          ],
+        },
       ];
     }
 
