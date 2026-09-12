@@ -42,10 +42,53 @@ const DEFAULT_FIRST_ORDER_OFFER: OfferData = {
 };
 
 export class OfferService {
+  private static isTableInitialized = false;
+
+  /**
+   * Automatically ensure the 'offers' table and indexes exist in the PostgreSQL database.
+   */
+  private static async ensureTableExists(): Promise<void> {
+    if (this.isTableInitialized) return;
+    try {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "offers" (
+          "id" TEXT NOT NULL,
+          "title" TEXT NOT NULL,
+          "description" TEXT,
+          "type" TEXT NOT NULL DEFAULT 'FREE_DELIVERY',
+          "value" DECIMAL(10,2) NOT NULL DEFAULT 0,
+          "minCartValue" DECIMAL(10,2) DEFAULT 0,
+          "firstOrderOnly" BOOLEAN NOT NULL DEFAULT false,
+          "isActive" BOOLEAN NOT NULL DEFAULT true,
+          "startDate" TIMESTAMP(3),
+          "endDate" TIMESTAMP(3),
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "offers_pkey" PRIMARY KEY ("id")
+        );
+      `);
+      try {
+        await prisma.$executeRawUnsafe(
+          `CREATE INDEX IF NOT EXISTS "offers_type_idx" ON "offers"("type");`,
+        );
+        await prisma.$executeRawUnsafe(
+          `CREATE INDEX IF NOT EXISTS "offers_isActive_idx" ON "offers"("isActive");`,
+        );
+        await prisma.$executeRawUnsafe(
+          `CREATE INDEX IF NOT EXISTS "offers_firstOrderOnly_idx" ON "offers"("firstOrderOnly");`,
+        );
+      } catch {}
+      this.isTableInitialized = true;
+    } catch (err) {
+      console.warn('[OFFER_SERVICE] Auto-migration check or table initialization warning:', err);
+    }
+  }
+
   /**
    * List all offers (Admin).
    */
   static async listOffers(): Promise<OfferData[]> {
+    await this.ensureTableExists();
     try {
       const dbOffers = await (prisma as any).offer?.findMany({
         orderBy: { createdAt: 'desc' },
@@ -94,6 +137,8 @@ export class OfferService {
    * Create a new offer (Admin).
    */
   static async createOffer(input: CreateOfferInput): Promise<OfferData> {
+    await this.ensureTableExists();
+
     const data: any = {
       title: input.title,
       description: input.description || null,
@@ -106,18 +151,33 @@ export class OfferService {
       endDate: input.endDate ? new Date(input.endDate) : null,
     };
 
-    const created = await (prisma as any).offer.create({ data });
-    return {
-      ...created,
-      value: Number(created.value || 0),
-      minCartValue: Number(created.minCartValue || 0),
-    };
+    try {
+      const created = await (prisma as any).offer.create({ data });
+      return {
+        ...created,
+        value: Number(created.value || 0),
+        minCartValue: Number(created.minCartValue || 0),
+      };
+    } catch (error: any) {
+      if (error?.message?.includes('does not exist') || error?.code === 'P2021') {
+        this.isTableInitialized = false;
+        await this.ensureTableExists();
+        const created = await (prisma as any).offer.create({ data });
+        return {
+          ...created,
+          value: Number(created.value || 0),
+          minCartValue: Number(created.minCartValue || 0),
+        };
+      }
+      throw error;
+    }
   }
 
   /**
    * Update / Toggle an offer (Admin).
    */
   static async updateOffer(id: string, input: UpdateOfferInput): Promise<OfferData> {
+    await this.ensureTableExists();
     const data: any = {};
     if (input.title !== undefined) data.title = input.title;
     if (input.description !== undefined) data.description = input.description;
@@ -133,32 +193,58 @@ export class OfferService {
       data.endDate = input.endDate ? new Date(input.endDate) : null;
     }
 
-    const updated = await (prisma as any).offer.update({
-      where: { id },
-      data,
-    });
+    try {
+      const updated = await (prisma as any).offer.update({
+        where: { id },
+        data,
+      });
 
-    return {
-      ...updated,
-      value: Number(updated.value || 0),
-      minCartValue: Number(updated.minCartValue || 0),
-    };
+      return {
+        ...updated,
+        value: Number(updated.value || 0),
+        minCartValue: Number(updated.minCartValue || 0),
+      };
+    } catch (error: any) {
+      if (error?.message?.includes('does not exist') || error?.code === 'P2021') {
+        this.isTableInitialized = false;
+        await this.ensureTableExists();
+        const updated = await (prisma as any).offer.update({
+          where: { id },
+          data,
+        });
+        return {
+          ...updated,
+          value: Number(updated.value || 0),
+          minCartValue: Number(updated.minCartValue || 0),
+        };
+      }
+      throw error;
+    }
   }
 
   /**
    * Delete an offer (Admin).
    */
   static async deleteOffer(id: string): Promise<boolean> {
-    await (prisma as any).offer.delete({
-      where: { id },
-    });
-    return true;
+    await this.ensureTableExists();
+    try {
+      await (prisma as any).offer.delete({
+        where: { id },
+      });
+      return true;
+    } catch (error: any) {
+      if (error?.message?.includes('does not exist') || error?.code === 'P2021') {
+        return true;
+      }
+      throw error;
+    }
   }
 
   /**
    * Fetch active, currently valid offers.
    */
   static async getActiveOffers(): Promise<OfferData[]> {
+    await this.ensureTableExists();
     try {
       const now = new Date();
       const offers = await (prisma as any).offer?.findMany({

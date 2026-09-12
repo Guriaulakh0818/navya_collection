@@ -461,6 +461,13 @@ export default function AdminOffersPage() {
               </button>
             </div>
 
+            {errorMessage && (
+              <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs sm:text-sm">
               {/* Title */}
               <div className="space-y-1">
