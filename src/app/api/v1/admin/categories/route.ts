@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
           description: matchingDefault?.description || `${main.name} boutique collection.`,
         });
 
-        for (const sub of main.subCategories) {
+        for (const sub of main.subCategories || []) {
           subItems.push({
             id: sub.id,
             name: sub.name,
