@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { HorizontalCarousel } from '@/frontend/components/ui/HorizontalCarousel';
+import { MAIN_CATEGORY_GROUPS } from '@/frontend/features/categories/constants/category-explorer.constants';
 import { CopyCouponButton } from '@/frontend/features/marketplace/components/CopyCouponButton';
 import { FeaturedShopsGrid } from '@/frontend/features/marketplace/components/FeaturedShopsGrid';
 import { MarketplaceHero } from '@/frontend/features/marketplace/components/MarketplaceHero';
@@ -98,45 +99,54 @@ export default async function MultiVendorMarketplaceHomePage() {
         )}
 
         {/* 3. EXPLORE CATEGORIES HORIZONTAL CAROUSEL */}
-        {categories.length > 0 && (
-          <HorizontalCarousel
-            title="Explore Categories"
-            subtitle="Browse Indian ethnic couture, gents garments, and kids collections."
-            icon={<Grid className="w-5 h-5 text-amber-600" />}
-            actionLink="/category"
-            actionText="View All"
-          >
-            {categories.map((cat: any) => {
-              const productCount = cat._count?.products ?? 0;
-              return (
-                <Link
-                  key={cat.id}
-                  href={`/category/${cat.slug}`}
-                  className="group bg-white border border-slate-200 rounded-2xl p-4 hover:border-amber-500/50 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 w-[150px] xs:w-[170px] sm:w-[200px] shrink-0 snap-start"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 font-bold group-hover:scale-110 transition-transform shadow-xs">
-                      <Tag className="w-5 h-5" />
-                    </div>
-                    {productCount === 0 && (
-                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
-                        Coming Soon ✨
-                      </span>
-                    )}
+        <HorizontalCarousel
+          title="Explore Categories"
+          subtitle="Browse Indian ethnic couture, gents garments, and kids collections."
+          icon={<Grid className="w-5 h-5 text-amber-600" />}
+          actionLink="/category"
+          actionText="View All"
+        >
+          {MAIN_CATEGORY_GROUPS.map((group) => {
+            const isShop = group.id === 'group_shops';
+            const linkHref = isShop ? '/shops' : `/category?group=${group.id}`;
+            const badgeText = (group.badge || 'EXPLORE').toUpperCase();
+
+            return (
+              <Link
+                key={group.id}
+                href={linkHref}
+                className="group bg-white border border-slate-200/90 hover:border-amber-500/60 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-between text-center w-[125px] xs:w-[145px] sm:w-[170px] md:w-[190px] shrink-0 snap-start relative overflow-hidden"
+              >
+                {/* Subtle top indicator on hover */}
+                <div className="absolute top-0 inset-x-0 h-1 bg-transparent group-hover:bg-gradient-to-r group-hover:from-amber-500 group-hover:to-orange-500 transition-all rounded-t-full" />
+
+                {/* Circular Avatar Photo */}
+                <div className="relative w-16 h-16 xs:w-18 xs:h-18 sm:w-20 sm:h-20 md:w-22 md:h-22 rounded-full p-1 border-2 border-slate-200/80 group-hover:border-amber-500 group-hover:scale-105 transition-all duration-300 shadow-xs bg-slate-50 flex items-center justify-center my-1">
+                  <div className="w-full h-full rounded-full overflow-hidden relative">
+                    <Image
+                      src={group.iconImage}
+                      alt={group.name}
+                      fill
+                      sizes="(max-width: 640px) 90px, 120px"
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
                   </div>
-                  <div>
-                    <h3 className="font-extrabold text-navy text-xs sm:text-sm group-hover:text-amber-600 transition-colors line-clamp-1">
-                      {cat.name}
-                    </h3>
-                    <span className="text-[11px] text-slate-500 font-semibold">
-                      {productCount > 0 ? `${productCount} Items` : 'Catalog updating'}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </HorizontalCarousel>
-        )}
+                </div>
+
+                {/* Category Title & Pill Badge */}
+                <div className="space-y-1.5 w-full flex flex-col items-center">
+                  <h3 className="font-extrabold text-navy text-xs sm:text-sm md:text-base group-hover:text-amber-600 transition-colors line-clamp-1 tracking-tight">
+                    {group.name}
+                  </h3>
+
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-[#FF4500] text-white shadow-xs group-hover:scale-105 transition-transform">
+                    {badgeText}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </HorizontalCarousel>
 
         {/* 4. FEATURED SHOPS CAROUSEL */}
         {featuredShops.length > 0 ? (

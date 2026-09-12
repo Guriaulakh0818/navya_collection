@@ -45,8 +45,9 @@ export const MAIN_CATEGORY_GROUPS: MainCategoryGroup[] = [
     id: 'group_spotlight',
     name: 'In The Spotlight',
     slug: 'spotlight',
-    iconImage: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=160',
-    badge: 'Trending',
+    iconImage:
+      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&auto=format&fit=crop&q=80',
+    badge: 'TRENDING',
     banner: {
       title: 'In The Spotlight Collections',
       subtitle: 'Handpicked seasonal drops, festive highlights, top-rated trends & budget finds',
@@ -269,8 +270,9 @@ export const MAIN_CATEGORY_GROUPS: MainCategoryGroup[] = [
     id: 'group_men',
     name: 'Men',
     slug: 'men',
-    iconImage: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=160',
-    badge: 'Popular',
+    iconImage:
+      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=300&auto=format&fit=crop&q=80',
+    badge: 'POPULAR',
     banner: {
       title: "Men's Collection",
       subtitle: 'From Handcrafted Silk Kurtas & Suits to Everyday Tops, Denim & Essentials',
@@ -868,8 +870,9 @@ export const MAIN_CATEGORY_GROUPS: MainCategoryGroup[] = [
     id: 'group_women',
     name: 'Women',
     slug: 'women',
-    iconImage: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160',
-    badge: 'Hot',
+    iconImage:
+      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
+    badge: 'HOT',
     banner: {
       title: "Women's Collection",
       subtitle: 'Pure Heritage Sarees, Bridal Lehengas, Kurtis, Western Tops, Bags & Essentials',
@@ -1450,8 +1453,9 @@ export const MAIN_CATEGORY_GROUPS: MainCategoryGroup[] = [
     id: 'group_kids',
     name: 'Kids',
     slug: 'kids',
-    iconImage: 'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=160',
-    badge: 'Cute',
+    iconImage:
+      'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=300&auto=format&fit=crop&q=80',
+    badge: 'CUTE',
     banner: {
       title: "Kids' Fashion World",
       subtitle: 'Soft Newborn Sets, Boys & Girls Ethnic Outfits, Casuals, Teens & Essentials',
@@ -1784,8 +1788,9 @@ export const MAIN_CATEGORY_GROUPS: MainCategoryGroup[] = [
     id: 'group_shops',
     name: 'Shops',
     slug: 'shops',
-    iconImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=160',
-    badge: 'Boutiques',
+    iconImage:
+      'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&auto=format&fit=crop&q=80',
+    badge: 'BOUTIQUES',
     banner: {
       title: 'Navya Partner Boutiques',
       subtitle:

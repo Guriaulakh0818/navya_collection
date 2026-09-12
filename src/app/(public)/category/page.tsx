@@ -25,7 +25,19 @@ export const metadata: Metadata = {
   ],
 };
 
-export default async function CategoriesPage() {
+export default async function CategoriesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ group?: string; tab?: string }>;
+}) {
+  const resolvedParams = searchParams ? await searchParams : {};
+  const groupParam = resolvedParams.group || resolvedParams.tab;
+  const initialActiveId = groupParam
+    ? groupParam.startsWith('group_')
+      ? groupParam
+      : `group_${groupParam}`
+    : 'group_spotlight';
+
   const dbCategoryCounts: Record<string, number> = {};
 
   try {
@@ -65,7 +77,7 @@ export default async function CategoriesPage() {
         />
       </div>
 
-      <CategoryExplorer initialActiveId="group_spotlight" dbCategoryCounts={dbCategoryCounts} />
+      <CategoryExplorer initialActiveId={initialActiveId} dbCategoryCounts={dbCategoryCounts} />
     </div>
   );
 }
