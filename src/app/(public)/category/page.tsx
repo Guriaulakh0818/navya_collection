@@ -65,7 +65,7 @@ export default async function CategoriesPage() {
         />
       </div>
 
-      <CategoryExplorer initialActiveId="group_women" dbCategoryCounts={dbCategoryCounts} />
+      <CategoryExplorer initialActiveId="group_spotlight" dbCategoryCounts={dbCategoryCounts} />
     </div>
   );
 }
