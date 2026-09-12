@@ -360,6 +360,18 @@ export function LoginForm({ initialUser }: LoginFormProps) {
             <p className="mt-2 text-[11px] font-medium text-slate-500">
               Enter your registered email to receive a 6-digit verification code.
             </p>
+
+            {/* Anti-Bot Honeypot Field (Invisible to human users) */}
+            <div className="hidden" aria-hidden="true" style={{ display: 'none' }}>
+              <input
+                type="text"
+                name="hp_field"
+                tabIndex={-1}
+                autoComplete="off"
+                value=""
+                readOnly
+              />
+            </div>
           </div>
 
           <Button

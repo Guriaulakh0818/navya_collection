@@ -7,6 +7,9 @@ export const sendOtpSchema = z.object({
     .trim()
     .toLowerCase()
     .email('Please enter a valid email address'),
+  hp_field: z.string().optional(),
+  website: z.string().optional(),
+  phone_confirmation: z.string().optional(),
 });
 
 export const verifyOtpSchema = z.object({

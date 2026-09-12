@@ -102,6 +102,26 @@ export class OtpService {
       };
     }
 
+    const { validateEmailSafety } = await import('@/backend/security/email-firewall');
+    const firewallResult = validateEmailSafety(email);
+    if (!firewallResult.isAllowed) {
+      console.warn(
+        `[${timestamp}] [BOT_FIREWALL_BLOCKED] Email: ${maskEmailAddress(rawEmail)} | Reason: ${firewallResult.reason}`,
+      );
+      if (firewallResult.isBotTrap) {
+        return {
+          status: 'SUCCESS',
+          message: `Verification code sent to ${maskEmailAddress(email)}`,
+          statusCode: 200,
+        };
+      }
+      return {
+        status: 'INVALID_EMAIL',
+        message: firewallResult.reason || 'This email domain is not supported.',
+        statusCode: 400,
+      };
+    }
+
     const maskedEmail = maskEmailAddress(email);
     const now = new Date();
 

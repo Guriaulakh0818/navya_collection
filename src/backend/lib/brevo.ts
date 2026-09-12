@@ -12,6 +12,18 @@ export type BrevoEmailResult = EmailResult;
  * Sends a transactional Email OTP via configured transactional email provider API.
  */
 export async function sendEmailOtp(toEmail: string, otp: string): Promise<EmailResult> {
+  const { validateEmailSafety } = await import('@/backend/security/email-firewall');
+  const firewallCheck = validateEmailSafety(toEmail);
+  if (!firewallCheck.isAllowed) {
+    console.warn(
+      `[BREVO_DISPATCH_FIREWALL_BLOCKED] Blocked email: ${toEmail} | Reason: ${firewallCheck.reason}`,
+    );
+    return {
+      success: true,
+      messageId: `firewall_blocked_bot_${Date.now()}`,
+    };
+  }
+
   const apiKey = process.env.BREVO_API_KEY || process.env.EMAIL_API_KEY || '';
   const senderEmail =
     process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_SENDER || 'gurvindersingh0218@gmail.com';
