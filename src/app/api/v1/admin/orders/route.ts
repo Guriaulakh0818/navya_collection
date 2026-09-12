@@ -143,7 +143,14 @@ export async function PATCH(request: NextRequest) {
     }
 
     const updateData: any = {};
-    if (orderStatus) updateData.orderStatus = orderStatus;
+    if (orderStatus) {
+      updateData.orderStatus = orderStatus;
+      if (['SHIPPED', 'DELIVERED', 'CANCELLED'].includes(orderStatus)) {
+        updateData.shippingStatus = orderStatus;
+      } else if (orderStatus === 'PROCESSING') {
+        updateData.shippingStatus = 'PACKED';
+      }
+    }
     if (paymentStatus) updateData.paymentStatus = paymentStatus;
 
     const updatedOrder = await prisma.order.update({
@@ -151,8 +158,26 @@ export async function PATCH(request: NextRequest) {
       data: updateData,
     });
 
-    // Trigger Automated Lifecycle Email to Customer/Seller if status changed
     if (orderStatus) {
+      // Synchronize all child vendor orders
+      await prisma.vendorOrder.updateMany({
+        where: { masterOrderId: orderId },
+        data: {
+          status: orderStatus,
+          ...(updateData.shippingStatus ? { shippingStatus: updateData.shippingStatus } : {}),
+        },
+      });
+
+      // Synchronize all child shipments
+      await prisma.shipment.updateMany({
+        where: { masterOrderId: orderId },
+        data: {
+          status: orderStatus,
+          trackingStatus: orderStatus,
+        },
+      });
+
+      // Trigger Automated Lifecycle Email to Customer/Seller if status changed
       OrderEmailNotificationService.notifyOrderStatusChanged(orderId, orderStatus).catch((err) => {
         console.warn(`[ADMIN_ORDER_STATUS_EMAIL_ERR] Order: ${orderId}`, err);
       });
@@ -160,7 +185,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Order #${updatedOrder.orderNumber} updated successfully.`,
+      message: `Order #${updatedOrder.orderNumber} updated successfully across marketplace.`,
       data: updatedOrder,
     });
   } catch (error: any) {

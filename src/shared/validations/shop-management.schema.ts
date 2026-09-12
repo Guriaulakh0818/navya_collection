@@ -1,21 +1,22 @@
 import { z } from 'zod';
 
 export const shopManagementSchema = z.object({
-  name: z.string().min(3, 'Shop Name must be at least 3 characters'),
+  shopId: z.string().optional(),
+  name: z.string().min(2, 'Shop Name must be at least 2 characters'),
+  ownerName: z.string().optional().or(z.literal('')),
+  contactPerson: z.string().optional().or(z.literal('')),
   slug: z
     .string()
-    .min(3, 'Slug must be at least 3 characters')
+    .min(2, 'Slug must be at least 2 characters')
     .regex(
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
       'Slug must be URL-friendly (lowercase letters, numbers, and hyphens)',
-    ),
-  logo: z.string().url('Invalid Logo URL').optional().or(z.literal('')),
-  banner: z.string().url('Invalid Banner URL').optional().or(z.literal('')),
-  description: z
-    .string()
-    .min(10, 'Description must be at least 10 characters')
+    )
     .optional()
     .or(z.literal('')),
+  logo: z.string().optional().or(z.literal('')),
+  banner: z.string().optional().or(z.literal('')),
+  description: z.string().optional().or(z.literal('')),
   phone: z.string().min(10, 'Valid contact phone required'),
   email: z.string().email('Valid support email required'),
   fullAddress: z.string().min(5, 'Physical address required'),

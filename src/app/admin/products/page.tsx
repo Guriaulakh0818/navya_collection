@@ -1,12 +1,15 @@
 'use client';
 
 import {
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Eye,
+  FolderTree,
   Plus,
   Search,
   ShoppingBag,
+  Sparkles,
   Tag,
   Trash2,
 } from 'lucide-react';
@@ -18,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Drawer } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
+import { CATEGORY_TAXONOMY, getFlattenedCategoryOptions } from '@/config/categories.config';
 import { useToast } from '@/providers';
 import { useAuthStore } from '@/stores';
 
@@ -46,13 +50,21 @@ export default function AdminProductsPage() {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<any>({ total: 0, pages: 1 });
 
+  // Move Category Modal State
+  const [editingProductCategory, setEditingProductCategory] = useState<any | null>(null);
+  const [targetCategoryId, setTargetCategoryId] = useState<string>('');
+  const [categoryModalSearch, setCategoryModalSearch] = useState<string>('');
+  const [isMovingCategory, setIsMovingCategory] = useState(false);
+
   // Form State
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
-  const [categoryName, setCategoryName] = useState('Gents Collection');
+  const [categoryName, setCategoryName] = useState('cat_women_sarees');
   const [imageUrl, setImageUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const flattenedCategories = getFlattenedCategoryOptions();
 
   const { toast } = useToast();
 
@@ -131,6 +143,37 @@ export default function AdminProductsPage() {
       }
     } catch (err: any) {
       toast(err.message || 'Error deleting product.', 'error');
+    }
+  };
+
+  const handleMoveCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProductCategory || !targetCategoryId) {
+      toast('Please select a target category.', 'error');
+      return;
+    }
+
+    setIsMovingCategory(true);
+    try {
+      const res = await fetch(`/api/v1/admin/products/${editingProductCategory.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryId: targetCategoryId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast('Category updated successfully!', 'success');
+        setEditingProductCategory(null);
+        setTargetCategoryId('');
+        setCategoryModalSearch('');
+        fetchProducts();
+      } else {
+        toast(data.message || 'Failed to update category.', 'error');
+      }
+    } catch (err: any) {
+      toast(err.message || 'Error updating product category.', 'error');
+    } finally {
+      setIsMovingCategory(false);
     }
   };
 
@@ -387,7 +430,7 @@ export default function AdminProductsPage() {
                       </td>
 
                       <td className="py-3.5 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1.5 flex-wrap">
                           <Button
                             variant="outline"
                             size="sm"
@@ -407,6 +450,22 @@ export default function AdminProductsPage() {
                           >
                             <Eye className="h-3.5 w-3.5 text-slate-600" /> Details
                           </Button>
+
+                          {!isSupervisor && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full text-[11px] h-7 cursor-pointer text-navy border-navy/30 hover:bg-navy/5 font-bold"
+                              onClick={() => {
+                                setEditingProductCategory(product);
+                                setTargetCategoryId(product.category?.id || 'cat_women_sarees');
+                              }}
+                              title="Move / Re-Categorize Product"
+                            >
+                              <FolderTree className="h-3.5 w-3.5 mr-1 text-[#F15A25]" /> Move
+                              Category
+                            </Button>
+                          )}
 
                           {!isSupervisor && (
                             <Button
@@ -469,6 +528,80 @@ export default function AdminProductsPage() {
         )}
       </Card>
 
+      {/* Move / Re-Categorize Product Drawer */}
+      {!isSupervisor && editingProductCategory && (
+        <Drawer
+          open={Boolean(editingProductCategory)}
+          onClose={() => {
+            setEditingProductCategory(null);
+            setCategoryModalSearch('');
+          }}
+          title={`Move Product: ${editingProductCategory.name}`}
+          side="right"
+        >
+          <form onSubmit={handleMoveCategorySubmit} className="space-y-4 p-2 text-xs">
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
+              <p className="font-bold text-slate-700">Current Category:</p>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-navy text-white text-xs font-black">
+                <FolderTree className="h-3.5 w-3.5 text-[#F15A25]" />
+                {editingProductCategory.category?.name || 'Unassigned'}
+              </span>
+            </div>
+
+            {/* Quick search input */}
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">Search Target Category</label>
+              <Input
+                placeholder="Type to filter e.g. Sarees, Shirts, Kurtas, T-Shirts, Lehengas..."
+                value={categoryModalSearch}
+                onChange={(e) => setCategoryModalSearch(e.target.value)}
+                className="rounded-xl text-xs"
+              />
+            </div>
+
+            {/* Target Category Select */}
+            <div>
+              <label className="font-bold text-slate-700 block mb-1">
+                Select New Category / Sub-Category *
+              </label>
+              <select
+                required
+                value={targetCategoryId}
+                onChange={(e) => setTargetCategoryId(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 p-2.5 outline-none font-bold text-slate-800 bg-white"
+                size={8}
+              >
+                {flattenedCategories
+                  .filter((c: any) =>
+                    categoryModalSearch
+                      ? c.breadcrumb
+                          .toLowerCase()
+                          .includes(categoryModalSearch.toLowerCase().trim())
+                      : true,
+                  )
+                  .map((opt: any) => (
+                    <option
+                      key={opt.id}
+                      value={opt.id}
+                      className="py-1.5 px-2 cursor-pointer font-medium"
+                    >
+                      {opt.breadcrumb}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isMovingCategory}
+              className="w-full rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold mt-4 shadow-md cursor-pointer"
+            >
+              {isMovingCategory ? 'Moving Category...' : 'Confirm & Move Product'}
+            </Button>
+          </form>
+        </Drawer>
+      )}
+
       {/* Add Product Drawer */}
       {!isSupervisor && (
         <Drawer
@@ -508,117 +641,18 @@ export default function AdminProductsPage() {
             </div>
             <div>
               <label className="font-bold text-slate-700 block mb-1">
-                Category &amp; Garment Type
+                Category &amp; Garment Type *
               </label>
               <select
                 value={categoryName}
                 onChange={(e) => setCategoryName(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 p-2.5 outline-none font-semibold text-slate-700 bg-white"
               >
-                <optgroup label="Women Wear">
-                  <option value="Sarees">Sarees (Banarasi, Silk, Chiffon, Georgette)</option>
-                  <option value="Designer Lehengas &amp; Bridal Wear">
-                    Designer Lehengas &amp; Bridal Wear
+                {flattenedCategories.map((opt: any) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.breadcrumb}
                   </option>
-                  <option value="Salwar Suits, Anarkalis &amp; Shararas">
-                    Salwar Suits, Anarkalis &amp; Shararas
-                  </option>
-                  <option value="Kurtis, Tunics &amp; Tops">Kurtis, Tunics &amp; Tops</option>
-                  <option value="Indo-Western Gowns &amp; Dresses">
-                    Indo-Western Gowns &amp; Dresses
-                  </option>
-                  <option value="Dupattas, Shawls &amp; Stoles">
-                    Dupattas, Shawls &amp; Stoles
-                  </option>
-                  <option value="Western Tops, Dresses &amp; Jeans">
-                    Western Tops, Dresses &amp; Jeans
-                  </option>
-                </optgroup>
-                <optgroup label="Gents / Men Wear">
-                  <option value="Ethnic Kurtas &amp; Pyjamas">Ethnic Kurtas &amp; Pyjamas</option>
-                  <option value="Designer Sherwanis &amp; Indo-Western">
-                    Designer Sherwanis &amp; Indo-Western
-                  </option>
-                  <option value="Nehru Jackets &amp; Ethnic Vests">
-                    Nehru Jackets &amp; Ethnic Vests
-                  </option>
-                  <option value="Formal &amp; Casual Shirts">Formal &amp; Casual Shirts</option>
-                  <option value="Trousers, Chinos &amp; Jeans">Trousers, Chinos &amp; Jeans</option>
-                  <option value="Blazers, Suits &amp; Tuxedos">Blazers, Suits &amp; Tuxedos</option>
-                  <option value="T-Shirts &amp; Polos">T-Shirts &amp; Polos</option>
-                </optgroup>
-                <optgroup label="Boys Wear">
-                  <option value="Boys Kurta Pyjama Sets">Boys Kurta Pyjama Sets</option>
-                  <option value="Boys Indo-Western &amp; Sherwani Sets">
-                    Boys Indo-Western &amp; Sherwani Sets
-                  </option>
-                  <option value="Boys Shirts &amp; Trousers">Boys Shirts &amp; Trousers</option>
-                  <option value="Boys Party Wear Suits &amp; Blazers">
-                    Boys Party Wear Suits &amp; Blazers
-                  </option>
-                  <option value="Boys Shorts, Tees &amp; Casuals">
-                    Boys Shorts, Tees &amp; Casuals
-                  </option>
-                </optgroup>
-                <optgroup label="Girls Wear">
-                  <option value="Girls Ethnic Gowns &amp; Lehengas">
-                    Girls Ethnic Gowns &amp; Lehengas
-                  </option>
-                  <option value="Girls Frocks &amp; Party Dresses">
-                    Girls Frocks &amp; Party Dresses
-                  </option>
-                  <option value="Girls Kurti &amp; Sharara Sets">
-                    Girls Kurti &amp; Sharara Sets
-                  </option>
-                  <option value="Girls Skirts, Tops &amp; Shorts">
-                    Girls Skirts, Tops &amp; Shorts
-                  </option>
-                </optgroup>
-                <optgroup label="Children / Kids Wear">
-                  <option value="Kids Daily Clothing Sets">Kids Daily Clothing Sets</option>
-                  <option value="Kids Ethnic &amp; Festive Clothing">
-                    Kids Ethnic &amp; Festive Clothing
-                  </option>
-                  <option value="Kids Cotton Sleepwear &amp; Loungewear">
-                    Kids Cotton Sleepwear &amp; Loungewear
-                  </option>
-                  <option value="Kids Shorts, Tees &amp; Dungarees">
-                    Kids Shorts, Tees &amp; Dungarees
-                  </option>
-                </optgroup>
-                <optgroup label="Newborn / Baby Wear">
-                  <option value="Soft Cotton Onesies &amp; Sleepsuits">
-                    Soft Cotton Onesies &amp; Sleepsuits
-                  </option>
-                  <option value="Baby Ethnic Kurta &amp; Frock Sets">
-                    Baby Ethnic Kurta &amp; Frock Sets
-                  </option>
-                  <option value="Baby Swaddles, Wraps &amp; Blankets">
-                    Baby Swaddles, Wraps &amp; Blankets
-                  </option>
-                  <option value="Baby Rompers &amp; Bodysuits">Baby Rompers &amp; Bodysuits</option>
-                  <option value="Baby Booties, Caps &amp; Mittens">
-                    Baby Booties, Caps &amp; Mittens
-                  </option>
-                </optgroup>
-                <optgroup label="Festive &amp; Wedding Couture">
-                  <option value="Royal Bridal Lehengas">Royal Bridal Lehengas</option>
-                  <option value="Groom Sherwani &amp; Safa Sets">
-                    Groom Sherwani &amp; Safa Sets
-                  </option>
-                  <option value="Festival Special Ethnic Sets">Festival Special Ethnic Sets</option>
-                  <option value="Pure Heritage Silk Sarees">Pure Heritage Silk Sarees</option>
-                </optgroup>
-                <optgroup label="Accessories &amp; Essentials">
-                  <option value="Jewellery &amp; Ornaments">Jewellery &amp; Ornaments</option>
-                  <option value="Footwear, Mojris &amp; Juttis">
-                    Footwear, Mojris &amp; Juttis
-                  </option>
-                  <option value="Handbags, Clutches &amp; Potlis">
-                    Handbags, Clutches &amp; Potlis
-                  </option>
-                  <option value="Turbans, Safas &amp; Stoles">Turbans, Safas &amp; Stoles</option>
-                </optgroup>
+                ))}
               </select>
             </div>
             <div>

@@ -42,7 +42,10 @@ export function ShopManagementForm() {
 
   // Form State
   const [formData, setFormData] = useState({
+    shopId: '',
     name: '',
+    ownerName: '',
+    contactPerson: '',
     slug: '',
     logo: '',
     banner: '',
@@ -78,9 +81,17 @@ export function ShopManagementForm() {
         const s = data.data.shop;
         const p = data.data.sellerProfile || {};
         const owner = data.data.owner || {};
+        const primaryPickup =
+          s.pickupLocations?.find((pk: any) => pk.isPrimary) || s.pickupLocations?.[0];
+
+        const initialContactName =
+          primaryPickup?.contactName || owner.name || p.legalName || s.bankAccountHolder || '';
 
         setFormData({
+          shopId: s.id || '',
           name: s.name || '',
+          ownerName: owner.name || initialContactName,
+          contactPerson: initialContactName,
           slug: s.slug || '',
           logo: s.logo || '',
           banner: s.banner || '',
@@ -470,6 +481,29 @@ export function ShopManagementForm() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Shop Owner / Authorized Contact Person Name *
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Ramniwas Sharma"
+                  value={formData.contactPerson}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      contactPerson: e.target.value,
+                      ownerName: e.target.value,
+                    })
+                  }
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:outline-none font-bold shadow-xs"
+                />
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  This owner name is synced with Shiprocket logistics pickup hubs, official
+                  invoices, and vendor registry.
+                </span>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                   Support Email *
@@ -500,10 +534,15 @@ export function ShopManagementForm() {
                 </label>
                 <input
                   type="text"
+                  placeholder="e.g. Shop No. 1, Main Market Road, Mandi Adampur"
                   value={formData.fullAddress}
                   onChange={(e) => setFormData({ ...formData, fullAddress: e.target.value })}
                   className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:outline-none font-semibold shadow-xs"
                 />
+                <span className="text-[10px] text-slate-400 mt-1 block">
+                  Please include Shop/Plot/House number or Road name for automated Shiprocket pickup
+                  dispatch approval.
+                </span>
               </div>
 
               <div>

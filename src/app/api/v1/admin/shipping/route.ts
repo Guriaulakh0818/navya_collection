@@ -62,9 +62,33 @@ export async function GET(request: NextRequest) {
             id: true,
             shopCode: true,
             name: true,
+            fullAddress: true,
             city: true,
             state: true,
             pincode: true,
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                mobile: true,
+              },
+            },
+            pickupLocations: {
+              select: {
+                id: true,
+                locationCode: true,
+                name: true,
+                addressLine1: true,
+                city: true,
+                state: true,
+                pincode: true,
+                contactName: true,
+                contactPhone: true,
+                shiprocketStatus: true,
+                isPrimary: true,
+              },
+            },
           },
         },
         masterOrder: {
@@ -80,8 +104,12 @@ export async function GET(request: NextRequest) {
             id: true,
             locationCode: true,
             name: true,
+            addressLine1: true,
             city: true,
+            state: true,
             pincode: true,
+            contactName: true,
+            contactPhone: true,
             shiprocketStatus: true,
           },
         },
@@ -89,6 +117,127 @@ export async function GET(request: NextRequest) {
         trackingEvents: {
           orderBy: { eventTimestamp: 'desc' },
           take: 5,
+        },
+      },
+    });
+
+    // Enrich shipments with live shop details and primary pickup location to ensure updated address is always displayed
+    const enrichedShipments = shipments.map((shp) => {
+      const activeShop = shp.shop;
+      const primaryPickup =
+        activeShop?.pickupLocations?.find((p) => p.isPrimary) ||
+        activeShop?.pickupLocations?.[0] ||
+        shp.pickupLocation;
+
+      const shopName = activeShop?.name || (shp.pickupAddressSnapshot as any)?.shopName || 'Shop';
+      const shopCode = activeShop?.shopCode || (shp.pickupAddressSnapshot as any)?.shopCode || '';
+      const addressLine1 =
+        primaryPickup?.addressLine1 ||
+        activeShop?.fullAddress ||
+        (shp.pickupAddressSnapshot as any)?.addressLine1 ||
+        '';
+      const city =
+        primaryPickup?.city || activeShop?.city || (shp.pickupAddressSnapshot as any)?.city || '';
+      const state =
+        primaryPickup?.state ||
+        activeShop?.state ||
+        (shp.pickupAddressSnapshot as any)?.state ||
+        '';
+      const pincode =
+        primaryPickup?.pincode ||
+        activeShop?.pincode ||
+        (shp.pickupAddressSnapshot as any)?.pincode ||
+        '';
+      const contactName =
+        primaryPickup?.contactName ||
+        activeShop?.owner?.name ||
+        (shp.pickupAddressSnapshot as any)?.contactName ||
+        '';
+      const contactPhone =
+        primaryPickup?.contactPhone ||
+        activeShop?.owner?.mobile ||
+        (shp.pickupAddressSnapshot as any)?.contactPhone ||
+        '';
+
+      return {
+        ...shp,
+        shop: activeShop
+          ? {
+              ...activeShop,
+              shopCode,
+              name: shopName,
+              fullAddress: addressLine1,
+              city,
+              state,
+              pincode,
+            }
+          : null,
+        pickupAddressSnapshot: {
+          ...(typeof shp.pickupAddressSnapshot === 'object' && shp.pickupAddressSnapshot !== null
+            ? shp.pickupAddressSnapshot
+            : {}),
+          shopName,
+          shopCode,
+          addressLine1,
+          city,
+          state,
+          pincode,
+          contactName,
+          contactPhone,
+        },
+      };
+    });
+
+    // Fetch all active shops with their pickup locations
+    const shops = await prisma.shop.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        shopCode: true,
+        name: true,
+        slug: true,
+        phone: true,
+        email: true,
+        fullAddress: true,
+        city: true,
+        state: true,
+        pincode: true,
+        bankAccountHolder: true,
+        shiprocketPickupName: true,
+        status: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            mobile: true,
+          },
+        },
+        sellerProfile: {
+          select: {
+            businessName: true,
+            legalName: true,
+          },
+        },
+        pickupLocations: {
+          select: {
+            id: true,
+            locationCode: true,
+            name: true,
+            addressLine1: true,
+            city: true,
+            state: true,
+            pincode: true,
+            contactName: true,
+            contactPhone: true,
+            contactEmail: true,
+            shiprocketPickupName: true,
+            shiprocketStatus: true,
+            shiprocketResponse: true,
+            isPrimary: true,
+            updatedAt: true,
+          },
         },
       },
     });
@@ -116,7 +265,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        shipments,
+        shipments: enrichedShipments,
+        shops,
         stats: {
           totalShipments,
           inTransitCount,
@@ -136,6 +286,76 @@ export async function GET(request: NextRequest) {
     console.error('❌ GET Admin Shipping Error:', error);
     return NextResponse.json(
       { success: false, message: error.message || 'Failed to load shipping data.' },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * POST /api/v1/admin/shipping
+ * Supports administrative actions like syncing all shop pickup locations to Shiprocket.
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (
+      !currentUser ||
+      !['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(currentUser.role)
+    ) {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden. Admin access required.' },
+        { status: 403 },
+      );
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const { action, pickupLocationId, shopId } = body;
+
+    const { PickupLocationService } =
+      await import('@/backend/services/shipping/pickup-location.service');
+
+    if (action === 'SYNC_ALL_PICKUP_LOCATIONS') {
+      const syncResult = await PickupLocationService.syncAllShopPickupLocations();
+      return NextResponse.json({
+        success: syncResult.success,
+        message: syncResult.success
+          ? `Successfully synced all ${syncResult.synced} shop pickup locations to Shiprocket!`
+          : `Synced ${syncResult.synced} of ${syncResult.totalShops} pickup locations. Some failed.`,
+        data: syncResult,
+      });
+    }
+
+    if (action === 'PUSH_SHOP_PICKUP_LOCATION' && shopId) {
+      const singleSync = await PickupLocationService.syncShopPickupLocation(shopId);
+      return NextResponse.json({
+        success: singleSync.success,
+        message: singleSync.message,
+        data: singleSync,
+      });
+    }
+
+    if (action === 'REGISTER_PICKUP_LOCATION' && pickupLocationId) {
+      const regResult = await PickupLocationService.registerWithShiprocket(pickupLocationId);
+      return NextResponse.json(regResult);
+    }
+
+    if (action === 'DISPATCH_SHIPMENT' && body.shipmentId) {
+      const { MultiSellerShipmentService } =
+        await import('@/backend/services/shipping/multi-seller-shipment.service');
+      const dispatchResult = await MultiSellerShipmentService.dispatchShipmentToShiprocket(
+        body.shipmentId,
+      );
+      return NextResponse.json(dispatchResult);
+    }
+
+    return NextResponse.json(
+      { success: false, message: 'Invalid action provided.' },
+      { status: 400 },
+    );
+  } catch (error: any) {
+    console.error('❌ POST Admin Shipping Error:', error);
+    return NextResponse.json(
+      { success: false, message: error.message || 'Failed to execute shipping action.' },
       { status: 500 },
     );
   }

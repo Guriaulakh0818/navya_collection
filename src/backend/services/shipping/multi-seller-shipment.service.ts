@@ -245,6 +245,9 @@ export class MultiSellerShipmentService {
       const shipment = await prisma.shipment.findUnique({
         where: { id: shipmentId },
         include: {
+          shop: {
+            include: { pickupLocations: true },
+          },
           masterOrder: {
             include: { address: true, user: true },
           },
@@ -295,10 +298,19 @@ export class MultiSellerShipmentService {
       const isCod = shipment.paymentMethod === 'COD';
       const orderDate = new Date(shipment.createdAt).toISOString().replace('T', ' ').slice(0, 16);
 
+      // Determine best pickup location nickname
+      const chosenPickup =
+        shipment.shop?.pickupLocations?.find((p: any) => p.shiprocketStatus === 'CONNECTED')
+          ?.shiprocketPickupName ||
+        shipment.shop?.shiprocketPickupName ||
+        pickupSnap.shiprocketPickupName ||
+        pickupSnap.locationCode ||
+        'Primary';
+
       const payload = {
         order_id: shipment.shipmentNumber,
         order_date: orderDate,
-        pickup_location: pickupSnap.shiprocketPickupName || pickupSnap.locationCode || 'Primary',
+        pickup_location: chosenPickup,
         channel_id: '',
         comment: `Navya Marketplace Order #${shipment.masterOrder.orderNumber}`,
         billing_customer_name: deliverySnap.fullName?.split(' ')[0] || 'Valued Customer',
@@ -328,15 +340,37 @@ export class MultiSellerShipmentService {
       };
 
       ShiprocketLogger.info(
-        `[SHIPROCKET_CREATE_ORDER_REQUEST] Dispatching ${shipment.shipmentNumber}`,
+        `[SHIPROCKET_CREATE_ORDER_REQUEST] Dispatching ${shipment.shipmentNumber} with pickup ${chosenPickup}`,
         undefined,
         payload,
       );
 
-      const response = await shiprocketClient.post(
-        SHIPROCKET_CONSTANTS.ENDPOINTS.CREATE_ORDER,
-        payload,
-      );
+      let response;
+      try {
+        response = await shiprocketClient.post(
+          SHIPROCKET_CONSTANTS.ENDPOINTS.CREATE_ORDER,
+          payload,
+        );
+      } catch (postError: any) {
+        // If pickup location failed, retry with fallback 'Primary' or 'NAVYA-SHOP-000001'
+        const errMsg = (postError.response?.data?.message || postError.message || '').toLowerCase();
+        if (
+          errMsg.includes('pickup') ||
+          errMsg.includes('location') ||
+          errMsg.includes('address')
+        ) {
+          ShiprocketLogger.warn(
+            `[SHIPROCKET_PICKUP_RETRY] Retrying ${shipment.shipmentNumber} with fallback 'Primary'`,
+          );
+          payload.pickup_location = 'Primary';
+          response = await shiprocketClient.post(
+            SHIPROCKET_CONSTANTS.ENDPOINTS.CREATE_ORDER,
+            payload,
+          );
+        } else {
+          throw postError;
+        }
+      }
 
       if (response.data && response.data.order_id && response.data.shipment_id) {
         const updated = await prisma.shipment.update({

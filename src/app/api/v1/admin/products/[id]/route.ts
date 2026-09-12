@@ -34,6 +34,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ success: false, message: 'Product not found.' }, { status: 404 });
     }
 
+    let validCategoryId: string | undefined = undefined;
+    if (body.categoryId) {
+      const { resolveValidCategoryId } = await import('@/backend/lib/category-resolver');
+      validCategoryId = await resolveValidCategoryId(body.categoryId);
+    }
+
     const updated = await prisma.product.update({
       where: { id },
       data: {
@@ -41,12 +47,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(body.name ? { name: body.name } : {}),
         ...(body.price ? { price: Number(body.price) } : {}),
         ...(body.stock !== undefined ? { stock: Number(body.stock) } : {}),
+        ...(validCategoryId ? { categoryId: validCategoryId } : {}),
+        ...(body.description ? { description: body.description } : {}),
+      },
+      include: {
+        category: true,
+        images: true,
       },
     });
 
     return NextResponse.json({
       success: true,
-      message: `Product status updated to '${updated.status}'`,
+      message: `Product updated successfully!`,
       data: updated,
     });
   } catch (error: any) {

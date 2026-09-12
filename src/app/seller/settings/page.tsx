@@ -58,8 +58,31 @@ export default function SellerSettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      // Simulated save API update
-      setToastMessage({ type: 'success', text: 'Settlement bank details updated successfully!' });
+      const shopId = data?.shop?.id;
+      const res = await fetch('/api/v1/seller/shop', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shopId,
+          name: data?.shop?.name || 'Boutique',
+          bankAccountHolder,
+          bankName,
+          bankAccountNumber,
+          bankIfscCode,
+        }),
+      });
+      const resData = await res.json();
+      if (resData.success) {
+        setToastMessage({ type: 'success', text: 'Settlement bank details updated successfully!' });
+      } else {
+        setToastMessage({
+          type: 'error',
+          text: resData.message || 'Failed to update settlement details.',
+        });
+      }
+      setTimeout(() => setToastMessage(null), 4000);
+    } catch (err: any) {
+      setToastMessage({ type: 'error', text: err.message || 'An error occurred while saving.' });
       setTimeout(() => setToastMessage(null), 4000);
     } finally {
       setIsSaving(false);

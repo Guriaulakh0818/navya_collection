@@ -107,8 +107,7 @@ export default async function middleware(req: NextRequest) {
   // If accessing /admin or /seller from the main customer domain, redirect to respective subdomains
   if (process.env.NODE_ENV === 'production' && !isAdminSubdomain && !isSellerSubdomain) {
     if (pathname === '/admin' || pathname.startsWith('/admin/')) {
-      const subPath = pathname.replace(/^\/admin/, '') || '/';
-      const targetUrl = new URL(subPath, 'https://admin.navyacollection.store');
+      const targetUrl = new URL(pathname, 'https://admin.navyacollection.store');
       req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
       return NextResponse.redirect(targetUrl, 307);
     }
@@ -122,10 +121,22 @@ export default async function middleware(req: NextRequest) {
   }
 
   // 6. Subdomain Landing & Path Normalization
-  if (isAdminSubdomain && pathname === '/') {
-    const targetUrl = new URL('/login', req.url);
-    req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
-    return NextResponse.redirect(targetUrl, 307);
+  if (isAdminSubdomain) {
+    if (pathname === '/' || pathname === '/dashboard') {
+      const targetUrl = new URL('/admin/dashboard', req.url);
+      req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+      return NextResponse.redirect(targetUrl, 307);
+    }
+    if (pathname === '/login') {
+      const targetUrl = new URL('/admin/login', req.url);
+      req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+      return NextResponse.redirect(targetUrl, 307);
+    }
+    if (!pathname.startsWith('/admin') && !pathname.startsWith('/api')) {
+      const targetUrl = new URL(`/admin${pathname}`, req.url);
+      req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+      return NextResponse.redirect(targetUrl, 307);
+    }
   }
 
   if (isSellerSubdomain) {
@@ -152,17 +163,7 @@ export default async function middleware(req: NextRequest) {
     shouldRewrite = true;
   }
 
-  if (isAdminSubdomain) {
-    if (pathname === '/login') {
-      rewriteUrl.pathname = '/admin/login';
-      effectivePathname = '/admin/login';
-      shouldRewrite = true;
-    } else if (!pathname.startsWith('/admin') && !pathname.startsWith('/api')) {
-      rewriteUrl.pathname = `/admin${pathname}`;
-      effectivePathname = `/admin${pathname}`;
-      shouldRewrite = true;
-    }
-  } else if (isSellerSubdomain) {
+  if (isSellerSubdomain) {
     if (pathname === '/login') {
       rewriteUrl.pathname = '/login';
       effectivePathname = '/login';
@@ -460,21 +461,16 @@ export default async function middleware(req: NextRequest) {
 
     if (effectivePathname !== '/admin/login') {
       if (!isAuthenticated) {
-        if (isAdminSubdomain) {
-          const loginUrl = new URL('/login', req.url);
-          if (pathname !== '/' && pathname !== '/dashboard') {
-            loginUrl.searchParams.set('redirectUrl', pathname);
-          }
-          return NextResponse.redirect(loginUrl);
-        }
         const loginUrl = new URL('/admin/login', req.url);
-        loginUrl.searchParams.set('redirectUrl', pathname);
+        if (pathname !== '/' && pathname !== '/admin/dashboard' && pathname !== '/dashboard') {
+          loginUrl.searchParams.set('redirectUrl', pathname);
+        }
         return NextResponse.redirect(loginUrl);
       }
 
       const validAdminRoles = ['OWNER', 'ADMIN', 'SUPERVISOR', 'SUPER_ADMIN'];
       if (!validAdminRoles.includes(userRole)) {
-        return NextResponse.redirect(new URL('/', req.url));
+        return NextResponse.redirect(new URL('/admin/login', req.url));
       }
     }
   }

@@ -21,7 +21,12 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const redirectUrl = searchParams.get('redirect') || '/admin/dashboard';
+  const rawRedirect =
+    searchParams.get('redirect') || searchParams.get('redirectUrl') || '/admin/dashboard';
+
+  const redirectUrl = rawRedirect.startsWith('/admin')
+    ? rawRedirect
+    : `/admin${rawRedirect.startsWith('/') ? rawRedirect : `/${rawRedirect}`}`;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,13 +131,13 @@ export default function AdminLoginPage() {
 
         {/* Back Link & Security Note */}
         <div className="mt-8 border-t border-slate-100 pt-5 text-center flex flex-col items-center gap-3">
-          <Link
-            href="/"
+          <a
+            href="https://navyacollection.store"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-navy transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back to Main Store</span>
-          </Link>
+          </a>
 
           <p className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />

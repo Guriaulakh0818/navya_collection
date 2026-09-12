@@ -67,14 +67,6 @@ export default function SellerOrdersPage() {
         body: JSON.stringify({
           vendorOrderId,
           status: newStatus,
-          shippingStatus:
-            newStatus === 'SHIPPED'
-              ? 'SHIPPED'
-              : newStatus === 'DELIVERED'
-                ? 'DELIVERED'
-                : newStatus === 'PACKED' || newStatus === 'PROCESSING'
-                  ? 'PROCESSING'
-                  : 'PENDING',
         }),
       });
       const data = await res.json();
@@ -131,8 +123,8 @@ export default function SellerOrdersPage() {
         {[
           { key: 'ALL', label: 'All Orders' },
           { key: 'PENDING', label: 'Pending' },
-          { key: 'PACKED', label: 'Packed' },
-          { key: 'READY', label: 'Ready for Pickup' },
+          { key: 'CONFIRMED', label: 'Confirmed' },
+          { key: 'PROCESSING', label: 'Processing' },
           { key: 'SHIPPED', label: 'Shipped' },
           { key: 'DELIVERED', label: 'Delivered' },
           { key: 'CANCELLED', label: 'Cancelled' },
@@ -241,12 +233,9 @@ export default function SellerOrdersPage() {
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                               : order.status === 'SHIPPED'
                                 ? 'bg-sky-50 text-sky-800 border-sky-300'
-                                : order.status === 'OUT_FOR_DELIVERY'
-                                  ? 'bg-indigo-50 text-indigo-800 border-indigo-300'
-                                  : order.status === 'CONFIRMED' ||
-                                      order.status === 'PROCESSING' ||
-                                      order.status === 'PACKED' ||
-                                      order.status === 'READY'
+                                : order.status === 'CONFIRMED'
+                                  ? 'bg-blue-50 text-blue-800 border-blue-300'
+                                  : order.status === 'PROCESSING'
                                     ? 'bg-amber-50 text-amber-900 border-amber-300'
                                     : order.status === 'CANCELLED'
                                       ? 'bg-rose-50 text-rose-800 border-rose-300'
@@ -265,17 +254,26 @@ export default function SellerOrdersPage() {
                               value={order.status || 'PENDING'}
                               disabled={updatingOrderId === order.id}
                               onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                              className="appearance-none bg-slate-900 hover:bg-slate-800 disabled:opacity-60 border border-slate-700 hover:border-amber-500 rounded-xl pl-3 pr-7 py-1.5 text-[11px] font-bold text-amber-300 focus:border-amber-500 focus:outline-none shadow-xs transition-colors cursor-pointer"
+                              className="appearance-none bg-navy hover:bg-slate-800 disabled:opacity-60 border border-slate-700 hover:border-amber-500 rounded-xl pl-3 pr-7 py-1.5 text-[11px] font-bold text-amber-300 focus:border-amber-500 focus:outline-none shadow-xs transition-colors cursor-pointer"
                             >
-                              <option value="PENDING">Pending</option>
-                              <option value="CONFIRMED">Confirmed</option>
-                              <option value="PROCESSING">Processing</option>
-                              <option value="PACKED">Packed</option>
-                              <option value="READY">Ready for Pickup</option>
-                              <option value="SHIPPED">Shipped</option>
-                              <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
-                              <option value="DELIVERED">Delivered</option>
-                              <option value="CANCELLED">Cancelled</option>
+                              <option value="PENDING" className="bg-slate-900 text-white">
+                                Pending
+                              </option>
+                              <option value="CONFIRMED" className="bg-slate-900 text-white">
+                                Confirmed
+                              </option>
+                              <option value="PROCESSING" className="bg-slate-900 text-white">
+                                Processing
+                              </option>
+                              <option value="SHIPPED" className="bg-slate-900 text-white">
+                                Shipped
+                              </option>
+                              <option value="DELIVERED" className="bg-slate-900 text-white">
+                                Delivered
+                              </option>
+                              <option value="CANCELLED" className="bg-slate-900 text-white">
+                                Cancelled
+                              </option>
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-slate-400">
                               {updatingOrderId === order.id ? (

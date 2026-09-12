@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 
 import {
   CATEGORY_TAXONOMY,
+  getFlattenedCategoryOptions,
   MainCategoryOption,
   SubCategoryOption,
 } from '@/config/categories.config';
@@ -55,10 +56,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   >([]);
   const [isDragging, setIsDragging] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
-  const [selectedMainCat, setSelectedMainCat] = useState<string>('cat_women');
-  const [subCategories, setSubCategories] = useState<SubCategoryOption[]>(
-    CATEGORY_TAXONOMY[0].subCategories,
-  );
+  const [selectedMainCat, setSelectedMainCat] = useState<string>('group_women');
+  const [selectedSectionId, setSelectedSectionId] = useState<string>('');
+  const [categorySearch, setCategorySearch] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -85,13 +85,19 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   const [customColorInput, setCustomColorInput] = useState('');
   const [customSizeInput, setCustomSizeInput] = useState('');
 
+  const allFlattenedCategories = getFlattenedCategoryOptions();
+
   const handleMainCategoryChange = (mainId: string) => {
     setSelectedMainCat(mainId);
-    const found = CATEGORY_TAXONOMY.find((c: MainCategoryOption) => c.id === mainId);
-    const subs = found?.subCategories || [];
-    setSubCategories(subs);
-    if (subs.length > 0) {
-      setFormData((prev) => ({ ...prev, categoryId: subs[0].id }));
+    const found = CATEGORY_TAXONOMY.find((c) => c.id === mainId);
+    if (found && found.sections.length > 0) {
+      setSelectedSectionId(found.sections[0].id);
+      const firstSub = found.sections[0].subCategories[0];
+      if (firstSub) {
+        const targetId =
+          firstSub.items && firstSub.items.length > 0 ? firstSub.items[0].id : firstSub.id;
+        setFormData((prev) => ({ ...prev, categoryId: targetId }));
+      }
     }
   };
 
@@ -504,46 +510,100 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-navy uppercase tracking-wider mb-2">
-              Primary Category *
-            </label>
-            <select
-              value={selectedMainCat}
-              onChange={(e) => handleMainCategoryChange(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-navy focus:bg-white focus:outline-none transition-all cursor-pointer font-extrabold"
-            >
-              {CATEGORY_TAXONOMY.map((main: MainCategoryOption) => (
-                <option key={main.id} value={main.id}>
-                  {main.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Enhanced Hierarchical Category Picker */}
+          <div className="md:col-span-2 bg-slate-50/80 border border-slate-200/90 rounded-2xl p-4 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <label className="block text-xs font-black text-navy uppercase tracking-wider">
+                Category &amp; Garment Taxonomy *
+              </label>
+              {formData.categoryId && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-navy/10 text-navy text-[11px] font-extrabold">
+                  <Sparkles className="h-3 w-3 text-[#F15A25]" />
+                  {allFlattenedCategories.find(
+                    (c: any) => c.id === formData.categoryId || c.slug === formData.categoryId,
+                  )?.breadcrumb || 'Custom Category'}
+                </span>
+              )}
+            </div>
 
-          <div>
-            <label className="block text-xs font-bold text-navy uppercase tracking-wider mb-2">
-              Garment Type / Sub-Category *
-            </label>
-            <select
-              required
-              value={formData.categoryId}
-              onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-navy focus:bg-white focus:outline-none transition-all cursor-pointer font-bold"
-            >
-              <option value="">Select Sub-Category / Garment Type</option>
-              {categories.length > 0
-                ? categories.map((cat: any) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))
-                : subCategories.map((sub) => (
-                    <option key={sub.id} value={sub.id}>
-                      {sub.name}
+            {/* Quick Search across all 100+ categories */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="🔍 Quick search category: e.g. Sarees, Kurtas, T-Shirts, Shirts, Jeans, Handbags..."
+                value={categorySearch}
+                onChange={(e) => setCategorySearch(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-semibold focus:border-navy focus:outline-none shadow-2xs"
+              />
+              {categorySearch && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 z-30 max-h-52 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl divide-y divide-slate-100">
+                  {allFlattenedCategories
+                    .filter((c: any) =>
+                      c.breadcrumb.toLowerCase().includes(categorySearch.toLowerCase().trim()),
+                    )
+                    .map((opt: any) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, categoryId: opt.id }));
+                          setSelectedMainCat(opt.mainGroupId);
+                          setCategorySearch('');
+                        }}
+                        className="w-full text-left px-3.5 py-2.5 text-xs hover:bg-slate-50 transition-colors flex items-center justify-between group cursor-pointer"
+                      >
+                        <span className="font-bold text-slate-800 group-hover:text-navy">
+                          {opt.breadcrumb}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium group-hover:text-[#F15A25]">
+                          Select →
+                        </span>
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            {/* Standard Cascading Selection */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  1. Main Group
+                </label>
+                <select
+                  value={selectedMainCat}
+                  onChange={(e) => handleMainCategoryChange(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 font-bold focus:border-navy focus:outline-none cursor-pointer"
+                >
+                  {CATEGORY_TAXONOMY.map((main: any) => (
+                    <option key={main.id} value={main.id}>
+                      {main.name} {main.badge ? `(${main.badge})` : ''}
                     </option>
                   ))}
-            </select>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  2. Garment / Item Type
+                </label>
+                <select
+                  required
+                  value={formData.categoryId}
+                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 font-bold focus:border-navy focus:outline-none cursor-pointer"
+                >
+                  <option value="">-- Choose Exact Category / Item --</option>
+                  {allFlattenedCategories
+                    .filter((c: any) => c.mainGroupId === selectedMainCat)
+                    .map((opt: any) => (
+                      <option key={opt.id} value={opt.id}>
+                        {opt.sectionTitle} → {opt.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div>

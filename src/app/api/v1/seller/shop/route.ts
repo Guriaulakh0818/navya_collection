@@ -58,10 +58,33 @@ export async function PUT(req: Request) {
 
     const data = validationResult.data;
 
-    // Find seller's primary shop
-    const shop = await prisma.shop.findFirst({
-      where: { ownerId: userId, deletedAt: null },
-    });
+    // Flexibly find seller shop
+    let shop = null;
+    if (data.shopId || body.shopId) {
+      shop = await prisma.shop.findFirst({
+        where: { id: data.shopId || body.shopId, deletedAt: null },
+        include: { pickupLocations: true, sellerProfile: true },
+      });
+    }
+
+    if (!shop) {
+      shop = await prisma.shop.findFirst({
+        where: {
+          deletedAt: null,
+          OR: [{ ownerId: userId }, { sellerProfile: { userId } }],
+        },
+        include: { pickupLocations: true, sellerProfile: true },
+      });
+    }
+
+    // If Admin/Super Admin/Owner, allow editing first active shop
+    if (!shop && ['ADMIN', 'SUPER_ADMIN', 'OWNER'].includes(userRole)) {
+      shop = await prisma.shop.findFirst({
+        where: { deletedAt: null },
+        orderBy: { createdAt: 'asc' },
+        include: { pickupLocations: true, sellerProfile: true },
+      });
+    }
 
     if (!shop) {
       return NextResponse.json(
@@ -70,10 +93,18 @@ export async function PUT(req: Request) {
       );
     }
 
+    const cleanSlug = (
+      data.slug ||
+      shop.slug ||
+      data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    )
+      .trim()
+      .replace(/^-+|-+$/g, '');
+
     // Check slug uniqueness if slug changed
-    if (data.slug !== shop.slug) {
+    if (cleanSlug !== shop.slug) {
       const existingSlug = await prisma.shop.findUnique({
-        where: { slug: data.slug },
+        where: { slug: cleanSlug },
       });
       if (existingSlug && existingSlug.id !== shop.id) {
         return NextResponse.json(
@@ -86,12 +117,12 @@ export async function PUT(req: Request) {
       }
     }
 
-    // Update shop details
+    // 1. Update shop details
     const updatedShop = await prisma.shop.update({
       where: { id: shop.id },
       data: {
         name: data.name,
-        slug: data.slug,
+        slug: cleanSlug,
         logo: data.logo || null,
         banner: data.banner || null,
         description: data.description || null,
@@ -118,9 +149,98 @@ export async function PUT(req: Request) {
       },
     });
 
+    // 2. Synchronize Owner User Name & SellerProfile if provided
+    const resolvedContactPerson = (
+      data.contactPerson ||
+      data.ownerName ||
+      data.bankAccountHolder ||
+      ''
+    ).trim();
+
+    if (shop.ownerId && resolvedContactPerson) {
+      await prisma.user
+        .update({
+          where: { id: shop.ownerId },
+          data: { name: resolvedContactPerson },
+        })
+        .catch(() => {});
+    }
+
+    if (shop.sellerProfileId) {
+      await prisma.sellerProfile
+        .update({
+          where: { id: shop.sellerProfileId },
+          data: {
+            businessName: data.name,
+            legalName: resolvedContactPerson || data.name,
+            businessAddress: data.fullAddress,
+            city: data.city,
+            state: data.state,
+            pincode: data.pincode,
+            gstin: data.gstin || null,
+            panNumber: data.panNumber || null,
+            bankAccountHolder: data.bankAccountHolder || null,
+            bankAccountNumber: data.bankAccountNumber || null,
+            bankIfscCode: data.bankIfscCode || null,
+            bankName: data.bankName || null,
+          },
+        })
+        .catch(() => {});
+    }
+
+    // 3. Synchronize Primary Pickup Location
+    let primaryPickup = shop.pickupLocations?.find((p) => p.isPrimary) || shop.pickupLocations?.[0];
+    const contactName = resolvedContactPerson || data.name || 'Store Manager';
+    const shopCode = shop.shopCode || `NAVYA-SHOP-${shop.id.slice(-6).toUpperCase()}`;
+    const locationCode = primaryPickup?.locationCode || `${shopCode}-PKP1`;
+
+    if (primaryPickup) {
+      primaryPickup = await prisma.pickupLocation.update({
+        where: { id: primaryPickup.id },
+        data: {
+          name: `${data.name} Hub`,
+          addressLine1: data.fullAddress,
+          city: data.city,
+          state: data.state,
+          pincode: data.pincode,
+          contactName,
+          contactPhone: data.phone,
+          contactEmail: data.email,
+        },
+      });
+    } else {
+      primaryPickup = await prisma.pickupLocation.create({
+        data: {
+          shopId: shop.id,
+          locationCode,
+          name: `${data.name} Hub`,
+          addressLine1: data.fullAddress,
+          city: data.city,
+          state: data.state,
+          pincode: data.pincode,
+          country: 'India',
+          contactName,
+          contactPhone: data.phone,
+          contactEmail: data.email,
+          isPrimary: true,
+          status: 'ACTIVE',
+          shiprocketPickupName: locationCode,
+          shiprocketStatus: 'PENDING',
+        },
+      });
+    }
+
+    // 4. Trigger background sync with Shiprocket so the new address & contact person are live
+    const { PickupLocationService } =
+      await import('@/backend/services/shipping/pickup-location.service');
+    PickupLocationService.registerWithShiprocket(primaryPickup.id).catch((err) => {
+      console.warn('[BACKGROUND_SHIPROCKET_SYNC_ERROR]', err);
+    });
+
     return NextResponse.json({
       success: true,
-      message: 'Shop details, branding, policies, and SEO updated successfully!',
+      message:
+        'Shop details, address, settlement bank, and Shiprocket pickup location updated successfully!',
       data: updatedShop,
     });
   } catch (error: any) {

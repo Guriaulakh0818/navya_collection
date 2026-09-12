@@ -2,6 +2,7 @@ export * from './api-security';
 export * from './audit-logger';
 export * from './bot-protection';
 export * from './csrf-protection';
+export * from './email-firewall';
 export * from './env.config';
 export * from './file-validator';
 export * from './rate-limiter';

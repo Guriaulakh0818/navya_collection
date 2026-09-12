@@ -1,13 +1,14 @@
 import { prisma } from '@/backend/lib/prisma';
-import { CATEGORY_TAXONOMY } from '@/config/categories.config';
+import { CATEGORY_TAXONOMY, getFlattenedCategoryOptions } from '@/config/categories.config';
 
 /**
  * Intelligently resolves any incoming category identifier (DB ID, slug, static taxonomy ID, or name)
  * to a guaranteed valid `Category.id` in the database.
+ * If the category does not yet exist in PostgreSQL, it auto-creates it with correct parent relationships.
  * Prevents Prisma Foreign Key constraint errors (products_categoryId_fkey).
  */
 export async function resolveValidCategoryId(categoryId?: string | null): Promise<string> {
-  // If no categoryId provided, fallback to default category search
+  // If no categoryId provided, fallback to default category
   if (!categoryId || typeof categoryId !== 'string' || !categoryId.trim()) {
     return await getFallbackCategoryId();
   }
@@ -38,38 +39,57 @@ export async function resolveValidCategoryId(categoryId?: string | null): Promis
     console.warn('[CATEGORY_RESOLVER] DB lookup by slug error:', err);
   }
 
-  // 3. Static Taxonomy ID to Slug Mapping
-  let taxonomySlug: string | null = null;
-  for (const main of CATEGORY_TAXONOMY) {
-    if (main.id === cleanId) {
-      taxonomySlug = main.slug;
-      break;
-    }
-    for (const sub of main.subCategories) {
-      if (sub.id === cleanId) {
-        taxonomySlug = sub.slug;
-        break;
-      }
-    }
-    if (taxonomySlug) break;
-  }
+  // 3. Match against Flattened Taxonomy (Leaf, Subcategory, or Parent Group)
+  const flattened = getFlattenedCategoryOptions();
+  const matchedFlat = flattened.find(
+    (item) =>
+      item.id.toLowerCase() === cleanId.toLowerCase() ||
+      item.slug.toLowerCase() === cleanId.toLowerCase() ||
+      item.name.toLowerCase() === cleanId.toLowerCase(),
+  );
 
-  if (taxonomySlug) {
+  if (matchedFlat) {
     try {
-      const dbCatByTaxonomySlug = await prisma.category.findFirst({
-        where: {
-          OR: [
-            { slug: taxonomySlug.toLowerCase() },
-            { slug: { contains: taxonomySlug.toLowerCase() } },
-          ],
-          deletedAt: null,
+      // Check if already in DB by slug
+      const existing = await prisma.category.findFirst({
+        where: { slug: matchedFlat.slug, deletedAt: null },
+      });
+      if (existing) return existing.id;
+
+      // Auto-ensure parent category exists if applicable
+      let parentDbId: string | null = null;
+      if (matchedFlat.mainGroupId) {
+        const parentMain = CATEGORY_TAXONOMY.find((m) => m.id === matchedFlat.mainGroupId);
+        if (parentMain) {
+          const parentInDb = await prisma.category.upsert({
+            where: { slug: parentMain.slug },
+            create: {
+              id: parentMain.id,
+              name: parentMain.name,
+              slug: parentMain.slug,
+              description: `${parentMain.name} collection at Navya Collection.`,
+            },
+            update: {
+              name: parentMain.name,
+            },
+          });
+          parentDbId = parentInDb.id;
+        }
+      }
+
+      // Auto-create leaf/sub category in DB
+      const created = await prisma.category.create({
+        data: {
+          id: matchedFlat.id,
+          name: matchedFlat.name,
+          slug: matchedFlat.slug,
+          parentId: parentDbId,
+          description: `${matchedFlat.breadcrumb} collection at Navya Collection.`,
         },
       });
-      if (dbCatByTaxonomySlug) {
-        return dbCatByTaxonomySlug.id;
-      }
+      return created.id;
     } catch (err) {
-      console.warn('[CATEGORY_RESOLVER] DB lookup by taxonomy slug error:', err);
+      console.warn('[CATEGORY_RESOLVER] DB auto-creation for taxonomy error:', err);
     }
   }
 
@@ -103,12 +123,12 @@ async function getFallbackCategoryId(): Promise<string> {
     return firstCat.id;
   }
 
-  // If database has 0 categories, auto-seed a default General category
+  // If database has 0 categories, auto-seed a default Women category
   const createdGeneral = await prisma.category.create({
     data: {
-      name: 'General',
-      slug: 'general',
-      description: 'General product category',
+      name: 'Women',
+      slug: 'women',
+      description: 'Women fashion collection',
     },
   });
 

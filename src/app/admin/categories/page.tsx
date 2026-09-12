@@ -33,7 +33,7 @@ const INITIAL_TAXONOMY = CATEGORY_TAXONOMY.flatMap((main) => [
     parent: null,
     _count: { products: 15 },
   },
-  ...main.subCategories.map((sub) => ({
+  ...(main.subCategories || []).map((sub) => ({
     id: sub.id,
     name: sub.name,
     slug: sub.slug,
