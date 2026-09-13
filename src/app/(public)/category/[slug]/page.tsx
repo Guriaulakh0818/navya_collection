@@ -9,6 +9,7 @@ import {
   findCategoryBySlug,
 } from '@/features/categories/constants/category.constants';
 import { ProductGrid } from '@/features/products/components/ProductGrid';
+import { CategoryFilteredView } from '@/frontend/features/categories/components/CategoryFilteredView';
 
 import { CategoryPagination } from './CategoryPagination';
 
@@ -510,56 +511,8 @@ export default async function CategoryPage({ params }: Props) {
           </div>
         )}
 
-        {/* Header & Product Count */}
-        <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
-          <p className="text-xs sm:text-sm text-slate-600 font-medium">
-            Showing <span className="font-bold text-navy">{allProducts.length}</span> products in{' '}
-            <span className="font-extrabold text-navy">{category.name}</span>
-          </p>
-          <Link
-            href={`/category?group=${groupParam}`}
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-navy hover:bg-slate-100 transition-colors shadow-2xs"
-          >
-            All Categories →
-          </Link>
-        </div>
-
-        {/* Product Grid or Empty State */}
-        {allProducts.length > 0 ? (
-          <>
-            <ProductGrid products={allProducts} />
-            {totalPages > 1 && <CategoryPagination page={1} totalPages={totalPages} />}
-          </>
-        ) : (
-          <div className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-14 text-center space-y-4 shadow-xs my-6">
-            <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 font-bold mx-auto shadow-xs">
-              🛍️
-            </div>
-            <div className="space-y-1 max-w-md mx-auto">
-              <h3 className="text-base sm:text-lg font-extrabold text-navy">
-                No products in {category.name} yet
-              </h3>
-              <p className="text-xs text-slate-500 font-medium">
-                Our partner boutique merchants and verified artisans are curating and adding new
-                items daily. Check back soon or explore other trending fashion categories!
-              </p>
-            </div>
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
-              <Link
-                href="/category"
-                className="px-4 py-2 rounded-full bg-navy text-white text-xs font-bold hover:bg-navy-hover transition-colors shadow-xs"
-              >
-                Browse All Categories
-              </Link>
-              <Link
-                href="/shop"
-                className="px-4 py-2 rounded-full bg-slate-100 text-slate-800 text-xs font-bold hover:bg-slate-200 transition-colors border border-slate-200"
-              >
-                Explore Marketplace
-              </Link>
-            </div>
-          </div>
-        )}
+        {/* Main Category Filtered View with Flipkart / Myntra Style Faceted Sidebar & Mobile Dual-Pane Drawer */}
+        <CategoryFilteredView initialProducts={allProducts} category={category} />
       </div>
     </div>
   );
