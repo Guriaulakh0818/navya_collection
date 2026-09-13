@@ -5,12 +5,16 @@ import {
   Check,
   Heart,
   HelpCircle,
+  Layers,
   Minus,
+  Package,
   Plus,
   RotateCcw,
   Share2,
   ShieldCheck,
+  Sparkles,
   Star,
+  Tag,
   Truck,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -35,7 +39,6 @@ function getCleanVariantLabel(v: any, productName?: string): { main: string; sub
   const size = v.size?.trim();
   const color = (v.color || v.colorName)?.trim();
 
-  // If size is distinct (like M, L, XL, 38, 40)
   if (size && color && size !== color) {
     return { main: `${color} (${size})`, sub: size };
   }
@@ -46,7 +49,6 @@ function getCleanVariantLabel(v: any, productName?: string): { main: string; sub
     return { main: color, sub: color };
   }
 
-  // If name has product name prefix or dash
   let name = (v.name || '').trim();
   if (productName && name.toLowerCase().startsWith(productName.toLowerCase())) {
     name = name
@@ -92,7 +94,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     const currentStock = activeVariant?.stock ?? product.stock ?? 0;
     if (currentStock <= 0) return { label: 'Out of Stock', color: 'bg-rose-500' };
     if (currentStock <= (product.lowStockThreshold || 5)) {
-      return { label: `Only ${currentStock} left!`, color: 'bg-amber-500' };
+      return { label: `Only ${currentStock} left in stock!`, color: 'bg-amber-500' };
     }
     return { label: 'In Stock', color: 'bg-emerald-600' };
   }, [activeVariant, product]);
@@ -165,8 +167,76 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     return base;
   }, [product.images, activeVariantImageUrl, product.name, activeVariant]);
 
+  // Extract all dynamic specifications
+  const specifications = useMemo(() => {
+    const specs: { label: string; value: string }[] = [];
+
+    if (product.brand) specs.push({ label: 'Brand', value: product.brand });
+    if (product.category?.name) specs.push({ label: 'Category', value: product.category.name });
+    if (product.fabric || activeVariant?.attributes?.fabric) {
+      specs.push({
+        label: 'Fabric / Material',
+        value: product.fabric || activeVariant?.attributes?.fabric,
+      });
+    }
+    if (product.fit || activeVariant?.attributes?.fit) {
+      specs.push({ label: 'Fit Type', value: product.fit || activeVariant?.attributes?.fit });
+    }
+    if (product.occasion || activeVariant?.attributes?.occasion) {
+      specs.push({
+        label: 'Occasion',
+        value: product.occasion || activeVariant?.attributes?.occasion,
+      });
+    }
+    if (activeVariant?.color || product.color) {
+      specs.push({ label: 'Color', value: activeVariant?.color || product.color });
+    }
+    if (activeVariant?.size) {
+      specs.push({ label: 'Size', value: activeVariant.size });
+    }
+
+    // Dynamic attributes dictionary
+    const dynamicAttrs = {
+      ...(typeof product.attributes === 'object' ? product.attributes : {}),
+      ...(typeof activeVariant?.attributes === 'object' ? activeVariant.attributes : {}),
+    };
+
+    Object.entries(dynamicAttrs).forEach(([key, val]) => {
+      if (!val || typeof val !== 'string' || key === 'imageUrl') return;
+      const formattedLabel = key
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (str) => str.toUpperCase());
+      if (!specs.some((s) => s.label.toLowerCase() === formattedLabel.toLowerCase())) {
+        specs.push({ label: formattedLabel, value: String(val) });
+      }
+    });
+
+    specs.push({ label: 'Country of Origin', value: product.countryOfOrigin || 'India 🇮🇳' });
+    specs.push({ label: 'Assurance', value: '100% Quality Checked & Verified Artisan Boutique' });
+
+    return specs;
+  }, [product, activeVariant]);
+
+  // Determine Category size chart type
+  const isBottomwear = useMemo(() => {
+    const cat = (product.category?.name || '').toLowerCase();
+    return (
+      cat.includes('jean') ||
+      cat.includes('trouser') ||
+      cat.includes('bottom') ||
+      cat.includes('pant')
+    );
+  }, [product.category]);
+
+  const isKids = useMemo(() => {
+    const cat = (product.category?.name || '').toLowerCase();
+    return (
+      cat.includes('kid') || cat.includes('boy') || cat.includes('girl') || cat.includes('baby')
+    );
+  }, [product.category]);
+
   return (
-    <div className="space-y-8 md:space-y-12">
+    <div className="space-y-8 md:space-y-12 max-w-7xl mx-auto">
       {/* Breadcrumb Navigation */}
       <Breadcrumb
         items={[
@@ -174,7 +244,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
           { label: 'Shop', href: '/shop' },
           {
             label: product.category?.name || 'Couture',
-            href: `/shop?category=${product.category?.slug || 'boutique'}`,
+            href: `/category/${product.category?.slug || 'women-sarees'}`,
           },
           { label: product.name },
         ]}
@@ -192,13 +262,18 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
           {/* Header & Badges */}
           <div className="space-y-3 border-b border-slate-100 pb-5">
             <div className="flex flex-wrap items-center gap-2">
+              {product.brand && (
+                <span className="px-3 py-1 bg-amber-500/10 text-amber-900 font-extrabold text-[11px] uppercase tracking-wider rounded-full border border-amber-500/20">
+                  {product.brand}
+                </span>
+              )}
               {product.category?.name && (
                 <span className="px-3 py-1 bg-navy/5 text-navy font-extrabold text-[11px] uppercase tracking-wider rounded-full border border-navy/10">
                   {product.category.name}
                 </span>
               )}
               {discountPercent && (
-                <span className="px-3 py-1 bg-amber-500 text-slate-950 font-extrabold text-[11px] uppercase tracking-wider rounded-full shadow-xs">
+                <span className="px-3 py-1 bg-amber-500 text-slate-950 font-black text-[11px] uppercase tracking-wider rounded-full shadow-xs">
                   {discountPercent}% OFF
                 </span>
               )}
@@ -214,13 +289,15 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
             </h1>
 
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-medium">
-              <span className="font-mono">SKU: {product.sku || 'NC-PROD'}</span>
+              <span className="font-mono">
+                SKU: {activeVariant?.sku || product.sku || 'NC-PROD'}
+              </span>
               <span>•</span>
               <div className="flex items-center gap-1 text-amber-600 font-bold">
                 <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
                 <span>{product.rating || 4.8}</span>
                 <span className="text-slate-500 font-normal">
-                  ({reviewsList.length} verified reviews)
+                  ({reviewsList.length} verified ratings)
                 </span>
               </div>
             </div>
@@ -230,7 +307,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 font-extrabold shadow-xs mt-1">
                 <Building2 className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
-                  Boutique Partner: <strong className="text-navy">{product.shop.name}</strong>
+                  Boutique: <strong className="text-navy">{product.shop.name}</strong>
                 </span>
               </div>
             )}
@@ -243,12 +320,17 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 ₹{Number(price).toLocaleString('en-IN')}
               </span>
               {compareAtPrice && compareAtPrice > price && (
-                <span className="text-sm sm:text-base text-slate-400 line-through font-mono">
-                  ₹{Number(compareAtPrice).toLocaleString('en-IN')}
-                </span>
+                <>
+                  <span className="text-sm sm:text-base text-slate-400 line-through font-mono">
+                    ₹{Number(compareAtPrice).toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-xs font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                    Save ₹{(compareAtPrice - price).toLocaleString('en-IN')}
+                  </span>
+                </>
               )}
             </div>
-            <p className="text-[11px] text-slate-500">Inclusive of all taxes & doorstep delivery</p>
+            <p className="text-[11px] text-slate-500">Inclusive of all taxes & free shipping</p>
           </div>
 
           {/* Product Description */}
@@ -319,7 +401,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                                 : 'bg-emerald-100 text-emerald-800'
                         }`}
                       >
-                        {isOut ? 'Sold Out' : `${variantStock} in stock`}
+                        {isOut ? 'Sold Out' : `${variantStock} left`}
                       </span>
                     </button>
                   );
@@ -354,7 +436,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
             </div>
           </div>
 
-          {/* Action Buttons: All 4 in 1 single horizontal row */}
+          {/* Action Buttons: Add to Cart & Buy Now */}
           <div className="pt-4 flex flex-row items-center gap-1.5 xs:gap-2 sm:gap-3 w-full flex-nowrap">
             <button
               type="button"
@@ -413,24 +495,45 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
             <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200">
               <Truck className="w-4 h-4 text-amber-600 shrink-0" />
               <div>
-                <strong className="block text-navy font-bold text-[11px]">Express Shipping</strong>
-                <span className="text-[10px] text-slate-500">Pan-India delivery</span>
+                <strong className="block text-navy font-bold text-[11px]">Free Delivery</strong>
+                <span className="text-[10px] text-slate-500">Pan-India express</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200">
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
               <div>
-                <strong className="block text-navy font-bold text-[11px]">100% Guaranteed</strong>
-                <span className="text-[10px] text-slate-500">Verified authentic</span>
+                <strong className="block text-navy font-bold text-[11px]">N-Assured Quality</strong>
+                <span className="text-[10px] text-slate-500">Verified boutique</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* DYNAMIC PRODUCT SPECIFICATIONS ACCORDION / TABLE */}
+      <section className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
+            <Layers className="w-5 h-5 text-amber-600" /> Product Specifications & Details
+          </h2>
+          <span className="text-xs text-slate-400 font-bold">100% Authentic Details</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-6 text-xs">
+          {specifications.map((spec, idx) => (
+            <div key={idx} className="flex flex-col py-2 border-b border-slate-100">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                {spec.label}
+              </span>
+              <span className="font-extrabold text-navy mt-0.5 text-sm">{spec.value}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Customer Reviews Section */}
-      <section className="space-y-6 pt-8 border-t border-slate-200">
+      <section className="space-y-6 pt-4 border-t border-slate-200">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-extrabold text-navy">
             Customer Reviews ({reviewsList.length})
@@ -460,7 +563,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               <select
                 value={newRating}
                 onChange={(e) => setNewRating(Number(e.target.value))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-extrabold focus:bg-white focus:border-amber-500 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-extrabold focus:bg-white focus:border-amber-500 focus:outline-none cursor-pointer"
               >
                 <option value={5}>⭐⭐⭐⭐⭐ 5 - Excellent</option>
                 <option value={4}>⭐⭐⭐⭐ 4 - Very Good</option>
@@ -516,54 +619,171 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
         </div>
       </section>
 
-      {/* Size Guide Drawer */}
+      {/* DYNAMIC CATEGORY SIZE GUIDE DRAWER */}
       <Drawer
         open={isSizeGuideOpen}
         onClose={() => setIsSizeGuideOpen(false)}
-        title="Size Chart Guide"
+        title="Size Chart & Fit Guide"
       >
         <div className="space-y-4 text-xs">
-          <p className="text-slate-600">
-            Standard Indian couture size chart measurements in inches:
+          <p className="text-slate-600 font-medium">
+            Standard Indian sizing measurements in inches for this product category:
           </p>
-          <div className="overflow-x-auto rounded-xl border border-slate-200">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-slate-100 text-navy font-extrabold">
-                <tr>
-                  <th className="p-2.5 border-r border-b border-slate-200">Size</th>
-                  <th className="p-2.5 border-r border-b border-slate-200">Chest / Bust</th>
-                  <th className="p-2.5 border-r border-b border-slate-200">Waist</th>
-                  <th className="p-2.5 border-b border-slate-200">Length</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                <tr>
-                  <td className="p-2.5 border-r border-slate-200 font-bold">S</td>
-                  <td className="p-2.5 border-r border-slate-200">36-38 in</td>
-                  <td className="p-2.5 border-r border-slate-200">30-32 in</td>
-                  <td className="p-2.5">28 in</td>
-                </tr>
-                <tr>
-                  <td className="p-2.5 border-r border-slate-200 font-bold">M</td>
-                  <td className="p-2.5 border-r border-slate-200">38-40 in</td>
-                  <td className="p-2.5 border-r border-slate-200">32-34 in</td>
-                  <td className="p-2.5">29 in</td>
-                </tr>
-                <tr>
-                  <td className="p-2.5 border-r border-slate-200 font-bold">L</td>
-                  <td className="p-2.5 border-r border-slate-200">40-42 in</td>
-                  <td className="p-2.5 border-r border-slate-200">34-36 in</td>
-                  <td className="p-2.5">30 in</td>
-                </tr>
-                <tr>
-                  <td className="p-2.5 border-r border-slate-200 font-bold">XL</td>
-                  <td className="p-2.5 border-r border-slate-200">42-44 in</td>
-                  <td className="p-2.5 border-r border-slate-200">36-38 in</td>
-                  <td className="p-2.5">31 in</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+
+          {isBottomwear ? (
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-100 text-navy font-extrabold">
+                  <tr>
+                    <th className="p-2.5 border-r border-b border-slate-200">Waist (Inches)</th>
+                    <th className="p-2.5 border-r border-b border-slate-200">Hip (Inches)</th>
+                    <th className="p-2.5 border-r border-b border-slate-200">Thigh (Inches)</th>
+                    <th className="p-2.5 border-b border-slate-200">Length (Inches)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">28</td>
+                    <td className="p-2.5 border-r border-slate-200">36 in</td>
+                    <td className="p-2.5 border-r border-slate-200">21 in</td>
+                    <td className="p-2.5">39 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">30</td>
+                    <td className="p-2.5 border-r border-slate-200">38 in</td>
+                    <td className="p-2.5 border-r border-slate-200">22 in</td>
+                    <td className="p-2.5">40 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">32</td>
+                    <td className="p-2.5 border-r border-slate-200">40 in</td>
+                    <td className="p-2.5 border-r border-slate-200">23 in</td>
+                    <td className="p-2.5">40 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">34</td>
+                    <td className="p-2.5 border-r border-slate-200">42 in</td>
+                    <td className="p-2.5 border-r border-slate-200">24 in</td>
+                    <td className="p-2.5">41 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">36</td>
+                    <td className="p-2.5 border-r border-slate-200">44 in</td>
+                    <td className="p-2.5 border-r border-slate-200">25 in</td>
+                    <td className="p-2.5">41 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">38</td>
+                    <td className="p-2.5 border-r border-slate-200">46 in</td>
+                    <td className="p-2.5 border-r border-slate-200">26 in</td>
+                    <td className="p-2.5">42 in</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          ) : isKids ? (
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-100 text-navy font-extrabold">
+                  <tr>
+                    <th className="p-2.5 border-r border-b border-slate-200">Age Group</th>
+                    <th className="p-2.5 border-r border-b border-slate-200">Chest</th>
+                    <th className="p-2.5 border-r border-b border-slate-200">Height (cm)</th>
+                    <th className="p-2.5 border-b border-slate-200">Weight (kg)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">0-6 Months</td>
+                    <td className="p-2.5 border-r border-slate-200">18 in</td>
+                    <td className="p-2.5 border-r border-slate-200">60-68 cm</td>
+                    <td className="p-2.5">4-7 kg</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">1-2 Years</td>
+                    <td className="p-2.5 border-r border-slate-200">20 in</td>
+                    <td className="p-2.5 border-r border-slate-200">80-90 cm</td>
+                    <td className="p-2.5">10-13 kg</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">3-4 Years</td>
+                    <td className="p-2.5 border-r border-slate-200">22 in</td>
+                    <td className="p-2.5 border-r border-slate-200">98-104 cm</td>
+                    <td className="p-2.5">15-18 kg</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">5-6 Years</td>
+                    <td className="p-2.5 border-r border-slate-200">24 in</td>
+                    <td className="p-2.5 border-r border-slate-200">110-116 cm</td>
+                    <td className="p-2.5">19-22 kg</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">7-8 Years</td>
+                    <td className="p-2.5 border-r border-slate-200">26 in</td>
+                    <td className="p-2.5 border-r border-slate-200">122-128 cm</td>
+                    <td className="p-2.5">23-27 kg</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-100 text-navy font-extrabold">
+                  <tr>
+                    <th className="p-2.5 border-r border-b border-slate-200">Size</th>
+                    <th className="p-2.5 border-r border-b border-slate-200">Chest / Bust</th>
+                    <th className="p-2.5 border-r border-b border-slate-200">Waist</th>
+                    <th className="p-2.5 border-b border-slate-200">Length</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">XS</td>
+                    <td className="p-2.5 border-r border-slate-200">34-36 in</td>
+                    <td className="p-2.5 border-r border-slate-200">28-30 in</td>
+                    <td className="p-2.5">27 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">S</td>
+                    <td className="p-2.5 border-r border-slate-200">36-38 in</td>
+                    <td className="p-2.5 border-r border-slate-200">30-32 in</td>
+                    <td className="p-2.5">28 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">M</td>
+                    <td className="p-2.5 border-r border-slate-200">38-40 in</td>
+                    <td className="p-2.5 border-r border-slate-200">32-34 in</td>
+                    <td className="p-2.5">29 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">L</td>
+                    <td className="p-2.5 border-r border-slate-200">40-42 in</td>
+                    <td className="p-2.5 border-r border-slate-200">34-36 in</td>
+                    <td className="p-2.5">30 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">XL</td>
+                    <td className="p-2.5 border-r border-slate-200">42-44 in</td>
+                    <td className="p-2.5 border-r border-slate-200">36-38 in</td>
+                    <td className="p-2.5">31 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">XXL</td>
+                    <td className="p-2.5 border-r border-slate-200">44-46 in</td>
+                    <td className="p-2.5 border-r border-slate-200">38-40 in</td>
+                    <td className="p-2.5">32 in</td>
+                  </tr>
+                  <tr>
+                    <td className="p-2.5 border-r border-slate-200 font-bold">3XL</td>
+                    <td className="p-2.5 border-r border-slate-200">46-48 in</td>
+                    <td className="p-2.5 border-r border-slate-200">40-42 in</td>
+                    <td className="p-2.5">32 in</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </Drawer>
     </div>

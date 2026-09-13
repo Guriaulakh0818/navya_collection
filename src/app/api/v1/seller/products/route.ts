@@ -211,19 +211,21 @@ export async function POST(request: NextRequest) {
           name: data.name,
           slug: uniqueSlug,
           sku: parentSku,
+          brand: data.brand || null,
           description: data.description,
           price: data.price,
           compareAtPrice: data.compareAtPrice || null,
           costPrice: data.costPrice || null,
           stock: totalStock,
+          lowStockThreshold: data.lowStockThreshold || 5,
           categoryId: validCategoryId,
           status: data.status === 'draft' ? 'draft' : 'pending_approval',
           isFeatured: data.isFeatured,
           gender: data.gender || null,
-          fabric: data.fabric || null,
+          fabric: data.fabric || (data.attributes?.fabric as string) || null,
           color: data.color || null,
-          fit: data.fit || null,
-          occasion: data.occasion || null,
+          fit: data.fit || (data.attributes?.fit as string) || null,
+          occasion: data.occasion || (data.attributes?.occasion as string) || null,
           metaTitle: data.metaTitle || null,
           metaDescription: data.metaDescription || null,
           metaKeywords: metaKeywordsUpdate || null,
@@ -239,12 +241,12 @@ export async function POST(request: NextRequest) {
             imageUrl: img.imageUrl,
             altText: img.altText || data.name,
             isPrimary: img.isPrimary || index === 0,
-            sortOrder: index,
+            sortOrder: img.sortOrder ?? index,
           })),
         });
       }
 
-      // 3. Create Product Variants with Auto-Generated Variant SKUs
+      // 3. Create Product Variants with Auto-Generated Variant SKUs & Dynamic Attributes
       if (hasVariants) {
         await tx.productVariant.createMany({
           data: data.variants!.map((v, index) => {
@@ -254,14 +256,12 @@ export async function POST(request: NextRequest) {
                 : generateVariantSku(parentSku, v.color, v.size, index);
 
             const variantImgUrl = v.imageUrl || v.image;
-            const attributesPayload = variantImgUrl
-              ? {
-                  imageUrl: variantImgUrl,
-                  ...(typeof v.attributes === 'object' && v.attributes !== null
-                    ? v.attributes
-                    : {}),
-                }
-              : v.attributes || null;
+            const attributesPayload = {
+              ...(data.attributes || {}),
+              ...(typeof v.attributes === 'object' && v.attributes !== null ? v.attributes : {}),
+              ...(variantImgUrl ? { imageUrl: variantImgUrl } : {}),
+              ...(v.weight ? { weight: v.weight } : {}),
+            };
 
             return {
               productId: product.id,
@@ -274,7 +274,8 @@ export async function POST(request: NextRequest) {
               availableStock: Number(v.stock || 0),
               size: v.size || null,
               color: v.color || null,
-              attributes: attributesPayload,
+              weight: v.weight ? Number(v.weight) : null,
+              attributes: Object.keys(attributesPayload).length > 0 ? attributesPayload : undefined,
               status: 'active',
             };
           }),
