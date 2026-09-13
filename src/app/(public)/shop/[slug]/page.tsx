@@ -53,7 +53,7 @@ export default function BoutiqueShopStorefrontPage({
   const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false);
 
   // Resolved Contact Info (Guaranteed Active Options for All Merchants)
-  const contactPhone = shopData?.phone || shopData?.owner?.mobile || '+919991983125';
+  const contactPhone = shopData?.phone || shopData?.owner?.mobile || '+919053883125';
   const contactEmail = shopData?.email || shopData?.owner?.email || 'gurvinderaulakh497@gmail.com';
   const contactAddress = shopData?.fullAddress || 'Chandigarh University, NH-05, Ludhiana';
   const contactCity = shopData?.city || 'Chandigarh';
@@ -154,7 +154,7 @@ export default function BoutiqueShopStorefrontPage({
             city: 'Ludhiana',
             state: 'Punjab',
             pincode: '140413',
-            phone: '+919991983125',
+            phone: '+919053883125',
             email: 'gurvinderaulakh497@gmail.com',
             verificationBadge: 'VERIFIED SHOP',
           });

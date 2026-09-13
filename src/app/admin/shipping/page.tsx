@@ -369,7 +369,7 @@ export default function AdminShippingPage() {
                         shop.phone ||
                         shop.owner?.mobile ||
                         primaryLocation?.contactPhone ||
-                        '9991983125';
+                        '9053883125';
                       const contactEmail =
                         shop.email ||
                         shop.owner?.email ||

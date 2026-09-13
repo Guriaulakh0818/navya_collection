@@ -110,8 +110,8 @@ export class PickupLocationService {
         location.contactPhone ||
         location.shop?.phone ||
         location.shop?.owner?.mobile ||
-        '9991983125';
-      const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10) || '9991983125';
+        '9053883125';
+      const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10) || '9053883125';
 
       // Clean email
       const cleanEmail =
@@ -334,7 +334,7 @@ export class PickupLocationService {
             pincode: shop.pincode || '125001',
             country: 'India',
             contactName: shop.bankAccountHolder || shop.name || 'Store Manager',
-            contactPhone: shop.phone || '9991983125',
+            contactPhone: shop.phone || '9053883125',
             contactEmail: shop.email || 'seller@navyacollection.store',
             isPrimary: true,
             status: 'ACTIVE',
@@ -413,7 +413,7 @@ export class PickupLocationService {
           pincode: shop.pincode || primaryLocation.pincode || '125001',
           contactName,
           contactPhone:
-            shop.phone || shop.owner?.mobile || primaryLocation.contactPhone || '9991983125',
+            shop.phone || shop.owner?.mobile || primaryLocation.contactPhone || '9053883125',
           contactEmail:
             shop.email ||
             shop.owner?.email ||
@@ -436,7 +436,7 @@ export class PickupLocationService {
           pincode: shop.pincode || '125001',
           country: 'India',
           contactName,
-          contactPhone: shop.phone || shop.owner?.mobile || '9991983125',
+          contactPhone: shop.phone || shop.owner?.mobile || '9053883125',
           contactEmail: shop.email || shop.owner?.email || 'seller@navyacollection.store',
           isPrimary: true,
           status: 'ACTIVE',
