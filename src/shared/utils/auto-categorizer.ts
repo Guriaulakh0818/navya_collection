@@ -377,8 +377,17 @@ export function autoCategorizeProduct(
     }
   }
 
-  // Spotlight curation
+  // Spotlight & New Arrivals curation
   assignedSet.add('spot_trending_now');
+  assignedSet.add('spot_new_on_navya');
+
+  if (gender === 'men') {
+    assignedSet.add('cat_men_new_arrivals');
+  } else if (gender === 'women') {
+    assignedSet.add('cat_women_new_arrivals');
+  } else if (gender === 'kids') {
+    assignedSet.add('cat_kids_new_arrivals');
+  }
 
   // Fallback if nothing matched
   if (assignedSet.size <= 1) {

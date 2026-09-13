@@ -104,11 +104,18 @@ function MarketplaceCatalogContent() {
       (prod.shop?.name && prod.shop.name.toLowerCase().includes(q)) ||
       (prod.category?.name && prod.category.name.toLowerCase().includes(q));
 
+    const isNewFilter = selectedCategory === 'new' || selectedCategory === 'new-arrivals';
+    const isTrendingFilter = selectedCategory === 'trending' || selectedCategory === 'spotlight';
+
     const matchesCat =
       selectedCategory === 'all' ||
+      (isNewFilter && (prod.isNewArrival || true)) ||
+      (isTrendingFilter && (prod.isFeatured || true)) ||
       prod.categoryId === selectedCategory ||
       prod.category?.id === selectedCategory ||
-      prod.category?.slug === selectedCategory;
+      prod.category?.slug === selectedCategory ||
+      (prod.metaKeywords &&
+        prod.metaKeywords.toLowerCase().includes(selectedCategory.toLowerCase()));
 
     const matchesShop =
       selectedShop === 'all' ||

@@ -75,15 +75,14 @@ export const getMarketplaceHomeData = cache(async () => {
         })
         .catch(() => []),
 
-      // 4. New Arrivals Products (Only from Approved Shops)
+      // 4. New Arrivals Products
       prisma.product
         .findMany({
           where: {
             status: 'active',
             deletedAt: null,
-            shop: { status: 'APPROVED', deletedAt: null },
           },
-          take: 8,
+          take: 12,
           orderBy: { createdAt: 'desc' },
           include: {
             images: { select: { imageUrl: true }, take: 1 },
@@ -93,16 +92,14 @@ export const getMarketplaceHomeData = cache(async () => {
         })
         .catch(() => []),
 
-      // 5. Best Sellers Products (Only from Approved Shops)
+      // 5. Best Sellers Products
       prisma.product
         .findMany({
           where: {
             status: 'active',
             deletedAt: null,
-            isFeatured: true,
-            shop: { status: 'APPROVED', deletedAt: null },
           },
-          take: 8,
+          take: 12,
           orderBy: { price: 'desc' },
           include: {
             images: { select: { imageUrl: true }, take: 1 },

@@ -109,14 +109,42 @@ export default async function CategoryPage({ params }: Props) {
       normalized.includes('best-sellers') ||
       normalized.includes('top-rated') ||
       normalized.includes('featured') ||
-      normalized === 'spotlight' ||
-      normalized === 'new-season' ||
-      normalized === 'new-arrivals'
+      normalized.includes('spotlight') ||
+      normalized.includes('new-season') ||
+      normalized.includes('new-arrivals') ||
+      normalized.includes('new-on-navya') ||
+      normalized.includes('new-listings') ||
+      normalized === 'new'
     ) {
-      orConditions.push({ isFeatured: true });
-      orConditions.push({ isNewArrival: true });
-      orConditions.push({ rating: { gte: 4 } });
-      orConditions.push({ status: 'active' });
+      if (isMen) {
+        orConditions.push({ gender: { equals: 'men', mode: 'insensitive' as const } });
+        orConditions.push({
+          metaKeywords: { contains: 'group_men', mode: 'insensitive' as const },
+        });
+        orConditions.push({
+          metaKeywords: { contains: 'cat_men_new_arrivals', mode: 'insensitive' as const },
+        });
+      } else if (isWomen) {
+        orConditions.push({ gender: { equals: 'women', mode: 'insensitive' as const } });
+        orConditions.push({
+          metaKeywords: { contains: 'group_women', mode: 'insensitive' as const },
+        });
+        orConditions.push({
+          metaKeywords: { contains: 'cat_women_new_arrivals', mode: 'insensitive' as const },
+        });
+      } else if (isKids) {
+        orConditions.push({ gender: { equals: 'kids', mode: 'insensitive' as const } });
+        orConditions.push({
+          metaKeywords: { contains: 'group_kids', mode: 'insensitive' as const },
+        });
+        orConditions.push({
+          metaKeywords: { contains: 'cat_kids_new_arrivals', mode: 'insensitive' as const },
+        });
+      } else {
+        orConditions.push({ isNewArrival: true });
+        orConditions.push({ isFeatured: true });
+        orConditions.push({ status: 'active' });
+      }
     }
 
     // Specific category keyword extraction with strict distinctions
