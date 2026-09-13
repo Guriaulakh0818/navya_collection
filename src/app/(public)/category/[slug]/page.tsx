@@ -90,7 +90,7 @@ export default async function CategoryPage({ params }: Props) {
       );
     }
 
-    dbProducts = await prisma.product.findMany({
+    const rawProducts = await prisma.product.findMany({
       where: {
         status: 'active',
         deletedAt: null,
@@ -101,11 +101,31 @@ export default async function CategoryPage({ params }: Props) {
         OR: orConditions,
       },
       include: {
-        images: { select: { imageUrl: true }, take: 1 },
+        images: {
+          select: { id: true, imageUrl: true, isPrimary: true, altText: true },
+          orderBy: { isPrimary: 'desc' },
+        },
         shop: { select: { id: true, name: true, slug: true } },
         category: { select: { id: true, name: true, slug: true } },
       },
       orderBy: { createdAt: 'desc' },
+    });
+
+    dbProducts = rawProducts.map((p) => {
+      const primary = p.images.find((img) => img.isPrimary) || p.images[0];
+      return {
+        ...p,
+        price: Number(p.price),
+        compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : undefined,
+        images: p.images.map((img) => ({
+          id: img.id,
+          url: img.imageUrl,
+          imageUrl: img.imageUrl,
+          isPrimary: img.isPrimary,
+          alt: img.altText || p.name,
+        })),
+        imageUrl: primary?.imageUrl,
+      };
     });
   } catch (err) {
     console.error('Failed to query category products:', err);

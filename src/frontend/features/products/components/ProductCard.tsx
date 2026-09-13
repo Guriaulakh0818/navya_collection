@@ -18,6 +18,12 @@ type ProductCardProps = {
 export function ProductCard({ product }: ProductCardProps) {
   const discount = calculateDiscount(product.price, product.compareAtPrice);
   const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
+  const imageSrc =
+    (primaryImage as any)?.url ||
+    (primaryImage as any)?.imageUrl ||
+    (typeof primaryImage === 'string' ? primaryImage : undefined) ||
+    (product as any)?.imageUrl ||
+    (product as any)?.image;
 
   return (
     <div className="group relative rounded-2xl bg-brand-surface border border-brand-border shadow-card hover:shadow-premium transition-all duration-300 flex flex-col overflow-hidden">
@@ -26,11 +32,12 @@ export function ProductCard({ product }: ProductCardProps) {
         href={`/product/${product.slug}`}
         className="relative aspect-[3/4] w-full overflow-hidden bg-brand-divider block cursor-pointer select-none"
       >
-        {primaryImage ? (
+        {imageSrc ? (
           <Image
-            src={primaryImage.url}
-            alt={primaryImage.alt || product.name}
+            src={imageSrc}
+            alt={(primaryImage as any)?.alt || (primaryImage as any)?.altText || product.name}
             fill
+            unoptimized={true}
             className="object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
           />

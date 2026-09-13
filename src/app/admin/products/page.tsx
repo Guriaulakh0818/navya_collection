@@ -55,6 +55,7 @@ export default function AdminProductsPage() {
   const [editingProductCategory, setEditingProductCategory] = useState<any | null>(null);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [categoryModalSearch, setCategoryModalSearch] = useState<string>('');
+  const [categoryModalGroup, setCategoryModalGroup] = useState<string>('ALL');
   const [isMovingCategory, setIsMovingCategory] = useState(false);
 
   // Product Details Drawer State
@@ -665,29 +666,69 @@ export default function AdminProductsPage() {
               )}
             </div>
 
+            {/* Department Quick Filter Buttons matching website taxonomy */}
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                Quick Category Groups:
+              </span>
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => setCategoryModalGroup('ALL')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer ${
+                    categoryModalGroup === 'ALL'
+                      ? 'bg-navy text-white shadow-2xs'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  All Categories
+                </button>
+                {CATEGORY_TAXONOMY.map((grp) => (
+                  <button
+                    key={grp.id}
+                    type="button"
+                    onClick={() => setCategoryModalGroup(grp.id)}
+                    className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer ${
+                      categoryModalGroup === grp.id
+                        ? 'bg-navy text-white shadow-2xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {grp.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Quick search input */}
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="font-bold text-slate-700 block text-xs">
                   Search &amp; Check Categories *
                 </label>
-                {categoryModalSearch && (
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() =>
-                      handleSelectAllFiltered(
-                        flattenedCategories.filter((c: any) =>
-                          c.breadcrumb
-                            .toLowerCase()
-                            .includes(categoryModalSearch.toLowerCase().trim()),
-                        ),
-                      )
-                    }
+                    onClick={() => {
+                      const currentFiltered = flattenedCategories.filter((c: any) => {
+                        const matchSearch = categoryModalSearch
+                          ? c.breadcrumb
+                              .toLowerCase()
+                              .includes(categoryModalSearch.toLowerCase().trim())
+                          : true;
+                        const matchGroup =
+                          categoryModalGroup === 'ALL'
+                            ? true
+                            : c.mainGroupId === categoryModalGroup;
+                        return matchSearch && matchGroup;
+                      });
+                      handleSelectAllFiltered(currentFiltered);
+                    }}
                     className="text-[10px] font-bold text-navy hover:underline cursor-pointer"
                   >
-                    Select All Matching
+                    Select All in View
                   </button>
-                )}
+                </div>
               </div>
               <Input
                 placeholder="Type to filter e.g. Sarees, Shirts, Kurtas, T-Shirts, Lehengas, Spotlight..."
@@ -700,17 +741,20 @@ export default function AdminProductsPage() {
             {/* Multi-Select Checkboxes List */}
             <div className="space-y-1">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                Available Departments &amp; Taxonomies
+                Matching Store Categories
               </span>
               <div className="max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 p-1.5 shadow-inner">
                 {flattenedCategories
-                  .filter((c: any) =>
-                    categoryModalSearch
+                  .filter((c: any) => {
+                    const matchSearch = categoryModalSearch
                       ? c.breadcrumb
                           .toLowerCase()
                           .includes(categoryModalSearch.toLowerCase().trim())
-                      : true,
-                  )
+                      : true;
+                    const matchGroup =
+                      categoryModalGroup === 'ALL' ? true : c.mainGroupId === categoryModalGroup;
+                    return matchSearch && matchGroup;
+                  })
                   .map((opt: any) => {
                     const isChecked =
                       selectedCategoryIds.includes(opt.id) ||
@@ -721,8 +765,8 @@ export default function AdminProductsPage() {
                         key={opt.id}
                         className={`flex items-start gap-3 p-2.5 rounded-xl cursor-pointer transition-colors ${
                           isChecked
-                            ? 'bg-navy/5 border border-navy/20 font-bold'
-                            : 'hover:bg-slate-50'
+                            ? 'bg-amber-50/70 border border-amber-300/80 font-bold text-navy'
+                            : 'hover:bg-slate-50 text-slate-700'
                         }`}
                       >
                         <input
