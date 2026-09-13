@@ -377,10 +377,63 @@ export function autoCategorizeProduct(
     }
   }
 
-  // Spotlight & New Arrivals curation
+  // --- 7. FEATURED CURATIONS & SPOTLIGHT INTELLIGENCE ---
+  assignedSet.add('group_spotlight');
   assignedSet.add('spot_trending_now');
   assignedSet.add('spot_new_on_navya');
+  assignedSet.add('spot_new_season');
+  assignedSet.add('spot_best_sellers');
+  assignedSet.add('spot_top_rated');
+  assignedSet.add('spot_shop_vibe');
 
+  // Festivals of India (Ethnic Wear & Jewellery)
+  if (
+    hasWord(
+      text,
+      /\b(saree|sari|lehenga|choli|kurta|kurti|salwar|anarkali|sherwani|bandhgala|dupatta|kundan|jewellery|jewelry|jhumka|ethnic|festive|wedding)\b/i,
+    )
+  ) {
+    assignedSet.add('spot_festivals_india');
+    matchedRules.push('Festivals of India');
+  }
+
+  // Trendy Street & Gen Z Fashion (Streetwear, Graphics, Oversized, Cargos, Denim)
+  if (
+    hasWord(
+      text,
+      /\b(graphic|oversized|cargo|cargos|hoodie|hoodies|sweatshirt|streetwear|baggy|crop\s+top|denim|ripped|flared\s+jeans)\b/i,
+    ) ||
+    isTShirt ||
+    isHoodie ||
+    isSweatshirt
+  ) {
+    assignedSet.add('spot_trendy_street');
+    assignedSet.add('spot_genz_fashion');
+    matchedRules.push('Trendy Street & Gen Z');
+  }
+
+  // Korean Store (Aesthetic Minimalist, Co-ords, Oversized Tops/Shirts, Pleated, Chic)
+  if (
+    hasWord(
+      text,
+      /\b(coord|co-ord|oversized|korean|aesthetic|pleated|minimal|crop\s+top|pastel|wrap\s+dress|shirt\s+dress|chic)\b/i,
+    ) ||
+    isShirt
+  ) {
+    assignedSet.add('spot_korean_store');
+    matchedRules.push('Korean Aesthetic Store');
+  }
+
+  // Sports Store (Polos, Track Pants, Activewear, Hoodies, Tees)
+  if (
+    hasWord(text, /\b(polo|track\s*pants?|joggers?|activewear|sports?|gym|running|athletic)\b/i) ||
+    isPolo
+  ) {
+    assignedSet.add('spot_sports_store');
+    matchedRules.push('Sports & Activewear');
+  }
+
+  // Department-Specific New Arrivals
   if (gender === 'men') {
     assignedSet.add('cat_men_new_arrivals');
   } else if (gender === 'women') {

@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
           categoryId: validCategoryId,
           metaKeywords: combinedKeywords,
           isNewArrival: true,
+          isFeatured: true,
         },
       });
 

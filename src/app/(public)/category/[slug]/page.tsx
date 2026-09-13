@@ -104,7 +104,29 @@ export default async function CategoryPage({ params }: Props) {
     if (normalized.includes('50-off') || normalized.includes('50-percent-off')) {
       orConditions.push({ compareAtPrice: { gt: 0 } });
     }
-    if (
+
+    // Curations & Special Spotlight Pages
+    const isFestivals =
+      normalized.includes('festivals-of-india') ||
+      normalized.includes('festive') ||
+      normalized.includes('wedding');
+
+    const isTrendyStreet =
+      normalized.includes('trendy-street') ||
+      normalized.includes('gen-z-fashion') ||
+      normalized.includes('streetwear');
+
+    const isKoreanStore =
+      normalized.includes('korean-store') ||
+      normalized.includes('aesthetic') ||
+      normalized.includes('minimal');
+
+    const isSportsStore =
+      normalized.includes('sports-store') ||
+      normalized.includes('activewear') ||
+      normalized.includes('athleisure');
+
+    const isGeneralSpotlight =
       normalized.includes('trending') ||
       normalized.includes('best-sellers') ||
       normalized.includes('top-rated') ||
@@ -113,9 +135,54 @@ export default async function CategoryPage({ params }: Props) {
       normalized.includes('new-season') ||
       normalized.includes('new-arrivals') ||
       normalized.includes('new-on-navya') ||
+      normalized.includes('shop-your-vibe') ||
       normalized.includes('new-listings') ||
-      normalized === 'new'
-    ) {
+      normalized === 'new';
+
+    if (isFestivals) {
+      orConditions.push(
+        { metaKeywords: { contains: 'spot_festivals_india', mode: 'insensitive' as const } },
+        { name: { contains: 'saree', mode: 'insensitive' as const } },
+        { name: { contains: 'lehenga', mode: 'insensitive' as const } },
+        { name: { contains: 'kurta', mode: 'insensitive' as const } },
+        { name: { contains: 'kurti', mode: 'insensitive' as const } },
+        { name: { contains: 'suit', mode: 'insensitive' as const } },
+        { name: { contains: 'sherwani', mode: 'insensitive' as const } },
+        { name: { contains: 'jewellery', mode: 'insensitive' as const } },
+        { name: { contains: 'kundan', mode: 'insensitive' as const } },
+      );
+    } else if (isTrendyStreet) {
+      orConditions.push(
+        { metaKeywords: { contains: 'spot_trendy_street', mode: 'insensitive' as const } },
+        { metaKeywords: { contains: 'spot_genz_fashion', mode: 'insensitive' as const } },
+        { name: { contains: 't-shirt', mode: 'insensitive' as const } },
+        { name: { contains: 'tshirt', mode: 'insensitive' as const } },
+        { name: { contains: 'cargo', mode: 'insensitive' as const } },
+        { name: { contains: 'graphic', mode: 'insensitive' as const } },
+        { name: { contains: 'oversized', mode: 'insensitive' as const } },
+        { name: { contains: 'hoodie', mode: 'insensitive' as const } },
+        { name: { contains: 'denim', mode: 'insensitive' as const } },
+        { name: { contains: 'jeans', mode: 'insensitive' as const } },
+      );
+    } else if (isKoreanStore) {
+      orConditions.push(
+        { metaKeywords: { contains: 'spot_korean_store', mode: 'insensitive' as const } },
+        { name: { contains: 'shirt', mode: 'insensitive' as const } },
+        { name: { contains: 'coord', mode: 'insensitive' as const } },
+        { name: { contains: 'dress', mode: 'insensitive' as const } },
+        { name: { contains: 'top', mode: 'insensitive' as const } },
+        { name: { contains: 'oversized', mode: 'insensitive' as const } },
+      );
+    } else if (isSportsStore) {
+      orConditions.push(
+        { metaKeywords: { contains: 'spot_sports_store', mode: 'insensitive' as const } },
+        { name: { contains: 'polo', mode: 'insensitive' as const } },
+        { name: { contains: 'track', mode: 'insensitive' as const } },
+        { name: { contains: 'jogger', mode: 'insensitive' as const } },
+        { name: { contains: 'hoodie', mode: 'insensitive' as const } },
+        { name: { contains: 't-shirt', mode: 'insensitive' as const } },
+      );
+    } else if (isGeneralSpotlight) {
       if (isMen) {
         orConditions.push({ gender: { equals: 'men', mode: 'insensitive' as const } });
         orConditions.push({
@@ -248,7 +315,7 @@ export default async function CategoryPage({ params }: Props) {
       );
     }
 
-    const rawProducts = await prisma.product.findMany({
+    let rawProducts = await prisma.product.findMany({
       where: {
         status: 'active',
         deletedAt: null,
@@ -264,6 +331,31 @@ export default async function CategoryPage({ params }: Props) {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    // Zero-Empty Guarantee: If curation category has 0 items, backfill with active relevant store items
+    if (
+      rawProducts.length === 0 &&
+      (isGeneralSpotlight || isFestivals || isTrendyStreet || isKoreanStore || isSportsStore)
+    ) {
+      const fallbackWhere: any = { status: 'active', deletedAt: null };
+      if (isMen) fallbackWhere.gender = { equals: 'men', mode: 'insensitive' };
+      if (isWomen) fallbackWhere.gender = { equals: 'women', mode: 'insensitive' };
+      if (isKids) fallbackWhere.gender = { equals: 'kids', mode: 'insensitive' };
+
+      rawProducts = await prisma.product.findMany({
+        where: fallbackWhere,
+        take: 24,
+        include: {
+          images: {
+            select: { id: true, imageUrl: true, isPrimary: true, altText: true },
+            orderBy: { isPrimary: 'desc' },
+          },
+          shop: { select: { id: true, name: true, slug: true } },
+          category: { select: { id: true, name: true, slug: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
 
     // High-Precision in-memory filter to guarantee shirts vs t-shirts vs sweaters never mix
     const filteredProducts = rawProducts.filter((p) => {
