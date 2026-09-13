@@ -124,11 +124,21 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-orange shrink-0" />
-                <span>Customer Care: +91 98765 43210</span>
+                <a
+                  href="tel:+919053883125"
+                  className="hover:text-orange transition-colors hover:underline"
+                >
+                  Customer Care: +91 9053883125
+                </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-orange shrink-0" />
-                <span className="truncate">support@navyacollection.store</span>
+                <a
+                  href="mailto:helpdesk@navyacollection.store"
+                  className="truncate hover:text-orange transition-colors hover:underline"
+                >
+                  helpdesk@navyacollection.store
+                </a>
               </div>
             </div>
           </div>
