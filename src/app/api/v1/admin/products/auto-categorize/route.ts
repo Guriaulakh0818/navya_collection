@@ -77,8 +77,20 @@ export async function POST(request: NextRequest) {
 
       // Clean category tags for metaKeywords indexing
       const catTags = categoryIds.map((c) => c.replace(/[^a-zA-Z0-9_-]/g, '')).filter(Boolean);
+
+      // Preserve only non-category user search keywords
       const existingTags = prod.metaKeywords
-        ? prod.metaKeywords.split(',').map((s) => s.trim())
+        ? prod.metaKeywords
+            .split(',')
+            .map((s) => s.trim())
+            .filter(
+              (s) =>
+                !s.startsWith('cat_') &&
+                !s.startsWith('group_') &&
+                !s.startsWith('spot_') &&
+                !s.startsWith('sec_') &&
+                s.length > 0,
+            )
         : [];
       const combinedKeywords = Array.from(new Set([...catTags, ...existingTags])).join(', ');
 

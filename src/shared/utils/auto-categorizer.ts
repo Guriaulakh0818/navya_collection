@@ -18,287 +18,341 @@ export interface ProductInputForCategorization {
   occasion?: string;
 }
 
-// Keyword mapping dictionary targeting exact category IDs
-const KEYWORD_CATEGORY_RULES: {
-  keywords: string[];
-  categoryIds: string[];
-  gender?: 'men' | 'women' | 'kids' | 'unisex';
-}[] = [
-  // --- WOMEN INDIAN WEAR ---
-  {
-    keywords: [
-      'saree',
-      'sari',
-      'banarasi',
-      'kanjeevaram',
-      'chiffon saree',
-      'georgette saree',
-      'silk saree',
-      'paithani',
-      'chanderi saree',
-      'bandhani',
-    ],
-    categoryIds: ['cat_women_sarees', 'cat_women_ethnic', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['lehenga', 'choli', 'chaniya choli', 'ghagra', 'bridal lehenga', 'wedding lehenga'],
-    categoryIds: ['cat_women_lehengas', 'cat_women_ethnic', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: [
-      'kurta set',
-      'kurti set',
-      'suit set',
-      'salwar suit',
-      'anarkali set',
-      'sharara set',
-      'gharara',
-      'palazzo suit',
-    ],
-    categoryIds: [
-      'cat_women_kurta_sets',
-      'cat_women_salwar_suits',
-      'cat_women_ethnic',
-      'group_women',
-    ],
-    gender: 'women',
-  },
-  {
-    keywords: ['kurti', 'kurta', 'anarkali', 'tunic', 'ethnic top'],
-    categoryIds: ['cat_women_kurtas', 'cat_women_ethnic', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['ethnic dress', 'indowestern', 'indo western', 'fusion dress', 'maxi ethnic'],
-    categoryIds: ['cat_women_ethnic_dresses', 'cat_women_ethnic', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['dupatta', 'stole', 'chunri', 'odhni'],
-    categoryIds: ['cat_women_dupattas', 'cat_women_accessories', 'group_women'],
-    gender: 'women',
-  },
-
-  // --- WOMEN WESTERN WEAR ---
-  {
-    keywords: [
-      'women dress',
-      'gown',
-      'mini dress',
-      'midi dress',
-      'maxi dress',
-      'bodycon',
-      'wrap dress',
-    ],
-    categoryIds: ['cat_women_dresses', 'cat_women_western', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['jumpsuit', 'playsuit', 'romper women'],
-    categoryIds: ['cat_women_jumpsuits', 'cat_women_western', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['women top', 'crop top', 'blouse', 'peplum', 'women tee', 'tank top'],
-    categoryIds: ['cat_women_tops', 'cat_women_western', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['women shirt', 'oversized shirt women', 'formal shirt women'],
-    categoryIds: ['cat_women_shirts', 'cat_women_western', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['women jeans', 'mom jeans', 'wide leg jeans', 'skinny jeans women', 'flared jeans'],
-    categoryIds: ['cat_women_jeans', 'cat_women_western', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['skirt', 'mini skirt', 'pleated skirt', 'pencil skirt'],
-    categoryIds: ['cat_women_skirts', 'cat_women_western', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['co-ord', 'coord set', 'matching set', 'two piece set'],
-    categoryIds: ['cat_women_coords', 'cat_women_western', 'group_women'],
-    gender: 'women',
-  },
-
-  // --- WOMEN ACCESSORIES & BAGS ---
-  {
-    keywords: ['handbag', 'tote bag', 'shoulder bag', 'satchel'],
-    categoryIds: ['cat_women_handbags', 'cat_women_bags', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['sling bag', 'crossbody'],
-    categoryIds: ['cat_women_sling_bags', 'cat_women_bags', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: ['clutch', 'potli', 'evening purse'],
-    categoryIds: ['cat_women_clutches', 'cat_women_bags', 'group_women'],
-    gender: 'women',
-  },
-  {
-    keywords: [
-      'jewellery',
-      'jewelry',
-      'earrings',
-      'jhumka',
-      'necklace',
-      'choker',
-      'bangles',
-      'bracelet',
-      'kundan',
-    ],
-    categoryIds: ['cat_women_jewellery', 'cat_women_accessories', 'group_women'],
-    gender: 'women',
-  },
-
-  // --- MEN CLOTHING ---
-  {
-    keywords: [
-      'men shirt',
-      'formal shirt',
-      'casual shirt',
-      'oxford shirt',
-      'cuban collar',
-      'linen shirt',
-      'half sleeve shirt',
-      'full sleeve shirt',
-      'striped shirt',
-    ],
-    categoryIds: ['cat_men_shirts', 'cat_men_topwear', 'group_men'],
-    gender: 'men',
-  },
-  {
-    keywords: [
-      'men t-shirt',
-      'men tshirt',
-      'men tee',
-      'graphic tee',
-      'oversized t-shirt',
-      'round neck tee',
-      'v neck',
-    ],
-    categoryIds: ['cat_men_tshirts', 'cat_men_topwear', 'group_men'],
-    gender: 'men',
-  },
-  {
-    keywords: ['polo', 'polo shirt', 'collared t-shirt'],
-    categoryIds: ['cat_men_polos', 'cat_men_topwear', 'group_men'],
-    gender: 'men',
-  },
-  {
-    keywords: ['men kurta', 'kurta pajama', 'sherwani', 'nehru jacket', 'bandhgala', 'men ethnic'],
-    categoryIds: ['cat_men_kurtas', 'cat_men_ethnic', 'group_men'],
-    gender: 'men',
-  },
-  {
-    keywords: ['men jeans', 'denim pants men', 'straight fit jeans', 'slim fit jeans men'],
-    categoryIds: ['cat_men_jeans', 'cat_men_bottomwear', 'group_men'],
-    gender: 'men',
-  },
-  {
-    keywords: ['trousers', 'formal pants', 'chinos', 'cargo pants', 'cargos'],
-    categoryIds: ['cat_men_trousers', 'cat_men_bottomwear', 'group_men'],
-    gender: 'men',
-  },
-  {
-    keywords: ['hoodie', 'sweatshirt men', 'pullover', 'sweater men'],
-    categoryIds: ['cat_men_hoodies', 'cat_men_sweatshirts', 'cat_men_topwear', 'group_men'],
-    gender: 'men',
-  },
-  {
-    keywords: ['men jacket', 'bomber jacket', 'denim jacket men', 'blazer men', 'suit men'],
-    categoryIds: ['cat_men_jackets_top', 'cat_men_topwear', 'group_men'],
-    gender: 'men',
-  },
-
-  // --- KIDS CLOTHING ---
-  {
-    keywords: ['baby boy', 'baby girl', 'newborn', 'infant', 'romper', 'baby set'],
-    categoryIds: ['cat_kids_baby_sets', 'cat_kids_baby', 'group_kids'],
-    gender: 'kids',
-  },
-  {
-    keywords: ['boys shirt', 'boys t-shirt', 'boys jeans', 'boys ethnic', 'boy clothes'],
-    categoryIds: ['cat_kids_boys_tshirts', 'cat_kids_boys', 'group_kids'],
-    gender: 'kids',
-  },
-  {
-    keywords: ['girls dress', 'frock', 'girls lehenga', 'girls top', 'girl clothes'],
-    categoryIds: ['cat_kids_girls_dresses', 'cat_kids_girls', 'group_kids'],
-    gender: 'kids',
-  },
-  {
-    keywords: ['kids', 'kid', 'child', 'children', 'toddler', 'teen'],
-    categoryIds: ['cat_kids_fashion', 'group_kids'],
-    gender: 'kids',
-  },
-
-  // --- HOME & LIVING ---
-  {
-    keywords: ['bedsheet', 'bed sheet', 'bed linen', 'duvet', 'bedcover', 'pillow cover'],
-    categoryIds: ['cat_home_bedsheets', 'cat_home_bed_linen', 'group_home'],
-  },
-  {
-    keywords: ['curtain', 'drapes', 'window curtain', 'sheer curtain'],
-    categoryIds: ['cat_home_curtains', 'group_home'],
-  },
-  {
-    keywords: ['cushion', 'cushion cover', 'throw pillow', 'bolster'],
-    categoryIds: ['cat_home_cushions', 'group_home'],
-  },
-  {
-    keywords: ['carpet', 'rug', 'doormat', 'runner rug'],
-    categoryIds: ['cat_home_rugs', 'group_home'],
-  },
-  {
-    keywords: ['decor', 'wall art', 'vase', 'candle', 'showpiece', 'clock'],
-    categoryIds: ['cat_home_decor', 'group_home'],
-  },
-];
+// Regex Helper for exact whole word or phrase matching
+function hasWord(text: string, pattern: string | RegExp): boolean {
+  if (typeof pattern === 'string') {
+    const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|[^a-zA-Z0-9])${escaped}([^a-zA-Z0-9]|$)`, 'i').test(text);
+  }
+  return pattern.test(text);
+}
 
 export function autoCategorizeProduct(
   product: ProductInputForCategorization,
 ): AutoCategorizeResult {
-  const text =
-    `${product.name} ${product.description || ''} ${product.fabric || ''} ${product.occasion || ''}`.toLowerCase();
-  const allFlattened = getFlattenedCategoryOptions();
+  const title = (product.name || '').toLowerCase();
+  const desc = (product.description || '').toLowerCase();
+  const fabric = (product.fabric || '').toLowerCase();
+  const occasion = (product.occasion || '').toLowerCase();
+  const text = `${title} ${desc} ${fabric} ${occasion}`.toLowerCase();
 
+  const allFlattened = getFlattenedCategoryOptions();
   const assignedSet = new Set<string>();
   const matchedRules: string[] = [];
 
-  // 1. Gender / Keyword Rule Processing
-  for (const rule of KEYWORD_CATEGORY_RULES) {
-    const hasKeyword = rule.keywords.some((kw) => text.includes(kw));
-    if (hasKeyword) {
-      // If rule specifies gender and product has explicit opposing gender, skip
-      if (rule.gender && product.gender) {
-        const prodGen = product.gender.toLowerCase();
-        if (rule.gender === 'men' && (prodGen === 'women' || prodGen === 'girls')) continue;
-        if (rule.gender === 'women' && (prodGen === 'men' || prodGen === 'boys')) continue;
-      }
-
-      rule.categoryIds.forEach((id) => assignedSet.add(id));
-      matchedRules.push(rule.keywords.find((kw) => text.includes(kw)) || '');
+  // Determine explicit or inferred gender
+  let gender = (product.gender || '').toLowerCase();
+  if (!gender) {
+    if (
+      hasWord(title, /women|woman|ladies|girl|female|mrs|miss|saree|lehenga|kurti|anarkali|choli/)
+    ) {
+      gender = 'women';
+    } else if (hasWord(title, /men|man|gents|boy|male|mr|sherwani|dhoti|kurta pajama/)) {
+      gender = 'men';
+    } else if (hasWord(title, /kids|baby|toddler|infant|children/)) {
+      gender = 'kids';
     }
   }
 
-  // 2. Direct name matching across all taxonomy categories
-  for (const opt of allFlattened) {
-    const optName = opt.name.toLowerCase();
-    if (optName.length > 3 && text.includes(optName)) {
-      assignedSet.add(opt.id);
-      if (opt.slug) assignedSet.add(opt.slug);
+  // --- 1. MEN & WOMEN TOPWEAR REFINED DISCRIMINATION ---
+
+  // Check specific garment types using word boundaries
+  const isTShirt =
+    hasWord(
+      text,
+      /\b(t-?shirt|tshirts?|tees?|graphic\s+tee|round\s+neck\s+tee|v-?neck\s+tee|crewneck\s+tee|oversized\s+t-?shirt)\b/i,
+    ) ||
+    hasWord(text, 't-shirt') ||
+    hasWord(text, 'tshirt') ||
+    hasWord(text, 'tee');
+
+  const isPolo =
+    hasWord(text, /\b(polo|polos|polo\s+t-?shirt|collared\s+t-?shirt)\b/i) ||
+    hasWord(text, 'polo shirt') ||
+    hasWord(text, 'polo tee');
+
+  const isSweatshirt =
+    hasWord(text, /\b(sweatshirts?|fleece\s+pullover|crewneck\s+sweatshirt)\b/i) ||
+    hasWord(text, 'sweatshirt');
+
+  const isHoodie =
+    hasWord(text, /\b(hoodies?|hooded\s+sweatshirt|hooded\s+jacket|hooded\s+pullover)\b/i) ||
+    hasWord(text, 'hoodie');
+
+  const isSweater =
+    !isHoodie &&
+    !isSweatshirt &&
+    (hasWord(
+      text,
+      /\b(sweaters?|cardigans?|knitwear|woolen\s+sweater|knit\s+sweater|wool\s+blend)\b/i,
+    ) ||
+      hasWord(text, 'sweater') ||
+      hasWord(text, 'cardigan'));
+
+  // Strict Button-Down / Formal / Casual Shirt (ONLY IF NOT T-Shirt / Sweatshirt / Sweater)
+  const isShirt =
+    !isTShirt &&
+    !isSweatshirt &&
+    !isSweater &&
+    (hasWord(
+      text,
+      /\b(shirts?|formal\s+shirt|casual\s+shirt|oxford\s+shirt|linen\s+shirt|denim\s+shirt|printed\s+shirt|checked\s+shirt|striped\s+shirt|half\s+sleeve\s+shirt|full\s+sleeve\s+shirt|button\s+down)\b/i,
+    ) ||
+      hasWord(text, 'cuban collar') ||
+      hasWord(text, 'mandarin collar'));
+
+  // --- 2. MEN GARMENT MAPPING ---
+  if (
+    gender === 'men' ||
+    (!gender && (isShirt || isTShirt || isPolo || isSweatshirt || isSweater || isHoodie))
+  ) {
+    if (isShirt) {
+      assignedSet.add('cat_men_shirts');
+      assignedSet.add('cat_men_topwear');
+      assignedSet.add('group_men');
+      matchedRules.push("Men's Shirts");
+    } else if (isPolo) {
+      assignedSet.add('cat_men_polos');
+      assignedSet.add('cat_men_tshirts');
+      assignedSet.add('cat_men_topwear');
+      assignedSet.add('group_men');
+      matchedRules.push("Men's Polos & T-Shirts");
+    } else if (isTShirt) {
+      assignedSet.add('cat_men_tshirts');
+      assignedSet.add('cat_men_topwear');
+      assignedSet.add('group_men');
+      matchedRules.push("Men's T-Shirts");
+    }
+
+    if (isSweatshirt) {
+      assignedSet.add('cat_men_sweatshirts');
+      assignedSet.add('cat_men_topwear');
+      assignedSet.add('group_men');
+      matchedRules.push("Men's Sweatshirts");
+    }
+
+    if (isHoodie) {
+      assignedSet.add('cat_men_hoodies');
+      assignedSet.add('cat_men_topwear');
+      assignedSet.add('group_men');
+      matchedRules.push("Men's Hoodies");
+    }
+
+    if (isSweater) {
+      assignedSet.add('cat_men_sweaters');
+      assignedSet.add('cat_men_topwear');
+      assignedSet.add('group_men');
+      matchedRules.push("Men's Sweaters");
+    }
+
+    // Men Ethnic Wear
+    if (
+      hasWord(text, /\b(kurta|sherwani|kurta\s+pajama|nehru\s+jacket|bandhgala|pathani|dhoti)\b/i)
+    ) {
+      assignedSet.add('cat_men_kurtas');
+      assignedSet.add('cat_men_ethnic');
+      assignedSet.add('group_men');
+      matchedRules.push("Men's Ethnic Wear");
+    }
+
+    // Men Bottomwear
+    if (hasWord(text, /\b(jeans|denim\s+pants|skinny\s+jeans|slim\s+fit\s+jeans)\b/i)) {
+      assignedSet.add('cat_men_jeans');
+      assignedSet.add('cat_men_bottomwear');
+      assignedSet.add('group_men');
+      matchedRules.push("Men's Jeans");
+    }
+    if (hasWord(text, /\b(trousers?|chinos?|formal\s+pants|cargo\s+pants|cargos?)\b/i)) {
+      assignedSet.add('cat_men_trousers');
+      assignedSet.add('cat_men_bottomwear');
+      assignedSet.add('group_men');
+      matchedRules.push("Men's Trousers");
+    }
+
+    // Men Suits & Blazers
+    if (hasWord(text, /\b(suits?|blazers?|tuxedo|waistcoat|formal\s+coat)\b/i)) {
+      assignedSet.add('cat_men_suits');
+      assignedSet.add('group_men');
+      matchedRules.push("Men's Suits & Blazers");
     }
   }
 
-  // 3. Price-Based & Deals Categorization (Under 499, Under 999, 50%+ Off)
+  // --- 3. WOMEN ETHNIC & WESTERN WEAR ---
+  if (gender === 'women' || (!gender && !isShirt && !isPolo)) {
+    // Sarees
+    if (
+      hasWord(
+        text,
+        /\b(saree|sari|saris|sarees|banarasi|kanjeevaram|kanjivaram|chanderi|paithani|bandhani|patola|chiffon\s+saree|georgette\s+saree|silk\s+saree|organza\s+saree)\b/i,
+      )
+    ) {
+      assignedSet.add('cat_women_sarees');
+      assignedSet.add('cat_women_ethnic');
+      assignedSet.add('group_women');
+      matchedRules.push('Women Sarees');
+    }
+
+    // Lehengas
+    if (hasWord(text, /\b(lehenga|choli|ghagra|chaniya\s+choli|bridal\s+lehenga)\b/i)) {
+      assignedSet.add('cat_women_lehengas');
+      assignedSet.add('cat_women_ethnic');
+      assignedSet.add('group_women');
+      matchedRules.push('Women Lehengas');
+    }
+
+    // Kurta Sets & Salwar Suits
+    if (
+      hasWord(
+        text,
+        /\b(kurta\s+set|kurti\s+set|suit\s+set|salwar\s+suit|anarkali\s+set|sharara|gharara|palazzo\s+suit|dress\s+material|unstitched\s+suit)\b/i,
+      )
+    ) {
+      assignedSet.add('cat_women_kurta_sets');
+      assignedSet.add('cat_women_salwar_suits');
+      assignedSet.add('cat_women_ethnic');
+      assignedSet.add('group_women');
+      matchedRules.push('Women Kurta Sets & Suits');
+    } else if (
+      hasWord(text, /\b(kurti|kurta|kurtis|anarkali|chikankari|angrakha|tunic\s+kurti)\b/i)
+    ) {
+      assignedSet.add('cat_women_kurtas');
+      assignedSet.add('cat_women_ethnic');
+      assignedSet.add('group_women');
+      matchedRules.push('Women Kurtis');
+    }
+
+    // Dresses & Gowns
+    if (
+      hasWord(
+        text,
+        /\b(gowns?|maxi\s+dress|midi\s+dress|mini\s+dress|bodycon|jumpsuits?|rompers?|frocks?|party\s+dress)\b/i,
+      )
+    ) {
+      assignedSet.add('cat_women_dresses');
+      assignedSet.add('cat_women_western');
+      assignedSet.add('group_women');
+      matchedRules.push('Women Dresses & Gowns');
+    }
+
+    // Women Tops & Blouses (NOT Saree)
+    if (
+      hasWord(
+        text,
+        /\b(crop\s+top|blouses?|peplum|tank\s+top|tunic\s+top|ruffle\s+top|corset)\b/i,
+      ) &&
+      !hasWord(text, 'saree blouse')
+    ) {
+      assignedSet.add('cat_women_tops');
+      assignedSet.add('cat_women_western');
+      assignedSet.add('group_women');
+      matchedRules.push('Women Tops');
+    }
+
+    // Women Sweaters / Cardigans
+    if (isSweater) {
+      assignedSet.add('cat_women_sweaters');
+      assignedSet.add('group_women');
+      matchedRules.push('Women Sweaters');
+    }
+
+    // Handbags & Clutches
+    if (
+      hasWord(
+        text,
+        /\b(handbag|tote\s+bag|sling\s+bag|clutch|potli|shoulder\s+bag|crossbody|satchel|purse)\b/i,
+      )
+    ) {
+      assignedSet.add('cat_women_handbags');
+      assignedSet.add('cat_women_bags');
+      assignedSet.add('group_women');
+      matchedRules.push('Handbags & Purses');
+    }
+
+    // Jewellery
+    if (
+      hasWord(
+        text,
+        /\b(jewellery|jewelry|necklace|earrings?|jhumka|jhumkas|kundan|bangles?|bracelet|choker|maang\s+tikka|anklet|payal)\b/i,
+      )
+    ) {
+      assignedSet.add('cat_women_jewellery');
+      assignedSet.add('cat_women_accessories');
+      assignedSet.add('group_women');
+      matchedRules.push('Fashion Jewellery');
+    }
+
+    // Dupattas
+    if (hasWord(text, /\b(dupatta|dupattas|stole|stoles|chunri|odhni)\b/i)) {
+      assignedSet.add('cat_women_dupattas');
+      assignedSet.add('cat_women_accessories');
+      assignedSet.add('group_women');
+      matchedRules.push('Dupattas & Stoles');
+    }
+  }
+
+  // --- 4. KIDS WEAR ---
+  if (
+    gender === 'kids' ||
+    hasWord(
+      text,
+      /\b(kids|baby|infant|toddler|boys?\s+clothing|girls?\s+clothing|boys?\s+wear|girls?\s+wear)\b/i,
+    )
+  ) {
+    if (hasWord(text, /\b(baby|infant|newborn|romper)\b/i)) {
+      assignedSet.add('cat_kids_baby_sets');
+      assignedSet.add('cat_kids_baby');
+      assignedSet.add('group_kids');
+      matchedRules.push('Baby Wear');
+    } else if (hasWord(text, /\b(boy|boys)\b/i)) {
+      assignedSet.add('cat_kids_boys_tshirts');
+      assignedSet.add('cat_kids_boys');
+      assignedSet.add('group_kids');
+      matchedRules.push('Boys Clothing');
+    } else if (hasWord(text, /\b(girl|girls|frock)\b/i)) {
+      assignedSet.add('cat_kids_girls_dresses');
+      assignedSet.add('cat_kids_girls');
+      assignedSet.add('group_kids');
+      matchedRules.push('Girls Clothing');
+    } else {
+      assignedSet.add('cat_kids_fashion');
+      assignedSet.add('group_kids');
+      matchedRules.push('Kids Fashion');
+    }
+  }
+
+  // --- 5. HOME & LIVING ---
+  if (
+    hasWord(
+      text,
+      /\b(bedsheet|bed\s+sheet|pillow\s+cover|duvet|bedcover|comforter|quilt|dohar|cushion\s+cover|curtain|curtains|drapes|runner\s+rug|doormat|wall\s+art|decor|showpiece)\b/i,
+    )
+  ) {
+    if (
+      hasWord(text, /\b(bedsheet|bed\s+sheet|pillow\s+cover|duvet|bedcover|comforter|quilt)\b/i)
+    ) {
+      assignedSet.add('cat_home_bedsheets');
+      assignedSet.add('cat_home_bed_linen');
+      assignedSet.add('group_home');
+      matchedRules.push('Bedsheets & Linen');
+    }
+    if (hasWord(text, /\b(curtain|curtains|drapes)\b/i)) {
+      assignedSet.add('cat_home_curtains');
+      assignedSet.add('group_home');
+      matchedRules.push('Curtains & Drapes');
+    }
+    if (hasWord(text, /\b(cushion|cushion\s+cover)\b/i)) {
+      assignedSet.add('cat_home_cushions');
+      assignedSet.add('group_home');
+      matchedRules.push('Cushions');
+    }
+    if (hasWord(text, /\b(decor|wall\s+art|showpiece|candle|vase)\b/i)) {
+      assignedSet.add('cat_home_decor');
+      assignedSet.add('group_home');
+      matchedRules.push('Home Decor');
+    }
+  }
+
+  // --- 6. PRICE DEALS & DISCOUNTS (Under 499, Under 999, 50%+ Off) ---
   const price = Number(product.price || 0);
   const compareAtPrice = Number(product.compareAtPrice || 0);
 
@@ -306,36 +360,48 @@ export function autoCategorizeProduct(
     assignedSet.add('spot_budget_finds');
     assignedSet.add('cat_women_sale_under_499');
     assignedSet.add('cat_men_sale_under_499');
-    matchedRules.push('Budget Deals (Under ₹499)');
+    matchedRules.push('Deals Under ₹499');
   } else if (price > 0 && price <= 999) {
     assignedSet.add('spot_budget_finds');
     assignedSet.add('cat_women_sale_under_999');
     assignedSet.add('cat_men_sale_under_999');
-    matchedRules.push('Deals (Under ₹999)');
+    matchedRules.push('Deals Under ₹999');
   }
 
-  // 4. Discount-Based (50%+ Off)
   if (compareAtPrice > price && price > 0) {
     const discountPct = ((compareAtPrice - price) / compareAtPrice) * 100;
     if (discountPct >= 50) {
       assignedSet.add('cat_women_sale_50_off');
       assignedSet.add('cat_men_sale_50_off');
-      matchedRules.push('Mega Discount (50%+ Off)');
+      matchedRules.push('50%+ Off Sale');
     }
   }
 
-  // 5. Spotlight & Curations
+  // Spotlight curation
   assignedSet.add('spot_trending_now');
-  assignedSet.add('spot_new_season');
 
-  // If no category matched, assign default fallback
-  if (assignedSet.size === 0) {
-    assignedSet.add('cat_women_sarees');
-    assignedSet.add('group_women');
+  // Fallback if nothing matched
+  if (assignedSet.size <= 1) {
+    if (gender === 'men') {
+      assignedSet.add('cat_men_shirts');
+      assignedSet.add('group_men');
+    } else {
+      assignedSet.add('cat_women_sarees');
+      assignedSet.add('group_women');
+    }
   }
 
   const categoryIds = Array.from(assignedSet);
-  const primaryCategoryId = categoryIds[0] || 'cat_women_sarees';
+
+  // Pick best primary category
+  let primaryCategoryId = categoryIds[0] || 'cat_women_sarees';
+  // Avoid setting top groups or spot as primary if specific category exists
+  const specificCat = categoryIds.find(
+    (c) => !c.startsWith('group_') && !c.startsWith('spot_') && !c.includes('sale_'),
+  );
+  if (specificCat) {
+    primaryCategoryId = specificCat;
+  }
 
   const matchedLabels = categoryIds
     .map((id) => {

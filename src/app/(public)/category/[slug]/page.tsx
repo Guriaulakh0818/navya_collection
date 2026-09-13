@@ -119,24 +119,66 @@ export default async function CategoryPage({ params }: Props) {
       orConditions.push({ status: 'active' });
     }
 
-    // Specific category keyword extraction
+    // Specific category keyword extraction with strict distinctions
     const categoryLower = category.name.toLowerCase();
+    const isTShirt =
+      normalized.includes('t-shirt') ||
+      normalized.includes('tshirt') ||
+      categoryLower.includes('t-shirt') ||
+      categoryLower.includes('tshirt') ||
+      normalized.includes('polo') ||
+      categoryLower.includes('polo');
+
+    const isSweater =
+      normalized.includes('sweater') ||
+      categoryLower.includes('sweater') ||
+      normalized.includes('cardigan') ||
+      categoryLower.includes('cardigan');
+
+    const isSweatshirt = normalized.includes('sweatshirt') || categoryLower.includes('sweatshirt');
+
+    const isShirt =
+      !isTShirt &&
+      !isSweater &&
+      !isSweatshirt &&
+      (normalized.includes('shirt') || categoryLower.includes('shirt'));
+
     if (categoryLower.includes('saree') || normalized.includes('saree')) {
       orConditions.push(
         { name: { contains: 'saree', mode: 'insensitive' as const } },
         { name: { contains: 'sari', mode: 'insensitive' as const } },
-        { name: { contains: 'silk', mode: 'insensitive' as const } },
         { name: { contains: 'banarasi', mode: 'insensitive' as const } },
+        { name: { contains: 'kanjeevaram', mode: 'insensitive' as const } },
       );
     }
-    if (categoryLower.includes('shirt') || normalized.includes('shirt')) {
+
+    if (isShirt) {
       orConditions.push(
         { name: { contains: 'shirt', mode: 'insensitive' as const } },
-        { name: { contains: 'stripe', mode: 'insensitive' as const } },
-        { name: { contains: 'collar', mode: 'insensitive' as const } },
-        { name: { contains: 'sleeve', mode: 'insensitive' as const } },
+        { name: { contains: 'oxford', mode: 'insensitive' as const } },
+        { name: { contains: 'button down', mode: 'insensitive' as const } },
+      );
+    } else if (isTShirt) {
+      orConditions.push(
+        { name: { contains: 't-shirt', mode: 'insensitive' as const } },
+        { name: { contains: 'tshirt', mode: 'insensitive' as const } },
+        { name: { contains: 'polo', mode: 'insensitive' as const } },
+        { name: { contains: 'tee', mode: 'insensitive' as const } },
+      );
+    } else if (isSweater) {
+      orConditions.push(
+        { name: { contains: 'sweater', mode: 'insensitive' as const } },
+        { name: { contains: 'cardigan', mode: 'insensitive' as const } },
+        { name: { contains: 'woolen', mode: 'insensitive' as const } },
+        { name: { contains: 'pullover', mode: 'insensitive' as const } },
+      );
+    } else if (isSweatshirt) {
+      orConditions.push(
+        { name: { contains: 'sweatshirt', mode: 'insensitive' as const } },
+        { name: { contains: 'fleece', mode: 'insensitive' as const } },
       );
     }
+
     if (
       categoryLower.includes('kurta') ||
       categoryLower.includes('kurti') ||
@@ -167,19 +209,6 @@ export default async function CategoryPage({ params }: Props) {
       );
     }
     if (
-      categoryLower.includes('t-shirt') ||
-      categoryLower.includes('polo') ||
-      normalized.includes('t-shirt') ||
-      normalized.includes('polo')
-    ) {
-      orConditions.push(
-        { name: { contains: 't-shirt', mode: 'insensitive' as const } },
-        { name: { contains: 'tshirt', mode: 'insensitive' as const } },
-        { name: { contains: 'polo', mode: 'insensitive' as const } },
-        { name: { contains: 'tee', mode: 'insensitive' as const } },
-      );
-    }
-    if (
       categoryLower.includes('dress') ||
       categoryLower.includes('frock') ||
       normalized.includes('dress')
@@ -188,22 +217,6 @@ export default async function CategoryPage({ params }: Props) {
         { name: { contains: 'dress', mode: 'insensitive' as const } },
         { name: { contains: 'frock', mode: 'insensitive' as const } },
         { name: { contains: 'gown', mode: 'insensitive' as const } },
-      );
-    }
-
-    const cleanKeywords = normalized
-      .replace(/^(men-|women-|kids-)/, '')
-      .split('-')
-      .filter((w) => w !== 'wear' && w !== 'collection' && w !== 'and' && w.length > 2);
-
-    if (cleanKeywords.length > 0) {
-      orConditions.push(
-        ...cleanKeywords.map((kw) => ({
-          OR: [
-            { name: { contains: kw, mode: 'insensitive' as const } },
-            { category: { name: { contains: kw, mode: 'insensitive' as const } } },
-          ],
-        })),
       );
     }
 
@@ -224,7 +237,32 @@ export default async function CategoryPage({ params }: Props) {
       orderBy: { createdAt: 'desc' },
     });
 
-    dbProducts = rawProducts.map((p) => {
+    // High-Precision in-memory filter to guarantee shirts vs t-shirts vs sweaters never mix
+    const filteredProducts = rawProducts.filter((p) => {
+      const pName = (p.name || '').toLowerCase();
+      const pDesc = (p.description || '').toLowerCase();
+      const pText = `${pName} ${pDesc}`;
+
+      if (isShirt) {
+        // Must NOT be a T-Shirt, Sweatshirt, Hoodie or Sweater
+        const hasTeeOrSweat =
+          /\b(t-?shirt|tshirts?|tees?|sweatshirts?|hoodies?|sweaters?|cardigans?)\b/i.test(pName);
+        if (hasTeeOrSweat) return false;
+      } else if (isTShirt && !normalized.includes('polo')) {
+        // If viewing pure T-Shirts, exclude formal shirts
+        if (/\b(formal shirt|button down|dress shirt)\b/i.test(pName)) return false;
+      } else if (isSweater) {
+        // If viewing Sweaters, exclude plain t-shirts and shirts
+        if (
+          /\b(t-?shirt|tshirt|tee|polo)\b/i.test(pName) &&
+          !/\b(sweater|woolen|cardigan|knit)\b/i.test(pText)
+        )
+          return false;
+      }
+      return true;
+    });
+
+    dbProducts = filteredProducts.map((p) => {
       const primary = p.images.find((img) => img.isPrimary) || p.images[0];
       return {
         ...p,
@@ -275,7 +313,9 @@ export default async function CategoryPage({ params }: Props) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-black uppercase tracking-wider text-navy">
-                Browse {category.name} Sub-Categories
+                {category.parentName
+                  ? `Explore More ${category.parentName} Categories`
+                  : `Browse ${category.name} Sub-Categories`}
               </span>
             </div>
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
