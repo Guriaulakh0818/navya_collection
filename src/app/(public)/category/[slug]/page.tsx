@@ -405,9 +405,55 @@ export default async function CategoryPage({ params }: Props) {
   const allProducts = dbProducts;
   const totalPages = Math.max(1, Math.ceil(allProducts.length / DEFAULT_PAGE_SIZE));
 
+  // Derive the matching parent category group for explorer back link
+  let groupParam = 'spotlight';
+  const normSlug = slug.toLowerCase();
+  const normParent = (category.parentSlug || '').toLowerCase();
+  const normName = (category.name || '').toLowerCase();
+
+  if (
+    normSlug.startsWith('women') ||
+    normParent.startsWith('women') ||
+    normSlug.includes('saree') ||
+    normSlug.includes('lehenga') ||
+    normSlug.includes('kurti') ||
+    normSlug.includes('dupatt') ||
+    normSlug.includes('gown') ||
+    normName.includes('women') ||
+    normName.includes('saree') ||
+    normName.includes('lehenga') ||
+    normName.includes('kurti')
+  ) {
+    groupParam = 'women';
+  } else if (
+    normSlug.startsWith('men') ||
+    normParent.startsWith('men') ||
+    normSlug.includes('shirt') ||
+    normSlug.includes('polo') ||
+    normSlug.includes('kurta') ||
+    normSlug.includes('blazer') ||
+    normName.includes('men') ||
+    normName.includes('shirt') ||
+    normName.includes('kurta')
+  ) {
+    groupParam = 'men';
+  } else if (
+    normSlug.startsWith('kids') ||
+    normParent.startsWith('kids') ||
+    normSlug.startsWith('baby') ||
+    normSlug.startsWith('boy') ||
+    normSlug.startsWith('girl') ||
+    normName.includes('kid') ||
+    normName.includes('baby') ||
+    normName.includes('boy') ||
+    normName.includes('girl')
+  ) {
+    groupParam = 'kids';
+  }
+
   const breadcrumbItems: { label: string; href?: string }[] = [
     { label: 'Home', href: '/' },
-    { label: 'Categories', href: '/category' },
+    { label: 'Categories', href: `/category?group=${groupParam}` },
   ];
 
   if (category.parentName && category.parentSlug) {
@@ -471,7 +517,7 @@ export default async function CategoryPage({ params }: Props) {
             <span className="font-extrabold text-navy">{category.name}</span>
           </p>
           <Link
-            href="/category"
+            href={`/category?group=${groupParam}`}
             className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-navy hover:bg-slate-100 transition-colors shadow-2xs"
           >
             All Categories →

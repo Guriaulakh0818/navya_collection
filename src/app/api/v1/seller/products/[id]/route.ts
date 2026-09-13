@@ -190,6 +190,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                   ? v.sku.trim()
                   : generateVariantSku(parentSku, v.color, v.size, index);
 
+              const variantImgUrl = v.imageUrl || v.image;
+              const attributesPayload = variantImgUrl
+                ? {
+                    imageUrl: variantImgUrl,
+                    ...(typeof v.attributes === 'object' && v.attributes !== null
+                      ? v.attributes
+                      : {}),
+                  }
+                : v.attributes || null;
+
               return {
                 productId: id,
                 name: `${data.name} - ${v.color || ''} ${v.size || ''}`.trim(),
@@ -201,6 +211,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 availableStock: Number(v.stock || 0),
                 size: v.size || null,
                 color: v.color || null,
+                attributes: attributesPayload,
                 status: 'active',
               };
             }),

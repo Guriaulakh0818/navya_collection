@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowRight, ChevronDown, ChevronUp, Grid, Search, Sparkles, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -17,12 +17,58 @@ interface CategoryExplorerProps {
 }
 
 export function CategoryExplorer({
-  initialActiveId = 'group_for_you',
+  initialActiveId = 'group_spotlight',
   dbCategoryCounts = {},
 }: CategoryExplorerProps) {
-  const [activeGroupId, setActiveGroupId] = useState<string>(initialActiveId);
+  const [activeGroupId, setActiveGroupId] = useState<string>(() => {
+    if (initialActiveId && MAIN_CATEGORY_GROUPS.some((g) => g.id === initialActiveId)) {
+      return initialActiveId;
+    }
+    return 'group_spotlight';
+  });
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  // Restore or sync activeGroupId with URL / session storage on mount & navigation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const groupParam = params.get('group') || params.get('tab');
+      if (groupParam) {
+        const formatted = groupParam.startsWith('group_') ? groupParam : `group_${groupParam}`;
+        if (MAIN_CATEGORY_GROUPS.some((g) => g.id === formatted)) {
+          setActiveGroupId(formatted);
+          sessionStorage.setItem('navya_active_category_group', formatted);
+          return;
+        }
+      }
+
+      // If initialActiveId is passed and valid
+      if (initialActiveId && MAIN_CATEGORY_GROUPS.some((g) => g.id === initialActiveId)) {
+        setActiveGroupId(initialActiveId);
+        sessionStorage.setItem('navya_active_category_group', initialActiveId);
+        return;
+      }
+
+      // Check sessionStorage fallback
+      const saved = sessionStorage.getItem('navya_active_category_group');
+      if (saved && MAIN_CATEGORY_GROUPS.some((g) => g.id === saved)) {
+        setActiveGroupId(saved);
+      }
+    }
+  }, [initialActiveId]);
+
+  // Handle tab switch and update URL without full page reload
+  const handleSelectGroup = (groupId: string) => {
+    setActiveGroupId(groupId);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('navya_active_category_group', groupId);
+      const groupSlug = groupId.replace('group_', '');
+      const url = new URL(window.location.href);
+      url.searchParams.set('group', groupSlug);
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
+  };
 
   const activeGroup = useMemo(() => {
     return MAIN_CATEGORY_GROUPS.find((g) => g.id === activeGroupId) || MAIN_CATEGORY_GROUPS[0];
@@ -159,7 +205,7 @@ export function CategoryExplorer({
                     <button
                       key={group.id}
                       type="button"
-                      onClick={() => setActiveGroupId(group.id)}
+                      onClick={() => handleSelectGroup(group.id)}
                       className={`relative flex flex-col items-center justify-center p-2.5 rounded-2xl text-center transition-all cursor-pointer ${
                         isActive
                           ? 'bg-white text-[#183A73] font-black shadow-sm ring-1 ring-slate-200/80'

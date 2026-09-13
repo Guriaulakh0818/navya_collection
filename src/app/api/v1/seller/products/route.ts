@@ -253,6 +253,16 @@ export async function POST(request: NextRequest) {
                 ? v.sku.trim()
                 : generateVariantSku(parentSku, v.color, v.size, index);
 
+            const variantImgUrl = v.imageUrl || v.image;
+            const attributesPayload = variantImgUrl
+              ? {
+                  imageUrl: variantImgUrl,
+                  ...(typeof v.attributes === 'object' && v.attributes !== null
+                    ? v.attributes
+                    : {}),
+                }
+              : v.attributes || null;
+
             return {
               productId: product.id,
               name: `${data.name} - ${v.color || ''} ${v.size || ''}`.trim(),
@@ -264,6 +274,7 @@ export async function POST(request: NextRequest) {
               availableStock: Number(v.stock || 0),
               size: v.size || null,
               color: v.color || null,
+              attributes: attributesPayload,
               status: 'active',
             };
           }),

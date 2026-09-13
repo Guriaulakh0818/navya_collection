@@ -146,6 +146,25 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     setNewName('');
   };
 
+  const activeVariantImageUrl =
+    activeVariant?.attributes?.imageUrl || activeVariant?.imageUrl || activeVariant?.image;
+
+  const displayImages = useMemo(() => {
+    const base = [...(product.images || [])];
+    if (
+      activeVariantImageUrl &&
+      !base.some((img: any) => (img.url || img.imageUrl) === activeVariantImageUrl)
+    ) {
+      base.unshift({
+        id: `variant-img-${activeVariant?.id || 'active'}`,
+        url: activeVariantImageUrl,
+        imageUrl: activeVariantImageUrl,
+        alt: `${product.name} - ${activeVariant?.color || 'Variant'}`,
+      });
+    }
+    return base;
+  }, [product.images, activeVariantImageUrl, product.name, activeVariant]);
+
   return (
     <div className="space-y-8 md:space-y-12">
       {/* Breadcrumb Navigation */}
@@ -165,7 +184,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         {/* Left Column: Image Gallery */}
         <div className="lg:col-span-7">
-          <ProductImageGallery images={product.images || []} />
+          <ProductImageGallery images={displayImages} activeImageUrl={activeVariantImageUrl} />
         </div>
 
         {/* Right Column: Product Info & Purchase Form */}

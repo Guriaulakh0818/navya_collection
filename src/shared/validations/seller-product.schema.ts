@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const variantSchema = z.object({
+  id: z.string().optional(),
   size: z.string().optional(),
   color: z.string().optional(),
   sku: z.string().optional(),
@@ -8,6 +9,9 @@ export const variantSchema = z.object({
   price: z.number().positive('Price must be greater than 0'),
   compareAtPrice: z.number().optional(),
   stock: z.number().int().nonnegative('Stock cannot be negative'),
+  imageUrl: z.string().optional().nullable(),
+  image: z.string().optional().nullable(),
+  attributes: z.any().optional(),
 });
 
 export const imageSchema = z.object({

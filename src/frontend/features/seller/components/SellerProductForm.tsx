@@ -268,8 +268,13 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     fabric: initialData?.fabric || '',
     work: initialData?.work || '',
     images: initialData?.images || [],
-    variants: initialData?.variants || [],
+    variants: (initialData?.variants || []).map((v: any) => ({
+      ...v,
+      imageUrl: v.attributes?.imageUrl || v.imageUrl || v.image || '',
+    })),
   });
+
+  const [variantUploadingIndex, setVariantUploadingIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -315,6 +320,93 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     }));
   };
 
+  // Upload photo specifically for a variant (e.g. Red variant photo)
+  const handleVariantImageUpload = async (index: number, file: File) => {
+    if (!file) return;
+    setVariantUploadingIndex(index);
+    try {
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      const res = await fetch('/api/v1/upload?folder=seller_products', {
+        method: 'POST',
+        body: uploadData,
+      });
+      const data = await res.json();
+      if (data.success && data.data?.secure_url) {
+        const uploadedUrl = data.data.secure_url;
+        const targetVariant = formData.variants[index];
+        const targetColor = targetVariant?.color;
+
+        setFormData((prev) => {
+          const updatedVariants = prev.variants.map((v: any, i: number) => {
+            if (i === index) {
+              return { ...v, imageUrl: uploadedUrl };
+            }
+            // If another variant shares the same color and has no image, propagate it
+            if (targetColor && v.color === targetColor && !v.imageUrl) {
+              return { ...v, imageUrl: uploadedUrl };
+            }
+            return v;
+          });
+
+          // Ensure image is also in main gallery
+          const hasInGallery = prev.images.some((img: any) => img.imageUrl === uploadedUrl);
+          const updatedImages = hasInGallery
+            ? prev.images
+            : [...prev.images, { imageUrl: uploadedUrl, isPrimary: prev.images.length === 0 }];
+
+          return {
+            ...prev,
+            variants: updatedVariants,
+            images: updatedImages,
+          };
+        });
+
+        showToast('Color variant photo uploaded successfully!', 'success');
+      } else {
+        showToast(data.message || 'Failed to upload variant image', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to upload variant photo', 'error');
+    } finally {
+      setVariantUploadingIndex(null);
+    }
+  };
+
+  const handleAssignGalleryImageToVariant = (index: number, imageUrl: string) => {
+    const targetVariant = formData.variants[index];
+    const targetColor = targetVariant?.color;
+
+    setFormData((prev) => ({
+      ...prev,
+      variants: prev.variants.map((v: any, i: number) => {
+        if (i === index) return { ...v, imageUrl };
+        if (targetColor && v.color === targetColor && !v.imageUrl) {
+          return { ...v, imageUrl };
+        }
+        return v;
+      }),
+    }));
+  };
+
+  const handleRemoveVariantImage = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      variants: prev.variants.map((v: any, i: number) =>
+        i === index ? { ...v, imageUrl: '' } : v,
+      ),
+    }));
+  };
+
+  const handleApplyImageToAllColorVariants = (color: string, imageUrl: string) => {
+    if (!color || !imageUrl) return;
+    setFormData((prev) => ({
+      ...prev,
+      variants: prev.variants.map((v: any) => (v.color === color ? { ...v, imageUrl } : v)),
+    }));
+    showToast(`Applied photo to all ${color} variants!`, 'success');
+  };
+
   // Re-build variant combinations whenever variantMode, selectedColors, or selectedSizes change
   const rebuildVariants = (
     mode: VariantMode,
@@ -339,6 +431,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           price: existing?.price ?? basePrice ?? 0,
           stock: existing?.stock ?? baseStock ?? 10,
           sku: existing?.sku || '',
+          imageUrl: existing?.imageUrl || '',
         });
       });
     } else if (mode === 'COLOR_ONLY') {
@@ -350,10 +443,12 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           price: existing?.price ?? basePrice ?? 0,
           stock: existing?.stock ?? baseStock ?? 10,
           sku: existing?.sku || '',
+          imageUrl: existing?.imageUrl || '',
         });
       });
     } else if (mode === 'SIZE_AND_COLOR') {
       colors.forEach((clr) => {
+        const colorExisting = formData.variants.find((v: any) => v.color === clr && v.imageUrl);
         sizes.forEach((sz) => {
           const existing = formData.variants.find((v: any) => v.color === clr && v.size === sz);
           newVariants.push({
@@ -362,6 +457,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             price: existing?.price ?? basePrice ?? 0,
             stock: existing?.stock ?? baseStock ?? 10,
             sku: existing?.sku || '',
+            imageUrl: existing?.imageUrl || colorExisting?.imageUrl || '',
           });
         });
       });
@@ -1164,6 +1260,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[10px]">
                     <tr>
+                      <th className="p-3">Variant Photo</th>
                       {(variantMode === 'COLOR_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
                         <th className="p-3">Color</th>
                       )}
@@ -1177,71 +1274,161 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white">
-                    {formData.variants.map((v: any, idx: number) => (
-                      <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                        {(variantMode === 'COLOR_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
-                          <td className="p-3 font-bold text-navy">{v.color || '-'}</td>
-                        )}
-                        {(variantMode === 'SIZE_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
-                          <td className="p-3 font-bold text-slate-800">{v.size || '-'}</td>
-                        )}
-                        <td className="p-3">
-                          <input
-                            type="number"
-                            min={1}
-                            value={v.price}
-                            onChange={(e) => {
-                              const val = parseFloat(e.target.value) || 0;
-                              setFormData((prev) => ({
-                                ...prev,
-                                variants: prev.variants.map((varItem: any, i: number) =>
-                                  i === idx ? { ...varItem, price: val } : varItem,
-                                ),
-                              }));
-                            }}
-                            className="w-24 bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-emerald-700 font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
-                          />
-                        </td>
-                        <td className="p-3">
-                          <input
-                            type="number"
-                            min={0}
-                            value={v.stock}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value, 10) || 0;
-                              setFormData((prev) => {
-                                const newVariants = prev.variants.map((varItem: any, i: number) =>
-                                  i === idx ? { ...varItem, stock: val } : varItem,
-                                );
-                                const total = newVariants.reduce(
-                                  (sum: number, item: any) => sum + Number(item.stock || 0),
-                                  0,
-                                );
-                                return {
+                    {formData.variants.map((v: any, idx: number) => {
+                      const isUploadingThis = variantUploadingIndex === idx;
+
+                      return (
+                        <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                          {/* Variant Photo Cell */}
+                          <td className="p-3">
+                            <div className="flex items-center gap-2">
+                              {v.imageUrl ? (
+                                <div className="relative group shrink-0 w-12 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs">
+                                  <img
+                                    src={v.imageUrl}
+                                    alt={v.color || 'Variant'}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveVariantImage(idx)}
+                                    title="Remove photo"
+                                    className="absolute top-0.5 right-0.5 bg-rose-600/90 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-xs"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="w-12 h-14 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                                  <ImageIcon className="w-5 h-5 opacity-40" />
+                                </div>
+                              )}
+
+                              <div className="flex flex-col gap-1">
+                                <label className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-100 text-navy border border-slate-200 rounded-lg text-[10px] font-bold cursor-pointer transition-colors shadow-2xs">
+                                  {isUploadingThis ? (
+                                    <span>Uploading...</span>
+                                  ) : (
+                                    <>
+                                      <Upload className="w-3 h-3 text-[#F15A25]" />
+                                      <span>{v.imageUrl ? 'Change' : 'Upload'}</span>
+                                    </>
+                                  )}
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    disabled={isUploadingThis}
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) handleVariantImageUpload(idx, file);
+                                    }}
+                                    className="hidden"
+                                  />
+                                </label>
+
+                                {formData.images.length > 0 && !v.imageUrl && (
+                                  <select
+                                    defaultValue=""
+                                    onChange={(e) => {
+                                      if (e.target.value) {
+                                        handleAssignGalleryImageToVariant(idx, e.target.value);
+                                        e.target.value = '';
+                                      }
+                                    }}
+                                    className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1 py-0.5 max-w-[90px] outline-none cursor-pointer"
+                                  >
+                                    <option value="" disabled>
+                                      From Gallery ▾
+                                    </option>
+                                    {formData.images.map((img: any, iIdx: number) => (
+                                      <option key={iIdx} value={img.imageUrl}>
+                                        Photo {iIdx + 1} {img.isPrimary ? '(Main)' : ''}
+                                      </option>
+                                    ))}
+                                  </select>
+                                )}
+
+                                {v.color && v.imageUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleApplyImageToAllColorVariants(v.color, v.imageUrl)
+                                    }
+                                    className="text-[9px] font-bold text-amber-700 hover:text-amber-900 underline text-left"
+                                    title={`Apply this photo to all ${v.color} size variants`}
+                                  >
+                                    Apply to all {v.color}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          {(variantMode === 'COLOR_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
+                            <td className="p-3 font-bold text-navy">{v.color || '-'}</td>
+                          )}
+                          {(variantMode === 'SIZE_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
+                            <td className="p-3 font-bold text-slate-800">{v.size || '-'}</td>
+                          )}
+                          <td className="p-3">
+                            <input
+                              type="number"
+                              min={1}
+                              value={v.price}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                setFormData((prev) => ({
                                   ...prev,
-                                  variants: newVariants,
-                                  stock: total,
-                                };
-                              });
-                            }}
-                            className="w-20 bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-slate-900 font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
-                          />
-                        </td>
-                        <td className="p-3 font-mono text-[11px] text-slate-500 uppercase">
-                          {v.sku ||
-                            `NVC-AUTO-${(v.color || '').substring(0, 3).toUpperCase()}-${v.size || 'V'}`}
-                        </td>
-                        <td className="p-3 text-right">
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveVariantRow(idx)}
-                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                                  variants: prev.variants.map((varItem: any, i: number) =>
+                                    i === idx ? { ...varItem, price: val } : varItem,
+                                  ),
+                                }));
+                              }}
+                              className="w-24 bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-emerald-700 font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-3">
+                            <input
+                              type="number"
+                              min={0}
+                              value={v.stock}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value, 10) || 0;
+                                setFormData((prev) => {
+                                  const newVariants = prev.variants.map(
+                                    (varItem: any, i: number) =>
+                                      i === idx ? { ...varItem, stock: val } : varItem,
+                                  );
+                                  const total = newVariants.reduce(
+                                    (sum: number, item: any) => sum + Number(item.stock || 0),
+                                    0,
+                                  );
+                                  return {
+                                    ...prev,
+                                    variants: newVariants,
+                                    stock: total,
+                                  };
+                                });
+                              }}
+                              className="w-20 bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5 text-slate-900 font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
+                            />
+                          </td>
+                          <td className="p-3 font-mono text-[11px] text-slate-500 uppercase">
+                            {v.sku ||
+                              `NVC-AUTO-${(v.color || '').substring(0, 3).toUpperCase()}-${v.size || 'V'}`}
+                          </td>
+                          <td className="p-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVariantRow(idx)}
+                              className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
