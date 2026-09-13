@@ -113,9 +113,9 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-xs text-white/70 leading-relaxed max-w-sm">
-              Navya Collection is India’s most trusted online fashion brand for everyday Indian
-              families. Delivering modern style, premium quality Gents & Kids garments, and honest
-              value.
+              Navya Collection is India&apos;s premier fashion &amp; lifestyle brand for everyday
+              Indian families. Delivering designer Sarees, Ethnic Couture, Men&apos;s Wear, Kids
+              Fashion, and curated Boutique Artisan collections.
             </p>
             <div className="pt-2 space-y-2 text-xs text-white/80">
               <div className="flex items-center gap-2">
@@ -140,34 +140,33 @@ export function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs text-white/70">
               <li>
-                <Link href="/shop?category=gents" className="hover:text-orange transition-colors">
-                  Gents Shirts & Kurtas
+                <Link href="/category/spotlight" className="hover:text-orange transition-colors">
+                  In The Spotlight
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/shop?category=gents&sub=Trousers"
-                  className="hover:text-orange transition-colors"
-                >
-                  Chinos & Trousers
+                <Link href="/category/women" className="hover:text-orange transition-colors">
+                  Women&apos;s Collection
                 </Link>
               </li>
               <li>
-                <Link href="/shop?category=kids" className="hover:text-orange transition-colors">
-                  Boys Wear & T-Shirts
+                <Link href="/category/men" className="hover:text-orange transition-colors">
+                  Men&apos;s Collection
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/shop?category=kids&sub=Girls"
-                  className="hover:text-orange transition-colors"
-                >
-                  Girls Dresses & Frocks
+                <Link href="/category/kids" className="hover:text-orange transition-colors">
+                  Kids&apos; Fashion & Baby Wear
                 </Link>
               </li>
               <li>
-                <Link href="/shop?filter=new" className="hover:text-orange transition-colors">
-                  New Season 2026
+                <Link href="/category/best-sellers" className="hover:text-orange transition-colors">
+                  Best Sellers & Deals
+                </Link>
+              </li>
+              <li>
+                <Link href="/shops" className="hover:text-orange transition-colors">
+                  Boutique Shops & Artisans
                 </Link>
               </li>
             </ul>
