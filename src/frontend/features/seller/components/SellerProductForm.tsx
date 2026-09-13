@@ -87,17 +87,60 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
   const allFlattenedCategories = getFlattenedCategoryOptions();
 
+  // Multi-Category Selection State
+  const initialCategoryIds: string[] = [];
+  if (initialData?.categoryId) initialCategoryIds.push(initialData.categoryId);
+  if (initialData?.category?.slug) initialCategoryIds.push(initialData.category.slug);
+  if (initialData?.metaKeywords) {
+    const parts = initialData.metaKeywords
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+    parts.forEach((p: string) => {
+      if (!initialCategoryIds.includes(p)) initialCategoryIds.push(p);
+    });
+  }
+
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
+    Array.from(new Set(initialCategoryIds.length > 0 ? initialCategoryIds : ['cat_women_sarees'])),
+  );
+
+  const toggleCategory = (catId: string) => {
+    setSelectedCategoryIds((prev) => {
+      const next = prev.includes(catId) ? prev.filter((id) => id !== catId) : [...prev, catId];
+      if (next.length > 0) {
+        setFormData((fd) => ({ ...fd, categoryId: next[0] }));
+      } else {
+        setFormData((fd) => ({ ...fd, categoryId: '' }));
+      }
+      return next;
+    });
+  };
+
+  const removeCategory = (catId: string) => {
+    setSelectedCategoryIds((prev) => {
+      const next = prev.filter((id) => id !== catId);
+      if (next.length > 0) {
+        setFormData((fd) => ({ ...fd, categoryId: next[0] }));
+      } else {
+        setFormData((fd) => ({ ...fd, categoryId: '' }));
+      }
+      return next;
+    });
+  };
+
+  const selectAllInGroup = (mainId: string) => {
+    const groupIds = allFlattenedCategories
+      .filter((c: any) => c.mainGroupId === mainId)
+      .map((c: any) => c.id);
+    setSelectedCategoryIds((prev) => Array.from(new Set([...prev, ...groupIds])));
+  };
+
   const handleMainCategoryChange = (mainId: string) => {
     setSelectedMainCat(mainId);
     const found = CATEGORY_TAXONOMY.find((c) => c.id === mainId);
     if (found && found.sections.length > 0) {
       setSelectedSectionId(found.sections[0].id);
-      const firstSub = found.sections[0].subCategories[0];
-      if (firstSub) {
-        const targetId =
-          firstSub.items && firstSub.items.length > 0 ? firstSub.items[0].id : firstSub.id;
-        setFormData((prev) => ({ ...prev, categoryId: targetId }));
-      }
     }
   };
 
@@ -364,8 +407,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.categoryId) {
-      showToast('Please fill in all mandatory fields (Name & Category).', 'error');
+    const effectiveCategoryId = selectedCategoryIds[0] || formData.categoryId;
+    if (!formData.name || !effectiveCategoryId) {
+      showToast('Please fill in all mandatory fields (Name & at least 1 Category).', 'error');
       return;
     }
 
@@ -383,6 +427,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
       const payload = {
         ...formData,
+        categoryId: effectiveCategoryId,
+        categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : [effectiveCategoryId],
         price: Number(formData.price),
         compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
         costPrice: formData.costPrice ? Number(formData.costPrice) : undefined,
@@ -510,71 +556,105 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             />
           </div>
 
-          {/* Enhanced Hierarchical Category Picker */}
-          <div className="md:col-span-2 bg-slate-50/80 border border-slate-200/90 rounded-2xl p-4 space-y-3">
+          {/* Multi-Category Garment Taxonomy Picker with Checkboxes */}
+          <div className="md:col-span-2 bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <label className="block text-xs font-black text-navy uppercase tracking-wider">
-                Category &amp; Garment Taxonomy *
-              </label>
-              {formData.categoryId && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-navy/10 text-navy text-[11px] font-extrabold">
-                  <Sparkles className="h-3 w-3 text-[#F15A25]" />
-                  {allFlattenedCategories.find(
-                    (c: any) => c.id === formData.categoryId || c.slug === formData.categoryId,
-                  )?.breadcrumb || 'Custom Category'}
-                </span>
-              )}
-            </div>
-
-            {/* Quick Search across all 100+ categories */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="🔍 Quick search category: e.g. Sarees, Kurtas, T-Shirts, Shirts, Jeans, Handbags..."
-                value={categorySearch}
-                onChange={(e) => setCategorySearch(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-semibold focus:border-navy focus:outline-none shadow-2xs"
-              />
-              {categorySearch && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 z-30 max-h-52 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl divide-y divide-slate-100">
-                  {allFlattenedCategories
-                    .filter((c: any) =>
-                      c.breadcrumb.toLowerCase().includes(categorySearch.toLowerCase().trim()),
-                    )
-                    .map((opt: any) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => {
-                          setFormData((prev) => ({ ...prev, categoryId: opt.id }));
-                          setSelectedMainCat(opt.mainGroupId);
-                          setCategorySearch('');
-                        }}
-                        className="w-full text-left px-3.5 py-2.5 text-xs hover:bg-slate-50 transition-colors flex items-center justify-between group cursor-pointer"
-                      >
-                        <span className="font-bold text-slate-800 group-hover:text-navy">
-                          {opt.breadcrumb}
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-medium group-hover:text-[#F15A25]">
-                          Select →
-                        </span>
-                      </button>
-                    ))}
-                </div>
-              )}
-            </div>
-
-            {/* Standard Cascading Selection */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  1. Main Group
+                <label className="block text-xs font-black text-navy uppercase tracking-wider">
+                  Assigned Categories &amp; Taxonomies (Multi-Select) *
                 </label>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Select all relevant categories where this product should be displayed across the
+                  website.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-navy text-white text-[11px] font-extrabold shadow-2xs">
+                  <Sparkles className="h-3 w-3 text-amber-400" />
+                  {selectedCategoryIds.length} Selected
+                </span>
+                {selectedCategoryIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCategoryIds([])}
+                    className="text-[11px] font-bold text-rose-600 hover:text-rose-700 underline cursor-pointer"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Selected Categories Active Chips */}
+            {selectedCategoryIds.length > 0 && (
+              <div className="p-3 bg-white border border-slate-200/80 rounded-xl space-y-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Active Storefront Placements:
+                </span>
+                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                  {selectedCategoryIds.map((catId, idx) => {
+                    const foundOpt = allFlattenedCategories.find(
+                      (c: any) => c.id === catId || c.slug === catId,
+                    );
+                    const label = foundOpt?.breadcrumb || catId;
+                    return (
+                      <span
+                        key={catId}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                          idx === 0
+                            ? 'bg-navy text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
+                        }`}
+                      >
+                        {idx === 0 && (
+                          <span className="text-[9px] bg-amber-400 text-navy font-black px-1 rounded uppercase">
+                            Primary
+                          </span>
+                        )}
+                        <span>{label}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeCategory(catId)}
+                          className="hover:opacity-80 text-[11px] ml-0.5 cursor-pointer"
+                          title="Remove Category"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Search and Group Filter Controls */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+              <div className="sm:col-span-8 relative">
+                <input
+                  type="text"
+                  placeholder="🔍 Search all categories (e.g. Sarees, Kurtas, T-Shirts, Shirts, Jeans...)"
+                  value={categorySearch}
+                  onChange={(e) => setCategorySearch(e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-semibold focus:border-navy focus:outline-none shadow-2xs"
+                />
+                {categorySearch && (
+                  <button
+                    type="button"
+                    onClick={() => setCategorySearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              <div className="sm:col-span-4">
                 <select
                   value={selectedMainCat}
                   onChange={(e) => handleMainCategoryChange(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 font-bold focus:border-navy focus:outline-none cursor-pointer"
                 >
+                  <option value="ALL">All Categories</option>
                   {CATEGORY_TAXONOMY.map((main: any) => (
                     <option key={main.id} value={main.id}>
                       {main.name} {main.badge ? `(${main.badge})` : ''}
@@ -582,27 +662,53 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                   ))}
                 </select>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  2. Garment / Item Type
-                </label>
-                <select
-                  required
-                  value={formData.categoryId}
-                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 font-bold focus:border-navy focus:outline-none cursor-pointer"
-                >
-                  <option value="">-- Choose Exact Category / Item --</option>
-                  {allFlattenedCategories
-                    .filter((c: any) => c.mainGroupId === selectedMainCat)
-                    .map((opt: any) => (
-                      <option key={opt.id} value={opt.id}>
-                        {opt.sectionTitle} → {opt.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
+            {/* Checkbox Category Grid */}
+            <div className="bg-white border border-slate-200 rounded-xl max-h-64 overflow-y-auto divide-y divide-slate-100 p-1 shadow-inner">
+              {allFlattenedCategories
+                .filter((opt: any) => {
+                  const matchSearch = categorySearch
+                    ? opt.breadcrumb.toLowerCase().includes(categorySearch.toLowerCase().trim())
+                    : true;
+                  const matchGroup =
+                    selectedMainCat === 'ALL' || !selectedMainCat
+                      ? true
+                      : opt.mainGroupId === selectedMainCat;
+                  return matchSearch && matchGroup;
+                })
+                .map((opt: any) => {
+                  const isChecked =
+                    selectedCategoryIds.includes(opt.id) || selectedCategoryIds.includes(opt.slug);
+                  return (
+                    <label
+                      key={opt.id}
+                      className={`flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors select-none ${
+                        isChecked ? 'bg-amber-50/60 font-bold text-navy' : 'text-slate-700'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleCategory(opt.id)}
+                        className="w-4 h-4 rounded border-slate-300 text-navy focus:ring-navy accent-navy cursor-pointer"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-slate-900">{opt.name}</span>
+                          <span className="text-[10px] text-slate-400 font-normal">
+                            ({opt.breadcrumb})
+                          </span>
+                        </div>
+                      </div>
+                      {isChecked && (
+                        <span className="text-[10px] font-black text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full shrink-0">
+                          Selected ✓
+                        </span>
+                      )}
+                    </label>
+                  );
+                })}
             </div>
           </div>
 

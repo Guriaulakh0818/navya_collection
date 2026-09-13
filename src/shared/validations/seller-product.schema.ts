@@ -26,6 +26,7 @@ export const sellerProductSchema = z.object({
   costPrice: z.number().optional(),
   stock: z.number().int().nonnegative('Stock cannot be negative').default(0),
   categoryId: z.string().min(1, 'Category selection is required'),
+  categoryIds: z.array(z.string()).optional(),
   gender: z.string().optional(),
   fabric: z.string().optional(),
   color: z.string().optional(),

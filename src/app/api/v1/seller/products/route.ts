@@ -176,7 +176,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Resolve category ID to a guaranteed valid DB category ID
-    const validCategoryId = await resolveValidCategoryId(data.categoryId);
+    const primaryTargetId =
+      Array.isArray(data.categoryIds) && data.categoryIds.length > 0
+        ? data.categoryIds[0]
+        : data.categoryId;
+    const validCategoryId = await resolveValidCategoryId(primaryTargetId);
+
+    // Compute metaKeywords incorporating all assigned category tags
+    let metaKeywordsUpdate = data.metaKeywords || '';
+    if (Array.isArray(data.categoryIds) && data.categoryIds.length > 0) {
+      const catTags = data.categoryIds.map((c) => c.replace(/[^a-zA-Z0-9_-]/g, '')).filter(Boolean);
+      const combined = [
+        ...catTags,
+        ...(data.metaKeywords ? data.metaKeywords.split(',').map((s) => s.trim()) : []),
+      ];
+      metaKeywordsUpdate = Array.from(new Set(combined)).join(', ');
+    }
 
     // Atomic transaction for Product, ProductImages, ProductVariants, and AuditLog
     const result = await prisma.$transaction(async (tx) => {
@@ -211,7 +226,7 @@ export async function POST(request: NextRequest) {
           occasion: data.occasion || null,
           metaTitle: data.metaTitle || null,
           metaDescription: data.metaDescription || null,
-          metaKeywords: data.metaKeywords || null,
+          metaKeywords: metaKeywordsUpdate || null,
           focusKeyword: data.focusKeyword || null,
         },
       });
