@@ -60,6 +60,9 @@ export default async function CategoryPage({ params }: Props) {
       { category: { slug: category.slug } },
       { category: { slug: normalized } },
       { category: { parentId: category.id } },
+      { metaKeywords: { contains: category.id, mode: 'insensitive' as const } },
+      { metaKeywords: { contains: category.slug, mode: 'insensitive' as const } },
+      { metaKeywords: { contains: normalized, mode: 'insensitive' as const } },
     ];
 
     if (isMen && normalized === 'men') {

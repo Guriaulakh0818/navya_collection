@@ -53,7 +53,7 @@ export default function AdminProductsPage() {
 
   // Move Category Modal State
   const [editingProductCategory, setEditingProductCategory] = useState<any | null>(null);
-  const [targetCategoryId, setTargetCategoryId] = useState<string>('');
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [categoryModalSearch, setCategoryModalSearch] = useState<string>('');
   const [isMovingCategory, setIsMovingCategory] = useState(false);
 
@@ -150,10 +150,25 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleToggleCategory = (catId: string) => {
+    setSelectedCategoryIds((prev) =>
+      prev.includes(catId) ? prev.filter((id) => id !== catId) : [...prev, catId],
+    );
+  };
+
+  const handleSelectAllFiltered = (filteredList: any[]) => {
+    const idsToAdd = filteredList.map((c) => c.id);
+    setSelectedCategoryIds((prev) => Array.from(new Set([...prev, ...idsToAdd])));
+  };
+
+  const handleClearSelectedCategories = () => {
+    setSelectedCategoryIds([]);
+  };
+
   const handleMoveCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingProductCategory || !targetCategoryId) {
-      toast('Please select a target category.', 'error');
+    if (!editingProductCategory || selectedCategoryIds.length === 0) {
+      toast('Please select at least one category checkbox.', 'error');
       return;
     }
 
@@ -162,20 +177,23 @@ export default function AdminProductsPage() {
       const res = await fetch(`/api/v1/admin/products/${editingProductCategory.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ categoryId: targetCategoryId }),
+        body: JSON.stringify({
+          categoryId: selectedCategoryIds[0],
+          categoryIds: selectedCategoryIds,
+        }),
       });
       const data = await res.json();
       if (data.success) {
-        toast('Category updated successfully!', 'success');
+        toast('Product categories updated successfully!', 'success');
         setEditingProductCategory(null);
-        setTargetCategoryId('');
+        setSelectedCategoryIds([]);
         setCategoryModalSearch('');
         fetchProducts();
       } else {
-        toast(data.message || 'Failed to update category.', 'error');
+        toast(data.message || 'Failed to update categories.', 'error');
       }
     } catch (err: any) {
-      toast(err.message || 'Error updating product category.', 'error');
+      toast(err.message || 'Error updating product categories.', 'error');
     } finally {
       setIsMovingCategory(false);
     }
@@ -486,12 +504,38 @@ export default function AdminProductsPage() {
                               className="rounded-full text-[11px] h-7 cursor-pointer text-navy border-navy/30 hover:bg-navy/5 font-bold"
                               onClick={() => {
                                 setEditingProductCategory(product);
-                                setTargetCategoryId(product.category?.id || 'cat_women_sarees');
+                                const initialIds: string[] = [];
+                                if (product.categoryId) initialIds.push(product.categoryId);
+                                if (
+                                  product.category?.id &&
+                                  !initialIds.includes(product.category.id)
+                                ) {
+                                  initialIds.push(product.category.id);
+                                }
+                                if (
+                                  product.category?.slug &&
+                                  !initialIds.includes(product.category.slug)
+                                ) {
+                                  initialIds.push(product.category.slug);
+                                }
+                                if (product.metaKeywords) {
+                                  const splitTags = product.metaKeywords
+                                    .split(',')
+                                    .map((t: string) => t.trim())
+                                    .filter(Boolean);
+                                  for (const tag of splitTags) {
+                                    if (!initialIds.includes(tag)) initialIds.push(tag);
+                                  }
+                                }
+                                setSelectedCategoryIds(
+                                  initialIds.length > 0 ? initialIds : ['cat_women_sarees'],
+                                );
+                                setCategoryModalSearch('');
                               }}
-                              title="Move / Re-Categorize Product"
+                              title="Move / Assign Product Categories"
                             >
-                              <FolderTree className="h-3.5 w-3.5 mr-1 text-[#F15A25]" /> Move
-                              Category
+                              <FolderTree className="h-3.5 w-3.5 mr-1 text-[#F15A25]" /> Move /
+                              Categories
                             </Button>
                           )}
 
@@ -556,49 +600,106 @@ export default function AdminProductsPage() {
         )}
       </Card>
 
-      {/* Move / Re-Categorize Product Drawer */}
+      {/* Move / Multi-Category Assignment Product Drawer */}
       {!isSupervisor && editingProductCategory && (
         <Drawer
           open={Boolean(editingProductCategory)}
           onClose={() => {
             setEditingProductCategory(null);
+            setSelectedCategoryIds([]);
             setCategoryModalSearch('');
           }}
-          title={`Move Product: ${editingProductCategory.name}`}
+          title={`Assign Categories: ${editingProductCategory.name}`}
           side="right"
         >
           <form onSubmit={handleMoveCategorySubmit} className="space-y-4 p-2 text-xs">
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-1">
-              <p className="font-bold text-slate-700">Current Category:</p>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-navy text-white text-xs font-black">
-                <FolderTree className="h-3.5 w-3.5 text-[#F15A25]" />
-                {editingProductCategory.category?.name || 'Unassigned'}
-              </span>
+            {/* Current & Selected Categories Summary */}
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="font-extrabold text-navy uppercase tracking-wider text-[11px]">
+                  Selected Categories ({selectedCategoryIds.length})
+                </p>
+                {selectedCategoryIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleClearSelectedCategories}
+                    className="text-[10px] font-bold text-rose-600 hover:text-rose-700 underline cursor-pointer"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+
+              {selectedCategoryIds.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                  {selectedCategoryIds.map((id) => {
+                    const found = flattenedCategories.find(
+                      (c: any) => c.id === id || c.slug === id,
+                    );
+                    const label = found ? found.name : id;
+                    return (
+                      <span
+                        key={id}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-navy text-white text-[11px] font-bold shadow-2xs"
+                      >
+                        <FolderTree className="h-3 w-3 text-[#F15A25]" />
+                        <span className="truncate max-w-[150px]">{label}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleCategory(id)}
+                          className="hover:text-amber-400 font-black text-xs leading-none cursor-pointer"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-[11px] text-slate-400 italic">
+                  No categories selected yet. Check one or more categories below.
+                </p>
+              )}
             </div>
 
             {/* Quick search input */}
             <div>
-              <label className="font-bold text-slate-700 block mb-1">Search Target Category</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="font-bold text-slate-700 block text-xs">
+                  Search &amp; Check Categories *
+                </label>
+                {categoryModalSearch && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleSelectAllFiltered(
+                        flattenedCategories.filter((c: any) =>
+                          c.breadcrumb
+                            .toLowerCase()
+                            .includes(categoryModalSearch.toLowerCase().trim()),
+                        ),
+                      )
+                    }
+                    className="text-[10px] font-bold text-navy hover:underline cursor-pointer"
+                  >
+                    Select All Matching
+                  </button>
+                )}
+              </div>
               <Input
-                placeholder="Type to filter e.g. Sarees, Shirts, Kurtas, T-Shirts, Lehengas..."
+                placeholder="Type to filter e.g. Sarees, Shirts, Kurtas, T-Shirts, Lehengas, Spotlight..."
                 value={categoryModalSearch}
                 onChange={(e) => setCategoryModalSearch(e.target.value)}
                 className="rounded-xl text-xs"
               />
             </div>
 
-            {/* Target Category Select */}
-            <div>
-              <label className="font-bold text-slate-700 block mb-1">
-                Select New Category / Sub-Category *
-              </label>
-              <select
-                required
-                value={targetCategoryId}
-                onChange={(e) => setTargetCategoryId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 p-2.5 outline-none font-bold text-slate-800 bg-white"
-                size={8}
-              >
+            {/* Multi-Select Checkboxes List */}
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Available Departments &amp; Taxonomies
+              </span>
+              <div className="max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100 p-1.5 shadow-inner">
                 {flattenedCategories
                   .filter((c: any) =>
                     categoryModalSearch
@@ -607,24 +708,52 @@ export default function AdminProductsPage() {
                           .includes(categoryModalSearch.toLowerCase().trim())
                       : true,
                   )
-                  .map((opt: any) => (
-                    <option
-                      key={opt.id}
-                      value={opt.id}
-                      className="py-1.5 px-2 cursor-pointer font-medium"
-                    >
-                      {opt.breadcrumb}
-                    </option>
-                  ))}
-              </select>
+                  .map((opt: any) => {
+                    const isChecked =
+                      selectedCategoryIds.includes(opt.id) ||
+                      selectedCategoryIds.includes(opt.slug);
+
+                    return (
+                      <label
+                        key={opt.id}
+                        className={`flex items-start gap-3 p-2.5 rounded-xl cursor-pointer transition-colors ${
+                          isChecked
+                            ? 'bg-navy/5 border border-navy/20 font-bold'
+                            : 'hover:bg-slate-50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleToggleCategory(opt.id)}
+                          className="mt-0.5 h-4 w-4 rounded border-slate-300 text-navy accent-navy cursor-pointer shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className={`text-xs leading-snug ${
+                              isChecked ? 'text-navy font-bold' : 'text-slate-700 font-medium'
+                            }`}
+                          >
+                            {opt.breadcrumb}
+                          </p>
+                        </div>
+                        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 shrink-0">
+                          {opt.mainGroupName || 'Department'}
+                        </span>
+                      </label>
+                    );
+                  })}
+              </div>
             </div>
 
             <Button
               type="submit"
-              disabled={isMovingCategory}
+              disabled={isMovingCategory || selectedCategoryIds.length === 0}
               className="w-full rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold mt-4 shadow-md cursor-pointer"
             >
-              {isMovingCategory ? 'Moving Category...' : 'Confirm & Move Product'}
+              {isMovingCategory
+                ? 'Saving Categories...'
+                : `Confirm & Assign (${selectedCategoryIds.length} Selected)`}
             </Button>
           </form>
         </Drawer>
