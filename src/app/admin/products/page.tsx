@@ -57,11 +57,17 @@ export default function AdminProductsPage() {
   const [categoryModalSearch, setCategoryModalSearch] = useState<string>('');
   const [isMovingCategory, setIsMovingCategory] = useState(false);
 
+  // Product Details Drawer State
+  const [selectedProductForDetails, setSelectedProductForDetails] = useState<any | null>(null);
+
   // Form State
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
-  const [categoryName, setCategoryName] = useState('cat_women_sarees');
+  const [newProductCategoryIds, setNewProductCategoryIds] = useState<string[]>([
+    'cat_women_sarees',
+  ]);
+  const [newProductCatSearch, setNewProductCatSearch] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -211,6 +217,11 @@ export default function AdminProductsPage() {
       return;
     }
 
+    if (newProductCategoryIds.length === 0) {
+      toast('Please select at least one category.', 'error');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/v1/admin/products', {
@@ -220,7 +231,8 @@ export default function AdminProductsPage() {
           name: name.trim(),
           price: Number(price),
           stock: Number(stock) || 10,
-          categoryName,
+          categoryName: newProductCategoryIds[0],
+          categoryIds: newProductCategoryIds,
           imageUrl: imageUrl.trim(),
         }),
       });
@@ -231,6 +243,7 @@ export default function AdminProductsPage() {
         setName('');
         setPrice('');
         setStock('');
+        setNewProductCategoryIds(['cat_women_sarees']);
         setImageUrl('');
         setIsAdding(false);
         fetchProducts();
@@ -480,21 +493,11 @@ export default function AdminProductsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="rounded-full text-[11px] h-7 cursor-pointer"
-                            onClick={() =>
-                              alert(
-                                `Product SKUs & Variants:\nParent SKU: ${product.sku}\nVariants:\n` +
-                                  (product.variants
-                                    ?.map(
-                                      (v: any) =>
-                                        `- ${v.name || 'Variant'}: ${v.sku} | Price: ₹${v.price} | Stock: ${v.stock}`,
-                                    )
-                                    .join('\n') || 'No variants'),
-                              )
-                            }
-                            title="View Variant Details"
+                            className="rounded-full text-[11px] h-7 cursor-pointer hover:bg-slate-100"
+                            onClick={() => setSelectedProductForDetails(product)}
+                            title="View Product & Variant Details"
                           >
-                            <Eye className="h-3.5 w-3.5 text-slate-600" /> Details
+                            <Eye className="h-3.5 w-3.5 text-slate-600 mr-1" /> Details
                           </Button>
 
                           {!isSupervisor && (
@@ -796,22 +799,97 @@ export default function AdminProductsPage() {
                 placeholder="20"
               />
             </div>
-            <div>
-              <label className="font-bold text-slate-700 block mb-1">
-                Category &amp; Garment Type *
-              </label>
-              <select
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 p-2.5 outline-none font-semibold text-slate-700 bg-white"
-              >
-                {flattenedCategories.map((opt: any) => (
-                  <option key={opt.id} value={opt.id}>
-                    {opt.breadcrumb}
-                  </option>
-                ))}
-              </select>
+
+            {/* Multi-Category Checkbox Selector for New Product */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="font-bold text-slate-700 block">
+                  Categories &amp; Garment Departments * ({newProductCategoryIds.length})
+                </label>
+                {newProductCategoryIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setNewProductCategoryIds([])}
+                    className="text-[10px] font-bold text-rose-600 hover:text-rose-700 underline cursor-pointer"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+
+              {/* Selected Categories Chips */}
+              {newProductCategoryIds.length > 0 && (
+                <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  {newProductCategoryIds.map((id) => {
+                    const found = flattenedCategories.find(
+                      (c: any) => c.id === id || c.slug === id,
+                    );
+                    const label = found ? found.name : id;
+                    return (
+                      <span
+                        key={id}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-navy text-white text-[10px] font-bold"
+                      >
+                        <span className="truncate max-w-[120px]">{label}</span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setNewProductCategoryIds((prev) => prev.filter((catId) => catId !== id))
+                          }
+                          className="hover:text-amber-400 font-bold ml-0.5 cursor-pointer"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+
+              <Input
+                placeholder="Search categories e.g. Sarees, Kurtas, Shirts, T-Shirts..."
+                value={newProductCatSearch}
+                onChange={(e) => setNewProductCatSearch(e.target.value)}
+                className="rounded-xl text-xs"
+              />
+
+              <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-200 bg-white divide-y divide-slate-100 p-1">
+                {flattenedCategories
+                  .filter((c: any) =>
+                    newProductCatSearch
+                      ? c.breadcrumb
+                          .toLowerCase()
+                          .includes(newProductCatSearch.toLowerCase().trim())
+                      : true,
+                  )
+                  .map((opt: any) => {
+                    const isChecked = newProductCategoryIds.includes(opt.id);
+                    return (
+                      <label
+                        key={opt.id}
+                        className={`flex items-start gap-2.5 p-2 rounded-lg cursor-pointer transition-colors ${
+                          isChecked ? 'bg-navy/5 font-bold' : 'hover:bg-slate-50'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() =>
+                            setNewProductCategoryIds((prev) =>
+                              prev.includes(opt.id)
+                                ? prev.filter((catId) => catId !== opt.id)
+                                : [...prev, opt.id],
+                            )
+                          }
+                          className="mt-0.5 h-3.5 w-3.5 rounded text-navy accent-navy cursor-pointer shrink-0"
+                        />
+                        <span className="text-xs text-slate-700 flex-1">{opt.breadcrumb}</span>
+                      </label>
+                    );
+                  })}
+              </div>
             </div>
+
             <div>
               <label className="font-bold text-slate-700 block mb-1">Product Image URL</label>
               <Input
@@ -822,12 +900,186 @@ export default function AdminProductsPage() {
             </div>
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || newProductCategoryIds.length === 0}
               className="w-full rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold mt-4 shadow-md cursor-pointer"
             >
               {isSubmitting ? 'Publishing...' : 'Save & Publish Product Live'}
             </Button>
           </form>
+        </Drawer>
+      )}
+
+      {/* Branded Product & Variants Details Drawer */}
+      {selectedProductForDetails && (
+        <Drawer
+          open={Boolean(selectedProductForDetails)}
+          onClose={() => setSelectedProductForDetails(null)}
+          title="Product & Variant Details"
+          side="right"
+        >
+          <div className="space-y-4 p-2 text-xs">
+            {/* Header Card */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="h-16 w-16 rounded-xl overflow-hidden bg-slate-200 shrink-0 border border-slate-200 relative flex items-center justify-center">
+                  {selectedProductForDetails.images &&
+                  selectedProductForDetails.images[0]?.imageUrl ? (
+                    <Image
+                      src={selectedProductForDetails.images[0].imageUrl}
+                      alt={selectedProductForDetails.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <Tag className="h-6 w-6 text-slate-400" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 space-y-1">
+                  <h3 className="font-extrabold text-navy text-sm sm:text-base line-clamp-2 leading-tight">
+                    {selectedProductForDetails.name}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-[11px] font-bold text-slate-500">
+                      SKU: {selectedProductForDetails.sku}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 text-[10px] font-extrabold rounded-full border uppercase ${
+                        selectedProductForDetails.status === 'active'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}
+                    >
+                      {selectedProductForDetails.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Price & Stock Stats */}
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80">
+                <div className="bg-white p-2.5 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">
+                    Price
+                  </span>
+                  <span className="font-extrabold text-emerald-700 font-mono text-sm">
+                    ₹{Number(selectedProductForDetails.price || 0).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div className="bg-white p-2.5 rounded-xl border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-400 block uppercase">
+                    Total Stock
+                  </span>
+                  <span className="font-extrabold text-navy font-mono text-sm">
+                    {selectedProductForDetails.stock} units
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Shop / Merchant Information */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-3.5 space-y-1.5 shadow-2xs">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Store / Merchant
+              </span>
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-navy text-xs">
+                  {selectedProductForDetails.shop?.name || 'Navya Collection'}
+                </span>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  Owner: {selectedProductForDetails.shop?.owner?.name || 'Store Admin'}
+                </span>
+              </div>
+            </div>
+
+            {/* Assigned Categories */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-3.5 space-y-2 shadow-2xs">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Assigned Categories &amp; Tags
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-navy text-white text-[11px] font-bold">
+                  <FolderTree className="h-3 w-3 text-[#F15A25]" />
+                  {selectedProductForDetails.category?.name || 'Primary Category'}
+                </span>
+                {selectedProductForDetails.metaKeywords &&
+                  selectedProductForDetails.metaKeywords
+                    .split(',')
+                    .map((kw: string) => kw.trim())
+                    .filter((kw: string) => kw && kw !== selectedProductForDetails.category?.name)
+                    .slice(0, 6)
+                    .map((kw: string) => (
+                      <span
+                        key={kw}
+                        className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-semibold border border-slate-200"
+                      >
+                        {kw}
+                      </span>
+                    ))}
+              </div>
+            </div>
+
+            {/* Variants Table */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-3.5 space-y-2 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  SKUs &amp; Product Variants ({selectedProductForDetails.variants?.length || 0})
+                </span>
+              </div>
+
+              {selectedProductForDetails.variants &&
+              selectedProductForDetails.variants.length > 0 ? (
+                <div className="divide-y divide-slate-100 max-h-60 overflow-y-auto pr-1">
+                  {selectedProductForDetails.variants.map((variant: any) => (
+                    <div
+                      key={variant.id || variant.sku}
+                      className="py-2.5 flex items-center justify-between gap-2"
+                    >
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          {variant.size && (
+                            <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-black font-mono">
+                              Size: {variant.size}
+                            </span>
+                          )}
+                          {variant.color && (
+                            <span className="px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200 text-sky-800 text-[10px] font-black">
+                              Color: {variant.color}
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-mono text-[10px] text-slate-500">
+                          SKU: <strong className="text-slate-800">{variant.sku}</strong>
+                        </p>
+                      </div>
+
+                      <div className="text-right space-y-0.5 shrink-0">
+                        <span className="font-extrabold text-emerald-700 font-mono text-xs block">
+                          ₹
+                          {Number(variant.price || selectedProductForDetails.price).toLocaleString(
+                            'en-IN',
+                          )}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-500 block">
+                          {variant.stock} in stock
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 bg-slate-50 rounded-xl text-center text-slate-500 font-medium text-xs">
+                  This product has no sub-variants (Single parent item).
+                </div>
+              )}
+            </div>
+
+            <Button
+              onClick={() => setSelectedProductForDetails(null)}
+              className="w-full rounded-full bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-bold mt-2 cursor-pointer"
+            >
+              Close Details
+            </Button>
+          </div>
         </Drawer>
       )}
     </div>
