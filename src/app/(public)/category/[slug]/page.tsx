@@ -65,15 +65,132 @@ export default async function CategoryPage({ params }: Props) {
       { metaKeywords: { contains: normalized, mode: 'insensitive' as const } },
     ];
 
+    if (category.name) {
+      orConditions.push(
+        { category: { name: { contains: category.name, mode: 'insensitive' as const } } },
+        { name: { contains: category.name, mode: 'insensitive' as const } },
+      );
+    }
+
     if (isMen && normalized === 'men') {
       orConditions.push({ gender: { equals: 'men', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'men', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'shirt', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 't-shirt', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'kurta', mode: 'insensitive' as const } });
     } else if (isWomen && normalized === 'women') {
       orConditions.push({ gender: { equals: 'women', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'women', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'saree', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'lehenga', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'kurti', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'dress', mode: 'insensitive' as const } });
     } else if (isKids && normalized === 'kids') {
       orConditions.push({ gender: { equals: 'kids', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'kid', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'baby', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'boy', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'girl', mode: 'insensitive' as const } });
+      orConditions.push({ name: { contains: 'frock', mode: 'insensitive' as const } });
+    }
+
+    // Dynamic Price Deals & Curations Matching
+    if (normalized.includes('under-499') || normalized.includes('budget-finds')) {
+      orConditions.push({ price: { lte: 499 } });
+    }
+    if (normalized.includes('under-999')) {
+      orConditions.push({ price: { lte: 999 } });
+    }
+    if (normalized.includes('50-off') || normalized.includes('50-percent-off')) {
+      orConditions.push({ compareAtPrice: { gt: 0 } });
+    }
+    if (
+      normalized.includes('trending') ||
+      normalized.includes('best-sellers') ||
+      normalized.includes('top-rated') ||
+      normalized.includes('featured') ||
+      normalized === 'spotlight' ||
+      normalized === 'new-season' ||
+      normalized === 'new-arrivals'
+    ) {
+      orConditions.push({ isFeatured: true });
+      orConditions.push({ isNewArrival: true });
+      orConditions.push({ rating: { gte: 4 } });
+      orConditions.push({ status: 'active' });
     }
 
     // Specific category keyword extraction
+    const categoryLower = category.name.toLowerCase();
+    if (categoryLower.includes('saree') || normalized.includes('saree')) {
+      orConditions.push(
+        { name: { contains: 'saree', mode: 'insensitive' as const } },
+        { name: { contains: 'sari', mode: 'insensitive' as const } },
+        { name: { contains: 'silk', mode: 'insensitive' as const } },
+        { name: { contains: 'banarasi', mode: 'insensitive' as const } },
+      );
+    }
+    if (categoryLower.includes('shirt') || normalized.includes('shirt')) {
+      orConditions.push(
+        { name: { contains: 'shirt', mode: 'insensitive' as const } },
+        { name: { contains: 'stripe', mode: 'insensitive' as const } },
+        { name: { contains: 'collar', mode: 'insensitive' as const } },
+        { name: { contains: 'sleeve', mode: 'insensitive' as const } },
+      );
+    }
+    if (
+      categoryLower.includes('kurta') ||
+      categoryLower.includes('kurti') ||
+      normalized.includes('kurta')
+    ) {
+      orConditions.push(
+        { name: { contains: 'kurta', mode: 'insensitive' as const } },
+        { name: { contains: 'kurti', mode: 'insensitive' as const } },
+        { name: { contains: 'anarkali', mode: 'insensitive' as const } },
+        { name: { contains: 'suit', mode: 'insensitive' as const } },
+      );
+    }
+    if (categoryLower.includes('lehenga') || normalized.includes('lehenga')) {
+      orConditions.push(
+        { name: { contains: 'lehenga', mode: 'insensitive' as const } },
+        { name: { contains: 'choli', mode: 'insensitive' as const } },
+        { name: { contains: 'ghagra', mode: 'insensitive' as const } },
+      );
+    }
+    if (
+      categoryLower.includes('jeans') ||
+      normalized.includes('jeans') ||
+      normalized.includes('denim')
+    ) {
+      orConditions.push(
+        { name: { contains: 'jean', mode: 'insensitive' as const } },
+        { name: { contains: 'denim', mode: 'insensitive' as const } },
+      );
+    }
+    if (
+      categoryLower.includes('t-shirt') ||
+      categoryLower.includes('polo') ||
+      normalized.includes('t-shirt') ||
+      normalized.includes('polo')
+    ) {
+      orConditions.push(
+        { name: { contains: 't-shirt', mode: 'insensitive' as const } },
+        { name: { contains: 'tshirt', mode: 'insensitive' as const } },
+        { name: { contains: 'polo', mode: 'insensitive' as const } },
+        { name: { contains: 'tee', mode: 'insensitive' as const } },
+      );
+    }
+    if (
+      categoryLower.includes('dress') ||
+      categoryLower.includes('frock') ||
+      normalized.includes('dress')
+    ) {
+      orConditions.push(
+        { name: { contains: 'dress', mode: 'insensitive' as const } },
+        { name: { contains: 'frock', mode: 'insensitive' as const } },
+        { name: { contains: 'gown', mode: 'insensitive' as const } },
+      );
+    }
+
     const cleanKeywords = normalized
       .replace(/^(men-|women-|kids-)/, '')
       .split('-')
@@ -94,10 +211,6 @@ export default async function CategoryPage({ params }: Props) {
       where: {
         status: 'active',
         deletedAt: null,
-        shop: {
-          status: 'APPROVED',
-          deletedAt: null,
-        },
         OR: orConditions,
       },
       include: {

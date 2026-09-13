@@ -23,6 +23,7 @@ import { Drawer } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { CATEGORY_TAXONOMY, getFlattenedCategoryOptions } from '@/config/categories.config';
 import { useToast } from '@/providers';
+import { autoCategorizeProduct } from '@/shared/utils/auto-categorizer';
 import { useAuthStore } from '@/stores';
 
 export default function AdminProductsPage() {
@@ -48,6 +49,7 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [isAutoCategorizing, setIsAutoCategorizing] = useState(false);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<any>({ total: 0, pages: 1 });
 
@@ -258,6 +260,67 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleAutoCategorizeAll = async () => {
+    if (
+      !confirm(
+        'Run Smart Auto-Categorization on all products in the catalogue? This will automatically match and assign relevant categories based on product title, price, and store taxonomy.',
+      )
+    ) {
+      return;
+    }
+
+    setIsAutoCategorizing(true);
+    try {
+      const res = await fetch('/api/v1/admin/products/auto-categorize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ all: true }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast(data.message || `Auto-categorized ${data.updatedCount} products!`, 'success');
+        fetchProducts();
+      } else {
+        toast(data.message || 'Auto-categorization failed.', 'error');
+      }
+    } catch (err: any) {
+      toast(err.message || 'Error running auto-categorization.', 'error');
+    } finally {
+      setIsAutoCategorizing(false);
+    }
+  };
+
+  const handleAutoCategorizeSingle = (prod: any) => {
+    if (!prod) return;
+    const res = autoCategorizeProduct({
+      name: prod.name,
+      description: prod.description,
+      price: Number(prod.price),
+      compareAtPrice: prod.compareAtPrice ? Number(prod.compareAtPrice) : undefined,
+      gender: prod.gender,
+      fabric: prod.fabric,
+      occasion: prod.occasion,
+    });
+    setSelectedCategoryIds(res.categoryIds);
+    toast(
+      `⚡ Auto-detected ${res.categoryIds.length} categories (${res.matchedLabels.slice(0, 3).join(', ')}...)`,
+      'success',
+    );
+  };
+
+  const handleAutoDetectNewProduct = () => {
+    if (!name.trim()) {
+      toast('Please enter a product title first.', 'error');
+      return;
+    }
+    const res = autoCategorizeProduct({
+      name: name.trim(),
+      price: Number(price) || undefined,
+    });
+    setNewProductCategoryIds(res.categoryIds);
+    toast(`⚡ Auto-assigned ${res.categoryIds.length} categories!`, 'success');
+  };
+
   return (
     <div className="space-y-6">
       {/* Read-Only Banner for Supervisor */}
@@ -285,12 +348,24 @@ export default function AdminProductsPage() {
           </p>
         </div>
         {!isSupervisor && (
-          <Button
-            className="rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold gap-2 cursor-pointer shadow-md"
-            onClick={() => setIsAdding(true)}
-          >
-            <Plus className="h-4 w-4 text-white" /> Add New Product
-          </Button>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <Button
+              variant="outline"
+              disabled={isAutoCategorizing}
+              className="rounded-full border-amber-500/80 bg-amber-50/70 hover:bg-amber-100 text-amber-800 text-xs font-extrabold gap-1.5 cursor-pointer shadow-2xs"
+              onClick={handleAutoCategorizeAll}
+              title="Automatically categorize all products based on title & price"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-[#F15A25]" />
+              {isAutoCategorizing ? 'Categorizing...' : '⚡ Auto-Categorize All'}
+            </Button>
+            <Button
+              className="rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold gap-2 cursor-pointer shadow-md"
+              onClick={() => setIsAdding(true)}
+            >
+              <Plus className="h-4 w-4 text-white" /> Add New Product
+            </Button>
+          </div>
         )}
       </div>
 
@@ -623,15 +698,25 @@ export default function AdminProductsPage() {
                 <p className="font-extrabold text-navy uppercase tracking-wider text-[11px]">
                   Selected Categories ({selectedCategoryIds.length})
                 </p>
-                {selectedCategoryIds.length > 0 && (
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={handleClearSelectedCategories}
-                    className="text-[10px] font-bold text-rose-600 hover:text-rose-700 underline cursor-pointer"
+                    onClick={() => handleAutoCategorizeSingle(editingProductCategory)}
+                    className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-full hover:bg-amber-200 cursor-pointer border border-amber-300/80 transition-colors shadow-2xs"
+                    title="Auto-detect categories using title & taxonomy"
                   >
-                    Clear All
+                    <Sparkles className="h-3 w-3 text-[#F15A25]" />⚡ Auto-Detect
                   </button>
-                )}
+                  {selectedCategoryIds.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleClearSelectedCategories}
+                      className="text-[10px] font-bold text-rose-600 hover:text-rose-700 underline cursor-pointer"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
               </div>
 
               {selectedCategoryIds.length > 0 ? (
@@ -850,15 +935,25 @@ export default function AdminProductsPage() {
                 <label className="font-bold text-slate-700 block">
                   Categories &amp; Garment Departments * ({newProductCategoryIds.length})
                 </label>
-                {newProductCategoryIds.length > 0 && (
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setNewProductCategoryIds([])}
-                    className="text-[10px] font-bold text-rose-600 hover:text-rose-700 underline cursor-pointer"
+                    onClick={handleAutoDetectNewProduct}
+                    className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-full hover:bg-amber-200 cursor-pointer border border-amber-300/80 transition-colors shadow-2xs"
+                    title="Auto-detect categories from product title & price"
                   >
-                    Clear All
+                    <Sparkles className="h-3 w-3 text-[#F15A25]" />⚡ Auto-Detect
                   </button>
-                )}
+                  {newProductCategoryIds.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setNewProductCategoryIds([])}
+                      className="text-[10px] font-bold text-rose-600 hover:text-rose-700 underline cursor-pointer"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Selected Categories Chips */}

@@ -26,6 +26,7 @@ import {
   MainCategoryOption,
   SubCategoryOption,
 } from '@/config/categories.config';
+import { autoCategorizeProduct } from '@/shared/utils/auto-categorizer';
 
 type ProductFormProps = {
   productId?: string;
@@ -134,6 +135,29 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       .filter((c: any) => c.mainGroupId === mainId)
       .map((c: any) => c.id);
     setSelectedCategoryIds((prev) => Array.from(new Set([...prev, ...groupIds])));
+  };
+
+  const handleAutoDetectCategories = () => {
+    if (!formData.name.trim()) {
+      showToast('Please enter a Product Name first to auto-detect categories.', 'error');
+      return;
+    }
+    const res = autoCategorizeProduct({
+      name: formData.name,
+      description: formData.description,
+      price: Number(formData.price),
+      compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
+      fabric: formData.fabric,
+      occasion: formData.occasion,
+    });
+    setSelectedCategoryIds(res.categoryIds);
+    if (res.categoryIds.length > 0) {
+      setFormData((fd) => ({ ...fd, categoryId: res.categoryIds[0] }));
+    }
+    showToast(
+      `⚡ Auto-detected ${res.categoryIds.length} categories (${res.matchedLabels.slice(0, 3).join(', ')}...)`,
+      'success',
+    );
   };
 
   const handleMainCategoryChange = (mainId: string) => {
@@ -569,6 +593,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleAutoDetectCategories}
+                  className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-700 bg-amber-100/90 px-3 py-1 rounded-full hover:bg-amber-200 cursor-pointer border border-amber-300/80 transition-colors shadow-2xs"
+                  title="Auto-detect and check categories from Product Name"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-[#F15A25]" />⚡ Auto-Detect Categories
+                </button>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-navy text-white text-[11px] font-extrabold shadow-2xs">
                   <Sparkles className="h-3 w-3 text-amber-400" />
                   {selectedCategoryIds.length} Selected
