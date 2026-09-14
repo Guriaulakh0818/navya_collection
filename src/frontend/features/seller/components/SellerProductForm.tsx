@@ -864,7 +864,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+            <label className="font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
               <Video className="w-3.5 h-3.5 text-rose-500" /> Product Video URL (Optional)
             </label>
             <input
