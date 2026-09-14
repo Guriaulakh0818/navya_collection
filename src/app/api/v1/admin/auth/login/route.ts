@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email, password, otp } = validation.data;
-    const result = await AdminAuthService.login(email, password, otp);
+    const { email, password } = validation.data;
+    const result = await AdminAuthService.login(email, password);
 
     if (result.success && result.user) {
       const response = NextResponse.json(

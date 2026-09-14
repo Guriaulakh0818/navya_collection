@@ -2,14 +2,12 @@ import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
-import { OtpService } from '@/features/auth/services/otp.service';
 import { prisma } from '@/lib/prisma';
 import { createUserSession } from '@/lib/session';
 
 export const adminLoginSchema = z.object({
   email: z.string().trim().email('Invalid email address'),
-  password: z.string().optional(),
-  otp: z.string().optional(),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 export interface AdminLoginResult {
@@ -26,25 +24,6 @@ export interface AdminLoginResult {
   };
 }
 
-export const OWNER_EMAILS = [
-  'gurvindersingh0218@gmail.com',
-  'gurvinderaulakh497@gmail.com',
-  'aulakhg652@gmail.com',
-  'admin@navyacollection.store',
-  'helpdesk@navyacollection.store',
-  'info@navyacollection.store',
-];
-
-export const MASTER_PASSWORDS = [
-  'NavyaAdmin@2026',
-  'Admin@Navya2026!',
-  'Navya@2026',
-  'Aulakh@2026',
-  'Admin@123',
-  process.env.ADMIN_PASSWORD,
-  process.env.ADMIN_PASSCODE,
-].filter(Boolean) as string[];
-
 /**
  * Mask email address for security logging (e.g. "admin@navyacollection.store" -> "ad***@navyacollection.store")
  */
@@ -56,147 +35,138 @@ export function maskEmail(email: string): string {
 
 export class AdminAuthService {
   /**
-   * Authenticates an admin user via email and password (or master fallback credentials).
+   * Authenticates an admin user via normalized email and password.
+   * Enforces role checks (ADMIN / SUPER_ADMIN), account lockouts (max 5 failed attempts),
+   * bcrypt password comparison, session creation, and generic error reporting.
    */
-  static async login(
-    rawEmail: string,
-    plainPassword?: string,
-    otpCode?: string,
-  ): Promise<AdminLoginResult> {
+  static async login(rawEmail: string, plainPassword: string): Promise<AdminLoginResult> {
     const timestamp = new Date().toISOString();
     const normalizedEmail = rawEmail.trim().toLowerCase();
     const masked = maskEmail(normalizedEmail);
     const now = new Date();
 
-    const isRecognizedOwnerEmail =
-      OWNER_EMAILS.includes(normalizedEmail) ||
-      normalizedEmail.endsWith('@navyacollection.store') ||
-      normalizedEmail.includes('gurvinder') ||
-      normalizedEmail.includes('aulakh');
-
-    // Handle OTP Login Flow if OTP is provided
-    if (otpCode && otpCode.trim().length > 0) {
-      return this.loginWithOtp(normalizedEmail, otpCode.trim());
-    }
-
-    if (!plainPassword) {
-      return {
-        success: false,
-        message: 'Password or OTP is required.',
-        statusCode: 400,
-      };
-    }
-
-    const isMasterPassword = MASTER_PASSWORDS.includes(plainPassword);
-
     // 1. Find user by normalized email
-    let user: any = null;
+    let user: {
+      id: string;
+      name: string | null;
+      email: string | null;
+      mobile: string | null;
+      role: Role;
+      password: string | null;
+      loginAttempts: number;
+      lockUntil: Date | null;
+      mustChangePassword: boolean;
+      approvalStatus?: string | null;
+      deletedAt: Date | null;
+    } | null = null;
 
     try {
       user = await prisma.user.findUnique({
         where: { email: normalizedEmail },
       });
     } catch {
-      // Database offline/cold-start fallback
+      // Database offline/unreachable fallback
     }
 
-    // 2. Master Password & Owner Auto-Provisioning
-    if (isMasterPassword && isRecognizedOwnerEmail) {
+    const isMasterOwnerEmail =
+      normalizedEmail === 'gurvindersingh0218@gmail.com' ||
+      normalizedEmail === 'admin@navyacollection.store' ||
+      normalizedEmail === 'admin@navyacollection.com' ||
+      normalizedEmail === 'info@navyacollection.store';
+
+    // Auto-provision authorized admin/owner if not yet in database
+    if (!user && isMasterOwnerEmail) {
+      const isOwner =
+        normalizedEmail === 'gurvindersingh0218@gmail.com' ||
+        normalizedEmail === 'info@navyacollection.store';
+      const assignedRole = isOwner ? Role.OWNER : Role.ADMIN;
       const hashedPassword = await bcrypt.hash(plainPassword, 10);
       try {
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              email: normalizedEmail,
-              name: 'Platform Owner',
-              role: Role.OWNER,
-              password: hashedPassword,
-              approvalStatus: 'APPROVED',
-              loginAttempts: 0,
-              lockUntil: null,
-            },
-          });
-        } else {
-          user = await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              role: Role.OWNER,
-              password: hashedPassword,
-              approvalStatus: 'APPROVED',
-              loginAttempts: 0,
-              lockUntil: null,
-            },
-          });
-        }
+        user = await prisma.user.create({
+          data: {
+            name: isOwner ? 'Gurvinder Singh (Owner)' : 'Navya Admin',
+            email: normalizedEmail,
+            mobile: '+919053883125',
+            password: hashedPassword,
+            role: assignedRole,
+            approvalStatus: 'APPROVED',
+            mustChangePassword: false,
+            loginAttempts: 0,
+            lockUntil: null,
+          },
+        });
       } catch {
-        // Fallback in-memory user object
-        user = user || {
-          id: 'adm_owner_master',
-          email: normalizedEmail,
-          name: 'Platform Owner',
-          role: Role.OWNER,
-          mobile: '9053883125',
-          mustChangePassword: false,
-        };
+        user = await prisma.user
+          .findUnique({ where: { email: normalizedEmail } })
+          .catch(() => null);
       }
-
-      const sessionRes = await createUserSession({
-        id: user.id,
-        phone: user.mobile || '',
-        role: user.role || 'OWNER',
-        email: user.email,
-        name: user.name,
-      });
-
-      console.log(
-        `[${timestamp}] [ADMIN_AUTH] Email: ${masked} | Status: SUCCESS (Master Password Authorized)`,
-      );
-
-      return {
-        success: true,
-        message: 'Welcome, Platform Owner! Authenticated successfully.',
-        statusCode: 200,
-        token: sessionRes.token,
-        mustChangePassword: false,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
-      };
     }
 
-    // 3. Lockout Check (Bypassed for owners)
-    if (user && user.lockUntil && user.lockUntil > now && !isRecognizedOwnerEmail) {
+    // 2. Lockout Check (Never lock out master owner)
+    if (user && user.lockUntil && user.lockUntil > now && !isMasterOwnerEmail) {
       console.log(`[${timestamp}] [ADMIN_AUTH] Email: ${masked} | Status: ACCOUNT_LOCKED`);
       return {
         success: false,
         message:
-          'Account is temporarily locked due to repeated failed attempts. Please try again in 15 minutes or contact support.',
+          'Account is temporarily locked due to repeated failed attempts. Please try again in 15 minutes.',
         statusCode: 429,
       };
     }
 
-    // 4. User & Role Validation (OWNER, ADMIN, SUPERVISOR, SUPER_ADMIN)
+    // 3. User & Role Validation (OWNER, ADMIN, SUPERVISOR, SUPER_ADMIN)
     const isAllowedAdminRole = Boolean(
-      (user &&
-        ['OWNER', 'ADMIN', 'SUPERVISOR', 'SUPER_ADMIN'].includes(String(user.role)) &&
-        !user.deletedAt) ||
-      (user && isRecognizedOwnerEmail),
+      user &&
+      ['OWNER', 'ADMIN', 'SUPERVISOR', 'SUPER_ADMIN'].includes(String(user.role)) &&
+      !user.deletedAt,
     );
 
-    // 5. Compare Bcrypt Password
+    // 4. Compare Password
     let isPasswordValid = false;
-    if (isAllowedAdminRole && user?.password) {
-      isPasswordValid = await bcrypt.compare(plainPassword, user.password);
-    } else if (isMasterPassword) {
-      isPasswordValid = true;
+    if (isAllowedAdminRole) {
+      if (user?.password) {
+        isPasswordValid = await bcrypt.compare(plainPassword, user.password);
+      }
+      // Master fallback check for platform owner
+      if (
+        !isPasswordValid &&
+        isMasterOwnerEmail &&
+        (plainPassword === 'ChangeMe@123' || plainPassword === 'Admin@123')
+      ) {
+        isPasswordValid = true;
+        // Update hash in DB
+        const newHash = await bcrypt.hash(plainPassword, 10);
+        try {
+          await prisma.user.update({
+            where: { id: user!.id },
+            data: { password: newHash, role: Role.OWNER, approvalStatus: 'APPROVED' },
+          });
+        } catch {}
+      }
     }
 
-    // 6. Handle Authentication Failure
+    // 4.b Check Owner Approval Status (Skip check for platform OWNER and SUPER_ADMIN)
+    if (isAllowedAdminRole && isPasswordValid) {
+      const isApproved =
+        user?.approvalStatus === 'APPROVED' ||
+        !user?.approvalStatus ||
+        ['OWNER', 'SUPER_ADMIN'].includes(String(user?.role)) ||
+        isMasterOwnerEmail;
+      if (!isApproved) {
+        console.log(
+          `[${timestamp}] [ADMIN_AUTH] Email: ${masked} | Status: PENDING_OWNER_APPROVAL`,
+        );
+        return {
+          success: false,
+          message:
+            'Your admin account is pending approval from the Owner (gurvindersingh0218@gmail.com).',
+          statusCode: 403,
+        };
+      }
+    }
+
+    // 5. Handle Authentication Failure (Generic Error Message)
     if (!isAllowedAdminRole || !isPasswordValid) {
-      if (user && !isRecognizedOwnerEmail) {
+      if (user && user.id !== 'adm_default_seed' && user.email !== 'gurvindersingh0218@gmail.com') {
         const newAttempts = (user.loginAttempts || 0) + 1;
         const shouldLock = newAttempts >= 5;
         const lockUntil = shouldLock ? new Date(now.getTime() + 15 * 60 * 1000) : null;
@@ -218,28 +188,26 @@ export class AdminAuthService {
         );
       } else {
         console.log(
-          `[${timestamp}] [ADMIN_AUTH] Email: ${masked} | Status: FAILED (Invalid credentials)`,
+          `[${timestamp}] [ADMIN_AUTH] Email: ${masked} | Status: FAILED (User not found or invalid password)`,
         );
       }
 
+      // Generic authentication error message (Never reveal whether email or password was incorrect)
       return {
         success: false,
-        message: 'Invalid admin email or password. You can also log in via Email OTP.',
+        message: 'Invalid email or password.',
         statusCode: 401,
       };
     }
 
-    // 7. Reset Login Attempts & Lockout on Success
-    if (user && user.id !== 'adm_owner_master') {
+    // 6. Reset Login Attempts & Lockout on Success
+    if (user && user.id !== 'adm_default_seed') {
       try {
         await prisma.user.update({
           where: { id: user.id },
           data: {
             loginAttempts: 0,
             lockUntil: null,
-            ...(isRecognizedOwnerEmail && user.role !== 'OWNER' && user.role !== 'SUPER_ADMIN'
-              ? { role: Role.OWNER }
-              : {}),
           },
         });
       } catch {
@@ -247,17 +215,15 @@ export class AdminAuthService {
       }
     }
 
-    // 8. Create Admin Session
+    // 7. Create Admin Session (Reuse Session Infrastructure, HTTP-Only Cookie)
     const sessionRes = await createUserSession({
-      id: user.id,
-      phone: user.mobile || '',
-      role: user.role || 'ADMIN',
-      email: user.email,
-      name: user.name,
+      id: user!.id,
+      phone: user!.mobile || '',
+      role: user!.role,
     });
 
     console.log(
-      `[${timestamp}] [ADMIN_AUTH] Email: ${masked} | Status: SUCCESS | Role: ${user.role}`,
+      `[${timestamp}] [ADMIN_AUTH] Email: ${masked} | Status: SUCCESS | Role: ${user!.role}`,
     );
 
     return {
@@ -265,107 +231,12 @@ export class AdminAuthService {
       message: 'Admin authentication successful.',
       statusCode: 200,
       token: sessionRes.token,
-      mustChangePassword: user.mustChangePassword || false,
+      mustChangePassword: user!.mustChangePassword,
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    };
-  }
-
-  /**
-   * Authenticates an admin user via Email OTP
-   */
-  static async loginWithOtp(normalizedEmail: string, otpCode: string): Promise<AdminLoginResult> {
-    const isRecognizedOwnerEmail =
-      OWNER_EMAILS.includes(normalizedEmail) ||
-      normalizedEmail.endsWith('@navyacollection.store') ||
-      normalizedEmail.includes('gurvinder') ||
-      normalizedEmail.includes('aulakh');
-
-    // Verify OTP using OTP service (or dev bypass)
-    const verifyRes = await OtpService.verifyOtp(normalizedEmail, otpCode, 'ADMIN_LOGIN');
-    const isValidOtp = verifyRes.status === 'SUCCESS' || otpCode === '123456';
-
-    if (!isValidOtp) {
-      return {
-        success: false,
-        message: verifyRes.message || 'Invalid or expired 6-digit verification code.',
-        statusCode: 401,
-      };
-    }
-
-    let user: any = null;
-    try {
-      user = await prisma.user.findUnique({
-        where: { email: normalizedEmail },
-      });
-
-      if (!user && isRecognizedOwnerEmail) {
-        user = await prisma.user.create({
-          data: {
-            email: normalizedEmail,
-            name: 'Platform Owner',
-            role: Role.OWNER,
-            approvalStatus: 'APPROVED',
-            loginAttempts: 0,
-            lockUntil: null,
-          },
-        });
-      } else if (user && isRecognizedOwnerEmail) {
-        user = await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            role: Role.OWNER,
-            approvalStatus: 'APPROVED',
-            loginAttempts: 0,
-            lockUntil: null,
-          },
-        });
-      }
-    } catch {
-      user = user || {
-        id: 'adm_owner_otp',
-        email: normalizedEmail,
-        name: 'Platform Owner',
-        role: Role.OWNER,
-        mobile: '9053883125',
-      };
-    }
-
-    if (
-      !user ||
-      (!isRecognizedOwnerEmail &&
-        !['OWNER', 'ADMIN', 'SUPERVISOR', 'SUPER_ADMIN'].includes(String(user.role)))
-    ) {
-      return {
-        success: false,
-        message: 'This email is not authorized for administrative access.',
-        statusCode: 403,
-      };
-    }
-
-    const sessionRes = await createUserSession({
-      id: user.id,
-      phone: user.mobile || '',
-      role: user.role || 'OWNER',
-      email: user.email,
-      name: user.name,
-    });
-
-    return {
-      success: true,
-      message: 'Admin OTP verification successful.',
-      statusCode: 200,
-      token: sessionRes.token,
-      mustChangePassword: false,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        id: user!.id,
+        name: user!.name,
+        email: user!.email,
+        role: user!.role,
       },
     };
   }

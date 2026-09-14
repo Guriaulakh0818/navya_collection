@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { getCurrentUser as fetchSessionUser, SessionUser } from '@/lib/session';
 
-export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+export type UserRole = 'USER' | 'ADMIN' | 'SUPER_ADMIN' | 'OWNER' | 'SUPERVISOR';
 
 /**
  * Reusable helper returning the authenticated user or null.
@@ -47,13 +47,15 @@ export async function requireCustomer(): Promise<SessionUser> {
 }
 
 /**
- * Enforces ADMIN / SUPER_ADMIN role-based authorization directly from database context.
+ * Enforces ADMIN / OWNER / SUPER_ADMIN role-based authorization directly from database context.
  * Redirects to /admin/login if not authenticated as an Admin.
  */
 export async function requireAdmin(redirectTo: string = '/admin/login'): Promise<SessionUser> {
   const user = await getCurrentUser();
 
-  if (!user || (user.role !== Role.ADMIN && user.role !== Role.SUPER_ADMIN)) {
+  const allowedAdminRoles = [Role.ADMIN, Role.SUPER_ADMIN, Role.OWNER, Role.SUPERVISOR] as Role[];
+
+  if (!user || !allowedAdminRoles.includes(user.role as Role)) {
     redirect(redirectTo);
   }
 

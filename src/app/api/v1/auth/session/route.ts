@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/session';
 
 /**
- * GET /api/auth/session & /api/v1/auth/session
+ * GET /api/v1/auth/session
  *
  * Checks HTTP-Only session cookies (navya_admin_session / navya_session)
  * and returns authenticated user details.
