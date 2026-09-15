@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowRight, ChevronDown, ChevronUp, Grid, Search, Sparkles, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -17,12 +17,58 @@ interface CategoryExplorerProps {
 }
 
 export function CategoryExplorer({
-  initialActiveId = 'group_for_you',
+  initialActiveId = 'group_spotlight',
   dbCategoryCounts = {},
 }: CategoryExplorerProps) {
-  const [activeGroupId, setActiveGroupId] = useState<string>(initialActiveId);
+  const [activeGroupId, setActiveGroupId] = useState<string>(() => {
+    if (initialActiveId && MAIN_CATEGORY_GROUPS.some((g) => g.id === initialActiveId)) {
+      return initialActiveId;
+    }
+    return 'group_spotlight';
+  });
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  // Restore or sync activeGroupId with URL / session storage on mount & navigation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const groupParam = params.get('group') || params.get('tab');
+      if (groupParam) {
+        const formatted = groupParam.startsWith('group_') ? groupParam : `group_${groupParam}`;
+        if (MAIN_CATEGORY_GROUPS.some((g) => g.id === formatted)) {
+          setActiveGroupId(formatted);
+          sessionStorage.setItem('navya_active_category_group', formatted);
+          return;
+        }
+      }
+
+      // If initialActiveId is passed and valid
+      if (initialActiveId && MAIN_CATEGORY_GROUPS.some((g) => g.id === initialActiveId)) {
+        setActiveGroupId(initialActiveId);
+        sessionStorage.setItem('navya_active_category_group', initialActiveId);
+        return;
+      }
+
+      // Check sessionStorage fallback
+      const saved = sessionStorage.getItem('navya_active_category_group');
+      if (saved && MAIN_CATEGORY_GROUPS.some((g) => g.id === saved)) {
+        setActiveGroupId(saved);
+      }
+    }
+  }, [initialActiveId]);
+
+  // Handle tab switch and update URL without full page reload
+  const handleSelectGroup = (groupId: string) => {
+    setActiveGroupId(groupId);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('navya_active_category_group', groupId);
+      const groupSlug = groupId.replace('group_', '');
+      const url = new URL(window.location.href);
+      url.searchParams.set('group', groupSlug);
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
+  };
 
   const activeGroup = useMemo(() => {
     return MAIN_CATEGORY_GROUPS.find((g) => g.id === activeGroupId) || MAIN_CATEGORY_GROUPS[0];
@@ -114,7 +160,11 @@ export function CategoryExplorer({
                 {filteredResults.map(({ group, item }) => (
                   <Link
                     key={`${group.id}_${item.id}`}
-                    href={`/shop?${item.queryParam}`}
+                    href={
+                      group.id === 'group_shops'
+                        ? `/shop?${item.queryParam}`
+                        : `/category/${item.slug}`
+                    }
                     className="group flex flex-col items-center text-center p-2.5 rounded-2xl bg-white border border-slate-200/90 hover:border-[#183A73] hover:shadow-md transition-all active:scale-95"
                   >
                     <div className="relative w-full aspect-square rounded-xl bg-slate-100 overflow-hidden mb-2">
@@ -155,7 +205,7 @@ export function CategoryExplorer({
                     <button
                       key={group.id}
                       type="button"
-                      onClick={() => setActiveGroupId(group.id)}
+                      onClick={() => handleSelectGroup(group.id)}
                       className={`relative flex flex-col items-center justify-center p-2.5 rounded-2xl text-center transition-all cursor-pointer ${
                         isActive
                           ? 'bg-white text-[#183A73] font-black shadow-sm ring-1 ring-slate-200/80'
@@ -310,31 +360,38 @@ export function CategoryExplorer({
 
                     {/* 3-Column Variety Grid (Flipkart/Myntra/Meesho Style Pill Cards) */}
                     <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
-                      {displayItems.map((item) => (
-                        <Link
-                          key={item.id}
-                          href={`/shop?${item.queryParam}`}
-                          className="group flex flex-col items-center text-center p-2 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-[#183A73] hover:shadow-md transition-all active:scale-95"
-                        >
-                          <div className="relative w-full aspect-square rounded-xl bg-slate-100/90 overflow-hidden mb-1.5">
-                            <Image
-                              src={item.image}
-                              alt={item.name}
-                              fill
-                              sizes="(max-width: 768px) 33vw, 150px"
-                              className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            {item.badge && (
-                              <span className="absolute top-1 right-1 bg-[#F15A25] text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10.5px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-[#183A73]">
-                            {item.name}
-                          </span>
-                        </Link>
-                      ))}
+                      {displayItems.map((item) => {
+                        const targetHref =
+                          activeGroup.id === 'group_shops'
+                            ? `/shop?${item.queryParam}`
+                            : `/category/${item.slug}`;
+
+                        return (
+                          <Link
+                            key={item.id}
+                            href={targetHref}
+                            className="group flex flex-col items-center text-center p-2 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-[#183A73] hover:shadow-md transition-all active:scale-95"
+                          >
+                            <div className="relative w-full aspect-square rounded-xl bg-slate-100/90 overflow-hidden mb-1.5">
+                              <Image
+                                src={item.image}
+                                alt={item.name}
+                                fill
+                                sizes="(max-width: 768px) 33vw, 150px"
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                              {item.badge && (
+                                <span className="absolute top-1 right-1 bg-[#F15A25] text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10.5px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-[#183A73]">
+                              {item.name}
+                            </span>
+                          </Link>
+                        );
+                      })}
 
                       {/* Expand / Collapse Button Card */}
                       {hasMore && (

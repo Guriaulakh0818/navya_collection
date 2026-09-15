@@ -14,8 +14,8 @@ export const SEO_CONSTANTS = {
     URL: 'https://navyacollection.store',
     LOGO: 'https://navyacollection.store/logo.png',
     FOUNDING_DATE: '2022',
-    TELEPHONE: '+91-9991983125',
-    EMAIL: 'support@navyacollection.store',
+    TELEPHONE: '+91-9053883125',
+    EMAIL: 'helpdesk@navyacollection.store',
     SAME_AS: [
       'https://facebook.com/navyacollection',
       'https://instagram.com/navyacollection',

@@ -36,12 +36,27 @@ export async function GET(request: NextRequest) {
       whereCondition.status = status;
     }
 
-    if (query) {
+    const categoryFilter = searchParams.get('categoryId') || searchParams.get('category') || 'ALL';
+
+    if (categoryFilter !== 'ALL') {
       whereCondition.OR = [
-        { name: { contains: query, mode: 'insensitive' } },
-        { sku: { contains: query, mode: 'insensitive' } },
-        { shop: { name: { contains: query, mode: 'insensitive' } } },
-        { category: { name: { contains: query, mode: 'insensitive' } } },
+        { categoryId: categoryFilter },
+        { category: { id: categoryFilter } },
+        { category: { slug: categoryFilter } },
+        { category: { parentId: categoryFilter } },
+      ];
+    }
+
+    if (query) {
+      whereCondition.AND = [
+        {
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { sku: { contains: query, mode: 'insensitive' } },
+            { shop: { name: { contains: query, mode: 'insensitive' } } },
+            { category: { name: { contains: query, mode: 'insensitive' } } },
+          ],
+        },
       ];
     }
 
@@ -112,24 +127,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, price, stock, categoryName, imageUrl, sku, description } = body;
+    const { name, price, stock, categoryName, categoryIds, imageUrl, sku, description } = body;
 
     if (!name || !price) {
       return NextResponse.json(
         { success: false, message: 'Product title and price are required.' },
         { status: 400 },
       );
-    }
-
-    // Ensure or find category
-    let category = await prisma.category.findFirst({
-      where: { name: { contains: categoryName || 'Gents Collection', mode: 'insensitive' } },
-    });
-
-    if (!category) {
-      category = await prisma.category.findFirst({
-        where: { slug: 'sarees' },
-      });
     }
 
     // Default shop
@@ -148,7 +152,30 @@ export async function POST(request: NextRequest) {
     const generatedSku =
       sku && sku.trim().length > 0 ? sku.trim().toUpperCase() : await generateParentSku();
 
-    const validCategoryId = await resolveValidCategoryId(category?.id || categoryName);
+    let validCategoryId: string;
+    let metaKeywordsUpdate: string | undefined = undefined;
+
+    if (Array.isArray(categoryIds) && categoryIds.length > 0) {
+      const primaryTarget = categoryIds[0];
+      validCategoryId = await resolveValidCategoryId(primaryTarget);
+
+      const { getFlattenedCategoryOptions } = await import('@/config/categories.config');
+      const allTaxonomy = getFlattenedCategoryOptions();
+      const tags = new Set<string>();
+
+      for (const catId of categoryIds) {
+        tags.add(catId);
+        const found = allTaxonomy.find((t) => t.id === catId || t.slug === catId);
+        if (found) {
+          tags.add(found.slug);
+          tags.add(found.name.toLowerCase());
+          if (found.mainGroupName) tags.add(found.mainGroupName.toLowerCase());
+        }
+      }
+      metaKeywordsUpdate = Array.from(tags).join(', ');
+    } else {
+      validCategoryId = await resolveValidCategoryId(categoryName);
+    }
 
     const newProduct = await prisma.product.create({
       data: {
@@ -161,6 +188,7 @@ export async function POST(request: NextRequest) {
         price: Number(price),
         stock: Number(stock) || 10,
         status: 'active',
+        metaKeywords: metaKeywordsUpdate,
         images: imageUrl
           ? {
               create: [

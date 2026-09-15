@@ -138,7 +138,7 @@ export class MultiSellerShipmentService {
           `${shop?.shopCode || 'SHOP'}-PKP1`,
         contactName:
           pickupLocation?.contactName || shop?.bankAccountHolder || shop?.name || 'Store Manager',
-        contactPhone: pickupLocation?.contactPhone || shop?.phone || '9991983125',
+        contactPhone: pickupLocation?.contactPhone || shop?.phone || '9053883125',
         contactEmail: pickupLocation?.contactEmail || shop?.email || 'seller@navyacollection.store',
         addressLine1: pickupLocation?.addressLine1 || shop?.fullAddress || 'Main Market',
         addressLine2: pickupLocation?.addressLine2 || null,

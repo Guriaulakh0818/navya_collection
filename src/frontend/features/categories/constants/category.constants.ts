@@ -1,4 +1,5 @@
 import type { Category } from '../types/category.types';
+import { MAIN_CATEGORY_GROUPS } from './category-explorer.constants';
 
 export const CATEGORY_ACCENTS = [
   'from-navy to-[#234b8f]',
@@ -18,8 +19,8 @@ export const CATEGORIES: Category[] = [
     name: 'In The Spotlight',
     slug: 'spotlight',
     description: 'Trending collections, festive specials, Korean aesthetics & budget finds.',
-    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600',
-    banner: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200',
+    image: '/images/categories/category-spotlight.jpg',
+    banner: '/images/categories/category-spotlight.jpg',
     productCount: 0,
     accent: CATEGORY_ACCENTS[3],
   },
@@ -29,8 +30,8 @@ export const CATEGORIES: Category[] = [
     slug: 'men',
     description:
       'Kurtas, Sherwanis, Shirts, T-Shirts, Jeans, Trousers, Suits, Footwear & Essentials.',
-    image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600',
-    banner: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1200',
+    image: '/images/categories/category-men.jpg',
+    banner: '/images/categories/category-men.jpg',
     productCount: 0,
     accent: CATEGORY_ACCENTS[0],
   },
@@ -40,8 +41,8 @@ export const CATEGORIES: Category[] = [
     slug: 'women',
     description:
       'Sarees, Lehengas, Salwar Suits, Kurtis, Western Tops, Dresses, Bags & Essentials.',
-    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
-    banner: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200',
+    image: '/images/categories/category-women.jpg',
+    banner: '/images/categories/category-women.jpg',
     productCount: 0,
     accent: CATEGORY_ACCENTS[3],
   },
@@ -50,8 +51,8 @@ export const CATEGORIES: Category[] = [
     name: 'Kids',
     slug: 'kids',
     description: 'Baby Wear, Boys Outfits, Girls Lehengas & Frocks, Teens & Kids Essentials.',
-    image: 'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=600',
-    banner: 'https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=1200',
+    image: '/images/categories/category-kids.jpg',
+    banner: '/images/categories/category-kids.jpg',
     productCount: 0,
     accent: CATEGORY_ACCENTS[4],
   },
@@ -61,8 +62,8 @@ export const CATEGORIES: Category[] = [
     slug: 'shops',
     description:
       'Shop directly from authentic designer boutiques, verified artisans & premium stores.',
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600',
-    banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200',
+    image: '/images/categories/category-shops.jpg',
+    banner: '/images/categories/category-shops.jpg',
     productCount: 0,
     accent: CATEGORY_ACCENTS[1],
   },
@@ -215,17 +216,24 @@ export const CATEGORIES: Category[] = [
 ];
 
 export function findCategoryBySlug(slug: string): Category {
-  const normalizedSlug = slug.toLowerCase().trim();
+  const normalizedSlug = (slug || '').toLowerCase().trim();
 
   // Aliases mapping for common variations
   const aliases: Record<string, string> = {
     men: 'men',
+    'men-clothing': 'men',
     gents: 'men',
     'gents-wear': 'men',
     women: 'women',
+    'women-clothing': 'women',
     'women-wear': 'women',
     kids: 'kids',
     'kids-wear': 'kids',
+    'kids-fashion': 'kids',
+    home: 'home-living',
+    'home-living': 'home-living',
+    'home-and-living': 'home-living',
+    'home-decor': 'home-living',
     sarees: 'women-sarees',
     lehengas: 'women-lehengas',
     kurtis: 'women-kurtas',
@@ -238,13 +246,95 @@ export function findCategoryBySlug(slug: string): Category {
     girls: 'girls-fashion',
     baby: 'baby-fashion',
     spotlight: 'spotlight',
+    'in-the-spotlight': 'spotlight',
+    'best-sellers': 'best-sellers',
+    'top-rated': 'top-rated',
+    trending: 'trending',
+    'new-season': 'new-season',
+    'new-arrivals': 'new-arrivals',
+    'under-499': 'under-499',
+    'under-999': 'under-999',
+    deals: 'under-499',
+    offers: '50-off',
     shops: 'shops',
   };
 
   const targetSlug = aliases[normalizedSlug] || normalizedSlug;
+
+  // 1. Check in static CATEGORIES list first
   const existing = CATEGORIES.find(
     (c) => c.slug === targetSlug || c.id === targetSlug || c.slug === normalizedSlug,
   );
+
+  // 2. Check if matches one of the 5 Main Category Groups
+  const mainGroup = MAIN_CATEGORY_GROUPS.find(
+    (g) =>
+      g.slug === targetSlug ||
+      g.id === targetSlug ||
+      g.slug === normalizedSlug ||
+      (targetSlug === 'men' && g.id === 'group_men') ||
+      (targetSlug === 'women' && g.id === 'group_women') ||
+      (targetSlug === 'kids' && g.id === 'group_kids') ||
+      (targetSlug === 'spotlight' && g.id === 'group_spotlight') ||
+      (targetSlug === 'shops' && g.id === 'group_shops'),
+  );
+
+  if (mainGroup) {
+    const subCategories = mainGroup.subSections.flatMap((s) =>
+      s.items.map((it) => ({
+        id: it.id,
+        name: it.name,
+        slug: it.slug,
+        image: it.image,
+        badge: it.badge,
+      })),
+    );
+
+    return {
+      id: mainGroup.id,
+      name: mainGroup.name,
+      slug: mainGroup.slug,
+      description:
+        mainGroup.banner?.subtitle || `Explore ${mainGroup.name} collection at Navya Collection.`,
+      image: mainGroup.iconImage,
+      banner: mainGroup.banner?.image || mainGroup.iconImage,
+      accent: existing?.accent || 'from-navy to-[#234b8f]',
+      subCategories: subCategories.slice(0, 16),
+    };
+  }
+
+  // 3. Check if matches any subcategory item across all main groups
+  for (const group of MAIN_CATEGORY_GROUPS) {
+    for (const section of group.subSections) {
+      const matchedItem = section.items.find(
+        (it) => it.slug === targetSlug || it.id === targetSlug || it.slug === normalizedSlug,
+      );
+      if (matchedItem) {
+        const siblingSubcategories = section.items.map((it) => ({
+          id: it.id,
+          name: it.name,
+          slug: it.slug,
+          image: it.image,
+          badge: it.badge,
+        }));
+
+        return {
+          id: matchedItem.id,
+          name: matchedItem.name,
+          slug: matchedItem.slug,
+          description: `Shop authentic ${matchedItem.name} in ${group.name} collection at Navya Collection.`,
+          image: matchedItem.image,
+          banner: group.banner?.image || matchedItem.image,
+          parentId: group.id,
+          parentName: group.name,
+          parentSlug: group.slug,
+          accent: 'from-navy to-[#234b8f]',
+          subCategories: siblingSubcategories,
+        };
+      }
+    }
+  }
+
   if (existing) return existing;
 
   // Format slug dynamically if not found

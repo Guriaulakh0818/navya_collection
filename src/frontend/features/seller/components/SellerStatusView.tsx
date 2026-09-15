@@ -359,14 +359,23 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             <HelpCircle className="w-4 h-4 text-amber-600" />
             Contact Support Team
           </button>
-          <span className="flex items-center gap-1.5 text-slate-700 font-bold">
+          <a
+            href="mailto:info@navyacollection.store"
+            className="flex items-center gap-1.5 text-slate-700 hover:text-amber-700 font-bold transition-colors cursor-pointer"
+          >
             <Mail className="w-4 h-4 text-amber-600" />
-            sellers@navyacollection.store
-          </span>
-          <span className="flex items-center gap-1.5 text-slate-700 font-bold">
+            info@navyacollection.store
+          </a>
+          <a
+            href="https://wa.me/919053883125?text=Hello%20Navya%20Collection%20Support%2C%20I%20have%20a%20query%20regarding%20my%20seller%20account."
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-slate-700 hover:text-emerald-700 font-bold transition-colors cursor-pointer"
+            title="Chat on WhatsApp"
+          >
             <Phone className="w-4 h-4 text-amber-600" />
-            +91 99919 83125
-          </span>
+            +91 9053883125
+          </a>
         </div>
 
         <Link
@@ -393,11 +402,23 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs font-semibold">
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Email:</span>
-                <span className="font-bold text-navy">support@navyacollection.store</span>
+                <a
+                  href="mailto:info@navyacollection.store"
+                  className="font-bold text-navy hover:underline"
+                >
+                  info@navyacollection.store
+                </a>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">Merchant Desk:</span>
-                <span className="font-bold text-navy">+91 99919 83125</span>
+                <span className="text-slate-500">WhatsApp / Call:</span>
+                <a
+                  href="https://wa.me/919053883125?text=Hello%20Navya%20Collection%20Support%2C%20I%20have%20a%20query%20regarding%20my%20seller%20account."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-emerald-700 hover:underline"
+                >
+                  +91 9053883125 (WhatsApp)
+                </a>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Operating Hours:</span>
