@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import type { Product } from '@/features/products/types/product.types';
@@ -24,6 +24,8 @@ export function AddToCartButton({ product, className, disabled }: AddToCartButto
     setMounted(true);
   }, []);
 
+  if (!product?.id) return null;
+
   // Check if product is currently in cart
   const cartItem = mounted ? items.find((item) => item.productId === product.id) : undefined;
 
@@ -43,7 +45,7 @@ export function AddToCartButton({ product, className, disabled }: AddToCartButto
     await addItem({
       productId: product.id,
       name: product.name,
-      price: product.price,
+      price: Number(product.price || 0),
       quantity: 1,
       image: imgUrl,
       shopId: shopInfo.id || 'navya-boutique',

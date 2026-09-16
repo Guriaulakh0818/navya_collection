@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { ChevronDown, HelpCircle } from 'lucide-react';
+import { useState } from 'react';
 import Link from 'next/link';
 
 import { HOMEPAGE_FAQS } from '../constants/homepage-faqs';
-
-export { HOMEPAGE_FAQS };
 
 export function HomepageFaqSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -62,7 +60,9 @@ export function HomepageFaqSection() {
                 </h3>
                 <div
                   className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
-                    isOpen ? 'bg-amber-100 text-[#F28C28] rotate-180' : 'bg-slate-100 text-slate-500'
+                    isOpen
+                      ? 'bg-amber-100 text-[#F28C28] rotate-180'
+                      : 'bg-slate-100 text-slate-500'
                   }`}
                 >
                   <ChevronDown className="w-3.5 h-3.5" />

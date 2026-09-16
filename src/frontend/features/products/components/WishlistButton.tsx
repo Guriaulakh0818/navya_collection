@@ -12,12 +12,14 @@ type WishlistButtonProps = {
 
 export function WishlistButton({ product, className }: WishlistButtonProps) {
   const [mounted, setMounted] = useState(false);
-  const isInWishlist = useWishlistStore((s) => s.isInWishlist(product.id));
+  const isInWishlist = useWishlistStore((s) => (product?.id ? s.isInWishlist(product.id) : false));
   const toggleItem = useWishlistStore((s) => s.toggleItem);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  if (!product?.id) return null;
 
   const activeInWishlist = mounted && isInWishlist;
 
@@ -27,8 +29,9 @@ export function WishlistButton({ product, className }: WishlistButtonProps) {
     toggleItem({
       productId: product.id,
       name: product.name,
-      price: product.price,
-      image: product.images?.[0]?.url || (product as any)?.image || '',
+      price: Number(product.price || 0),
+      image:
+        product.images?.[0]?.imageUrl || product.images?.[0]?.url || (product as any)?.image || '',
       slug: product.slug,
     });
   };
