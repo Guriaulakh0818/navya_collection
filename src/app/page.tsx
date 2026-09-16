@@ -55,8 +55,13 @@ export const metadata: Metadata = {
 };
 
 export default async function MultiVendorMarketplaceHomePage() {
-  const headersList = await headers();
-  const host = (headersList.get('x-forwarded-host') || headersList.get('host') || '').toLowerCase();
+  let host = '';
+  try {
+    const headersList = await headers();
+    host = (headersList.get('x-forwarded-host') || headersList.get('host') || '').toLowerCase();
+  } catch {
+    host = '';
+  }
 
   // If accessed via admin.navyacollection.store or admin subdomain, redirect to admin dashboard
   if (host.startsWith('admin.') || host.includes('admin.navyacollection.store')) {
@@ -68,12 +73,21 @@ export default async function MultiVendorMarketplaceHomePage() {
     return <BecomeSellerContent />;
   }
 
-  const data = await getMarketplaceHomeData();
+  let featuredShops: any[] = [];
+  let trendingProducts: any[] = [];
+  let newArrivals: any[] = [];
+  let offers: any[] = [];
 
-  const featuredShops = data?.featuredShops || [];
-  const trendingProducts = data?.trendingProducts || [];
-  const newArrivals = data?.newArrivals || [];
-  const offers = (data as any)?.offers || [];
+  try {
+    const data = await getMarketplaceHomeData();
+    featuredShops = data?.featuredShops || [];
+    trendingProducts = data?.trendingProducts || [];
+    newArrivals = data?.newArrivals || [];
+    offers = (data as any)?.offers || [];
+  } catch (err) {
+    console.error('❌ Failed to load marketplace home data:', err);
+  }
+
   const primaryOffer = offers[0] || null;
 
   // Schema.org FAQPage structured data matching visible FAQ content
