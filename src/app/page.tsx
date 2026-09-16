@@ -6,10 +6,8 @@ import { ShoppingBag, Sparkles } from 'lucide-react';
 
 import { FeaturedBoutiquesSection } from '@/frontend/features/marketplace/components/FeaturedBoutiquesSection';
 import { FreshArrivalsSection } from '@/frontend/features/marketplace/components/FreshArrivalsSection';
-import {
-  HOMEPAGE_FAQS,
-  HomepageFaqSection,
-} from '@/frontend/features/marketplace/components/HomepageFaqSection';
+import { HomepageFaqSection } from '@/frontend/features/marketplace/components/HomepageFaqSection';
+import { HOMEPAGE_FAQS } from '@/frontend/features/marketplace/constants/homepage-faqs';
 import { HowNavyaWorksSection } from '@/frontend/features/marketplace/components/HowNavyaWorksSection';
 import { MarketplaceHero } from '@/frontend/features/marketplace/components/MarketplaceHero';
 import { SellerStorySection } from '@/frontend/features/marketplace/components/SellerStorySection';

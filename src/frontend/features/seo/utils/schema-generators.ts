@@ -197,7 +197,8 @@ export function generateShopSchema(shop: {
   };
 }
 
-export function generateFaqSchema(faqs: Array<{ question: string; answer: string }>) {
+export function generateFaqSchema(faqs?: Array<{ question: string; answer: string }>) {
+  if (!Array.isArray(faqs) || faqs.length === 0) return null;
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
