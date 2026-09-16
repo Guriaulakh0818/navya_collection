@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Minus, Plus } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -13,13 +14,18 @@ type AddToCartButtonProps = {
 };
 
 export function AddToCartButton({ product, className, disabled }: AddToCartButtonProps) {
+  const [mounted, setMounted] = useState(false);
   const items = useCartStore((s) => s.items);
   const addItem = useCartStore((s) => s.addItem);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Check if product is currently in cart
-  const cartItem = items.find((item) => item.productId === product.id);
+  const cartItem = mounted ? items.find((item) => item.productId === product.id) : undefined;
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();

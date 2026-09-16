@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 import type { Product } from '@/features/products/types/product.types';
 import { useWishlistStore } from '@/stores';
 
@@ -9,8 +11,15 @@ type WishlistButtonProps = {
 };
 
 export function WishlistButton({ product, className }: WishlistButtonProps) {
+  const [mounted, setMounted] = useState(false);
   const isInWishlist = useWishlistStore((s) => s.isInWishlist(product.id));
   const toggleItem = useWishlistStore((s) => s.toggleItem);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const activeInWishlist = mounted && isInWishlist;
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -29,17 +38,17 @@ export function WishlistButton({ product, className }: WishlistButtonProps) {
       type="button"
       onClick={handleClick}
       className={`inline-flex items-center justify-center rounded-full p-2 transition-all duration-150 active:scale-90 transform cursor-pointer ${
-        isInWishlist
+        activeInWishlist
           ? 'bg-rose-50 text-rose-600 scale-105'
           : 'bg-white/80 text-slate-600 hover:text-rose-600'
       } ${className || ''}`}
-      aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+      aria-label={activeInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="h-5 w-5"
         viewBox="0 0 24 24"
-        fill={isInWishlist ? 'currentColor' : 'none'}
+        fill={activeInWishlist ? 'currentColor' : 'none'}
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
