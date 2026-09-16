@@ -19,7 +19,7 @@ export function WishlistButton({ product, className }: WishlistButtonProps) {
       productId: product.id,
       name: product.name,
       price: product.price,
-      image: product.images[0]?.url,
+      image: product.images?.[0]?.url || (product as any)?.image || '',
       slug: product.slug,
     });
   };

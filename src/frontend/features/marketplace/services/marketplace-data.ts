@@ -167,11 +167,29 @@ export const getMarketplaceHomeData = cache(async () => {
     ]);
 
     return {
-      featuredShops: featuredShops || [],
+      featuredShops: (featuredShops || []).map((s: any) => ({
+        ...s,
+        rating: s.rating !== null && s.rating !== undefined ? Number(s.rating) : null,
+      })),
       recentShops: recentShops || [],
-      trendingProducts: trendingProducts || [],
-      newArrivals: newArrivals || [],
-      bestSellers: bestSellers || [],
+      trendingProducts: (trendingProducts || []).map((p: any) => ({
+        ...p,
+        price: Number(p.price || 0),
+        compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+        rating: p.rating !== null && p.rating !== undefined ? Number(p.rating) : null,
+      })),
+      newArrivals: (newArrivals || []).map((p: any) => ({
+        ...p,
+        price: Number(p.price || 0),
+        compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+        rating: p.rating !== null && p.rating !== undefined ? Number(p.rating) : null,
+      })),
+      bestSellers: (bestSellers || []).map((p: any) => ({
+        ...p,
+        price: Number(p.price || 0),
+        compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+        rating: p.rating !== null && p.rating !== undefined ? Number(p.rating) : null,
+      })),
       categories: categories || [],
       offers: (offers as any[]) || [],
     };
