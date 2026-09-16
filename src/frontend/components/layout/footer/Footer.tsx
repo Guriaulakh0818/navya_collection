@@ -113,9 +113,8 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-xs text-white/70 leading-relaxed max-w-sm">
-              Navya Collection is India&apos;s premier fashion &amp; lifestyle brand for everyday
-              Indian families. Delivering designer Sarees, Ethnic Couture, Men&apos;s Wear, Kids
-              Fashion, and curated Boutique Artisan collections.
+              Navya Collection is a fashion marketplace connecting customers across India with
+              verified local clothing stores, designer boutiques, and regional apparel creators.
             </p>
             <div className="pt-2 space-y-2 text-xs text-white/80">
               <div className="flex items-center gap-2">
@@ -150,11 +149,6 @@ export function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs text-white/70">
               <li>
-                <Link href="/category/spotlight" className="hover:text-orange transition-colors">
-                  In The Spotlight
-                </Link>
-              </li>
-              <li>
                 <Link href="/category/women" className="hover:text-orange transition-colors">
                   Women&apos;s Collection
                 </Link>
@@ -166,51 +160,56 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/category/kids" className="hover:text-orange transition-colors">
-                  Kids&apos; Fashion & Baby Wear
+                  Kids&apos; Fashion &amp; Baby
                 </Link>
               </li>
               <li>
-                <Link href="/category/best-sellers" className="hover:text-orange transition-colors">
-                  Best Sellers & Deals
+                <Link href="/category" className="hover:text-orange transition-colors">
+                  All Categories
                 </Link>
               </li>
               <li>
-                <Link href="/shops" className="hover:text-orange transition-colors">
-                  Boutique Shops & Artisans
+                <Link href="/shop" className="hover:text-orange transition-colors">
+                  Boutique Stores &amp; Artisans
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Policies & Help */}
+          {/* Company & Policies */}
           <div className="sm:col-span-1 lg:col-span-2">
             <h4 className="font-heading text-xs sm:text-sm font-bold text-white uppercase tracking-wider mb-4">
-              Policies & Help
+              Company &amp; Policies
             </h4>
             <ul className="space-y-2.5 text-xs text-white/70">
               <li>
-                <Link href="/account/orders" className="hover:text-orange transition-colors">
-                  Track Order
+                <Link href="/about" className="hover:text-orange transition-colors">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-orange transition-colors">
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/become-seller" className="hover:text-orange transition-colors">
+                  Sell on Navya (Boutiques)
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-orange transition-colors">
+                  FAQ &amp; Help Center
                 </Link>
               </li>
               <li>
                 <Link href="/shipping-policy" className="hover:text-orange transition-colors">
-                  Shipping & Delivery
+                  Shipping &amp; Delivery
                 </Link>
               </li>
               <li>
                 <Link href="/return-policy" className="hover:text-orange transition-colors">
-                  Return & Refund Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/cancellation-policy" className="hover:text-orange transition-colors">
-                  Cancellation Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/seller-agreement" className="hover:text-orange transition-colors">
-                  Seller Agreement
+                  Return &amp; Refund Policy
                 </Link>
               </li>
               <li>

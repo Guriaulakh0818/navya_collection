@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button';
 export const metadata: Metadata = {
   title: 'Order Confirmed | Navya Collection',
   description: 'Your order has been placed successfully.',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 interface PageProps {

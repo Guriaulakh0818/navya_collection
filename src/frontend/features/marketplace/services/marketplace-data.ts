@@ -1,5 +1,6 @@
 import { cache } from 'react';
 
+import { OfferService } from '@/backend/services/offer.service';
 import { CATEGORIES } from '@/features/categories/constants/category.constants';
 import { prisma } from '@/lib/prisma';
 
@@ -12,7 +13,7 @@ export const getMarketplaceHomeData = cache(async () => {
       newArrivals,
       bestSellers,
       categories,
-      coupons,
+      offers,
     ] = await Promise.all([
       // 1. Featured Shops
       prisma.shop
@@ -33,6 +34,16 @@ export const getMarketplaceHomeData = cache(async () => {
             state: true,
             _count: {
               select: { products: { where: { deletedAt: null, status: 'active' } } },
+            },
+            products: {
+              where: { deletedAt: null, status: 'active' },
+              take: 4,
+              orderBy: { createdAt: 'desc' },
+              select: {
+                id: true,
+                name: true,
+                images: { select: { imageUrl: true }, take: 1 },
+              },
             },
           },
         })
@@ -151,20 +162,8 @@ export const getMarketplaceHomeData = cache(async () => {
           })),
         ),
 
-      // 7. Active Coupons
-      prisma.coupon
-        .findMany({
-          where: { isActive: true },
-          take: 2,
-          select: {
-            id: true,
-            code: true,
-            discountType: true,
-            discountValue: true,
-            minOrderAmount: true,
-          },
-        })
-        .catch(() => []),
+      // 7. Active Configured Offers / Promotions
+      OfferService.getActiveOffers().catch(() => []),
     ]);
 
     return {
@@ -174,7 +173,7 @@ export const getMarketplaceHomeData = cache(async () => {
       newArrivals: newArrivals || [],
       bestSellers: bestSellers || [],
       categories: categories || [],
-      coupons: coupons || [],
+      offers: (offers as any[]) || [],
     };
   } catch (error) {
     console.error('❌ Failed to fetch marketplace home data:', error);
@@ -185,7 +184,7 @@ export const getMarketplaceHomeData = cache(async () => {
       newArrivals: [],
       bestSellers: [],
       categories: [],
-      coupons: [],
+      offers: [],
     };
   }
 });

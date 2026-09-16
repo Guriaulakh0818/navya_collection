@@ -127,11 +127,11 @@ export function PendingApprovalCard({
       <div className="pt-6 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-600 font-medium">
         <div className="flex flex-wrap items-center gap-4">
           <a
-            href="mailto:info@navyacollection.store"
+            href="mailto:helpdesk@navyacollection.store"
             className="flex items-center gap-1.5 text-slate-700 hover:text-amber-700 font-bold transition-colors cursor-pointer"
           >
             <Mail className="w-4 h-4 text-amber-700" />
-            info@navyacollection.store
+            helpdesk@navyacollection.store
           </a>
           <a
             href="https://wa.me/919053883125?text=Hello%20Navya%20Collection%20Support%2C%20I%20have%20a%20query%20regarding%20my%20seller%20account."

@@ -5,12 +5,12 @@ import Link from 'next/link';
 const footerLinks = {
   company: [
     { href: '/about', label: 'About Us' },
-    { href: '/contact', label: 'Contact' },
-    { href: '/shipping-policy', label: 'Shipping Policy' },
-    { href: '/return-policy', label: 'Return Policy' },
+    { href: '/faq', label: 'FAQ & Help' },
+    { href: '/become-seller', label: 'Become a Seller' },
+    { href: '/contact', label: 'Contact Us' },
   ],
   quickLinks: [
-    { href: '/shop', label: 'Shop' },
+    { href: '/shop', label: 'Shop Catalog' },
     { href: '/wishlist', label: 'Wishlist' },
     { href: '/cart', label: 'Cart' },
     { href: '/account', label: 'My Account' },
@@ -21,7 +21,7 @@ const footerLinks = {
     { href: '/category/men', label: "Men's Collection" },
     { href: '/category/kids', label: "Kids' Fashion" },
     { href: '/category/best-sellers', label: 'Best Sellers' },
-    { href: '/shops', label: 'Boutique Shops' },
+    { href: '/shop', label: 'Boutique Shops' },
   ],
   policies: [
     { href: '/privacy-policy', label: 'Privacy Policy' },

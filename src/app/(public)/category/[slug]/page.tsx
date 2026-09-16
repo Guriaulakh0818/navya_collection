@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { CategoryBanner } from '@/features/categories/components/CategoryBanner';
@@ -8,10 +9,12 @@ import {
   DEFAULT_PAGE_SIZE,
   findCategoryBySlug,
 } from '@/features/categories/constants/category.constants';
-import { ProductGrid } from '@/features/products/components/ProductGrid';
 import { CategoryFilteredView } from '@/frontend/features/categories/components/CategoryFilteredView';
-
-import { CategoryPagination } from './CategoryPagination';
+import {
+  generateCategoryJsonLdSchemas,
+  generateCategoryMetadata,
+  JsonLd,
+} from '@/frontend/features/seo';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -21,72 +24,247 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const category = findCategoryBySlug(slug);
+  const cleanSlug = (slug || '').toLowerCase().trim();
+
+  let dbCategory: any = null;
+  let publicProductCount = 0;
+
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    dbCategory = await prisma.category.findFirst({
+      where: {
+        OR: [{ slug: cleanSlug }, { id: cleanSlug }],
+        deletedAt: null,
+      },
+      include: {
+        parent: {
+          select: { id: true, name: true, slug: true },
+        },
+      },
+    });
+
+    if (dbCategory) {
+      if (dbCategory.status === 'inactive') {
+        return {
+          title: 'Category Not Available | Navya Collection',
+          robots: { index: false, follow: false },
+        };
+      }
+
+      // Count genuinely public active products belonging to this category
+      publicProductCount = await prisma.product.count({
+        where: {
+          status: 'active',
+          deletedAt: null,
+          OR: [
+            { categoryId: dbCategory.id },
+            { category: { slug: dbCategory.slug } },
+            { category: { parentId: dbCategory.id } },
+          ],
+          AND: [
+            {
+              OR: [
+                { shopId: null },
+                {
+                  shop: {
+                    status: 'APPROVED',
+                    deletedAt: null,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+      return generateCategoryMetadata(
+        {
+          id: dbCategory.id,
+          name: dbCategory.name,
+          slug: dbCategory.slug,
+          description: dbCategory.description,
+          image: dbCategory.image,
+          metaTitle: dbCategory.metaTitle,
+          metaDescription: dbCategory.metaDescription,
+          metaKeywords: dbCategory.metaKeywords,
+          canonicalUrl: dbCategory.canonicalUrl,
+          status: dbCategory.status,
+        },
+        {
+          slug: cleanSlug,
+          parentName: dbCategory.parent?.name,
+          hasPublicProducts: publicProductCount > 0,
+        }
+      );
+    }
+  } catch (err) {
+    console.error('Failed to query DB category for metadata:', err);
+  }
+
+  // Fallback to constant categories for curated spotlights
+  const constCategory = findCategoryBySlug(cleanSlug);
+  if (constCategory) {
+    try {
+      const { prisma } = await import('@/lib/prisma');
+      publicProductCount = await prisma.product.count({
+        where: {
+          status: 'active',
+          deletedAt: null,
+          OR: [
+            { categoryId: constCategory.id },
+            { category: { slug: constCategory.slug } },
+          ],
+          AND: [
+            {
+              OR: [
+                { shopId: null },
+                {
+                  shop: {
+                    status: 'APPROVED',
+                    deletedAt: null,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      });
+    } catch {
+      // Fallback
+    }
+
+    return generateCategoryMetadata(
+      {
+        id: constCategory.id,
+        name: constCategory.name,
+        slug: constCategory.slug,
+        description: constCategory.description,
+        image: constCategory.image,
+        banner: constCategory.banner,
+        status: 'active',
+      },
+      {
+        slug: cleanSlug,
+        parentName: constCategory.parentName,
+        hasPublicProducts: publicProductCount > 0,
+      }
+    );
+  }
 
   return {
-    title: `${category.name} | Navya Collection`,
-    description: category.description || `Shop ${category.name} online at Navya Collection.`,
-    keywords: [category.name, 'fashion', 'clothing', 'Navya Collection'],
-    openGraph: {
-      title: `${category.name} | Navya Collection`,
-      description: category.description || `Shop ${category.name} online at Navya Collection.`,
-      type: 'website',
-      url: `https://navyacollection.store/category/${category.slug}`,
-    },
+    title: 'Category Not Found | Navya Collection',
+    description: 'The requested category does not exist on Navya Collection.',
+    robots: { index: false, follow: false },
   };
 }
 
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
-  const category = findCategoryBySlug(slug);
+  const cleanSlug = (slug || '').toLowerCase().trim();
+
+  let dbCategory: any = null;
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    dbCategory = await prisma.category.findFirst({
+      where: {
+        OR: [{ slug: cleanSlug }, { id: cleanSlug }],
+        deletedAt: null,
+      },
+      include: {
+        parent: {
+          select: { id: true, name: true, slug: true },
+        },
+        children: {
+          where: { status: 'active', deletedAt: null },
+          select: { id: true, name: true, slug: true },
+        },
+      },
+    });
+  } catch (err) {
+    console.error('Failed to query DB category for page:', err);
+  }
+
+  if (dbCategory && dbCategory.status === 'inactive') {
+    notFound();
+  }
+
+  // Resolve category configuration
+  const constCategory = findCategoryBySlug(cleanSlug);
+
+  const category = dbCategory
+    ? {
+        id: dbCategory.id,
+        name: dbCategory.name,
+        slug: dbCategory.slug,
+        description: dbCategory.description || constCategory?.description || '',
+        image: dbCategory.image || constCategory?.image || '',
+        banner: dbCategory.image || constCategory?.banner || constCategory?.image || '',
+        productCount: 0,
+        accent: constCategory?.accent || 'from-navy to-[#234b8f]',
+        parentId: dbCategory.parentId || constCategory?.parentId,
+        parentName: dbCategory.parent?.name || constCategory?.parentName,
+        parentSlug: dbCategory.parent?.slug || constCategory?.parentSlug,
+        subCategories:
+          dbCategory.children?.length > 0
+            ? dbCategory.children.map((c: any) => ({
+                id: c.id,
+                name: c.name,
+                slug: c.slug,
+              }))
+            : constCategory?.subCategories || [],
+      }
+    : constCategory;
+
+  if (!category) {
+    notFound();
+  }
 
   let dbProducts: any[] = [];
   try {
     const { prisma } = await import('@/lib/prisma');
 
     // Determine gender filters if applicable
-    const normalized = slug.toLowerCase().trim();
-    const isMen = normalized === 'men' || normalized.startsWith('men-');
-    const isWomen = normalized === 'women' || normalized.startsWith('women-');
+    const isMen = cleanSlug === 'men' || cleanSlug.startsWith('men-');
+    const isWomen = cleanSlug === 'women' || cleanSlug.startsWith('women-');
     const isKids =
-      normalized === 'kids' ||
-      normalized.startsWith('kids-') ||
-      normalized.startsWith('baby-') ||
-      normalized.startsWith('boys-') ||
-      normalized.startsWith('girls-');
+      cleanSlug === 'kids' ||
+      cleanSlug.startsWith('kids-') ||
+      cleanSlug.startsWith('baby-') ||
+      cleanSlug.startsWith('boys-') ||
+      cleanSlug.startsWith('girls-');
 
     // Build targeted OR conditions
     const orConditions: any[] = [
       { categoryId: category.id },
       { category: { slug: category.slug } },
-      { category: { slug: normalized } },
+      { category: { slug: cleanSlug } },
       { category: { parentId: category.id } },
       { metaKeywords: { contains: category.id, mode: 'insensitive' as const } },
       { metaKeywords: { contains: category.slug, mode: 'insensitive' as const } },
-      { metaKeywords: { contains: normalized, mode: 'insensitive' as const } },
+      { metaKeywords: { contains: cleanSlug, mode: 'insensitive' as const } },
     ];
 
     if (category.name) {
       orConditions.push(
         { category: { name: { contains: category.name, mode: 'insensitive' as const } } },
-        { name: { contains: category.name, mode: 'insensitive' as const } },
+        { name: { contains: category.name, mode: 'insensitive' as const } }
       );
     }
 
-    if (isMen && normalized === 'men') {
+    if (isMen && cleanSlug === 'men') {
       orConditions.push({ gender: { equals: 'men', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 'men', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 'shirt', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 't-shirt', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 'kurta', mode: 'insensitive' as const } });
-    } else if (isWomen && normalized === 'women') {
+    } else if (isWomen && cleanSlug === 'women') {
       orConditions.push({ gender: { equals: 'women', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 'women', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 'saree', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 'lehenga', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 'kurti', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 'dress', mode: 'insensitive' as const } });
-    } else if (isKids && normalized === 'kids') {
+    } else if (isKids && cleanSlug === 'kids') {
       orConditions.push({ gender: { equals: 'kids', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 'kid', mode: 'insensitive' as const } });
       orConditions.push({ name: { contains: 'baby', mode: 'insensitive' as const } });
@@ -96,49 +274,49 @@ export default async function CategoryPage({ params }: Props) {
     }
 
     // Dynamic Price Deals & Curations Matching
-    if (normalized.includes('under-499') || normalized.includes('budget-finds')) {
+    if (cleanSlug.includes('under-499') || cleanSlug.includes('budget-finds')) {
       orConditions.push({ price: { lte: 499 } });
     }
-    if (normalized.includes('under-999')) {
+    if (cleanSlug.includes('under-999')) {
       orConditions.push({ price: { lte: 999 } });
     }
-    if (normalized.includes('50-off') || normalized.includes('50-percent-off')) {
+    if (cleanSlug.includes('50-off') || cleanSlug.includes('50-percent-off')) {
       orConditions.push({ compareAtPrice: { gt: 0 } });
     }
 
     // Curations & Special Spotlight Pages
     const isFestivals =
-      normalized.includes('festivals-of-india') ||
-      normalized.includes('festive') ||
-      normalized.includes('wedding');
+      cleanSlug.includes('festivals-of-india') ||
+      cleanSlug.includes('festive') ||
+      cleanSlug.includes('wedding');
 
     const isTrendyStreet =
-      normalized.includes('trendy-street') ||
-      normalized.includes('gen-z-fashion') ||
-      normalized.includes('streetwear');
+      cleanSlug.includes('trendy-street') ||
+      cleanSlug.includes('gen-z-fashion') ||
+      cleanSlug.includes('streetwear');
 
     const isKoreanStore =
-      normalized.includes('korean-store') ||
-      normalized.includes('aesthetic') ||
-      normalized.includes('minimal');
+      cleanSlug.includes('korean-store') ||
+      cleanSlug.includes('aesthetic') ||
+      cleanSlug.includes('minimal');
 
     const isSportsStore =
-      normalized.includes('sports-store') ||
-      normalized.includes('activewear') ||
-      normalized.includes('athleisure');
+      cleanSlug.includes('sports-store') ||
+      cleanSlug.includes('activewear') ||
+      cleanSlug.includes('athleisure');
 
     const isGeneralSpotlight =
-      normalized.includes('trending') ||
-      normalized.includes('best-sellers') ||
-      normalized.includes('top-rated') ||
-      normalized.includes('featured') ||
-      normalized.includes('spotlight') ||
-      normalized.includes('new-season') ||
-      normalized.includes('new-arrivals') ||
-      normalized.includes('new-on-navya') ||
-      normalized.includes('shop-your-vibe') ||
-      normalized.includes('new-listings') ||
-      normalized === 'new';
+      cleanSlug.includes('trending') ||
+      cleanSlug.includes('best-sellers') ||
+      cleanSlug.includes('top-rated') ||
+      cleanSlug.includes('featured') ||
+      cleanSlug.includes('spotlight') ||
+      cleanSlug.includes('new-season') ||
+      cleanSlug.includes('new-arrivals') ||
+      cleanSlug.includes('new-on-navya') ||
+      cleanSlug.includes('shop-your-vibe') ||
+      cleanSlug.includes('new-listings') ||
+      cleanSlug === 'new';
 
     if (isFestivals) {
       orConditions.push(
@@ -150,7 +328,7 @@ export default async function CategoryPage({ params }: Props) {
         { name: { contains: 'suit', mode: 'insensitive' as const } },
         { name: { contains: 'sherwani', mode: 'insensitive' as const } },
         { name: { contains: 'jewellery', mode: 'insensitive' as const } },
-        { name: { contains: 'kundan', mode: 'insensitive' as const } },
+        { name: { contains: 'kundan', mode: 'insensitive' as const } }
       );
     } else if (isTrendyStreet) {
       orConditions.push(
@@ -163,7 +341,7 @@ export default async function CategoryPage({ params }: Props) {
         { name: { contains: 'oversized', mode: 'insensitive' as const } },
         { name: { contains: 'hoodie', mode: 'insensitive' as const } },
         { name: { contains: 'denim', mode: 'insensitive' as const } },
-        { name: { contains: 'jeans', mode: 'insensitive' as const } },
+        { name: { contains: 'jeans', mode: 'insensitive' as const } }
       );
     } else if (isKoreanStore) {
       orConditions.push(
@@ -172,7 +350,7 @@ export default async function CategoryPage({ params }: Props) {
         { name: { contains: 'coord', mode: 'insensitive' as const } },
         { name: { contains: 'dress', mode: 'insensitive' as const } },
         { name: { contains: 'top', mode: 'insensitive' as const } },
-        { name: { contains: 'oversized', mode: 'insensitive' as const } },
+        { name: { contains: 'oversized', mode: 'insensitive' as const } }
       );
     } else if (isSportsStore) {
       orConditions.push(
@@ -181,7 +359,7 @@ export default async function CategoryPage({ params }: Props) {
         { name: { contains: 'track', mode: 'insensitive' as const } },
         { name: { contains: 'jogger', mode: 'insensitive' as const } },
         { name: { contains: 'hoodie', mode: 'insensitive' as const } },
-        { name: { contains: 't-shirt', mode: 'insensitive' as const } },
+        { name: { contains: 't-shirt', mode: 'insensitive' as const } }
       );
     } else if (isGeneralSpotlight) {
       if (isMen) {
@@ -218,33 +396,33 @@ export default async function CategoryPage({ params }: Props) {
     // Specific category keyword extraction with strict distinctions
     const categoryLower = category.name.toLowerCase();
     const isTShirt =
-      normalized.includes('t-shirt') ||
-      normalized.includes('tshirt') ||
+      cleanSlug.includes('t-shirt') ||
+      cleanSlug.includes('tshirt') ||
       categoryLower.includes('t-shirt') ||
       categoryLower.includes('tshirt') ||
-      normalized.includes('polo') ||
+      cleanSlug.includes('polo') ||
       categoryLower.includes('polo');
 
     const isSweater =
-      normalized.includes('sweater') ||
+      cleanSlug.includes('sweater') ||
       categoryLower.includes('sweater') ||
-      normalized.includes('cardigan') ||
+      cleanSlug.includes('cardigan') ||
       categoryLower.includes('cardigan');
 
-    const isSweatshirt = normalized.includes('sweatshirt') || categoryLower.includes('sweatshirt');
+    const isSweatshirt = cleanSlug.includes('sweatshirt') || categoryLower.includes('sweatshirt');
 
     const isShirt =
       !isTShirt &&
       !isSweater &&
       !isSweatshirt &&
-      (normalized.includes('shirt') || categoryLower.includes('shirt'));
+      (cleanSlug.includes('shirt') || categoryLower.includes('shirt'));
 
-    if (categoryLower.includes('saree') || normalized.includes('saree')) {
+    if (categoryLower.includes('saree') || cleanSlug.includes('saree')) {
       orConditions.push(
         { name: { contains: 'saree', mode: 'insensitive' as const } },
         { name: { contains: 'sari', mode: 'insensitive' as const } },
         { name: { contains: 'banarasi', mode: 'insensitive' as const } },
-        { name: { contains: 'kanjeevaram', mode: 'insensitive' as const } },
+        { name: { contains: 'kanjeevaram', mode: 'insensitive' as const } }
       );
     }
 
@@ -252,74 +430,78 @@ export default async function CategoryPage({ params }: Props) {
       orConditions.push(
         { name: { contains: 'shirt', mode: 'insensitive' as const } },
         { name: { contains: 'oxford', mode: 'insensitive' as const } },
-        { name: { contains: 'button down', mode: 'insensitive' as const } },
+        { name: { contains: 'button down', mode: 'insensitive' as const } }
       );
     } else if (isTShirt) {
       orConditions.push(
         { name: { contains: 't-shirt', mode: 'insensitive' as const } },
         { name: { contains: 'tshirt', mode: 'insensitive' as const } },
         { name: { contains: 'polo', mode: 'insensitive' as const } },
-        { name: { contains: 'tee', mode: 'insensitive' as const } },
+        { name: { contains: 'tee', mode: 'insensitive' as const } }
       );
     } else if (isSweater) {
       orConditions.push(
         { name: { contains: 'sweater', mode: 'insensitive' as const } },
         { name: { contains: 'cardigan', mode: 'insensitive' as const } },
         { name: { contains: 'woolen', mode: 'insensitive' as const } },
-        { name: { contains: 'pullover', mode: 'insensitive' as const } },
+        { name: { contains: 'pullover', mode: 'insensitive' as const } }
       );
     } else if (isSweatshirt) {
       orConditions.push(
         { name: { contains: 'sweatshirt', mode: 'insensitive' as const } },
-        { name: { contains: 'fleece', mode: 'insensitive' as const } },
+        { name: { contains: 'fleece', mode: 'insensitive' as const } }
       );
     }
 
     if (
       categoryLower.includes('kurta') ||
       categoryLower.includes('kurti') ||
-      normalized.includes('kurta')
+      cleanSlug.includes('kurta')
     ) {
       orConditions.push(
         { name: { contains: 'kurta', mode: 'insensitive' as const } },
         { name: { contains: 'kurti', mode: 'insensitive' as const } },
         { name: { contains: 'anarkali', mode: 'insensitive' as const } },
-        { name: { contains: 'suit', mode: 'insensitive' as const } },
+        { name: { contains: 'suit', mode: 'insensitive' as const } }
       );
     }
-    if (categoryLower.includes('lehenga') || normalized.includes('lehenga')) {
+    if (categoryLower.includes('lehenga') || cleanSlug.includes('lehenga')) {
       orConditions.push(
         { name: { contains: 'lehenga', mode: 'insensitive' as const } },
         { name: { contains: 'choli', mode: 'insensitive' as const } },
-        { name: { contains: 'ghagra', mode: 'insensitive' as const } },
+        { name: { contains: 'ghagra', mode: 'insensitive' as const } }
       );
     }
     if (
       categoryLower.includes('jeans') ||
-      normalized.includes('jeans') ||
-      normalized.includes('denim')
+      cleanSlug.includes('jeans') ||
+      cleanSlug.includes('denim')
     ) {
       orConditions.push(
         { name: { contains: 'jean', mode: 'insensitive' as const } },
-        { name: { contains: 'denim', mode: 'insensitive' as const } },
+        { name: { contains: 'denim', mode: 'insensitive' as const } }
       );
     }
     if (
       categoryLower.includes('dress') ||
       categoryLower.includes('frock') ||
-      normalized.includes('dress')
+      cleanSlug.includes('dress')
     ) {
       orConditions.push(
         { name: { contains: 'dress', mode: 'insensitive' as const } },
         { name: { contains: 'frock', mode: 'insensitive' as const } },
-        { name: { contains: 'gown', mode: 'insensitive' as const } },
+        { name: { contains: 'gown', mode: 'insensitive' as const } }
       );
     }
 
-    let rawProducts = await prisma.product.findMany({
+    const rawProducts = await prisma.product.findMany({
       where: {
         status: 'active',
         deletedAt: null,
+        shop: {
+          status: 'APPROVED',
+          deletedAt: null,
+        },
         OR: orConditions,
       },
       include: {
@@ -333,33 +515,8 @@ export default async function CategoryPage({ params }: Props) {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Zero-Empty Guarantee: If curation category has 0 items, backfill with active relevant store items
-    if (
-      rawProducts.length === 0 &&
-      (isGeneralSpotlight || isFestivals || isTrendyStreet || isKoreanStore || isSportsStore)
-    ) {
-      const fallbackWhere: any = { status: 'active', deletedAt: null };
-      if (isMen) fallbackWhere.gender = { equals: 'men', mode: 'insensitive' };
-      if (isWomen) fallbackWhere.gender = { equals: 'women', mode: 'insensitive' };
-      if (isKids) fallbackWhere.gender = { equals: 'kids', mode: 'insensitive' };
-
-      rawProducts = await prisma.product.findMany({
-        where: fallbackWhere,
-        take: 24,
-        include: {
-          images: {
-            select: { id: true, imageUrl: true, isPrimary: true, altText: true },
-            orderBy: { isPrimary: 'desc' },
-          },
-          shop: { select: { id: true, name: true, slug: true } },
-          category: { select: { id: true, name: true, slug: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-    }
-
     // High-Precision in-memory filter to guarantee shirts vs t-shirts vs sweaters never mix
-    const filteredProducts = rawProducts.filter((p) => {
+    const filteredProducts = rawProducts.filter((p: any) => {
       const pName = (p.name || '').toLowerCase();
       const pDesc = (p.description || '').toLowerCase();
       const pText = `${pName} ${pDesc}`;
@@ -369,7 +526,7 @@ export default async function CategoryPage({ params }: Props) {
         const hasTeeOrSweat =
           /\b(t-?shirt|tshirts?|tees?|sweatshirts?|hoodies?|sweaters?|cardigans?)\b/i.test(pName);
         if (hasTeeOrSweat) return false;
-      } else if (isTShirt && !normalized.includes('polo')) {
+      } else if (isTShirt && !cleanSlug.includes('polo')) {
         // If viewing pure T-Shirts, exclude formal shirts
         if (/\b(formal shirt|button down|dress shirt)\b/i.test(pName)) return false;
       } else if (isSweater) {
@@ -383,13 +540,13 @@ export default async function CategoryPage({ params }: Props) {
       return true;
     });
 
-    dbProducts = filteredProducts.map((p) => {
-      const primary = p.images.find((img) => img.isPrimary) || p.images[0];
+    dbProducts = filteredProducts.map((p: any) => {
+      const primary = p.images.find((img: any) => img.isPrimary) || p.images[0];
       return {
         ...p,
         price: Number(p.price),
         compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : undefined,
-        images: p.images.map((img) => ({
+        images: p.images.map((img: any) => ({
           id: img.id,
           url: img.imageUrl,
           imageUrl: img.imageUrl,
@@ -404,11 +561,10 @@ export default async function CategoryPage({ params }: Props) {
   }
 
   const allProducts = dbProducts;
-  const totalPages = Math.max(1, Math.ceil(allProducts.length / DEFAULT_PAGE_SIZE));
 
   // Derive the matching parent category group for explorer back link
   let groupParam = 'spotlight';
-  const normSlug = slug.toLowerCase();
+  const normSlug = cleanSlug;
   const normParent = (category.parentSlug || '').toLowerCase();
   const normName = (category.name || '').toLowerCase();
 
@@ -466,8 +622,40 @@ export default async function CategoryPage({ params }: Props) {
 
   breadcrumbItems.push({ label: category.name });
 
+  // Generate Schema.org structured data (BreadcrumbList + ItemList)
+  const categoryJsonLd = generateCategoryJsonLdSchemas({
+    category: {
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      description: category.description,
+      image: category.image,
+      banner: category.banner,
+      parent:
+        category.parentName && category.parentSlug
+          ? {
+              id: category.parentId || '',
+              name: category.parentName,
+              slug: category.parentSlug,
+            }
+          : null,
+    },
+    parentCategory:
+      category.parentName && category.parentSlug
+        ? {
+            name: category.parentName,
+            slug: category.parentSlug,
+          }
+        : null,
+    products: allProducts,
+    canonicalUrl: `https://navyacollection.store/category/${category.slug}`,
+  });
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16">
+      {/* Category Schema.org Structured Data */}
+      <JsonLd data={categoryJsonLd} />
+
       <div className="bg-white border-b border-slate-200/80">
         <Breadcrumb items={breadcrumbItems} className="mx-auto max-w-[1440px] px-4 md:px-6 py-3" />
       </div>
@@ -486,8 +674,8 @@ export default async function CategoryPage({ params }: Props) {
               </span>
             </div>
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-              {category.subCategories.map((sub) => {
-                const isActive = sub.slug === slug;
+              {category.subCategories.map((sub: any) => {
+                const isActive = sub.slug === cleanSlug;
                 return (
                   <Link
                     key={sub.id}
@@ -511,7 +699,7 @@ export default async function CategoryPage({ params }: Props) {
           </div>
         )}
 
-        {/* Main Category Filtered View with Flipkart / Myntra Style Faceted Sidebar & Mobile Dual-Pane Drawer */}
+        {/* Main Category Filtered View with Faceted Sidebar & Mobile Dual-Pane Drawer */}
         <CategoryFilteredView initialProducts={allProducts} category={category} />
       </div>
     </div>

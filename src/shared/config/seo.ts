@@ -21,6 +21,5 @@ export const SEO_CONFIG = {
   },
   twitter: {
     cardType: 'summary_large_image',
-    handle: '@navyacollection',
   },
 } as const;

@@ -141,7 +141,7 @@ export default function PrivacyPolicyPage() {
                   <strong className="text-navy">Name:</strong> Grievance Officer, Navya Collection
                 </p>
                 <p>
-                  <strong className="text-navy">Email:</strong> support@navyacollection.store
+                  <strong className="text-navy">Email:</strong> helpdesk@navyacollection.store
                 </p>
                 <p>
                   <strong className="text-navy">Address:</strong> Navya Collection Headquarters,

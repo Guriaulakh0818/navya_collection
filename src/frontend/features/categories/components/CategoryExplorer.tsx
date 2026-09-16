@@ -219,16 +219,18 @@ export function CategoryExplorer({
 
                       {/* Icon Avatar */}
                       <div
-                        className={`relative w-11 h-11 sm:w-13 sm:h-13 rounded-2xl overflow-hidden mb-1.5 transition-all ${
+                        className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden mb-1.5 transition-all ${
                           isActive
                             ? 'ring-2 ring-[#183A73] shadow-xs scale-105'
-                            : 'opacity-85 group-hover:opacity-100'
+                            : 'opacity-90 group-hover:opacity-100'
                         }`}
                       >
                         <Image
                           src={group.iconImage}
                           alt={group.name}
                           fill
+                          unoptimized
+                          priority
                           sizes="60px"
                           className="object-cover"
                         />
@@ -274,11 +276,13 @@ export function CategoryExplorer({
                       <ArrowRight className="h-3.5 w-3.5" />
                     </div>
                   </div>
-                  <div className="absolute right-0 top-0 bottom-0 w-1/3 sm:w-1/2 opacity-25 group-hover:opacity-35 transition-opacity">
+                  <div className="absolute right-0 top-0 bottom-0 w-1/3 sm:w-1/2 opacity-65 group-hover:opacity-85 transition-opacity">
                     <Image
                       src={activeGroup.banner.image}
                       alt={activeGroup.banner.title}
                       fill
+                      unoptimized
+                      priority
                       sizes="(max-width: 768px) 30vw, 400px"
                       className="object-cover"
                     />

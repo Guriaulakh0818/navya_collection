@@ -44,10 +44,16 @@ export const metadata: Metadata = {
   creator: 'Navya Collection',
   publisher: 'Navya Collection',
   applicationName: 'Navya Collection',
+  alternates: {
+    canonical: '/',
+  },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   manifest: '/manifest.webmanifest',
   robots: {
@@ -79,8 +85,6 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: SEO_CONSTANTS.TWITTER_HANDLE,
-    creator: SEO_CONSTANTS.TWITTER_HANDLE,
     title: SEO_CONSTANTS.DEFAULT_TITLE,
     description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
     images: [SEO_CONSTANTS.DEFAULT_OG_IMAGE],

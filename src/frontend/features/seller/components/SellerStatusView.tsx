@@ -360,11 +360,11 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             Contact Support Team
           </button>
           <a
-            href="mailto:info@navyacollection.store"
+            href="mailto:helpdesk@navyacollection.store"
             className="flex items-center gap-1.5 text-slate-700 hover:text-amber-700 font-bold transition-colors cursor-pointer"
           >
             <Mail className="w-4 h-4 text-amber-600" />
-            info@navyacollection.store
+            helpdesk@navyacollection.store
           </a>
           <a
             href="https://wa.me/919053883125?text=Hello%20Navya%20Collection%20Support%2C%20I%20have%20a%20query%20regarding%20my%20seller%20account."
@@ -403,10 +403,10 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Email:</span>
                 <a
-                  href="mailto:info@navyacollection.store"
+                  href="mailto:helpdesk@navyacollection.store"
                   className="font-bold text-navy hover:underline"
                 >
-                  info@navyacollection.store
+                  helpdesk@navyacollection.store
                 </a>
               </div>
               <div className="flex items-center justify-between">

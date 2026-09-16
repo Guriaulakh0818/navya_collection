@@ -55,8 +55,24 @@ export interface ProductSeoInput extends ProductSeoDbFields {
   } | null;
   images?: ProductImageInput[];
   variants?: ProductVariantSeoInput[];
-  rating?: number;
-  reviewCount?: number;
+  rating?: number | null;
+  reviewCount?: number | null;
+  shop?: {
+    id: string;
+    name: string;
+    slug: string;
+    city?: string | null;
+  } | null;
+  reviews?: Array<{
+    id?: string;
+    userName?: string;
+    rating?: number;
+    comment?: string;
+    createdAt?: Date | string;
+    user?: {
+      name?: string;
+    };
+  }>;
 }
 
 export interface SeoContext {

@@ -82,7 +82,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between">
-            <ProductRating rating={product.rating ?? 4.8} reviewCount={product.reviewCount ?? 24} />
+            <ProductRating rating={product.rating} reviewCount={product.reviewCount} />
           </div>
         </div>
 

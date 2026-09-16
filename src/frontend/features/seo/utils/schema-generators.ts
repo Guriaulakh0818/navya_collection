@@ -10,41 +10,63 @@ export function generateOrganizationSchema(input?: OrganizationSchemaInput) {
   const name = input?.name || SEO_CONSTANTS.ORGANIZATION.NAME;
   const url = input?.url || SEO_CONSTANTS.ORGANIZATION.URL;
   const logo = input?.logo || SEO_CONSTANTS.ORGANIZATION.LOGO;
+  const sameAs = input?.sameAs || SEO_CONSTANTS.ORGANIZATION.SAME_AS;
 
-  return {
+  const schema: any = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': `${url}/#organization`,
+    '@id': `${url}#organization`,
     name,
+    legalName: SEO_CONSTANTS.ORGANIZATION.LEGAL_NAME,
+    description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
     url,
     logo: {
       '@type': 'ImageObject',
       url: logo,
     },
-    sameAs: input?.sameAs || SEO_CONSTANTS.ORGANIZATION.SAME_AS,
     contactPoint: [
       {
         '@type': 'ContactPoint',
         telephone: input?.contactPoint?.telephone || SEO_CONSTANTS.ORGANIZATION.TELEPHONE,
+        email: SEO_CONSTANTS.ORGANIZATION.EMAIL,
         contactType: input?.contactPoint?.contactType || 'customer service',
         areaServed: 'IN',
         availableLanguage: ['en', 'hi'],
       },
     ],
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: SEO_CONSTANTS.ORGANIZATION.ADDRESS.ADDRESS_LOCALITY,
+      addressRegion: SEO_CONSTANTS.ORGANIZATION.ADDRESS.ADDRESS_REGION,
+      postalCode: SEO_CONSTANTS.ORGANIZATION.ADDRESS.POSTAL_CODE,
+      addressCountry: SEO_CONSTANTS.ORGANIZATION.ADDRESS.ADDRESS_COUNTRY,
+    },
   };
+
+  if (sameAs && sameAs.length > 0) {
+    schema.sameAs = sameAs;
+  }
+
+  return schema;
 }
 
 export function generateWebSiteSchema(input?: WebSiteSchemaInput) {
   const name = input?.name || SEO_CONSTANTS.SITE_NAME;
   const url = input?.url || SEO_CONSTANTS.SITE_URL;
-  const searchUrl = input?.searchUrl || `${url}/shop?search={search_term_string}`;
+  const searchUrl = input?.searchUrl || `${url}/search?q={search_term_string}`;
 
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    '@id': `${url}/#website`,
+    '@id': `${url}#website`,
     name,
     url,
+    description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
+    publisher: {
+      '@type': 'Organization',
+      '@id': `${url}#organization`,
+      name: SEO_CONSTANTS.SITE_NAME,
+    },
     potentialAction: {
       '@type': 'SearchAction',
       target: {
@@ -93,10 +115,15 @@ export function generateProductSchema(product: ProductSchemaInput) {
     schema.category = product.category;
   }
 
-  if (product.ratingValue && product.reviewCount) {
+  if (
+    product.ratingValue !== undefined &&
+    product.ratingValue > 0 &&
+    product.reviewCount !== undefined &&
+    product.reviewCount > 0
+  ) {
     schema.aggregateRating = {
       '@type': 'AggregateRating',
-      ratingValue: product.ratingValue,
+      ratingValue: Number(product.ratingValue.toFixed(1)),
       reviewCount: product.reviewCount,
     };
   }
@@ -167,5 +194,20 @@ export function generateShopSchema(shop: {
           },
         }
       : {}),
+  };
+}
+
+export function generateFaqSchema(faqs: Array<{ question: string; answer: string }>) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
   };
 }

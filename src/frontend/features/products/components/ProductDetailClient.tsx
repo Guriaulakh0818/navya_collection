@@ -292,14 +292,18 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               <span className="font-mono">
                 SKU: {activeVariant?.sku || product.sku || 'NC-PROD'}
               </span>
-              <span>•</span>
-              <div className="flex items-center gap-1 text-amber-600 font-bold">
-                <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                <span>{product.rating || 4.8}</span>
-                <span className="text-slate-500 font-normal">
-                  ({reviewsList.length} verified ratings)
-                </span>
-              </div>
+              {reviewsList.length > 0 && product.rating ? (
+                <>
+                  <span>•</span>
+                  <div className="flex items-center gap-1 text-amber-600 font-bold">
+                    <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                    <span>{Number(product.rating).toFixed(1)}</span>
+                    <span className="text-slate-500 font-normal">
+                      ({reviewsList.length} verified {reviewsList.length === 1 ? 'rating' : 'ratings'})
+                    </span>
+                  </div>
+                </>
+              ) : null}
             </div>
 
             {/* Merchant Shop Card Pill */}
@@ -538,7 +542,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
           <h2 className="text-xl font-extrabold text-navy">
             Customer Reviews ({reviewsList.length})
           </h2>
-          <ProductRating rating={product.rating || 4.8} reviewCount={reviewsList.length} />
+          <ProductRating rating={product.rating} reviewCount={reviewsList.length} />
         </div>
 
         {/* Add Review Form */}
