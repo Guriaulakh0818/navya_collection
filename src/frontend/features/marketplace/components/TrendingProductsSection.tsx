@@ -114,9 +114,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
         >
           {products.map((p, index) => {
             const imageSrc =
-              p.images?.[0]?.imageUrl ||
-              p.images?.[0]?.url ||
-              '/images/categories/men-shirts.jpg';
+              p.images?.[0]?.imageUrl || p.images?.[0]?.url || '/images/categories/men-shirts.jpg';
             const priceNum = Number(p.price || 0);
             const comparePriceNum = p.compareAtPrice ? Number(p.compareAtPrice) : null;
             const discountPercent =
@@ -138,7 +136,6 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                       src={imageSrc}
                       alt={p.name}
                       fill
-                      unoptimized
                       priority={index < 2}
                       sizes="240px"
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -148,17 +145,17 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                   {/* Badges (Top Left) */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1 z-10 pointer-events-none">
                     {discountPercent && (
-                      <span className="px-2 py-0.5 rounded-md bg-[#FF4500] text-white text-[9px] font-black uppercase tracking-wider shadow-xs">
+                      <span className="px-2 py-0.5 rounded-md bg-[#FF4500] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
                         {discountPercent}% OFF
                       </span>
                     )}
                     {index === 0 && !discountPercent && (
-                      <span className="px-2 py-0.5 rounded-md bg-[#F28C28] text-white text-[9px] font-black uppercase tracking-wider shadow-xs">
+                      <span className="px-2 py-0.5 rounded-md bg-[#F28C28] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
                         BESTSELLER
                       </span>
                     )}
                     {index === 1 && (
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[9px] font-black uppercase tracking-wider shadow-xs">
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
                         TRENDING
                       </span>
                     )}
@@ -182,7 +179,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                       </h3>
                     </Link>
 
-                    <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                    <p className="text-xs text-slate-500 font-medium truncate mt-0.5">
                       {p.shop?.name || 'Local Boutique'}
                     </p>
 
@@ -198,10 +195,10 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1 text-[11px] text-amber-600 font-bold mt-1">
-                      <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                    <div className="flex items-center gap-1 text-xs text-amber-600 font-bold mt-1">
+                      <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                       <span>{ratingNum}</span>
-                      <span className="text-slate-400 font-normal">({reviewsCount})</span>
+                      <span className="text-slate-400 font-normal text-xs">({reviewsCount})</span>
                     </div>
                   </div>
 
@@ -220,7 +217,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
 
         {/* Right Editorial Promo Card (Latest Arrivals) */}
         <div className="lg:col-span-4 xl:col-span-3">
-          <div className="relative h-full min-h-[320px] lg:min-h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-slate-900 p-6 flex flex-col justify-between group">
+          <div className="relative h-full min-h-[340px] lg:min-h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-slate-900 p-6 flex flex-col justify-between group">
             <Image
               src="/images/editorial/latest_arrivals_model.jpg"
               alt="Latest Arrivals from Local Boutiques"
@@ -231,8 +228,8 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 
             <div className="relative z-10">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#0A2342] text-[10px] font-black uppercase tracking-wider shadow-xs">
-                <Sparkles className="w-3 h-3 text-[#F28C28]" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-[#0A2342] text-xs font-bold shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 text-[#F28C28]" />
                 <span>Season 2026 Drop</span>
               </span>
             </div>
@@ -244,7 +241,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                   <br />
                   Arrivals
                 </h3>
-                <p className="text-xs text-white/80 font-medium leading-relaxed mt-1">
+                <p className="text-xs sm:text-sm text-white/90 font-normal leading-relaxed mt-1">
                   Fresh styles from local boutiques added daily.
                 </p>
               </div>

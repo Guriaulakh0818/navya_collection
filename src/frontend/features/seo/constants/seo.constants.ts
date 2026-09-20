@@ -1,9 +1,9 @@
 export const SEO_CONSTANTS = {
   SITE_NAME: 'Navya Collection',
-  DEFAULT_TITLE: 'Navya Collection | Fashion Marketplace',
+  DEFAULT_TITLE: 'Navya Collection | Buy Local Boutique Fashion & Ethnic Wear Online India',
   TITLE_TEMPLATE: '%s | Navya Collection',
   DEFAULT_DESCRIPTION:
-    'Navya Collection is a fashion marketplace connecting customers with local clothing stores, boutiques and fashion sellers across India.',
+    'Shop authentic women ethnic wear, designer sarees, boutique kurtis, and men casual fashion from top verified local boutiques across India with fast nationwide delivery.',
   SITE_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store',
   DEFAULT_OG_IMAGE: 'https://navyacollection.store/og-image.jpg',
   TWITTER_HANDLE: undefined,
@@ -13,7 +13,7 @@ export const SEO_CONSTANTS = {
     NAME: 'Navya Collection',
     LEGAL_NAME: 'Navya Collection Private Limited',
     URL: 'https://navyacollection.store',
-    LOGO: 'https://navyacollection.store/logo.png',
+    LOGO: 'https://navyacollection.store/images/navya-logo.png',
     FOUNDING_DATE: '2022',
     TELEPHONE: '+91-9053883125',
     EMAIL: 'helpdesk@navyacollection.store',
@@ -27,14 +27,14 @@ export const SEO_CONSTANTS = {
   },
   DEFAULT_KEYWORDS: [
     'Navya Collection',
-    'fashion marketplace India',
-    'boutique clothing online',
-    'local clothing stores',
-    'Indian ethnic wear',
-    'designer sarees',
-    'menswear India',
+    'buy clothes from local shops India',
+    'local boutiques online',
+    'Indian ethnic wear shopping',
+    'designer sarees online',
+    'boutique kurtis India',
+    'men ethnic wear online',
     'kids festive fashion',
-    'online fashion marketplace',
+    'fashion marketplace India',
+    'verified Indian boutiques',
   ],
 };
-

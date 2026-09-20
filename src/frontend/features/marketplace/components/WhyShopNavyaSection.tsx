@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  CreditCard,
-  Gem,
-  RotateCcw,
-  ShieldCheck,
-  ShoppingBag,
-  Store,
-  Truck,
-} from 'lucide-react';
+import { CreditCard, Gem, RotateCcw, ShieldCheck, ShoppingBag, Store, Truck } from 'lucide-react';
 
 const TRUST_FEATURES = [
   {
@@ -70,7 +62,9 @@ export function WhyShopNavyaSection() {
               key={feat.title}
               className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-2xs hover:shadow-md hover:border-slate-300 transition-all duration-300 flex flex-col justify-between space-y-3"
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${feat.accent}`}>
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center border ${feat.accent}`}
+              >
                 <Icon className="w-5 h-5" />
               </div>
 
@@ -78,7 +72,7 @@ export function WhyShopNavyaSection() {
                 <h3 className="font-extrabold text-[#0A2342] text-xs sm:text-sm leading-tight">
                   {feat.title}
                 </h3>
-                <p className="text-[11px] text-slate-500 font-medium mt-1 leading-relaxed">
+                <p className="text-xs text-slate-500 font-normal mt-1 leading-relaxed">
                   {feat.description}
                 </p>
               </div>

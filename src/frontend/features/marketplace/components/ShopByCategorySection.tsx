@@ -10,6 +10,7 @@ interface CategoryItem {
   image: string;
   href: string;
   badge?: string;
+  badgeBg?: string;
   isSpecial?: boolean;
 }
 
@@ -20,6 +21,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
     image: '/images/categories/spot-festivals-india.jpg',
     href: '/category/spotlight',
     badge: 'HOT',
+    badgeBg: 'bg-rose-600',
     isSpecial: true,
   },
   {
@@ -69,6 +71,9 @@ const CATEGORY_ITEMS: CategoryItem[] = [
     name: 'Under ₹999',
     image: '/images/categories/spot-budget-finds.jpg',
     href: '/category/under-999',
+    badge: 'DEAL',
+    badgeBg: 'bg-amber-600',
+    isSpecial: true,
   },
 ];
 
@@ -85,7 +90,9 @@ export function ShopByCategorySection() {
             <h2 className="text-lg sm:text-xl font-black text-[#0A2342] tracking-tight">
               Shop by Category
             </h2>
-            <p className="text-xs text-slate-500 font-medium">Find exactly what you&apos;re looking for</p>
+            <p className="text-xs text-slate-500 font-medium">
+              Find exactly what you&apos;re looking for
+            </p>
           </div>
         </div>
 
@@ -107,28 +114,43 @@ export function ShopByCategorySection() {
             className="group flex flex-col items-center text-center w-[76px] sm:w-[96px] md:w-[108px] shrink-0 transition-all duration-300 active:scale-95"
           >
             {/* Circular Avatar Container */}
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full p-1 border-2 border-slate-200/90 group-hover:border-[#F28C28] group-hover:shadow-md transition-all duration-300 bg-white flex items-center justify-center">
+            <div
+              className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full p-1 border-2 transition-all duration-300 flex items-center justify-center ${
+                item.isSpecial
+                  ? 'border-amber-400 bg-amber-50/50 shadow-xs'
+                  : 'border-slate-200/90 bg-white group-hover:border-[#F28C28] group-hover:shadow-md'
+              }`}
+            >
               <div className="w-full h-full rounded-full overflow-hidden relative bg-slate-100">
                 <Image
                   src={item.image}
                   alt={item.name}
                   fill
-                  unoptimized
                   sizes="(max-width: 640px) 64px, 96px"
                   className="object-cover object-center group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
 
-              {/* Special Badge (e.g. HOT on Trending) */}
+              {/* Special Badge (e.g. HOT on Trending, DEAL on Under ₹999) */}
               {item.badge && (
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.2 rounded-full bg-[#FF4500] text-white text-[9px] font-black uppercase tracking-wider shadow-xs animate-pulse">
+                <span
+                  className={`absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs ${
+                    item.badgeBg || 'bg-rose-600'
+                  }`}
+                >
                   {item.badge}
                 </span>
               )}
             </div>
 
             {/* Title */}
-            <h3 className="mt-2 text-xs sm:text-sm font-extrabold text-[#0A2342] group-hover:text-[#F28C28] transition-colors line-clamp-1 tracking-tight">
+            <h3
+              className={`mt-2 text-xs sm:text-sm font-extrabold transition-colors line-clamp-1 tracking-tight ${
+                item.isSpecial
+                  ? 'text-amber-900 group-hover:text-[#F28C28]'
+                  : 'text-[#0A2342] group-hover:text-[#F28C28]'
+              }`}
+            >
               {item.name}
             </h3>
           </Link>

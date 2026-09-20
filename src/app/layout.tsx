@@ -26,7 +26,10 @@ const dmSans = DM_Sans({
 });
 
 export const viewport: Viewport = {
-  themeColor: SEO_CONSTANTS.THEME_COLOR,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A2342' },
+  ],
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,

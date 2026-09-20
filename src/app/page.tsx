@@ -1,13 +1,12 @@
+import { ShoppingBag, Sparkles } from 'lucide-react';
 import { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { ShoppingBag, Sparkles } from 'lucide-react';
 
 import { FeaturedBoutiquesSection } from '@/frontend/features/marketplace/components/FeaturedBoutiquesSection';
 import { FreshArrivalsSection } from '@/frontend/features/marketplace/components/FreshArrivalsSection';
 import { HomepageFaqSection } from '@/frontend/features/marketplace/components/HomepageFaqSection';
-import { HOMEPAGE_FAQS } from '@/frontend/features/marketplace/constants/homepage-faqs';
 import { HowNavyaWorksSection } from '@/frontend/features/marketplace/components/HowNavyaWorksSection';
 import { MarketplaceHero } from '@/frontend/features/marketplace/components/MarketplaceHero';
 import { SellerStorySection } from '@/frontend/features/marketplace/components/SellerStorySection';
@@ -15,6 +14,7 @@ import { ShopByBudgetSection } from '@/frontend/features/marketplace/components/
 import { ShopByCategorySection } from '@/frontend/features/marketplace/components/ShopByCategorySection';
 import { TrendingProductsSection } from '@/frontend/features/marketplace/components/TrendingProductsSection';
 import { WhyShopNavyaSection } from '@/frontend/features/marketplace/components/WhyShopNavyaSection';
+import { HOMEPAGE_FAQS } from '@/frontend/features/marketplace/constants/homepage-faqs';
 import { getMarketplaceHomeData } from '@/frontend/features/marketplace/services/marketplace-data';
 import { BecomeSellerContent } from '@/frontend/features/seller/components/BecomeSellerContent';
 import { generateFaqSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
@@ -91,10 +91,25 @@ export default async function MultiVendorMarketplaceHomePage() {
   // Schema.org FAQPage structured data matching visible FAQ content
   const faqSchema = generateFaqSchema(HOMEPAGE_FAQS);
 
+  const marketplaceStoreSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ClothingStore',
+    name: SEO_CONSTANTS.SITE_NAME,
+    url: SEO_CONSTANTS.SITE_URL,
+    description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
+    currenciesAccepted: 'INR',
+    paymentAccepted: 'UPI, Credit Card, Debit Card, Net Banking, Cash on Delivery',
+    priceRange: '₹₹',
+    areaServed: {
+      '@type': 'Country',
+      name: 'India',
+    },
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-12 font-sans">
-      {/* Homepage FAQ Schema.org Structured Data */}
-      <JsonLd data={faqSchema} />
+      {/* Homepage Structured Data for Search Engines & AI Crawlers */}
+      <JsonLd data={[faqSchema, marketplaceStoreSchema]} />
 
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-10">
         {/* 1. PREMIUM HERO SECTION (Contains Exactly ONE H1) */}

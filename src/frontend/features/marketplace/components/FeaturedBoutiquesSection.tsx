@@ -156,7 +156,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
 
                     {/* Shop Name & City */}
                     <div>
-                      <h3 className="font-extrabold text-[#0A2342] text-sm sm:text-base group-hover:text-[#F28C28] transition-colors line-clamp-1">
+                      <h3 className="font-extrabold text-[#0A2342] text-sm sm:text-base group-hover:text-[#F28C28] transition-colors line-clamp-1 capitalize">
                         {shop.name}
                       </h3>
                       <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 font-medium">
@@ -167,39 +167,42 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                         <span className="flex items-center gap-1 font-bold text-amber-600">
                           <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
                           <span>{ratingDisplay}</span>
-                          <span className="text-slate-400 text-[10px]">({reviewsCount})</span>
+                          <span className="text-slate-500 text-xs">({reviewsCount})</span>
                         </span>
                       </div>
                     </div>
 
-                    {/* Product Preview Thumbnails */}
-                    {shop.products && shop.products.length > 0 && (
-                      <div className="grid grid-cols-4 gap-1.5 pt-3 mt-3 border-t border-slate-100">
-                        {shop.products.slice(0, 4).map((prod) => {
-                          const thumb = prod.images?.[0]?.imageUrl || '/images/default-shop-banner.png';
-                          return (
-                            <div
-                              key={prod.id}
-                              className="aspect-square rounded-lg overflow-hidden bg-slate-100 border border-slate-200 relative select-none"
-                            >
+                    {/* Standardized 4-Slot Product Preview Gallery with Placeholders */}
+                    <div className="grid grid-cols-4 gap-1.5 pt-3 mt-3 border-t border-slate-100">
+                      {[0, 1, 2, 3].map((slotIdx) => {
+                        const prod = shop.products?.[slotIdx];
+                        const thumb = prod?.images?.[0]?.imageUrl;
+                        return (
+                          <div
+                            key={slotIdx}
+                            className="aspect-square rounded-lg overflow-hidden bg-slate-100 border border-slate-200 relative select-none flex items-center justify-center"
+                          >
+                            {thumb ? (
                               <Image
                                 src={thumb}
-                                alt={prod.name}
+                                alt={prod?.name || 'Product'}
                                 fill
                                 sizes="60px"
                                 className="object-cover"
                               />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                            ) : (
+                              <Store className="w-4 h-4 text-slate-300" />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Explore Button */}
                   <Link
                     href={`/shop/${shop.slug}`}
-                    className="w-full text-center py-2.5 px-3 bg-slate-50 hover:bg-[#F28C28] text-[#0A2342] hover:text-white font-extrabold text-xs rounded-xl border border-slate-200 hover:border-[#F28C28] transition-all duration-200 block shadow-2xs mt-3"
+                    className="w-full text-center py-2.5 px-3 bg-slate-50 hover:bg-[#F28C28] text-[#0A2342] hover:text-white font-bold text-xs sm:text-sm rounded-xl border border-slate-200 hover:border-[#F28C28] transition-all duration-200 block shadow-2xs mt-3"
                   >
                     Explore {productCount > 0 ? `${productCount} Styles` : 'Collection'} →
                   </Link>
@@ -211,7 +214,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
 
         {/* Right Editorial Promo Card (Real Stores, Real People, Real Fashion) */}
         <div className="lg:col-span-4 xl:col-span-3">
-          <div className="relative h-full min-h-[300px] lg:min-h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-gradient-to-br from-amber-50 to-orange-50 p-6 flex flex-col justify-between">
+          <div className="relative h-full min-h-[320px] lg:min-h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-gradient-to-br from-amber-50 to-orange-50 p-6 flex flex-col justify-between">
             <Image
               src="/images/editorial/boutique_merchant_promo.jpg"
               alt="Real Stores Real People Real Fashion"
@@ -222,30 +225,30 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
             <div className="absolute inset-0 bg-gradient-to-t from-[#0A2342]/90 via-[#0A2342]/40 to-transparent" />
 
             <div className="relative z-10 space-y-2">
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-[#0A2342] text-[10px] font-black uppercase tracking-wider shadow-xs">
-                <MapPin className="w-3 h-3 text-[#F28C28]" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-[#0A2342] text-xs font-bold shadow-xs">
+                <MapPin className="w-3.5 h-3.5 text-[#F28C28]" />
                 <span>Support Local • Choose Unique</span>
               </span>
             </div>
 
-            <div className="relative z-10 space-y-2 text-white">
-              <h3 className="text-xl sm:text-2xl font-black leading-tight font-sans text-white">
+            <div className="relative z-10 space-y-3 text-white">
+              <h3 className="text-xl sm:text-2xl font-black leading-snug tracking-tight font-sans text-white">
                 Real Stores
                 <br />
                 Real People
                 <br />
                 <span className="text-[#F28C28]">Real Fashion</span>
               </h3>
-              <p className="text-xs text-white/80 font-medium leading-relaxed">
+              <p className="text-xs sm:text-sm text-white/90 font-normal leading-relaxed">
                 Connect directly with passionate clothing store owners across Indian towns and
                 cities.
               </p>
               <Link
                 href="/shops"
-                className="inline-flex items-center gap-1.5 text-xs font-black text-[#F28C28] hover:text-white transition-colors pt-1"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#F28C28] hover:bg-[#d97718] text-white text-xs sm:text-sm font-bold shadow-md transition-colors mt-2 w-fit"
               >
                 <span>Browse All Partner Boutiques</span>
-                <span>→</span>
+                <span aria-hidden="true">→</span>
               </Link>
             </div>
           </div>

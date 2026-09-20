@@ -103,6 +103,21 @@ const nextConfig = {
 
     return routes;
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.navyacollection.store',
+          },
+        ],
+        destination: 'https://navyacollection.store/:path*',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

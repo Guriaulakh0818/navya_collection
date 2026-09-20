@@ -144,10 +144,10 @@ export function Footer() {
 
           {/* Categories */}
           <div className="sm:col-span-1 lg:col-span-2">
-            <h4 className="font-heading text-xs sm:text-sm font-bold text-white uppercase tracking-wider mb-4">
+            <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-4">
               Categories
             </h4>
-            <ul className="space-y-2.5 text-xs text-white/70">
+            <ul className="space-y-2.5 text-xs text-white/80">
               <li>
                 <Link href="/category/women" className="hover:text-orange transition-colors">
                   Women&apos;s Collection
@@ -178,10 +178,10 @@ export function Footer() {
 
           {/* Company & Policies */}
           <div className="sm:col-span-1 lg:col-span-2">
-            <h4 className="font-heading text-xs sm:text-sm font-bold text-white uppercase tracking-wider mb-4">
+            <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-4">
               Company &amp; Policies
             </h4>
-            <ul className="space-y-2.5 text-xs text-white/70">
+            <ul className="space-y-2.5 text-xs text-white/80">
               <li>
                 <Link href="/about" className="hover:text-orange transition-colors">
                   About Us
@@ -227,10 +227,10 @@ export function Footer() {
 
           {/* Newsletter */}
           <div className="sm:col-span-2 lg:col-span-4">
-            <h4 className="font-heading text-xs sm:text-sm font-bold text-white uppercase tracking-wider mb-4">
+            <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-4">
               Join Our VIP Club
             </h4>
-            <p className="text-xs text-white/70 mb-3 leading-relaxed">
+            <p className="text-xs text-white/80 mb-3 leading-relaxed">
               Subscribe for exclusive discount codes, early access to new launches & insider sales.
             </p>
             <FooterNewsletter />
@@ -238,18 +238,18 @@ export function Footer() {
         </div>
 
         {/* Footer Bottom */}
-        <div className="pt-6 sm:pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/60">
-          <p className="text-center sm:text-left text-[11px] sm:text-xs">
+        <div className="pt-6 sm:pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/70">
+          <p className="text-center sm:text-left text-xs">
             © {new Date().getFullYear()} Navya Collection. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
-            <span className="bg-white/10 px-2.5 py-1 rounded text-[10px] font-semibold text-white whitespace-nowrap">
+            <span className="bg-white/10 px-2.5 py-1 rounded text-xs font-medium text-white whitespace-nowrap">
               Razorpay Secured
             </span>
-            <span className="bg-white/10 px-2.5 py-1 rounded text-[10px] font-semibold text-white whitespace-nowrap">
+            <span className="bg-white/10 px-2.5 py-1 rounded text-xs font-medium text-white whitespace-nowrap">
               UPI / GPay / PhonePe
             </span>
-            <span className="bg-white/10 px-2.5 py-1 rounded text-[10px] font-semibold text-white whitespace-nowrap">
+            <span className="bg-white/10 px-2.5 py-1 rounded text-xs font-medium text-white whitespace-nowrap">
               COD Available
             </span>
           </div>
