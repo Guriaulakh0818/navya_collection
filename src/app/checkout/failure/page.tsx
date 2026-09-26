@@ -1,7 +1,17 @@
 import { AlertOctagon, RefreshCw, ShoppingBag } from 'lucide-react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+
+export const metadata: Metadata = {
+  title: 'Payment Failed | Navya Collection',
+  description: 'Your payment was not completed.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function PaymentFailurePage() {
   return (

@@ -15,10 +15,12 @@ export const footerLinks = {
     { href: '/account', label: 'My Account' },
   ],
   categories: [
-    { href: '/shop?category=gents', label: 'Gents' },
-    { href: '/shop?category=kids', label: 'Kids' },
-    { href: '/shop?category=new', label: 'New Arrivals' },
-    { href: '/shop?category=offers', label: 'Offers' },
+    { href: '/category/spotlight', label: 'In The Spotlight' },
+    { href: '/category/women', label: "Women's Collection" },
+    { href: '/category/men', label: "Men's Collection" },
+    { href: '/category/kids', label: "Kids' Fashion" },
+    { href: '/category/best-sellers', label: 'Best Sellers' },
+    { href: '/shops', label: 'Boutique Shops' },
   ],
   policies: [
     { href: '/privacy-policy', label: 'Privacy Policy' },

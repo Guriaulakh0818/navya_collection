@@ -89,7 +89,7 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@navyacollection.com"
+                placeholder="gurvindersingh0218@gmail.com / admin@navyacollection.store"
                 autoComplete="off"
                 required
                 className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none"

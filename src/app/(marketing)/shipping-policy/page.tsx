@@ -3,16 +3,36 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: 'Shipping & Logistics Policy | Navya Collection',
+  title: `Shipping Policy & Delivery Information | ${SEO_CONSTANTS.SITE_NAME}`,
   description:
-    'Shipping rates, delivery timelines, multi-seller fulfillment, and tracking information for Navya Collection marketplace orders.',
+    'Shipping rates, delivery timelines, multi-seller fulfillment, and tracking information for Navya Collection marketplace orders across India.',
+  alternates: {
+    canonical: `${SEO_CONSTANTS.SITE_URL}/shipping-policy`,
+  },
+  openGraph: {
+    title: `Shipping Policy & Delivery Information | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      'Shipping rates, delivery timelines, multi-seller fulfillment, and tracking information for Navya Collection marketplace orders across India.',
+    url: `${SEO_CONSTANTS.SITE_URL}/shipping-policy`,
+    siteName: SEO_CONSTANTS.SITE_NAME,
+    locale: SEO_CONSTANTS.DEFAULT_LOCALE,
+    type: 'website',
+  },
 };
 
 export default function ShippingPolicyPage() {
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: SEO_CONSTANTS.SITE_URL },
+    { name: 'Shipping Policy', url: `${SEO_CONSTANTS.SITE_URL}/shipping-policy` },
+  ]);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
+      {/* Breadcrumb Structured Data */}
+      <JsonLd data={breadcrumbSchema} />
       <Breadcrumb
         items={[{ label: 'Home', href: '/' }, { label: 'Shipping Policy' }]}
         className="mx-auto max-w-5xl px-4 md:px-6 py-4"

@@ -68,9 +68,9 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop', href: '/shop', icon: ShoppingBag },
     { label: 'Categories', href: '/category', icon: Grid },
-    { label: '  • Men Wear', href: '/category/gents-wear', icon: Shirt },
-    { label: '  • Women Wear', href: '/category/women-wear', icon: Shirt },
-    { label: '  • Kids Wear', href: '/category/kids-wear', icon: Baby },
+    { label: '  • Men Wear', href: '/category/men', icon: Shirt },
+    { label: '  • Women Wear', href: '/category/women', icon: Shirt },
+    { label: '  • Kids Wear', href: '/category/kids', icon: Baby },
     isVerifiedSeller
       ? { label: 'Seller Dashboard 🏪', href: '/seller/dashboard', icon: Store }
       : { label: 'Become Seller ✨', href: '/become-seller', icon: Store },

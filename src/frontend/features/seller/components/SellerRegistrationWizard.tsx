@@ -15,7 +15,7 @@ import {
   User,
   Wallet,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 import { PendingApprovalCard } from './PendingApprovalCard';
@@ -40,6 +40,10 @@ export function SellerRegistrationWizard() {
     type: 'error' | 'success';
     text: string;
   } | null>(null);
+
+  // Storage key for registration draft
+  const DRAFT_KEY = 'navya_seller_draft_reg_v2';
+  const [draftRestored, setDraftRestored] = useState(false);
 
   // Email OTP State
   const [emailAddress, setEmailAddress] = useState('');
@@ -124,6 +128,117 @@ export function SellerRegistrationWizard() {
       shopPhoto: '',
     },
   });
+
+  // Restore draft from localStorage on mount
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const rawDraft = localStorage.getItem(DRAFT_KEY);
+        if (rawDraft) {
+          const parsed = JSON.parse(rawDraft);
+          if (parsed && typeof parsed === 'object') {
+            if (parsed.formData) {
+              setFormData((prev) => ({
+                ...prev,
+                basicInfo: { ...prev.basicInfo, ...(parsed.formData.basicInfo || {}) },
+                shopDetails: { ...prev.shopDetails, ...(parsed.formData.shopDetails || {}) },
+                businessType: { ...prev.businessType, ...(parsed.formData.businessType || {}) },
+                address: { ...prev.address, ...(parsed.formData.address || {}) },
+                bankDetails: { ...prev.bankDetails, ...(parsed.formData.bankDetails || {}) },
+                documents: { ...prev.documents, ...(parsed.formData.documents || {}) },
+              }));
+            }
+            if (parsed.emailAddress) setEmailAddress(parsed.emailAddress);
+            if (typeof parsed.isOtpVerified === 'boolean') setIsOtpVerified(parsed.isOtpVerified);
+            if (parsed.panVerifiedData) setPanVerifiedData(parsed.panVerifiedData);
+            if (parsed.gstVerifiedData) setGstVerifiedData(parsed.gstVerifiedData);
+            if (parsed.ifscVerifiedData) setIfscVerifiedData(parsed.ifscVerifiedData);
+            if (parsed.bankVerifiedData) setBankVerifiedData(parsed.bankVerifiedData);
+            if (
+              typeof parsed.currentStep === 'number' &&
+              parsed.currentStep >= 1 &&
+              parsed.currentStep <= 8
+            ) {
+              setCurrentStep(parsed.currentStep);
+            }
+            setDraftRestored(true);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to restore seller registration draft:', e);
+    }
+  }, []);
+
+  // Auto-save draft to localStorage whenever relevant state changes
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && !submissionSuccess) {
+        const draftPayload = {
+          currentStep,
+          formData,
+          emailAddress,
+          isOtpVerified,
+          panVerifiedData,
+          gstVerifiedData,
+          ifscVerifiedData,
+          bankVerifiedData,
+          savedAt: new Date().toISOString(),
+        };
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(draftPayload));
+      }
+    } catch (e) {
+      console.error('Failed to save seller registration draft:', e);
+    }
+  }, [
+    currentStep,
+    formData,
+    emailAddress,
+    isOtpVerified,
+    panVerifiedData,
+    gstVerifiedData,
+    ifscVerifiedData,
+    bankVerifiedData,
+    submissionSuccess,
+  ]);
+
+  const handleClearDraft = () => {
+    if (confirm('Are you sure you want to reset and start the registration from Step 1?')) {
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch {}
+      setCurrentStep(1);
+      setEmailAddress('');
+      setOtpCode('');
+      setIsOtpSent(false);
+      setIsOtpVerified(false);
+      setPanVerifiedData(null);
+      setGstVerifiedData(null);
+      setIfscVerifiedData(null);
+      setBankVerifiedData(null);
+      setDraftRestored(false);
+      setFormData({
+        basicInfo: { fullName: '', email: '', password: '', mobile: '' },
+        shopDetails: { shopName: '', description: '', logo: '', banner: '', phone: '', email: '' },
+        businessType: {
+          businessType: 'PROPRIETORSHIP' as const,
+          legalName: '',
+          pan: '',
+          gstin: '',
+        },
+        address: { fullAddress: '', city: '', state: '', pincode: '', landmark: '' },
+        bankDetails: {
+          accountHolderName: '',
+          bankName: '',
+          accountNumber: '',
+          ifscCode: '',
+          upiId: '',
+        },
+        documents: { gstCertificate: '', panCard: '', shopPhoto: '' },
+      });
+      showToast('Registration draft cleared. Starting fresh.', 'success');
+    }
+  };
 
   const showToast = (text: string, type: 'error' | 'success' = 'error') => {
     setToastMessage({ type, text });
@@ -675,6 +790,9 @@ export function SellerRegistrationWizard() {
       const data = await res.json();
 
       if (data.success) {
+        try {
+          localStorage.removeItem(DRAFT_KEY);
+        } catch {}
         setSubmittedData(data.data);
         setSubmissionSuccess(true);
         showToast('Seller application submitted successfully!', 'success');
@@ -702,6 +820,29 @@ export function SellerRegistrationWizard() {
 
   return (
     <div className="w-full max-w-4xl mx-auto my-8 bg-white border border-slate-200 rounded-3xl p-6 md:p-10 shadow-sm font-sans text-slate-900">
+      {/* Draft Restored Banner */}
+      {draftRestored && currentStep > 1 && (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+          <div className="flex items-center gap-2.5 text-amber-900 font-semibold">
+            <span className="flex h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse" />
+            <span>
+              <strong>Draft Restored:</strong> You are continuing from{' '}
+              <strong>
+                Step {currentStep}: {STEPS[currentStep - 1]?.name}
+              </strong>
+              . Your entered info is automatically saved.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleClearDraft}
+            className="px-3 py-1 bg-white hover:bg-rose-50 text-rose-700 font-bold border border-rose-200 rounded-xl transition-colors cursor-pointer text-xs"
+          >
+            Clear Draft & Start Over
+          </button>
+        </div>
+      )}
+
       {/* Toast Alert Banner */}
       {toastMessage && (
         <div
@@ -723,14 +864,27 @@ export function SellerRegistrationWizard() {
 
       {/* Stepper Progress Header */}
       <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-          <Building2 className="w-8 h-8 text-amber-600" />
-          Become a Navya Merchant Partner
-        </h1>
-        <p className="text-sm text-slate-600 font-medium mt-1">
-          Join India&apos;s premier multi-vendor luxury couture marketplace in just a few quick
-          steps.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
+              <Building2 className="w-8 h-8 text-amber-600" />
+              Become a Navya Merchant Partner
+            </h1>
+            <p className="text-sm text-slate-600 font-medium mt-1">
+              Join India&apos;s premier multi-vendor luxury couture marketplace in just a few quick
+              steps.
+            </p>
+          </div>
+          {currentStep > 1 && (
+            <button
+              type="button"
+              onClick={handleClearDraft}
+              className="text-xs font-bold text-slate-500 hover:text-rose-600 underline underline-offset-4 cursor-pointer"
+            >
+              Reset Application
+            </button>
+          )}
+        </div>
 
         {/* Horizontal Stepper */}
         <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5 border-b border-slate-200 pb-6">

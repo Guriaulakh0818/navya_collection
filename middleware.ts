@@ -59,17 +59,7 @@ export default async function middleware(req: NextRequest) {
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || (req as any).ip || '127.0.0.1';
 
-  // 1. Skip static assets, internal Next.js files, and public favicon
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.startsWith('/static') ||
-    pathname.includes('.') ||
-    pathname === '/favicon.ico'
-  ) {
-    return NextResponse.next();
-  }
-
-  // 2. Extract Hostname, Protocol and Detect Subdomains
+  // 1. Extract Hostname, Protocol and Detect Subdomains
   const rawHost =
     req.nextUrl.hostname || req.headers.get('host') || req.headers.get('x-forwarded-host') || '';
   const currentHost = rawHost.split(',')[0].split(':')[0].trim().toLowerCase();
@@ -78,6 +68,15 @@ export default async function middleware(req: NextRequest) {
     req.nextUrl.protocol.replace(':', '') ||
     'https'
   ).toLowerCase();
+
+  // 2. WWW CANONICALIZATION (www.navyacollection.store → navyacollection.store)
+  if (currentHost === 'www.navyacollection.store') {
+    const canonicalUrl = new URL(
+      `${pathname}${req.nextUrl.search}`,
+      'https://navyacollection.store',
+    );
+    return NextResponse.redirect(canonicalUrl, 308);
+  }
 
   // 3. PRODUCTION HTTP → HTTPS ENFORCEMENT
   if (process.env.NODE_ENV === 'production' && proto === 'http') {
@@ -88,13 +87,14 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(httpsUrl, 308);
   }
 
-  // 4. WWW CANONICALIZATION (www.navyacollection.store → navyacollection.store)
-  if (currentHost === 'www.navyacollection.store') {
-    const canonicalUrl = new URL(
-      `${pathname}${req.nextUrl.search}`,
-      'https://navyacollection.store',
-    );
-    return NextResponse.redirect(canonicalUrl, 308);
+  // 4. Skip static assets, internal Next.js files, and public favicon
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/static') ||
+    pathname.includes('.') ||
+    pathname === '/favicon.ico'
+  ) {
+    return NextResponse.next();
   }
 
   const isAdminSubdomain =

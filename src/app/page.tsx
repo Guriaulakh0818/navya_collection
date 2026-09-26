@@ -1,24 +1,65 @@
-import { Building2, Grid, ShoppingBag, Sparkles, Store, Tag } from 'lucide-react';
+import { ShoppingBag, Sparkles } from 'lucide-react';
+import { Metadata } from 'next';
 import { headers } from 'next/headers';
-import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { HorizontalCarousel } from '@/frontend/components/ui/HorizontalCarousel';
-import { MAIN_CATEGORY_GROUPS } from '@/frontend/features/categories/constants/category-explorer.constants';
-import { CopyCouponButton } from '@/frontend/features/marketplace/components/CopyCouponButton';
-import { FeaturedShopsGrid } from '@/frontend/features/marketplace/components/FeaturedShopsGrid';
+import { FeaturedBoutiquesSection } from '@/frontend/features/marketplace/components/FeaturedBoutiquesSection';
+import { FreshArrivalsSection } from '@/frontend/features/marketplace/components/FreshArrivalsSection';
+import { HomepageFaqSection } from '@/frontend/features/marketplace/components/HomepageFaqSection';
+import { HowNavyaWorksSection } from '@/frontend/features/marketplace/components/HowNavyaWorksSection';
 import { MarketplaceHero } from '@/frontend/features/marketplace/components/MarketplaceHero';
-import { RecentlyAddedShops } from '@/frontend/features/marketplace/components/RecentlyAddedShops';
+import { SellerStorySection } from '@/frontend/features/marketplace/components/SellerStorySection';
+import { ShopByBudgetSection } from '@/frontend/features/marketplace/components/ShopByBudgetSection';
+import { ShopByCategorySection } from '@/frontend/features/marketplace/components/ShopByCategorySection';
+import { TrendingProductsSection } from '@/frontend/features/marketplace/components/TrendingProductsSection';
+import { WhyShopNavyaSection } from '@/frontend/features/marketplace/components/WhyShopNavyaSection';
+import { HOMEPAGE_FAQS } from '@/frontend/features/marketplace/constants/homepage-faqs';
 import { getMarketplaceHomeData } from '@/frontend/features/marketplace/services/marketplace-data';
 import { BecomeSellerContent } from '@/frontend/features/seller/components/BecomeSellerContent';
+import { generateFaqSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+export const metadata: Metadata = {
+  title: SEO_CONSTANTS.DEFAULT_TITLE,
+  description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
+  alternates: {
+    canonical: SEO_CONSTANTS.SITE_URL,
+  },
+  openGraph: {
+    title: SEO_CONSTANTS.DEFAULT_TITLE,
+    description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
+    url: SEO_CONSTANTS.SITE_URL,
+    siteName: SEO_CONSTANTS.SITE_NAME,
+    locale: SEO_CONSTANTS.DEFAULT_LOCALE,
+    type: 'website',
+    images: [
+      {
+        url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: SEO_CONSTANTS.SITE_NAME,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SEO_CONSTANTS.DEFAULT_TITLE,
+    description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
+    images: [SEO_CONSTANTS.DEFAULT_OG_IMAGE],
+  },
+};
+
 export default async function MultiVendorMarketplaceHomePage() {
-  const headersList = await headers();
-  const host = (headersList.get('x-forwarded-host') || headersList.get('host') || '').toLowerCase();
+  let host = '';
+  try {
+    const headersList = await headers();
+    host = (headersList.get('x-forwarded-host') || headersList.get('host') || '').toLowerCase();
+  } catch {
+    host = '';
+  }
 
   // If accessed via admin.navyacollection.store or admin subdomain, redirect to admin dashboard
   if (host.startsWith('admin.') || host.includes('admin.navyacollection.store')) {
@@ -30,258 +71,120 @@ export default async function MultiVendorMarketplaceHomePage() {
     return <BecomeSellerContent />;
   }
 
-  const data = await getMarketplaceHomeData();
+  let featuredShops: any[] = [];
+  let trendingProducts: any[] = [];
+  let newArrivals: any[] = [];
+  let offers: any[] = [];
 
-  const featuredShops = data?.featuredShops || [];
-  const recentShops = data?.recentShops || [];
-  const trendingProducts = data?.trendingProducts || [];
-  const newArrivals = data?.newArrivals || [];
-  const categories = data?.categories || [];
-  const coupons = data?.coupons || [];
+  try {
+    const data = await getMarketplaceHomeData();
+    featuredShops = data?.featuredShops || [];
+    trendingProducts = data?.trendingProducts || [];
+    newArrivals = data?.newArrivals || [];
+    offers = (data as any)?.offers || [];
+  } catch (err) {
+    console.error('❌ Failed to load marketplace home data:', err);
+  }
 
-  console.log('PUBLIC HOMEPAGE DATA:', {
-    featuredShops: featuredShops.length,
-    recentShops: recentShops.length,
-    trendingProducts: trendingProducts.length,
-    newArrivals: newArrivals.length,
-    bestSellers: (data?.bestSellers || []).length,
-  });
+  const primaryOffer = offers[0] || null;
 
-  // JSON-LD SEO Structured Data
-  const jsonLdSchema = {
+  // Schema.org FAQPage structured data matching visible FAQ content
+  const faqSchema = generateFaqSchema(HOMEPAGE_FAQS);
+
+  const marketplaceStoreSchema = {
     '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'Navya Collection Multi-Vendor Marketplace',
-    url: 'https://navyacollection.store',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: 'https://navyacollection.store/shop?q={search_term_string}',
-      'query-input': 'required name=search_term_string',
+    '@type': 'ClothingStore',
+    name: SEO_CONSTANTS.SITE_NAME,
+    url: SEO_CONSTANTS.SITE_URL,
+    description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
+    currenciesAccepted: 'INR',
+    paymentAccepted: 'UPI, Credit Card, Debit Card, Net Banking, Cash on Delivery',
+    priceRange: '₹₹',
+    areaServed: {
+      '@type': 'Country',
+      name: 'India',
     },
   };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-12 font-sans">
-      {/* Structured SEO Schema */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSchema) }}
-      />
+      {/* Homepage Structured Data for Search Engines & AI Crawlers */}
+      <JsonLd data={[faqSchema, marketplaceStoreSchema]} />
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
-        {/* 1. HERO SECTION */}
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 space-y-6 sm:space-y-10">
+        {/* 1. PREMIUM HERO SECTION (Contains Exactly ONE H1) */}
         <MarketplaceHero />
 
-        {/* 2. PROMOTIONAL OFFERS BANNER */}
-        {coupons.length > 0 && (
-          <div className="bg-amber-50/80 border border-amber-200 rounded-3xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-extrabold shadow-xs shrink-0">
-                %
+        {/* 2. DYNAMIC PROMOTIONAL OFFER BANNER (If Active Offer Configured in DB) */}
+        {primaryOffer && (
+          <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-300/80 rounded-3xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-[#F28C28] text-white flex items-center justify-center font-black shadow-xs shrink-0 text-sm">
+                <Sparkles className="w-5 h-5" />
               </div>
-              <div>
-                <h3 className="font-extrabold text-navy text-sm sm:text-base">
-                  Welcome Launch Offer
-                </h3>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-extrabold text-[#0A2342] text-sm sm:text-base tracking-tight">
+                    {primaryOffer.title}
+                  </h3>
+                  {primaryOffer.firstOrderOnly && (
+                    <span className="px-2 py-0.5 bg-[#F28C28] text-white text-[10px] font-black rounded-full uppercase tracking-wider">
+                      First Order Only
+                    </span>
+                  )}
+                  {primaryOffer.type === 'FREE_DELIVERY' && (
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-black rounded-full uppercase tracking-wider">
+                      Free Delivery
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-slate-600 font-medium">
-                  Flat 10% OFF (max ₹500) on your first purchase! Use coupon at checkout.
+                  {primaryOffer.description ||
+                    (primaryOffer.minCartValue
+                      ? `Valid on minimum cart value of ₹${Number(primaryOffer.minCartValue).toLocaleString('en-IN')}. Applies automatically at checkout!`
+                      : 'Limited time promotion across all partner stores.')}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1.5 bg-white border border-amber-300 text-amber-800 font-mono font-extrabold text-xs rounded-xl shadow-xs">
-                CODE: {coupons[0]?.code || 'WELCOME10'}
-              </span>
-              <CopyCouponButton code={coupons[0]?.code || 'WELCOME10'} />
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href="/shop"
+                className="px-5 py-2.5 bg-[#F28C28] hover:bg-[#e07d1e] text-white font-extrabold text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>Explore Catalog & Claim Offer →</span>
+              </Link>
             </div>
           </div>
         )}
 
-        {/* 3. EXPLORE CATEGORIES HORIZONTAL CAROUSEL */}
-        <HorizontalCarousel
-          title="Explore Categories"
-          subtitle="Browse Indian ethnic couture, gents garments, and kids collections."
-          icon={<Grid className="w-5 h-5 text-amber-600" />}
-          actionLink="/category"
-          actionText="View All"
-        >
-          {MAIN_CATEGORY_GROUPS.map((group) => {
-            const isShop = group.id === 'group_shops';
-            const linkHref = isShop ? '/shops' : `/category?group=${group.id}`;
-            const badgeText = (group.badge || 'EXPLORE').toUpperCase();
+        {/* 3. SHOP BY CATEGORY (Circular Grid with Hot Badges & Clean Canonical Links) */}
+        <ShopByCategorySection />
 
-            return (
-              <Link
-                key={group.id}
-                href={linkHref}
-                className="group bg-white border border-slate-200/90 hover:border-amber-500/60 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-between text-center w-[125px] xs:w-[145px] sm:w-[170px] md:w-[190px] shrink-0 snap-start relative overflow-hidden"
-              >
-                {/* Subtle top indicator on hover */}
-                <div className="absolute top-0 inset-x-0 h-1 bg-transparent group-hover:bg-gradient-to-r group-hover:from-amber-500 group-hover:to-orange-500 transition-all rounded-t-full" />
+        {/* 4. FEATURED LOCAL BOUTIQUES (With Real Approved Shops) */}
+        <FeaturedBoutiquesSection shops={featuredShops} />
 
-                {/* Circular Avatar Photo */}
-                <div className="relative w-16 h-16 xs:w-18 xs:h-18 sm:w-20 sm:h-20 md:w-22 md:h-22 rounded-full p-1 border-2 border-slate-200/80 group-hover:border-amber-500 group-hover:scale-105 transition-all duration-300 shadow-xs bg-slate-50 flex items-center justify-center my-1">
-                  <div className="w-full h-full rounded-full overflow-hidden relative">
-                    <Image
-                      src={group.iconImage}
-                      alt={group.name}
-                      fill
-                      sizes="(max-width: 640px) 90px, 120px"
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  </div>
-                </div>
+        {/* 5. TRENDING MARKETPLACE ITEMS (Real Database Products) */}
+        <TrendingProductsSection products={trendingProducts} />
 
-                {/* Category Title & Pill Badge */}
-                <div className="space-y-1.5 w-full flex flex-col items-center">
-                  <h3 className="font-extrabold text-navy text-xs sm:text-sm md:text-base group-hover:text-amber-600 transition-colors line-clamp-1 tracking-tight">
-                    {group.name}
-                  </h3>
+        {/* 6. FRESH ARRIVALS (Real Database New Listings) */}
+        <FreshArrivalsSection products={newArrivals} />
 
-                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-[#FF4500] text-white shadow-xs group-hover:scale-105 transition-transform">
-                    {badgeText}
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </HorizontalCarousel>
+        {/* 7. SHOP BY BUDGET (Under ₹499, ₹999, ₹1499, Premium Picks) */}
+        <ShopByBudgetSection />
 
-        {/* 4. FEATURED SHOPS CAROUSEL */}
-        {featuredShops.length > 0 ? (
-          <FeaturedShopsGrid shops={featuredShops} />
-        ) : (
-          <div className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-12 text-center space-y-3 shadow-xs my-6">
-            <Store className="w-12 h-12 text-slate-300 mx-auto" />
-            <h3 className="text-base font-extrabold text-navy">No Boutique Stores Available</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">
-              Currently no verified merchant stores are active. Please check back soon!
-            </p>
-          </div>
-        )}
+        {/* 8. HOW NAVYA WORKS (4-Step Marketplace Flow) */}
+        <HowNavyaWorksSection />
 
-        {/* 5. TRENDING PRODUCTS CAROUSEL */}
-        {trendingProducts.length > 0 && (
-          <HorizontalCarousel
-            title="Trending Marketplace Items"
-            subtitle="Top-rated customer favorites from our partner boutiques."
-            icon={<Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />}
-            actionLink="/shop"
-            actionText="Explore All"
-          >
-            {trendingProducts.map((p: any) => (
-              <Link
-                key={p.id}
-                href={`/product/${p.slug}`}
-                className="group bg-white border border-slate-200 rounded-xl sm:rounded-2xl overflow-hidden hover:border-amber-500/50 hover:shadow-md transition-all flex flex-col shadow-xs w-[145px] xs:w-[165px] sm:w-[220px] md:w-[250px] shrink-0 snap-start"
-              >
-                <div className="aspect-[4/5] sm:aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
-                  {p.images?.[0]?.imageUrl ? (
-                    <Image
-                      src={p.images[0].imageUrl}
-                      alt={p.name}
-                      fill
-                      sizes="(max-width: 640px) 165px, 250px"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      <Tag className="w-8 h-8 sm:w-10 sm:h-10" />
-                    </div>
-                  )}
+        {/* 9. WHY SHOP ON NAVYA? (Customer Value Trust Cards) */}
+        <WhyShopNavyaSection />
 
-                  {/* Shop Badge Pill */}
-                  <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 px-1.5 sm:px-2 py-0.5 bg-white/90 backdrop-blur-md rounded-full text-[8px] sm:text-[9px] font-extrabold text-slate-800 border border-slate-200 flex items-center gap-0.5 sm:gap-1 shadow-xs truncate max-w-[85%]">
-                    <Building2 className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-600 shrink-0" />
-                    <span className="truncate">{p.shop?.name || 'Partner Shop'}</span>
-                  </div>
-                </div>
+        {/* 10. BECOME A SELLER / LOCAL STORE STORY (Seller Value & Onboarding CTA) */}
+        <SellerStorySection />
 
-                <div className="p-2 sm:p-3.5 flex-1 flex flex-col justify-between space-y-1 sm:space-y-2">
-                  <div>
-                    <h3 className="font-extrabold text-navy text-[11px] sm:text-xs md:text-sm line-clamp-1 group-hover:text-amber-600 transition-colors">
-                      {p.name}
-                    </h3>
-                    <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-0.5 truncate">
-                      {p.category?.name || 'Couture'}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-100">
-                    <span className="text-xs sm:text-sm md:text-base font-extrabold text-emerald-700 font-mono">
-                      ₹{Number(p.price || 0).toLocaleString('en-IN')}
-                    </span>
-                    <span className="text-[10px] sm:text-xs text-amber-700 font-extrabold group-hover:translate-x-0.5 transition-transform">
-                      Buy →
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </HorizontalCarousel>
-        )}
-
-        {/* 6. NEW ARRIVALS CAROUSEL */}
-        {newArrivals.length > 0 && (
-          <HorizontalCarousel
-            title="New Arrivals Season 2026"
-            subtitle="Freshly listed designer outfits added today across all vendor shops."
-            icon={<ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />}
-            actionLink="/shop?filter=new"
-            actionText="View New Listings"
-          >
-            {newArrivals.map((p: any) => (
-              <Link
-                key={p.id}
-                href={`/product/${p.slug}`}
-                className="group bg-white border border-slate-200 rounded-xl sm:rounded-2xl overflow-hidden hover:border-amber-500/50 hover:shadow-md transition-all flex flex-col shadow-xs w-[145px] xs:w-[165px] sm:w-[220px] md:w-[250px] shrink-0 snap-start"
-              >
-                <div className="aspect-[4/5] sm:aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
-                  {p.images?.[0]?.imageUrl ? (
-                    <Image
-                      src={p.images[0].imageUrl}
-                      alt={p.name}
-                      fill
-                      sizes="(max-width: 640px) 165px, 250px"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      <Tag className="w-8 h-8 sm:w-10 sm:h-10" />
-                    </div>
-                  )}
-                  <span className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 px-1.5 sm:px-2 py-0.5 bg-amber-500 text-slate-950 text-[8px] sm:text-[9px] font-extrabold rounded-full shadow-xs">
-                    NEW
-                  </span>
-                </div>
-
-                <div className="p-2 sm:p-3.5 flex-1 flex flex-col justify-between space-y-1 sm:space-y-2">
-                  <div>
-                    <h3 className="font-extrabold text-navy text-[11px] sm:text-xs md:text-sm line-clamp-1 group-hover:text-amber-600 transition-colors">
-                      {p.name}
-                    </h3>
-                    <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-0.5 truncate">
-                      {p.shop?.name || 'Boutique Partner'}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-slate-100">
-                    <span className="text-xs sm:text-sm md:text-base font-extrabold text-amber-700 font-mono">
-                      ₹{Number(p.price || 0).toLocaleString('en-IN')}
-                    </span>
-                    <span className="text-[10px] sm:text-xs text-amber-700 font-extrabold">
-                      Shop →
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </HorizontalCarousel>
-        )}
-
-        {/* 7. RECENTLY ADDED SHOPS SPOTLIGHT */}
-        <RecentlyAddedShops shops={recentShops} />
+        {/* 11. FREQUENTLY ASKED QUESTIONS (AEO Core Q&A Section) */}
+        <HomepageFaqSection />
       </div>
     </div>
   );

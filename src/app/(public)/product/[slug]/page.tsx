@@ -1,12 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import {
-  generateBreadcrumbSchema,
-  generateProductJsonLdSchemas,
-  generateProductSchema,
-  JsonLd,
-} from '@/features/seo';
+import { generateProductJsonLdSchemas, generateProductMetadata, JsonLd } from '@/features/seo';
 import { ProductDetailClient } from '@/frontend/features/products/components/ProductDetailClient';
 import { ProductService } from '@/frontend/features/products/services/product.service';
 
@@ -14,116 +9,61 @@ interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Fallback sample product only if DB is completely empty (never flashed during loading)
-const fallbackSampleProduct = {
-  id: 'default-1',
-  name: 'Royal Designer Silk Couture',
-  slug: 'royal-designer-silk-couture',
-  sku: 'NC-SILK-001',
-  description:
-    'Exquisite Indian luxury couture from Navya Collection. Featuring intricate hand embroidery, fine zardozi work, and premium silk fabric designed for grand weddings and celebrations.',
-  price: 12999,
-  compareAtPrice: 15999,
-  stock: 15,
-  lowStockThreshold: 5,
-  rating: 4.9,
-  reviewCount: 28,
-  category: { id: 'c1', name: 'Indian Couture', slug: 'indian-couture' },
-  images: [
-    {
-      id: 'img1',
-      url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=1000',
-      alt: 'Royal Designer Silk Couture',
-    },
-  ],
-  variants: [
-    {
-      id: 'v1',
-      sku: 'NC-SILK-01',
-      name: 'Royal Blue',
-      color: 'Royal Blue',
-      price: 12999,
-      stock: 12,
-      size: 'Free Size',
-    },
-    {
-      id: 'v2',
-      sku: 'NC-SILK-02',
-      name: 'Emerald Green',
-      color: 'Emerald Green',
-      price: 12999,
-      stock: 8,
-      size: 'Free Size',
-    },
-    {
-      id: 'v3',
-      sku: 'NC-SILK-03',
-      name: 'Wine Red',
-      color: 'Wine Red',
-      price: 12999,
-      stock: 15,
-      size: 'Free Size',
-    },
-    {
-      id: 'v4',
-      sku: 'NC-SILK-04',
-      name: 'Golden Mustard',
-      color: 'Golden Mustard',
-      price: 12999,
-      stock: 5,
-      size: 'Free Size',
-    },
-    {
-      id: 'v5',
-      sku: 'NC-SILK-05',
-      name: 'Magenta Pink',
-      color: 'Magenta Pink',
-      price: 12999,
-      stock: 10,
-      size: 'Free Size',
-    },
-  ],
-  reviews: [
-    {
-      id: 'r1',
-      userName: 'Priya Sharma',
-      rating: 5,
-      comment: 'Breathtaking embroidery and silk texture! Received so many compliments.',
-      createdAt: new Date('2026-07-20'),
-    },
-  ],
-};
-
 async function getFormattedProduct(slug: string) {
   try {
     const res = await ProductService.getProductByIdOrSlug(slug);
     if (res?.success && res?.data) {
       const dbProd = res.data;
+      const reviews =
+        dbProd.reviews && dbProd.reviews.length > 0
+          ? dbProd.reviews.map((r: any) => ({
+              id: r.id,
+              userName: r.user?.name || r.userName || 'Verified Buyer',
+              rating: r.rating ? Number(r.rating) : 0,
+              comment: r.comment || '',
+              createdAt: r.createdAt ? new Date(r.createdAt) : new Date(),
+            }))
+          : [];
+
       return {
         id: dbProd.id,
         name: dbProd.name,
         slug: dbProd.slug,
         sku: dbProd.sku,
-        description: dbProd.description,
+        description: dbProd.description || '',
+        metaTitle: dbProd.metaTitle || null,
+        metaDescription: dbProd.metaDescription || null,
+        metaKeywords: dbProd.metaKeywords || null,
+        canonicalUrl: dbProd.canonicalUrl || null,
+        ogImage: dbProd.ogImage || null,
+        robots: dbProd.robots || null,
         price: Number(dbProd.price || 0),
         compareAtPrice: dbProd.compareAtPrice ? Number(dbProd.compareAtPrice) : null,
-        stock: dbProd.stock || 0,
-        lowStockThreshold: dbProd.lowStockThreshold || 5,
-        rating: dbProd.rating || 4.8,
-        category: dbProd.category || {
-          id: 'c1',
-          name: 'Boutique Collection',
-          slug: 'boutique',
-        },
+        stock: dbProd.stock !== undefined && dbProd.stock !== null ? Number(dbProd.stock) : 0,
+        lowStockThreshold: dbProd.lowStockThreshold ? Number(dbProd.lowStockThreshold) : 5,
+        rating: dbProd.rating ? Number(dbProd.rating) : 0,
+        reviewCount: reviews.length,
+        brand: dbProd.brand || null,
+        color: dbProd.color || null,
+        fabric: dbProd.fabric || null,
+        fit: dbProd.fit || null,
+        occasion: dbProd.occasion || null,
+        category: dbProd.category
+          ? {
+              id: dbProd.category.id,
+              name: dbProd.category.name,
+              slug: dbProd.category.slug,
+            }
+          : null,
         images:
           dbProd.images && dbProd.images.length > 0
             ? dbProd.images.map((img: any) => ({
                 id: img.id,
                 url: img.imageUrl,
                 alt: img.altText || dbProd.name,
-                isPrimary: img.isPrimary,
+                isPrimary: Boolean(img.isPrimary),
               }))
-            : fallbackSampleProduct.images,
+            : [],
         variants:
           dbProd.variants && dbProd.variants.length > 0
             ? dbProd.variants.map((v: any) => ({
@@ -132,21 +72,21 @@ async function getFormattedProduct(slug: string) {
                 name: v.name || v.color || v.size || 'Standard',
                 color: v.color || v.colorName || null,
                 price: Number(v.price !== undefined && v.price !== null ? v.price : dbProd.price),
-                stock: v.stock !== undefined && v.stock !== null ? v.stock : dbProd.stock || 10,
+                stock:
+                  v.stock !== undefined && v.stock !== null
+                    ? Number(v.stock)
+                    : Number(dbProd.stock || 0),
                 size: v.size || null,
               }))
             : [],
-        reviews:
-          dbProd.reviews && dbProd.reviews.length > 0
-            ? dbProd.reviews.map((r: any) => ({
-                id: r.id,
-                userName: r.user?.name || r.userName || 'Customer',
-                rating: r.rating,
-                comment: r.comment,
-                createdAt: new Date(r.createdAt),
-              }))
-            : [],
-        shop: dbProd.shop || null,
+        reviews,
+        shop: dbProd.shop
+          ? {
+              id: dbProd.shop.id,
+              name: dbProd.shop.name,
+              slug: dbProd.shop.slug,
+            }
+          : null,
       };
     }
   } catch (error) {
@@ -162,20 +102,14 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!product) {
     return {
       title: 'Product Not Found | Navya Collection',
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
-  return {
-    title: `${product.name} | Navya Collection`,
-    description:
-      product.description?.slice(0, 160) ||
-      'Buy premium Indian ethnic couture at Navya Collection.',
-    openGraph: {
-      title: product.name,
-      description: product.description,
-      images: product.images?.[0]?.url ? [{ url: product.images[0].url }] : [],
-    },
-  };
+  return generateProductMetadata(product);
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
@@ -186,28 +120,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const activeProduct = product;
-
-  const productSchema = generateProductSchema({
-    id: activeProduct.id,
-    name: activeProduct.name,
-    description: activeProduct.description,
-    price: activeProduct.price,
-    images: activeProduct.images.map((i: any) => i.url),
-    category: activeProduct.category?.name || 'Couture',
-    ratingValue: activeProduct.rating,
-    reviewCount: activeProduct.reviews?.length || 1,
-    inStock: activeProduct.stock > 0,
-    sku: activeProduct.sku,
-  });
-
-  const jsonLdSchemas = generateProductJsonLdSchemas(activeProduct as any);
+  const jsonLdSchemas = generateProductJsonLdSchemas(product);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16 pt-4 font-sans">
       <JsonLd data={jsonLdSchemas} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ProductDetailClient key={activeProduct.id} product={activeProduct} />
+        <ProductDetailClient key={product.id} product={product} />
       </div>
     </div>
   );

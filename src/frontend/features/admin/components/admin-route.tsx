@@ -49,13 +49,20 @@ export function AdminRoute({ children, fallback }: AdminRouteProps) {
 
       // 2. Fetch session from server (checks HTTP-Only cookies navya_admin_session / navya_session)
       try {
-        const res = await fetch('/api/auth/session');
+        let res = await fetch('/api/v1/auth/session');
+        if (!res.ok) {
+          res = await fetch('/api/auth/session');
+        }
+        if (!res.ok) {
+          res = await fetch('/api/v1/auth/profile');
+        }
         const data = await res.json();
 
-        if (data?.authenticated && data?.user) {
-          const userRole = data.user.role?.toUpperCase() || '';
+        const userObj = data?.user;
+        if (userObj) {
+          const userRole = userObj.role?.toUpperCase() || '';
           if (['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(userRole)) {
-            setAdminUser(data.user);
+            setAdminUser(userObj);
             if (isMounted) {
               setAuthorized(true);
               setIsChecking(false);

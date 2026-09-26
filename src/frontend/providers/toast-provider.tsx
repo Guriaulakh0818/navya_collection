@@ -29,19 +29,34 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toasts, toast }}>
       {children}
-      <div className="fixed inset-x-0 bottom-4 z-[1000] flex flex-col items-center gap-2 pointer-events-none">
+      <div className="fixed inset-x-0 bottom-6 z-[9999] flex flex-col items-center gap-2.5 pointer-events-none px-4">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto rounded-full px-4 py-2 text-sm font-medium text-white shadow-lg ${
+            className={`pointer-events-auto flex items-center gap-2.5 rounded-full px-5 py-3 text-xs sm:text-sm font-bold shadow-2xl backdrop-blur-md transition-all animate-in fade-in slide-in-from-bottom-3 duration-300 ${
               t.variant === 'error'
-                ? 'bg-error'
+                ? 'bg-red-950/95 text-red-100 border border-red-500/50 shadow-red-950/50 ring-1 ring-red-500/30'
                 : t.variant === 'success'
-                  ? 'bg-success'
-                  : 'bg-navy'
+                  ? 'bg-emerald-950/95 text-emerald-100 border border-emerald-500/50 shadow-emerald-950/50 ring-1 ring-emerald-500/30'
+                  : 'bg-slate-900/95 text-white border border-slate-700/60 shadow-slate-950/50'
             }`}
           >
-            {t.message}
+            {t.variant === 'error' && (
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-500 text-white font-extrabold text-[10px]">
+                ✕
+              </span>
+            )}
+            {t.variant === 'success' && (
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white font-extrabold text-[10px]">
+                ✓
+              </span>
+            )}
+            {(!t.variant || t.variant === 'info') && (
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-slate-950 font-extrabold text-[10px]">
+                ℹ
+              </span>
+            )}
+            <span className="tracking-tight">{t.message}</span>
           </div>
         ))}
       </div>

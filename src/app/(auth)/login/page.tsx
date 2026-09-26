@@ -1,10 +1,20 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 
 import AdminLoginPage from '@/app/admin/login/page';
 import { Loader } from '@/components/ui/loader';
 import { getCurrentUser } from '@/features/auth/actions/auth.actions';
 import { LoginForm } from '@/features/auth/components/login-form';
+
+export const metadata: Metadata = {
+  title: 'Login | Navya Collection',
+  description: 'Login to your Navya Collection customer or seller account.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function LoginPage() {
   const headersList = await headers();

@@ -98,7 +98,7 @@ export function HeaderSearch({ className }: HeaderSearchProps) {
             setIsOpen(true);
           }}
           onFocus={() => setIsOpen(true)}
-          placeholder="Search products, boutiques, or categories..."
+          placeholder="Search for shirts, jeans, kurtas, kids wear and more..."
           className="w-full h-10 pl-10 pr-9 rounded-full bg-slate-100 border border-slate-200/80 text-xs sm:text-sm text-navy placeholder:text-slate-400 focus:outline-none focus:border-navy focus:bg-white focus:ring-2 focus:ring-navy/10 transition-all shadow-xs"
         />
 

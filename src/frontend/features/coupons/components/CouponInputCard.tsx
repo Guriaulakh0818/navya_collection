@@ -18,37 +18,15 @@ interface CouponInputCardProps {
   className?: string;
 }
 
-const DEMO_ACTIVE_COUPONS: ActiveCoupon[] = [
-  {
-    id: 'c_welcome10',
-    code: 'WELCOME10',
-    title: 'Welcome 10% OFF',
-    description: 'Get 10% OFF on orders over ₹499 (Max ₹200)',
-    discountType: 'PERCENTAGE',
-    discountValue: 10,
-    minOrderAmount: 499,
-    maxDiscount: 200,
-  },
-  {
-    id: 'c_navya200',
-    code: 'NAVYA200',
-    title: 'Flat ₹200 OFF',
-    description: 'Get Flat ₹200 OFF on orders over ₹1,499',
-    discountType: 'FIXED',
-    discountValue: 200,
-    minOrderAmount: 1499,
-  },
-  {
-    id: 'c_festive20',
-    code: 'FESTIVE20',
-    title: 'Festive 20% OFF',
-    description: 'Get 20% OFF on orders over ₹999 (Max ₹500)',
-    discountType: 'PERCENTAGE',
-    discountValue: 20,
-    minOrderAmount: 999,
-    maxDiscount: 500,
-  },
-];
+interface StoreOffer {
+  id: string;
+  title: string;
+  description?: string | null;
+  type: string;
+  value: number;
+  minCartValue?: number | null;
+  firstOrderOnly?: boolean;
+}
 
 export const CouponInputCard: React.FC<CouponInputCardProps> = ({
   cartAmount,
@@ -62,21 +40,32 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showCouponsModal, setShowCouponsModal] = useState(false);
-  const [activeCoupons, setActiveCoupons] = useState<ActiveCoupon[]>(DEMO_ACTIVE_COUPONS);
+  const [activeCoupons, setActiveCoupons] = useState<ActiveCoupon[]>([]);
+  const [activeOffers, setActiveOffers] = useState<StoreOffer[]>([]);
 
   useEffect(() => {
-    async function fetchActiveCoupons() {
+    async function fetchPromotionsAndCoupons() {
       try {
-        const res = await fetch('/api/v1/coupons');
-        const json = await res.json();
-        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setActiveCoupons(json.data);
+        const [couponsRes, offersRes] = await Promise.all([
+          fetch('/api/v1/coupons')
+            .then((r) => r.json())
+            .catch(() => ({})),
+          fetch('/api/v1/offers/active')
+            .then((r) => r.json())
+            .catch(() => ({})),
+        ]);
+
+        if (couponsRes?.success && Array.isArray(couponsRes.data)) {
+          setActiveCoupons(couponsRes.data);
+        }
+        if (offersRes?.success && Array.isArray(offersRes?.data?.offers)) {
+          setActiveOffers(offersRes.data.offers);
         }
       } catch {
-        // Fallback to demo coupons
+        // Clean empty state
       }
     }
-    fetchActiveCoupons();
+    fetchPromotionsAndCoupons();
   }, []);
 
   const [applyingCode, setApplyingCode] = useState<string | null>(null);
@@ -171,21 +160,23 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
             <label className="block text-xs font-extrabold uppercase tracking-wider text-navy">
               Have a Promo Code?
             </label>
-            <button
-              type="button"
-              onClick={() => setShowCouponsModal(true)}
-              className="inline-flex items-center gap-1 text-xs font-extrabold text-orange hover:text-orange-600 transition-colors bg-orange/10 px-2.5 py-1 rounded-full border border-orange/20 cursor-pointer"
-            >
-              <Tag className="h-3 w-3" />
-              <span>View Offers ({activeCoupons.length})</span>
-              <ChevronRight className="h-3 w-3" />
-            </button>
+            {(activeCoupons.length > 0 || activeOffers.length > 0) && (
+              <button
+                type="button"
+                onClick={() => setShowCouponsModal(true)}
+                className="inline-flex items-center gap-1 text-xs font-extrabold text-orange hover:text-orange-600 transition-colors bg-orange/10 px-2.5 py-1 rounded-full border border-orange/20 cursor-pointer"
+              >
+                <Tag className="h-3 w-3" />
+                <span>View Offers ({activeCoupons.length + activeOffers.length})</span>
+                <ChevronRight className="h-3 w-3" />
+              </button>
+            )}
           </div>
 
           <form onSubmit={handleApplyForm} className="flex gap-2">
             <Input
               type="text"
-              placeholder="Enter Code (e.g. WELCOME10)"
+              placeholder="Enter Code (if you have one)"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               className="uppercase tracking-wider font-extrabold text-xs rounded-xl bg-white border-2 border-slate-300 text-slate-900 focus:border-navy"
@@ -223,7 +214,7 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
         </p>
       )}
 
-      {/* Available Active Coupons Modal - Pure White Bright & Brand Theme Styled */}
+      {/* Available Active Coupons Modal */}
       {showCouponsModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
           <div
@@ -238,10 +229,10 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
                 </div>
                 <div>
                   <h3 className="font-heading text-lg font-bold text-navy">
-                    Available Offers & Coupons
+                    Available Offers & Promotions
                   </h3>
                   <p className="text-xs text-slate-500 font-medium">
-                    Tap any coupon code to auto-apply discount
+                    Active store promotions & coupon codes
                   </p>
                 </div>
               </div>
@@ -254,8 +245,46 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
               </button>
             </div>
 
-            {/* Active Coupons List */}
+            {/* Content Body */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-1 py-1">
+              {/* Active Configured Store Promotions */}
+              {activeOffers.map((off) => {
+                const minVal = Number(off.minCartValue || 0);
+                const isEligible = cartAmount >= minVal;
+                const shortFall = minVal - cartAmount;
+
+                return (
+                  <div
+                    key={off.id}
+                    className="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-4 space-y-1.5 shadow-xs"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-black text-slate-950 bg-amber-400 px-2.5 py-0.5 rounded-lg text-xs tracking-wider uppercase">
+                          {off.firstOrderOnly ? 'First Order' : 'Store Deal'}
+                        </span>
+                        {isEligible ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                            <span>Auto-Applied</span>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-bold text-slate-700 bg-slate-200/80 px-2 py-0.5 rounded-full">
+                            Add ₹{shortFall.toLocaleString('en-IN')} more to unlock
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <h4 className="font-extrabold text-navy text-xs pt-1">{off.title}</h4>
+                    <p className="text-xs text-slate-600 font-medium">
+                      {off.description ||
+                        `Automatic promotion on orders over ₹${minVal.toLocaleString('en-IN')}`}
+                    </p>
+                  </div>
+                );
+              })}
+
+              {/* Active Coupons */}
               {activeCoupons.map((c) => {
                 const isEligible = cartAmount >= c.minOrderAmount;
                 const shortFall = c.minOrderAmount - cartAmount;
@@ -311,6 +340,12 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
                   </div>
                 );
               })}
+
+              {activeOffers.length === 0 && activeCoupons.length === 0 && (
+                <div className="p-6 text-center text-slate-500 text-xs font-medium bg-slate-50 rounded-2xl border border-slate-200">
+                  No coupon codes needed! All current discounts apply automatically at checkout.
+                </div>
+              )}
             </div>
 
             {/* Modal Footer */}

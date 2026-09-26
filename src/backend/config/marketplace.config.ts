@@ -8,7 +8,7 @@ export const MARKETPLACE_CONFIG = {
   // Brand & Legal Entity Details
   BRAND_NAME: 'Navya Collection',
   DOMAIN: 'navyacollection.store',
-  SUPPORT_EMAIL: 'support@navyacollection.store',
+  SUPPORT_EMAIL: 'helpdesk@navyacollection.store',
   SUPPORT_PHONE: '+91 9053883125',
   GRIEVANCE_EMAIL: 'grievance@navyacollection.store',
   HEADQUARTERS: 'Karnal, Haryana - 132001, India',

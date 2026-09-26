@@ -176,7 +176,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Resolve category ID to a guaranteed valid DB category ID
-    const validCategoryId = await resolveValidCategoryId(data.categoryId);
+    const primaryTargetId =
+      Array.isArray(data.categoryIds) && data.categoryIds.length > 0
+        ? data.categoryIds[0]
+        : data.categoryId;
+    const validCategoryId = await resolveValidCategoryId(primaryTargetId);
+
+    // Compute metaKeywords incorporating all assigned category tags
+    let metaKeywordsUpdate = data.metaKeywords || '';
+    if (Array.isArray(data.categoryIds) && data.categoryIds.length > 0) {
+      const catTags = data.categoryIds.map((c) => c.replace(/[^a-zA-Z0-9_-]/g, '')).filter(Boolean);
+      const combined = [
+        ...catTags,
+        ...(data.metaKeywords ? data.metaKeywords.split(',').map((s) => s.trim()) : []),
+      ];
+      metaKeywordsUpdate = Array.from(new Set(combined)).join(', ');
+    }
 
     // Atomic transaction for Product, ProductImages, ProductVariants, and AuditLog
     const result = await prisma.$transaction(async (tx) => {
@@ -196,22 +211,24 @@ export async function POST(request: NextRequest) {
           name: data.name,
           slug: uniqueSlug,
           sku: parentSku,
+          brand: data.brand || null,
           description: data.description,
           price: data.price,
           compareAtPrice: data.compareAtPrice || null,
           costPrice: data.costPrice || null,
           stock: totalStock,
+          lowStockThreshold: data.lowStockThreshold || 5,
           categoryId: validCategoryId,
           status: data.status === 'draft' ? 'draft' : 'pending_approval',
           isFeatured: data.isFeatured,
           gender: data.gender || null,
-          fabric: data.fabric || null,
+          fabric: data.fabric || (data.attributes?.fabric as string) || null,
           color: data.color || null,
-          fit: data.fit || null,
-          occasion: data.occasion || null,
+          fit: data.fit || (data.attributes?.fit as string) || null,
+          occasion: data.occasion || (data.attributes?.occasion as string) || null,
           metaTitle: data.metaTitle || null,
           metaDescription: data.metaDescription || null,
-          metaKeywords: data.metaKeywords || null,
+          metaKeywords: metaKeywordsUpdate || null,
           focusKeyword: data.focusKeyword || null,
         },
       });
@@ -224,12 +241,12 @@ export async function POST(request: NextRequest) {
             imageUrl: img.imageUrl,
             altText: img.altText || data.name,
             isPrimary: img.isPrimary || index === 0,
-            sortOrder: index,
+            sortOrder: img.sortOrder ?? index,
           })),
         });
       }
 
-      // 3. Create Product Variants with Auto-Generated Variant SKUs
+      // 3. Create Product Variants with Auto-Generated Variant SKUs & Dynamic Attributes
       if (hasVariants) {
         await tx.productVariant.createMany({
           data: data.variants!.map((v, index) => {
@@ -237,6 +254,14 @@ export async function POST(request: NextRequest) {
               v.sku && v.sku.trim().length > 0
                 ? v.sku.trim()
                 : generateVariantSku(parentSku, v.color, v.size, index);
+
+            const variantImgUrl = v.imageUrl || v.image;
+            const attributesPayload = {
+              ...(data.attributes || {}),
+              ...(typeof v.attributes === 'object' && v.attributes !== null ? v.attributes : {}),
+              ...(variantImgUrl ? { imageUrl: variantImgUrl } : {}),
+              ...(v.weight ? { weight: v.weight } : {}),
+            };
 
             return {
               productId: product.id,
@@ -249,6 +274,8 @@ export async function POST(request: NextRequest) {
               availableStock: Number(v.stock || 0),
               size: v.size || null,
               color: v.color || null,
+              weight: v.weight ? Number(v.weight) : null,
+              attributes: Object.keys(attributesPayload).length > 0 ? attributesPayload : undefined,
               status: 'active',
             };
           }),

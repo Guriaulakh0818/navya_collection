@@ -1,22 +1,44 @@
 import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { Metadata } from 'next';
 
+import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
+
 export const metadata: Metadata = {
-  title: 'Contact Us | Navya Collection',
-  description: 'Get in touch with Navya Collection for orders, support, or store inquiries.',
+  title: `Contact Us | ${SEO_CONSTANTS.SITE_NAME}`,
+  description:
+    'Get in touch with Navya Collection customer support for order assistance, shipping inquiries, and boutique partner onboarding.',
+  alternates: {
+    canonical: `${SEO_CONSTANTS.SITE_URL}/contact`,
+  },
+  openGraph: {
+    title: `Contact Us | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      'Get in touch with Navya Collection customer support for order assistance, shipping inquiries, and boutique partner onboarding.',
+    url: `${SEO_CONSTANTS.SITE_URL}/contact`,
+    siteName: SEO_CONSTANTS.SITE_NAME,
+    locale: SEO_CONSTANTS.DEFAULT_LOCALE,
+    type: 'website',
+  },
 };
 
 export default function ContactPage() {
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: SEO_CONSTANTS.SITE_URL },
+    { name: 'Contact Us', url: `${SEO_CONSTANTS.SITE_URL}/contact` },
+  ]);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-14">
+      {/* Breadcrumb Structured Data */}
+      <JsonLd data={breadcrumbSchema} />
       <div className="mb-10 text-center md:text-left">
         <p className="text-xs font-black uppercase tracking-[0.25em] text-orange">Get in Touch</p>
         <h1 className="mt-2 font-heading text-4xl md:text-5xl font-extrabold text-navy">
           We&apos;d love to hear from you.
         </h1>
         <p className="mt-3 text-slate-600 font-medium text-base max-w-xl">
-          Have a question about your order, custom fitting, or new collections? Reach out directly
-          via email, WhatsApp, or visit our store.
+          Have a question about your order, shipping, or seller onboarding? Reach out directly via
+          email or WhatsApp.
         </p>
       </div>
 
@@ -33,7 +55,7 @@ export default function ContactPage() {
           <div className="space-y-4">
             {/* Email Card */}
             <a
-              href="mailto:navyacollection45@gmail.com"
+              href="mailto:helpdesk@navyacollection.store"
               className="flex items-start gap-4 p-4 rounded-2xl border-2 border-slate-100 bg-slate-50/70 hover:bg-orange/5 hover:border-orange/40 transition-all group shadow-xs"
             >
               <div className="h-11 w-11 rounded-2xl bg-orange/10 text-orange flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
@@ -49,7 +71,7 @@ export default function ContactPage() {
                   </span>
                 </div>
                 <p className="text-base font-extrabold text-navy mt-0.5 group-hover:text-orange transition-colors">
-                  navyacollection45@gmail.com
+                  helpdesk@navyacollection.store
                 </p>
               </div>
             </a>
@@ -81,7 +103,7 @@ export default function ContactPage() {
 
             {/* Address / Google Maps Card */}
             <a
-              href="https://maps.google.com/?q=Mohali,+Punjab,+India"
+              href="https://maps.google.com/?q=Fatehabad,+Haryana,+India"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-start gap-4 p-4 rounded-2xl border-2 border-slate-100 bg-slate-50/70 hover:bg-navy/5 hover:border-navy/30 transition-all group shadow-xs"
@@ -92,14 +114,14 @@ export default function ContactPage() {
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-slate-400 uppercase tracking-wider">
-                    Store Location
+                    Business Location
                   </span>
                   <span className="text-[11px] font-extrabold text-navy opacity-0 group-hover:opacity-100 transition-opacity">
                     Open Google Maps 🗺️
                   </span>
                 </div>
                 <p className="text-base font-extrabold text-navy mt-0.5 group-hover:text-navy transition-colors">
-                  Mohali, Punjab, India
+                  Fatehabad, Haryana, India — 125050
                 </p>
               </div>
             </a>

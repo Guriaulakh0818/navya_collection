@@ -1,21 +1,36 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
 import type { ProductImage } from '../types/product.types';
 
 type ProductImageGalleryProps = {
   images: ProductImage[];
+  activeImageUrl?: string;
   className?: string;
 };
 
-export function ProductImageGallery({ images, className }: ProductImageGalleryProps) {
+export function ProductImageGallery({
+  images,
+  activeImageUrl,
+  className,
+}: ProductImageGalleryProps) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const thumbnailRef = useRef<HTMLDivElement>(null);
+
+  // Automatically sync active image when a variant with a photo is selected
+  useEffect(() => {
+    if (activeImageUrl && images && images.length > 0) {
+      const foundIdx = images.findIndex((img) => (img.url || img.imageUrl) === activeImageUrl);
+      if (foundIdx !== -1) {
+        setActiveIdx(foundIdx);
+      }
+    }
+  }, [activeImageUrl, images]);
 
   if (!images || images.length === 0) {
     return (

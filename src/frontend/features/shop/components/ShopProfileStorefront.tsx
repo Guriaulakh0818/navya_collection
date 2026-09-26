@@ -147,19 +147,25 @@ export function ShopProfileStorefront({
 
                 <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-xl line-clamp-2">
                   {shop.description ||
-                    'Exclusive luxury Indian ethnic wear boutique partner on Navya Collection.'}
+                    `${shop.name} boutique partner on Navya Collection marketplace.`}
                 </p>
 
                 <div className="flex items-center gap-4 mt-3 text-xs text-slate-600 flex-wrap">
-                  <span className="flex items-center gap-1 font-extrabold text-amber-700">
-                    <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                    {shop.rating || 4.9} ({shop.reviewCount || 38} Reviews)
-                  </span>
-                  <span className="flex items-center gap-1 text-slate-500 font-medium">
-                    <MapPin className="w-3.5 h-3.5 text-amber-600" />
-                    {shop.city || profile.city || 'Hisar'},{' '}
-                    {shop.state || profile.state || 'Haryana'}
-                  </span>
+                  {shop.rating && shop.rating > 0 && shop.reviewCount && shop.reviewCount > 0 ? (
+                    <span className="flex items-center gap-1 font-extrabold text-amber-700">
+                      <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                      {Number(shop.rating).toFixed(1)} ({shop.reviewCount}{' '}
+                      {shop.reviewCount === 1 ? 'Review' : 'Reviews'})
+                    </span>
+                  ) : (
+                    <span className="text-slate-400 font-medium">No reviews yet</span>
+                  )}
+                  {(shop.city || shop.state) && (
+                    <span className="flex items-center gap-1 text-slate-500 font-medium">
+                      <MapPin className="w-3.5 h-3.5 text-amber-600" />
+                      {[shop.city, shop.state].filter(Boolean).join(', ')}
+                    </span>
+                  )}
                   <span className="flex items-center gap-1 text-slate-500 font-mono font-bold">
                     <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
                     {products.length} Products Available
@@ -397,7 +403,9 @@ export function ShopProfileStorefront({
               <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3">
                 <h3 className="font-extrabold text-slate-900 text-sm">Pickup Warehouse Address</h3>
                 <p className="text-slate-700 font-semibold">
-                  {shop.fullAddress || profile.businessAddress || 'Hisar, Haryana, India'}
+                  {shop.fullAddress ||
+                    profile.businessAddress ||
+                    [shop.city, shop.state, 'India'].filter(Boolean).join(', ')}
                 </p>
                 <div className="flex gap-4 text-slate-500 pt-2 border-t border-slate-200">
                   <span>

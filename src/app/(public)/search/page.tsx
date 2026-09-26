@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   title: 'Marketplace Search Engine | Navya Collection',
   description:
     'Search luxury ethnic couture, sarees, lehengas, gents garments, and verified boutique partner shops on Navya Collection.',
+  robots: {
+    index: false,
+    follow: true,
+  },
 };
 
 export default function PublicSearchPage() {

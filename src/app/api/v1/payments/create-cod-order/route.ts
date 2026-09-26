@@ -47,7 +47,7 @@ export async function POST(request: Request) {
             data: {
               userId,
               fullName: 'Gurvinder Singh',
-              mobile: '9991983125',
+              mobile: '9053883125',
               pincode: '125050',
               addressLine1: '240 haripura Hajrawan Khurd',
               city: 'Fatehabad',

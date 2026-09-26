@@ -3,16 +3,36 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: 'Return, Replacement & Refund Policy | Navya Collection',
+  title: `Return, Replacement & Refund Policy | ${SEO_CONSTANTS.SITE_NAME}`,
   description:
-    '7-Day hassle-free return and replacement policy for Navya Collection multi-vendor fashion marketplace.',
+    '7-Day hassle-free return and replacement policy for Navya Collection multi-vendor fashion marketplace orders across India.',
+  alternates: {
+    canonical: `${SEO_CONSTANTS.SITE_URL}/return-policy`,
+  },
+  openGraph: {
+    title: `Return, Replacement & Refund Policy | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      '7-Day hassle-free return and replacement policy for Navya Collection multi-vendor fashion marketplace orders across India.',
+    url: `${SEO_CONSTANTS.SITE_URL}/return-policy`,
+    siteName: SEO_CONSTANTS.SITE_NAME,
+    locale: SEO_CONSTANTS.DEFAULT_LOCALE,
+    type: 'website',
+  },
 };
 
 export default function ReturnPolicyPage() {
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: SEO_CONSTANTS.SITE_URL },
+    { name: 'Return Policy', url: `${SEO_CONSTANTS.SITE_URL}/return-policy` },
+  ]);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
+      {/* Breadcrumb Structured Data */}
+      <JsonLd data={breadcrumbSchema} />
       <Breadcrumb
         items={[{ label: 'Home', href: '/' }, { label: 'Return & Refund Policy' }]}
         className="mx-auto max-w-5xl px-4 md:px-6 py-4"

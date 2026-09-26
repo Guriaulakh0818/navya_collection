@@ -113,9 +113,8 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-xs text-white/70 leading-relaxed max-w-sm">
-              Navya Collection is India’s most trusted online fashion brand for everyday Indian
-              families. Delivering modern style, premium quality Gents & Kids garments, and honest
-              value.
+              Navya Collection is a fashion marketplace connecting customers across India with
+              verified local clothing stores, designer boutiques, and regional apparel creators.
             </p>
             <div className="pt-2 space-y-2 text-xs text-white/80">
               <div className="flex items-center gap-2">
@@ -124,84 +123,93 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-orange shrink-0" />
-                <span>Customer Care: +91 98765 43210</span>
+                <a
+                  href="tel:+919053883125"
+                  className="hover:text-orange transition-colors hover:underline"
+                >
+                  Customer Care: +91 9053883125
+                </a>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-orange shrink-0" />
-                <span className="truncate">support@navyacollection.store</span>
+                <a
+                  href="mailto:helpdesk@navyacollection.store"
+                  className="truncate hover:text-orange transition-colors hover:underline"
+                >
+                  helpdesk@navyacollection.store
+                </a>
               </div>
             </div>
           </div>
 
           {/* Categories */}
           <div className="sm:col-span-1 lg:col-span-2">
-            <h4 className="font-heading text-xs sm:text-sm font-bold text-white uppercase tracking-wider mb-4">
+            <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-4">
               Categories
             </h4>
-            <ul className="space-y-2.5 text-xs text-white/70">
+            <ul className="space-y-2.5 text-xs text-white/80">
               <li>
-                <Link href="/shop?category=gents" className="hover:text-orange transition-colors">
-                  Gents Shirts & Kurtas
+                <Link href="/category/women" className="hover:text-orange transition-colors">
+                  Women&apos;s Collection
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/shop?category=gents&sub=Trousers"
-                  className="hover:text-orange transition-colors"
-                >
-                  Chinos & Trousers
+                <Link href="/category/men" className="hover:text-orange transition-colors">
+                  Men&apos;s Collection
                 </Link>
               </li>
               <li>
-                <Link href="/shop?category=kids" className="hover:text-orange transition-colors">
-                  Boys Wear & T-Shirts
+                <Link href="/category/kids" className="hover:text-orange transition-colors">
+                  Kids&apos; Fashion &amp; Baby
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/shop?category=kids&sub=Girls"
-                  className="hover:text-orange transition-colors"
-                >
-                  Girls Dresses & Frocks
+                <Link href="/category" className="hover:text-orange transition-colors">
+                  All Categories
                 </Link>
               </li>
               <li>
-                <Link href="/shop?filter=new" className="hover:text-orange transition-colors">
-                  New Season 2026
+                <Link href="/shop" className="hover:text-orange transition-colors">
+                  Boutique Stores &amp; Artisans
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Policies & Help */}
+          {/* Company & Policies */}
           <div className="sm:col-span-1 lg:col-span-2">
-            <h4 className="font-heading text-xs sm:text-sm font-bold text-white uppercase tracking-wider mb-4">
-              Policies & Help
+            <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-4">
+              Company &amp; Policies
             </h4>
-            <ul className="space-y-2.5 text-xs text-white/70">
+            <ul className="space-y-2.5 text-xs text-white/80">
               <li>
-                <Link href="/account/orders" className="hover:text-orange transition-colors">
-                  Track Order
+                <Link href="/about" className="hover:text-orange transition-colors">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-orange transition-colors">
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/become-seller" className="hover:text-orange transition-colors">
+                  Sell on Navya (Boutiques)
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-orange transition-colors">
+                  FAQ &amp; Help Center
                 </Link>
               </li>
               <li>
                 <Link href="/shipping-policy" className="hover:text-orange transition-colors">
-                  Shipping & Delivery
+                  Shipping &amp; Delivery
                 </Link>
               </li>
               <li>
                 <Link href="/return-policy" className="hover:text-orange transition-colors">
-                  Return & Refund Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/cancellation-policy" className="hover:text-orange transition-colors">
-                  Cancellation Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/seller-agreement" className="hover:text-orange transition-colors">
-                  Seller Agreement
+                  Return &amp; Refund Policy
                 </Link>
               </li>
               <li>
@@ -219,10 +227,10 @@ export function Footer() {
 
           {/* Newsletter */}
           <div className="sm:col-span-2 lg:col-span-4">
-            <h4 className="font-heading text-xs sm:text-sm font-bold text-white uppercase tracking-wider mb-4">
+            <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-4">
               Join Our VIP Club
             </h4>
-            <p className="text-xs text-white/70 mb-3 leading-relaxed">
+            <p className="text-xs text-white/80 mb-3 leading-relaxed">
               Subscribe for exclusive discount codes, early access to new launches & insider sales.
             </p>
             <FooterNewsletter />
@@ -230,18 +238,18 @@ export function Footer() {
         </div>
 
         {/* Footer Bottom */}
-        <div className="pt-6 sm:pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/60">
-          <p className="text-center sm:text-left text-[11px] sm:text-xs">
+        <div className="pt-6 sm:pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/70">
+          <p className="text-center sm:text-left text-xs">
             © {new Date().getFullYear()} Navya Collection. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
-            <span className="bg-white/10 px-2.5 py-1 rounded text-[10px] font-semibold text-white whitespace-nowrap">
+            <span className="bg-white/10 px-2.5 py-1 rounded text-xs font-medium text-white whitespace-nowrap">
               Razorpay Secured
             </span>
-            <span className="bg-white/10 px-2.5 py-1 rounded text-[10px] font-semibold text-white whitespace-nowrap">
+            <span className="bg-white/10 px-2.5 py-1 rounded text-xs font-medium text-white whitespace-nowrap">
               UPI / GPay / PhonePe
             </span>
-            <span className="bg-white/10 px-2.5 py-1 rounded text-[10px] font-semibold text-white whitespace-nowrap">
+            <span className="bg-white/10 px-2.5 py-1 rounded text-xs font-medium text-white whitespace-nowrap">
               COD Available
             </span>
           </div>

@@ -5,21 +5,23 @@ import Link from 'next/link';
 const footerLinks = {
   company: [
     { href: '/about', label: 'About Us' },
-    { href: '/contact', label: 'Contact' },
-    { href: '/shipping-policy', label: 'Shipping Policy' },
-    { href: '/return-policy', label: 'Return Policy' },
+    { href: '/faq', label: 'FAQ & Help' },
+    { href: '/become-seller', label: 'Become a Seller' },
+    { href: '/contact', label: 'Contact Us' },
   ],
   quickLinks: [
-    { href: '/shop', label: 'Shop' },
+    { href: '/shop', label: 'Shop Catalog' },
     { href: '/wishlist', label: 'Wishlist' },
     { href: '/cart', label: 'Cart' },
     { href: '/account', label: 'My Account' },
   ],
   categories: [
-    { href: '/shop?category=gents', label: 'Gents' },
-    { href: '/shop?category=kids', label: 'Kids' },
-    { href: '/shop?category=new', label: 'New Arrivals' },
-    { href: '/shop?category=offers', label: 'Offers' },
+    { href: '/category/spotlight', label: 'In The Spotlight' },
+    { href: '/category/women', label: "Women's Collection" },
+    { href: '/category/men', label: "Men's Collection" },
+    { href: '/category/kids', label: "Kids' Fashion" },
+    { href: '/category/best-sellers', label: 'Best Sellers' },
+    { href: '/shop', label: 'Boutique Shops' },
   ],
   policies: [
     { href: '/privacy-policy', label: 'Privacy Policy' },

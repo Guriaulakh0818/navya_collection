@@ -20,7 +20,7 @@ export const NOTIFICATION_CONSTANTS = {
       process.env.ADMIN_ALERT_EMAIL ||
       process.env.BREVO_SENDER_EMAIL ||
       'admin@navyacollection.store',
-    MOBILE: process.env.ADMIN_ALERT_MOBILE || '9991983125',
+    MOBILE: process.env.ADMIN_ALERT_MOBILE || '9053883125',
   },
   RETRY: {
     MAX_ATTEMPTS: 3,

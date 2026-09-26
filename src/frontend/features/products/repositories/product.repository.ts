@@ -22,10 +22,15 @@ export class ProductRepository {
           status: 'active',
           ...where,
           deletedAt: null,
-          shop: {
-            status: 'APPROVED',
-            deletedAt: null,
-          },
+          OR: [
+            { shopId: null },
+            {
+              shop: {
+                status: 'APPROVED',
+                deletedAt: null,
+              },
+            },
+          ],
         },
         skip,
         take,
@@ -77,10 +82,15 @@ export class ProductRepository {
           status: 'active',
           ...where,
           deletedAt: null,
-          shop: {
-            status: 'APPROVED',
-            deletedAt: null,
-          },
+          OR: [
+            { shopId: null },
+            {
+              shop: {
+                status: 'APPROVED',
+                deletedAt: null,
+              },
+            },
+          ],
         },
       });
     } catch {
@@ -98,10 +108,19 @@ export class ProductRepository {
           OR: [{ id: idOrSlug }, { slug: idOrSlug }],
           ...(allowPending ? {} : { status: 'active' }),
           deletedAt: null,
-          shop: {
-            status: 'APPROVED',
-            deletedAt: null,
-          },
+          AND: [
+            {
+              OR: [
+                { shopId: null },
+                {
+                  shop: {
+                    status: 'APPROVED',
+                    deletedAt: null,
+                  },
+                },
+              ],
+            },
+          ],
         },
         include: {
           category: true,

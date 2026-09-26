@@ -22,7 +22,6 @@ export async function GET() {
           orderBy: { createdAt: 'desc' },
           select: {
             id: true,
-            ownerId: true,
             name: true,
             slug: true,
             logo: true,

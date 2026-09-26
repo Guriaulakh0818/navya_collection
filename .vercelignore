@@ -1,0 +1,24 @@
+# Vercel Ignore File
+# Prevents uploading large, unnecessary or development-only files
+
+# Raw assets & backups
+raw_assets_backup/
+scratch/
+
+# Tests and Coverage
+tests/
+src/__tests__/
+coverage/
+
+# Documentation & Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Git and IDE
+.git/
+.idea/
+.vscode/
+
+# Environment local files
+.env*.local
