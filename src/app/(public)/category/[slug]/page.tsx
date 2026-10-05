@@ -540,17 +540,78 @@ export default async function CategoryPage({ params }: Props) {
     dbProducts = filteredProducts.map((p: any) => {
       const primary = p.images.find((img: any) => img.isPrimary) || p.images[0];
       return {
-        ...p,
-        price: Number(p.price),
-        compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : undefined,
-        images: p.images.map((img: any) => ({
-          id: img.id,
+        id: String(p.id),
+        name: String(p.name || ''),
+        slug: String(p.slug || ''),
+        sku: String(p.sku || ''),
+        brand: p.brand ? String(p.brand) : null,
+        gender: p.gender ? String(p.gender) : null,
+        ageGroup: p.ageGroup ? String(p.ageGroup) : null,
+        fabric: p.fabric ? String(p.fabric) : null,
+        occasion: p.occasion ? String(p.occasion) : null,
+        color: p.color ? String(p.color) : null,
+        fit: p.fit ? String(p.fit) : null,
+        description: p.description ? String(p.description) : '',
+        price: Number(p.price || 0),
+        compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+        costPrice: p.costPrice ? Number(p.costPrice) : null,
+        stock: Number(p.stock || 0),
+        lowStockThreshold: p.lowStockThreshold ? Number(p.lowStockThreshold) : 5,
+        status: String(p.status || 'active'),
+        isFeatured: Boolean(p.isFeatured),
+        isNewArrival: Boolean(p.isNewArrival),
+        categoryId: String(p.categoryId || ''),
+        rating: p.rating !== null && p.rating !== undefined ? Number(p.rating) : null,
+        reviewCount: Number(p.reviewCount || 0),
+        metaTitle: p.metaTitle || null,
+        metaDescription: p.metaDescription || null,
+        metaKeywords: p.metaKeywords || null,
+        canonicalUrl: p.canonicalUrl || null,
+        ogImage: p.ogImage || null,
+        robots: p.robots || null,
+        schemaEnabled: Boolean(p.schemaEnabled),
+        focusKeyword: p.focusKeyword || null,
+        brandId: p.brandId || null,
+        returnPolicyType: p.returnPolicyType || null,
+        returnAllowed: Boolean(p.returnAllowed),
+        returnWindowDays: p.returnWindowDays ? Number(p.returnWindowDays) : 7,
+        replacementAllowed: Boolean(p.replacementAllowed),
+        replacementWindowDays: p.replacementWindowDays ? Number(p.replacementWindowDays) : 7,
+        specialShippingMode: p.specialShippingMode || null,
+        specialShippingRate: p.specialShippingRate ? Number(p.specialShippingRate) : null,
+        taxRate: p.taxRate ? Number(p.taxRate) : null,
+        hsnCode: p.hsnCode || null,
+        createdAt:
+          p.createdAt instanceof Date ? p.createdAt.toISOString() : String(p.createdAt || ''),
+        updatedAt:
+          p.updatedAt instanceof Date ? p.updatedAt.toISOString() : String(p.updatedAt || ''),
+        deletedAt: p.deletedAt instanceof Date ? p.deletedAt.toISOString() : null,
+        shopId: p.shopId || null,
+        pickupLocationId: p.pickupLocationId || null,
+        images: (p.images || []).map((img: any) => ({
+          id: String(img.id),
           url: img.imageUrl,
           imageUrl: img.imageUrl,
-          isPrimary: img.isPrimary,
+          isPrimary: Boolean(img.isPrimary),
           alt: img.altText || p.name,
         })),
         imageUrl: primary?.imageUrl,
+        shop: p.shop
+          ? {
+              id: String(p.shop.id),
+              name: String(p.shop.name || ''),
+              slug: String(p.shop.slug || ''),
+              city: p.shop.city || null,
+              verificationBadge: p.shop.verificationBadge || null,
+            }
+          : null,
+        category: p.category
+          ? {
+              id: String(p.category.id),
+              name: String(p.category.name || ''),
+              slug: String(p.category.slug || ''),
+            }
+          : null,
       };
     });
   } catch (err) {

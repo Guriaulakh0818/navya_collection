@@ -17,20 +17,30 @@ export class ProductRepository {
     orderBy: Prisma.ProductOrderByWithRelationInput,
   ) {
     try {
+      const shopApprovalCondition: Prisma.ProductWhereInput = {
+        OR: [
+          { shopId: null },
+          {
+            shop: {
+              status: 'APPROVED',
+              deletedAt: null,
+            },
+          },
+        ],
+      };
+
+      const baseConditions: Prisma.ProductWhereInput[] = [
+        { status: 'active', deletedAt: null },
+        shopApprovalCondition,
+      ];
+
+      if (Object.keys(where).length > 0) {
+        baseConditions.push(where);
+      }
+
       return await prisma.product.findMany({
         where: {
-          status: 'active',
-          ...where,
-          deletedAt: null,
-          OR: [
-            { shopId: null },
-            {
-              shop: {
-                status: 'APPROVED',
-                deletedAt: null,
-              },
-            },
-          ],
+          AND: baseConditions,
         },
         skip,
         take,
@@ -77,20 +87,30 @@ export class ProductRepository {
    */
   static async count(where: Prisma.ProductWhereInput): Promise<number> {
     try {
+      const shopApprovalCondition: Prisma.ProductWhereInput = {
+        OR: [
+          { shopId: null },
+          {
+            shop: {
+              status: 'APPROVED',
+              deletedAt: null,
+            },
+          },
+        ],
+      };
+
+      const baseConditions: Prisma.ProductWhereInput[] = [
+        { status: 'active', deletedAt: null },
+        shopApprovalCondition,
+      ];
+
+      if (Object.keys(where).length > 0) {
+        baseConditions.push(where);
+      }
+
       return await prisma.product.count({
         where: {
-          status: 'active',
-          ...where,
-          deletedAt: null,
-          OR: [
-            { shopId: null },
-            {
-              shop: {
-                status: 'APPROVED',
-                deletedAt: null,
-              },
-            },
-          ],
+          AND: baseConditions,
         },
       });
     } catch {

@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
-import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
+import { ADMIN_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { generateParentSku, generateVariantSku } from '@/backend/lib/sku-generator';
 import { NotificationService } from '@/backend/services/notification.service';
 import { prisma } from '@/lib/prisma';
@@ -19,7 +19,9 @@ function getJwtSecretKey(): Uint8Array {
 
 async function getAuthenticatedUser() {
   const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const token =
+    cookieStore.get(SESSION_COOKIE_NAME)?.value ||
+    cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, getJwtSecretKey());
@@ -37,18 +39,44 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const shop = await prisma.shop.findFirst({
-      where: { ownerId: userId, deletedAt: null },
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, email: true },
     });
 
+    const isPlatformAdminOrOwner = Boolean(
+      user && ['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(String(user.role).toUpperCase()),
+    );
+
+    const { searchParams } = new URL(request.url);
+    const requestedShopId = searchParams.get('shopId');
+
+    let shop = null;
+    if (isPlatformAdminOrOwner && requestedShopId && requestedShopId !== 'all') {
+      shop = await prisma.shop.findFirst({
+        where: { id: requestedShopId, deletedAt: null },
+      });
+    }
+
     if (!shop) {
+      shop = await prisma.shop.findFirst({
+        where: { ownerId: userId, deletedAt: null },
+      });
+    }
+
+    if (!shop && isPlatformAdminOrOwner) {
+      shop = await prisma.shop.findFirst({
+        where: { slug: 'navya-collection', deletedAt: null },
+      });
+    }
+
+    if (!shop && !(isPlatformAdminOrOwner && requestedShopId === 'all')) {
       return NextResponse.json(
         { success: false, message: 'Seller shop not found' },
         { status: 404 },
       );
     }
 
-    const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'ALL';
     const query = (searchParams.get('q') || '').trim().toLowerCase();
     const categoryId = searchParams.get('categoryId');
@@ -57,9 +85,12 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const whereCondition: any = {
-      shopId: shop.id,
       deletedAt: null,
     };
+
+    if (shop) {
+      whereCondition.shopId = shop.id;
+    }
 
     if (status !== 'ALL') {
       whereCondition.status = status;
@@ -95,19 +126,20 @@ export async function GET(request: NextRequest) {
       prisma.product.count({ where: whereCondition }),
     ]);
 
+    const shopFilter = shop ? { shopId: shop.id } : {};
     const counts = {
-      ALL: await prisma.product.count({ where: { shopId: shop.id, deletedAt: null } }),
+      ALL: await prisma.product.count({ where: { ...shopFilter, deletedAt: null } }),
       active: await prisma.product.count({
-        where: { shopId: shop.id, status: 'active', deletedAt: null },
+        where: { ...shopFilter, status: 'active', deletedAt: null },
       }),
       draft: await prisma.product.count({
-        where: { shopId: shop.id, status: 'draft', deletedAt: null },
+        where: { ...shopFilter, status: 'draft', deletedAt: null },
       }),
       pending_approval: await prisma.product.count({
-        where: { shopId: shop.id, status: 'pending_approval', deletedAt: null },
+        where: { ...shopFilter, status: 'pending_approval', deletedAt: null },
       }),
       archived: await prisma.product.count({
-        where: { shopId: shop.id, status: 'archived', deletedAt: null },
+        where: { ...shopFilter, status: 'archived', deletedAt: null },
       }),
     };
 
@@ -136,12 +168,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const shop = await prisma.shop.findFirst({
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, email: true },
+    });
+
+    const isPlatformAdminOrOwner = Boolean(
+      user && ['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(String(user.role).toUpperCase()),
+    );
+
+    let shop = await prisma.shop.findFirst({
       where: { ownerId: userId, deletedAt: null },
       include: {
         owner: { select: { name: true, email: true, mobile: true } },
       },
     });
+
+    if (!shop && isPlatformAdminOrOwner) {
+      shop = await prisma.shop.findFirst({
+        where: { slug: 'navya-collection', deletedAt: null },
+        include: {
+          owner: { select: { name: true, email: true, mobile: true } },
+        },
+      });
+    }
 
     if (!shop) {
       return NextResponse.json(
