@@ -15,8 +15,31 @@ export function DeliveryStep() {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const isFirstOrderFree = Boolean(shippingData?.isFirstOrderFreeDelivery);
-  const isBaseFree = subtotal >= 999;
-  const isSameDayFree = subtotal >= 1999;
+
+  // Group items by seller/shop to determine seller-level shipping charges (BM-04)
+  const sellerSubtotals = new Map<string, number>();
+  for (const item of items) {
+    const sId = (item as any).shopId || 'default-shop';
+    sellerSubtotals.set(sId, (sellerSubtotals.get(sId) || 0) + item.price * item.quantity);
+  }
+
+  let standardCharge = 0;
+  let expressCharge = 0;
+  let sameDayCharge = 0;
+  for (const [, sTotal] of sellerSubtotals.entries()) {
+    if (sTotal < 999) {
+      standardCharge += 49;
+      expressCharge += 99;
+    }
+    if (sTotal < 1999) {
+      sameDayCharge += 149;
+    }
+  }
+  if (items.length === 0 || isFirstOrderFree) {
+    standardCharge = 0;
+    expressCharge = 0;
+    sameDayCharge = 0;
+  }
 
   const methodsToRender: (DeliveryMethod & { originalPrice: number })[] = [
     {
@@ -24,7 +47,7 @@ export function DeliveryStep() {
       name: 'Standard Delivery',
       description: 'Delivered within 5-7 business days',
       originalPrice: 49,
-      price: isFirstOrderFree || isBaseFree ? 0 : 49,
+      price: standardCharge,
       estimatedDays: '5-7 business days',
     },
     {
@@ -32,7 +55,7 @@ export function DeliveryStep() {
       name: 'Express Delivery',
       description: 'Delivered within 2-3 business days',
       originalPrice: 99,
-      price: isFirstOrderFree || isBaseFree ? 0 : 99,
+      price: expressCharge,
       estimatedDays: '2-3 business days',
     },
     {
@@ -40,7 +63,7 @@ export function DeliveryStep() {
       name: 'Same Day Delivery',
       description: 'Order before 2 PM for same day delivery',
       originalPrice: 149,
-      price: isFirstOrderFree || isSameDayFree ? 0 : 149,
+      price: sameDayCharge,
       estimatedDays: 'Same day',
     },
   ];
@@ -109,8 +132,7 @@ export function DeliveryStep() {
       <div className="space-y-3 sm:space-y-3.5">
         {methodsToRender.map((method) => {
           const isSelected = selectedId === method.id;
-          const isThisMethodFree =
-            isFirstOrderFree || (method.id === 'same-day' ? isSameDayFree : isBaseFree);
+          const isThisMethodFree = method.price === 0;
 
           return (
             <label

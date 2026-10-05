@@ -54,7 +54,11 @@ export interface OrderPreviewData {
   netSubtotal: number;
   shipping: number;
   tax: number;
+  codFee?: number;
+  codFeeTax?: number;
   grandTotal: number;
+  isCodEligible?: boolean;
+  sellerCodAllocations?: any[];
   totalSavings: number;
   estimatedDelivery: string;
   isServiceable?: boolean;
@@ -122,6 +126,7 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           addressId: address?.id,
           couponCode: appliedCoupon?.code,
           shippingMethodCode: deliveryMethod?.id ? deliveryMethod.id.toUpperCase() : 'STANDARD',
+          paymentMethod: selectedPaymentMethod === 'COD' ? 'COD' : 'PREPAID',
           items: clientItems.map((i) => ({
             productId: i.productId,
             variantId: i.variantId || undefined,
@@ -622,6 +627,21 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
             </div>
           ))}
         </div>
+
+        {selectedPaymentMethod === 'COD' &&
+          previewData.codFee !== undefined &&
+          previewData.codFee > 0 && (
+            <div className="rounded-xl bg-amber-50 border border-amber-200/80 p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900">
+              <span className="font-medium">
+                COD Handling Fee (1.5%):{' '}
+                <strong className="font-extrabold">₹{previewData.codFee.toFixed(2)}</strong> (Added
+                to total payable)
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300 self-start sm:self-auto">
+                100% Non-refundable
+              </span>
+            </div>
+          )}
       </div>
 
       {/* Section 3: Payment Method Selection */}

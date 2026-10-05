@@ -38,8 +38,8 @@ export function Footer() {
                 <RefreshCw className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-extrabold text-sm">7-Day Easy Returns</h4>
-                <p className="text-xs text-white/70">Hassle-free exchange & refund</p>
+                <h4 className="font-extrabold text-sm">Easy Returns & Replacements</h4>
+                <p className="text-xs text-white/70">3-day return & 7-day exchange</p>
               </div>
             </div>
           </div>
@@ -79,9 +79,9 @@ export function Footer() {
                   <RefreshCw className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-xs sm:text-sm">7-Day Easy Returns</h4>
+                  <h4 className="font-extrabold text-xs sm:text-sm">Easy Returns & Replacements</h4>
                   <p className="text-[11px] sm:text-xs text-white/70">
-                    Hassle-free exchange & refund
+                    3-day return & 7-day exchange
                   </p>
                 </div>
               </div>

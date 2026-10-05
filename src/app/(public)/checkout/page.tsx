@@ -136,6 +136,7 @@ function OrderSummary() {
   const {
     items,
     deliveryMethod,
+    paymentMethod,
     appliedCoupon,
     setAppliedCoupon,
     shippingData,
@@ -155,21 +156,23 @@ function OrderSummary() {
       ? deliveryMethod.price
       : shippingData
         ? shippingData.shippingCharge
-        : netSubtotal >= 999 || netSubtotal === 0
+        : items.length === 0
           ? 0
           : 49;
 
   // Validate that server taxData matches current subtotal to prevent stale calculations
   const isTaxDataValid = taxData && taxData.subtotal === subtotal;
 
-  const taxRate = isTaxDataValid ? taxData.taxBreakdown.gst : 18;
-  const taxAmount = isTaxDataValid
-    ? taxData.tax
-    : Math.round(((netSubtotal * taxRate) / 100) * 100) / 100;
+  const taxRate = isTaxDataValid ? (taxData.taxBreakdown?.gst ?? 0) : 0;
+  const taxAmount = isTaxDataValid ? (taxData.tax ?? 0) : 0;
+
+  const isCod = paymentMethod?.id?.toLowerCase() === 'cod';
+  const codFeeBase = isCod ? Math.max(0, netSubtotal + shippingCharge + taxAmount) : 0;
+  const codFee = isCod ? Math.round(codFeeBase * 0.015 * 100) / 100 : 0;
 
   const grandTotal = isTaxDataValid
-    ? Math.round((netSubtotal + shippingCharge + taxData.tax) * 100) / 100
-    : Math.round((netSubtotal + shippingCharge + taxAmount) * 100) / 100;
+    ? Math.round((netSubtotal + shippingCharge + taxData.tax + codFee) * 100) / 100
+    : Math.round((netSubtotal + shippingCharge + codFee) * 100) / 100;
 
   return (
     <div className="space-y-4 text-sm text-slate-600">
@@ -215,6 +218,20 @@ function OrderSummary() {
             ₹{taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </span>
         </div>
+
+        {isCod && codFee > 0 && (
+          <div className="flex justify-between items-center text-slate-600">
+            <span className="flex items-center gap-1.5 font-medium">
+              COD Handling Fee (1.5%)
+              <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                Non-refundable
+              </span>
+            </span>
+            <span className="font-bold text-navy">
+              ₹{codFee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+        )}
 
         <div className="border-t border-border pt-3 flex justify-between font-semibold text-navy text-base">
           <span>Grand Total</span>

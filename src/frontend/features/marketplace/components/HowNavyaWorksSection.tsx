@@ -8,7 +8,7 @@ const WORKFLOW_STEPS = [
     description:
       'Browse clothing stores, regional artisans, and independent fashion boutiques across India.',
     icon: Store,
-    accent: 'text-[#F28C28] bg-amber-50 border-amber-200',
+    accent: 'text-orange bg-amber-50 border-amber-200',
   },
   {
     step: '02',
@@ -43,10 +43,10 @@ export function HowNavyaWorksSection() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-1.5 max-w-xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-wider">
-            <PackageCheck className="w-3.5 h-3.5 text-[#F28C28]" />
+            <PackageCheck className="w-3.5 h-3.5 text-orange" />
             <span>Marketplace Workflow</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-[#0A2342] tracking-tight font-sans">
+          <h2 className="text-2xl sm:text-3xl font-black text-navy-900 tracking-tight font-sans">
             How Navya Collection Works
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
@@ -57,7 +57,7 @@ export function HowNavyaWorksSection() {
         <div className="flex items-center gap-3">
           <Link
             href="/shop"
-            className="text-xs sm:text-sm font-extrabold text-[#F28C28] hover:text-[#d97718] transition-colors"
+            className="text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors"
           >
             Explore Catalog →
           </Link>
@@ -83,7 +83,7 @@ export function HowNavyaWorksSection() {
               </div>
 
               <div className="space-y-1">
-                <h3 className="text-sm font-extrabold text-[#0A2342] leading-snug">{item.title}</h3>
+                <h3 className="text-sm font-extrabold text-navy-900 leading-snug">{item.title}</h3>
                 <p className="text-xs text-slate-500 font-medium leading-relaxed">
                   {item.description}
                 </p>

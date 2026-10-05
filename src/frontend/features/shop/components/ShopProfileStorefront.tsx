@@ -380,11 +380,12 @@ export function ShopProfileStorefront({
 
               <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3">
                 <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-amber-600" /> 7-Day Return & Exchange Policy
+                  <FileText className="w-4 h-4 text-amber-600" /> 3-Day Return &amp; 7-Day
+                  Replacement Policy
                 </h3>
                 <p className="text-slate-600 leading-relaxed font-medium">
                   {shop.returnPolicy ||
-                    '7-day easy return policy for unworn items with original boutique tags intact.'}
+                    '3-day easy returns and 7-day size replacements for unworn items with original boutique tags intact.'}
                 </p>
               </div>
             </div>

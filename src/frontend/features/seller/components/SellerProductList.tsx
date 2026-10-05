@@ -283,6 +283,7 @@ export function SellerProductList() {
                   <th className="py-4 px-6">SKU / Category</th>
                   <th className="py-4 px-6">Selling Price</th>
                   <th className="py-4 px-6">Inventory Stock</th>
+                  <th className="py-4 px-6">Return Policy</th>
                   <th className="py-4 px-6">Status</th>
                   <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
@@ -353,6 +354,22 @@ export function SellerProductList() {
                         >
                           {p.stock} Units
                         </span>
+                      </td>
+
+                      <td className="py-4 px-6">
+                        {p.returnPolicyType === 'RETURN_AND_REPLACEMENT' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300">
+                            Return (3d) • Repl (7d)
+                          </span>
+                        ) : p.returnPolicyType === 'REPLACEMENT_ONLY' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold rounded-full bg-blue-50 text-blue-800 border border-blue-300">
+                            Replacement Only (7d)
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                            No Return / Repl
+                          </span>
+                        )}
                       </td>
 
                       <td className="py-4 px-6">

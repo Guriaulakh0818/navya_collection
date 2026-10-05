@@ -10,8 +10,17 @@ export interface ShippingCalculationData {
   savedShippingAmount?: number;
   shippingMethod: string;
   shippingMethodCode?: string;
+  paymentMethod?: 'PREPAID' | 'COD' | string;
   isCodAvailable?: boolean;
   isFirstOrderFreeDelivery?: boolean;
   offerTitle?: string | null;
   guestOfferPrompt?: string | null;
+  sellerBreakdown?: Array<{
+    sellerId?: string;
+    shopId?: string;
+    subtotal: number;
+    shippingCharge: number;
+    freeShipping: boolean;
+    reason?: string;
+  }>;
 }

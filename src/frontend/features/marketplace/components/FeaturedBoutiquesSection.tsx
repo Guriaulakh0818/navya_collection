@@ -58,11 +58,11 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 text-[#F28C28]">
+          <div className="p-2 rounded-xl bg-amber-50 text-orange">
             <Store className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-[#0A2342] tracking-tight">
+            <h2 className="text-lg sm:text-xl font-black text-navy-900 tracking-tight">
               Featured Local Boutiques
             </h2>
             <p className="text-xs text-slate-500 font-medium">Verified stores from across India</p>
@@ -72,7 +72,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
         <div className="flex items-center gap-3">
           <Link
             href="/shop"
-            className="text-xs sm:text-sm font-extrabold text-[#F28C28] hover:text-[#d97718] transition-colors flex items-center gap-1 shrink-0"
+            className="text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors flex items-center gap-1 shrink-0"
           >
             <span>View All Shops</span>
             <span>→</span>
@@ -115,7 +115,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
             return (
               <div
                 key={shop.id}
-                className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden hover:border-[#F28C28]/60 hover:shadow-lg transition-all duration-300 shadow-xs flex flex-col justify-between w-[270px] sm:w-[290px] shrink-0 snap-start relative group"
+                className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden hover:border-orange/60 hover:shadow-lg transition-all duration-300 shadow-xs flex flex-col justify-between w-[270px] sm:w-[290px] shrink-0 snap-start relative group"
               >
                 {/* Store Cover Image */}
                 <div className="h-28 sm:h-32 bg-slate-900 relative overflow-hidden select-none">
@@ -144,7 +144,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <Building2 className="w-6 h-6 text-[#F28C28]" />
+                          <Building2 className="w-6 h-6 text-orange" />
                         )}
                       </div>
 
@@ -156,7 +156,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
 
                     {/* Shop Name & City */}
                     <div>
-                      <h3 className="font-extrabold text-[#0A2342] text-sm sm:text-base group-hover:text-[#F28C28] transition-colors line-clamp-1 capitalize">
+                      <h3 className="font-extrabold text-navy-900 text-sm sm:text-base group-hover:text-orange transition-colors line-clamp-1 capitalize">
                         {shop.name}
                       </h3>
                       <div className="flex items-center gap-3 text-xs text-slate-500 mt-1 font-medium">
@@ -202,7 +202,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                   {/* Explore Button */}
                   <Link
                     href={`/shop/${shop.slug}`}
-                    className="w-full text-center py-2.5 px-3 bg-slate-50 hover:bg-[#F28C28] text-[#0A2342] hover:text-white font-bold text-xs sm:text-sm rounded-xl border border-slate-200 hover:border-[#F28C28] transition-all duration-200 block shadow-2xs mt-3"
+                    className="w-full text-center py-2.5 px-3 bg-slate-50 hover:bg-orange text-navy-900 hover:text-white font-bold text-xs sm:text-sm rounded-xl border border-slate-200 hover:border-orange transition-all duration-200 block shadow-2xs mt-3"
                   >
                     Explore {productCount > 0 ? `${productCount} Styles` : 'Collection'} →
                   </Link>
@@ -222,11 +222,11 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
               sizes="(max-width: 1024px) 100vw, 25vw"
               className="object-cover object-center opacity-85"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0A2342]/90 via-[#0A2342]/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-navy-900/90 via-navy-900/40 to-transparent" />
 
             <div className="relative z-10 space-y-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-[#0A2342] text-xs font-bold shadow-xs">
-                <MapPin className="w-3.5 h-3.5 text-[#F28C28]" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-navy-900 text-xs font-bold shadow-xs">
+                <MapPin className="w-3.5 h-3.5 text-orange" />
                 <span>Support Local • Choose Unique</span>
               </span>
             </div>
@@ -237,7 +237,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                 <br />
                 Real People
                 <br />
-                <span className="text-[#F28C28]">Real Fashion</span>
+                <span className="text-orange">Real Fashion</span>
               </h3>
               <p className="text-xs sm:text-sm text-white/90 font-normal leading-relaxed">
                 Connect directly with passionate clothing store owners across Indian towns and
@@ -245,7 +245,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
               </p>
               <Link
                 href="/shops"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#F28C28] hover:bg-[#d97718] text-white text-xs sm:text-sm font-bold shadow-md transition-colors mt-2 w-fit"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange hover:bg-orange-600 text-white text-xs sm:text-sm font-bold shadow-md transition-colors mt-2 w-fit"
               >
                 <span>Browse All Partner Boutiques</span>
                 <span aria-hidden="true">→</span>

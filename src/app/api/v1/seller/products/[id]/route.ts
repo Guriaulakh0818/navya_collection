@@ -7,7 +7,10 @@ import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { generateVariantSku } from '@/backend/lib/sku-generator';
 import { NotificationService } from '@/backend/services/notification.service';
 import { prisma } from '@/lib/prisma';
-import { sellerProductSchema } from '@/shared/validations/seller-product.schema';
+import {
+  enforceReturnPolicy,
+  sellerProductSchema,
+} from '@/shared/validations/seller-product.schema';
 
 function getJwtSecretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET || 'navya_collection_jwt_secret_key_2026_min_32chars';
@@ -140,6 +143,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const result = await prisma.$transaction(async (tx) => {
       // 1. Update Product (keep permanent parent SKU intact)
+      const policy = enforceReturnPolicy(data.returnPolicyType);
       const updatedProduct = await tx.product.update({
         where: { id },
         data: {
@@ -160,6 +164,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           color: data.color || null,
           fit: data.fit || (data.attributes?.fit as string) || null,
           occasion: data.occasion || (data.attributes?.occasion as string) || null,
+          // Return & Replacement Policy (Section 3)
+          returnPolicyType: policy.returnPolicyType,
+          returnAllowed: policy.returnAllowed,
+          returnWindowDays: policy.returnWindowDays,
+          replacementAllowed: policy.replacementAllowed,
+          replacementWindowDays: policy.replacementWindowDays,
           metaTitle: data.metaTitle || null,
           metaDescription: data.metaDescription || null,
           metaKeywords: metaKeywordsUpdate || null,

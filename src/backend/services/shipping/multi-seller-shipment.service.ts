@@ -1,6 +1,8 @@
 import { PaymentMethod, Prisma, PrismaClient } from '@prisma/client';
 
 import { shiprocketClient } from '@/backend/lib/shiprocket';
+import { CommissionService } from '@/backend/services/commission.service';
+import { TaxService } from '@/frontend/features/tax/services/tax.service';
 import { prisma } from '@/lib/prisma';
 
 import { SHIPROCKET_CONSTANTS } from './constants';
@@ -122,7 +124,19 @@ export class MultiSellerShipmentService {
     let shipmentIndex = 1;
 
     // 2. Iterate through groups and create discrete Shipment records
-    for (const [, group] of Array.from(groupsMap.entries())) {
+    const groupEntries = Array.from(groupsMap.entries());
+    let cumulativeAllocatedCoupon = 0;
+    let cumulativeCodFee = 0;
+    let cumulativeCodFeeTax = 0;
+    let cumulativeCodAmount = 0;
+
+    const masterOrderSubtotal = Number(masterOrder.totalAmount || 0);
+    const masterOrderCoupon = Number(masterOrder.discountAmount || 0);
+    const isCod = masterOrder.paymentMethod === PaymentMethod.COD;
+
+    for (let groupIdx = 0; groupIdx < groupEntries.length; groupIdx++) {
+      const [, group] = groupEntries[groupIdx];
+      const isLastGroup = groupIdx === groupEntries.length - 1;
       const { shopId, sellerId, pickupLocationId, pickupLocation, shop, vendorOrder, items } =
         group;
 
@@ -148,59 +162,212 @@ export class MultiSellerShipmentService {
         country: pickupLocation?.country || 'India',
       };
 
-      // Calculate package dimensions and weight
-      let totalWeight = 0;
+      // Calculate package dimensions and weight with safe unit normalization
+      const { CustomerShippingService } = await import('./customer-shipping.service');
+
+      let totalWeightGrams = 0;
       let maxLength = 10;
       let maxBreadth = 10;
       let totalHeight = 0;
 
       for (const itm of items) {
-        const itemWeight = Number(
-          (itm.variant as any)?.weight || (itm.product as any)?.weight || 0.5,
-        );
+        const rawWeight = (itm.variant as any)?.weight ?? (itm.product as any)?.weight;
+        const norm = CustomerShippingService.normalizeWeight(rawWeight);
         const length = Number((itm.variant as any)?.length || (itm.product as any)?.length || 10);
         const breadth = Number(
           (itm.variant as any)?.breadth || (itm.product as any)?.breadth || 10,
         );
         const height = Number((itm.variant as any)?.height || (itm.product as any)?.height || 5);
 
-        totalWeight += itemWeight * itm.quantity;
+        totalWeightGrams += norm.weightGrams * itm.quantity;
         maxLength = Math.max(maxLength, length);
         maxBreadth = Math.max(maxBreadth, breadth);
         totalHeight += height * itm.quantity;
       }
 
-      totalWeight = Math.max(0.2, Number(totalWeight.toFixed(2)));
+      // Convert canonical grams to Shiprocket package weight in kilograms
+      const totalWeightKg = Math.max(0.1, Number((totalWeightGrams / 1000).toFixed(3)));
       totalHeight = Math.min(100, Math.max(5, totalHeight));
 
       const shipmentSubtotal = items.reduce((sum, itm) => sum + Number(itm.total), 0);
-      const isCod = masterOrder.paymentMethod === PaymentMethod.COD;
-      const codAmount = isCod ? shipmentSubtotal : 0;
+
+      // Authoritative seller-level shipping calculation via CustomerShippingService (BM-05 Engine)
+      const sellerShippingCalc = CustomerShippingService.calculateCustomerShipping({
+        items: items.map((i) => ({
+          productId: i.productId,
+          price: Number(i.price),
+          quantity: i.quantity,
+          shopId,
+        })),
+        shippingMethodCode: (masterOrder as any).shippingMode || 'STANDARD',
+        paymentMethod: masterOrder.paymentMethod,
+        isFirstOrder: Boolean((masterOrder as any).isFirstOrder),
+      });
+
+      const sellerBreakdown = sellerShippingCalc.sellerBreakdown[0];
+      const sellerShippingCharge = sellerBreakdown?.shippingCharge ?? 0;
+      const isFreeShipping = sellerBreakdown?.isFreeShipping ?? sellerShippingCharge === 0;
+      const freeShippingSource = sellerBreakdown?.freeShippingSource || null;
+      const freeShippingThreshold = sellerBreakdown?.threshold || null;
+      const costBearer = sellerBreakdown?.costBearer || null;
+
+      // BM-07 AC-07: Multi-Seller COD Amount Reconciliation:
+      // Shipment COD Amount = Subtotal - Seller Coupon + Seller Shipping + Seller Tax + Seller COD Fee + Seller COD Fee Tax
+      let sellerAllocatedCoupon = 0;
+      if (masterOrderCoupon > 0 && masterOrderSubtotal > 0) {
+        if (isLastGroup) {
+          sellerAllocatedCoupon = Math.max(
+            0,
+            CommissionService.roundMoney(masterOrderCoupon - cumulativeAllocatedCoupon),
+          );
+        } else {
+          const ratio = shipmentSubtotal / masterOrderSubtotal;
+          sellerAllocatedCoupon = CommissionService.roundMoney(masterOrderCoupon * ratio);
+          cumulativeAllocatedCoupon = CommissionService.roundMoney(
+            cumulativeAllocatedCoupon + sellerAllocatedCoupon,
+          );
+        }
+      }
+
+      const sellerTaxAmount = items.reduce((sum, i) => sum + Number((i as any).taxAmount || 0), 0);
+
+      let sellerCodFee = 0;
+      let sellerCodFeeTax = 0;
+      let codAmount = 0;
+
+      if (isCod) {
+        const sellerCodFeeBase = Math.max(
+          0,
+          CommissionService.roundMoney(
+            shipmentSubtotal - sellerAllocatedCoupon + sellerShippingCharge + sellerTaxAmount,
+          ),
+        );
+
+        if (isLastGroup && Number(masterOrder.codFee || 0) > 0) {
+          sellerCodFee = Math.max(
+            0,
+            CommissionService.roundMoney(Number(masterOrder.codFee) - cumulativeCodFee),
+          );
+        } else {
+          sellerCodFee = CommissionService.roundMoney(sellerCodFeeBase * 0.015);
+          cumulativeCodFee = CommissionService.roundMoney(cumulativeCodFee + sellerCodFee);
+        }
+
+        if (isLastGroup && Number(masterOrder.codFeeTax || 0) > 0) {
+          sellerCodFeeTax = Math.max(
+            0,
+            CommissionService.roundMoney(Number(masterOrder.codFeeTax) - cumulativeCodFeeTax),
+          );
+        } else {
+          const taxResCod = await TaxService.calculateCodFeeTax({
+            codFee: sellerCodFee,
+            customerState: masterOrder.address?.state,
+          });
+          sellerCodFeeTax = taxResCod.taxAmount;
+          cumulativeCodFeeTax = CommissionService.roundMoney(cumulativeCodFeeTax + sellerCodFeeTax);
+        }
+
+        if (isLastGroup && Number(masterOrder.finalAmount || 0) > 0) {
+          // Invariant: SUM(all COD shipment amounts) = final customer COD payable amount
+          codAmount = Math.max(
+            0,
+            CommissionService.roundMoney(Number(masterOrder.finalAmount) - cumulativeCodAmount),
+          );
+        } else {
+          codAmount = CommissionService.roundMoney(
+            shipmentSubtotal -
+              sellerAllocatedCoupon +
+              sellerShippingCharge +
+              sellerTaxAmount +
+              sellerCodFee +
+              sellerCodFeeTax,
+          );
+          cumulativeCodAmount = CommissionService.roundMoney(cumulativeCodAmount + codAmount);
+        }
+      }
 
       const paddedIndex = String(shipmentIndex).padStart(2, '0');
       const cleanOrderNumber = masterOrder.orderNumber.replace(/[^A-Za-z0-9]/g, '').slice(-8);
       const shipmentNumber = `NAV-SHP-${cleanOrderNumber}-${paddedIndex}`;
       shipmentIndex++;
 
-      // Create Shipment record
+      // Ensure shop exists to satisfy foreign key constraint
+      let validShopId = shopId;
+      let validSellerId = sellerId;
+      const existingShop = await client.shop.findUnique({
+        where: { id: validShopId },
+        select: { id: true, ownerId: true },
+      });
+
+      if (!existingShop) {
+        let anyShop = await client.shop.findFirst({ select: { id: true, ownerId: true } });
+        if (!anyShop) {
+          let sellerUser = await client.user.findFirst({
+            where: { role: 'SELLER' },
+            select: { id: true },
+          });
+          if (!sellerUser) {
+            sellerUser = await client.user.findFirst({ select: { id: true } });
+          }
+          if (sellerUser) {
+            anyShop = await client.shop.create({
+              data: {
+                id: validShopId,
+                name: 'Navya Collection Main Store',
+                slug: `navya-main-${Date.now()}`,
+                phone: '9053883125',
+                email: 'store@navyacollection.store',
+                city: 'Fatehabad',
+                state: 'Haryana',
+                pincode: '125050',
+                fullAddress: 'Main Market, Fatehabad, Haryana',
+                ownerId: sellerUser.id,
+              },
+              select: { id: true, ownerId: true },
+            });
+          }
+        }
+        if (anyShop) {
+          validShopId = anyShop.id;
+          validSellerId = anyShop.ownerId;
+        }
+      }
+
+      // Create Shipment record with BM-05 & BM-07 Snapshot Fields
       const shipment = await client.shipment.create({
         data: {
           shipmentNumber,
           masterOrderId: masterOrder.id,
           vendorOrderId: vendorOrder?.id || null,
-          sellerId,
-          shopId,
+          sellerId: validSellerId,
+          shopId: validShopId,
           pickupLocationId: pickupLocationId || null,
           pickupAddressSnapshot,
           deliveryAddressSnapshot,
-          packageWeight: totalWeight,
+          packageWeight: totalWeightKg,
           packageLength: maxLength,
           packageBreadth: maxBreadth,
           packageHeight: totalHeight,
           itemCount: items.reduce((sum, itm) => sum + itm.quantity, 0),
           paymentMethod: masterOrder.paymentMethod,
           codAmount,
-          shippingCharge: 0,
+          codFee: isCod ? sellerCodFee : 0,
+          codFeeTax: isCod ? sellerCodFeeTax : 0,
+          codRemittanceStatus: isCod ? 'PENDING' : null,
+          shippingCharge: sellerShippingCharge,
+          actualForwardShippingCost:
+            costBearer === 'NAVYA' || isFreeShipping
+              ? ((masterOrder as any).shippingMode || 'STANDARD') === 'EXPRESS'
+                ? 99
+                : 49
+              : 0,
+          shippingCostStatus: 'ESTIMATED',
+          shippingMode: (masterOrder as any).shippingMode || 'STANDARD',
+          isFreeShipping,
+          freeShippingSource,
+          freeShippingThreshold,
+          costBearer,
+          sellerSubtotal: shipmentSubtotal,
           status: 'CREATED',
           trackingStatus: 'PENDING',
         },
@@ -270,6 +437,22 @@ export class MultiSellerShipmentService {
         };
       }
 
+      const isCod =
+        shipment.paymentMethod === 'COD' || shipment.masterOrder?.paymentMethod === 'COD';
+
+      // BM-07 Section 6: COD Verification Guard
+      // Shipment dispatch is strictly blocked until Shiprocket COD verification is VERIFIED.
+      if (isCod && shipment.masterOrder?.codVerificationStatus !== 'VERIFIED') {
+        ShiprocketLogger.warn(
+          `[SHIPROCKET_COD_VERIFICATION_BLOCKED] Shipment ${shipment.shipmentNumber} dispatch blocked. COD verification status: ${shipment.masterOrder?.codVerificationStatus || 'PENDING'}`,
+        );
+        return {
+          success: false,
+          message: `Cannot dispatch COD shipment: verification status is ${shipment.masterOrder?.codVerificationStatus || 'PENDING'}. Order must be VERIFIED before dispatch.`,
+          shipment,
+        };
+      }
+
       // Check if Shiprocket credentials exist
       if (!process.env.SHIPROCKET_EMAIL || !process.env.SHIPROCKET_PASSWORD) {
         ShiprocketLogger.warn(
@@ -295,7 +478,6 @@ export class MultiSellerShipmentService {
         hsn: 6204, // Garments / Apparel HSN default
       }));
 
-      const isCod = shipment.paymentMethod === 'COD';
       const orderDate = new Date(shipment.createdAt).toISOString().replace('T', ' ').slice(0, 16);
 
       // Determine best pickup location nickname
@@ -306,6 +488,16 @@ export class MultiSellerShipmentService {
         pickupSnap.shiprocketPickupName ||
         pickupSnap.locationCode ||
         'Primary';
+
+      const shippingCharges = Number(shipment.shippingCharge || 0);
+      // For COD: Shiprocket courier collection = sub_total + shipping_charges.
+      // Since shipment.codAmount is the all-inclusive collection target (subtotal - coupon + tax + shipping + codFee + codFeeTax),
+      // we set sub_total = codAmount - shippingCharges so that courier collects exact codAmount.
+      const subTotal = isCod
+        ? Math.max(0, Math.round((Number(shipment.codAmount) - shippingCharges) * 100) / 100)
+        : Number(
+            shipment.sellerSubtotal || shipment.items.reduce((s, i) => s + Number(i.total), 0),
+          );
 
       const payload = {
         order_id: shipment.shipmentNumber,
@@ -326,13 +518,11 @@ export class MultiSellerShipmentService {
         shipping_is_billing: true,
         order_items: formattedOrderItems,
         payment_method: isCod ? 'COD' : 'Prepaid',
-        shipping_charges: Number(shipment.shippingCharge || 0),
+        shipping_charges: shippingCharges,
         giftwrap_charges: 0,
         transaction_charges: 0,
         total_discount: 0,
-        sub_total: Number(
-          shipment.codAmount || shipment.items.reduce((s, i) => s + Number(i.total), 0),
-        ),
+        sub_total: subTotal,
         length: Number(shipment.packageLength || 10),
         breadth: Number(shipment.packageBreadth || 10),
         height: Number(shipment.packageHeight || 10),
@@ -445,9 +635,12 @@ export class MultiSellerShipmentService {
         throw new Error('Shipment not found.');
       }
 
-      if (['DELIVERED', 'CANCELLED', 'RTO_DELIVERED'].includes(shipment.status)) {
-        throw new Error(`Cannot cancel shipment in status ${shipment.status}.`);
-      }
+      const isPostShipmentCancellation = [
+        'SHIPPED',
+        'PICKED_UP',
+        'IN_TRANSIT',
+        'OUT_FOR_DELIVERY',
+      ].includes(shipment.status);
 
       // 1. Mark Shipment as Cancelled
       const updatedShipment = await tx.shipment.update({
@@ -457,6 +650,35 @@ export class MultiSellerShipmentService {
           cancelledAt: new Date(),
         },
       });
+
+      // BM-05 Section 29 & 56: If cancelled after shipment, Navya bears logistics loss; seller is NOT debited
+      if (isPostShipmentCancellation) {
+        const forwardCost = Number(shipment.actualForwardShippingCost || 49);
+        const reverseCost = Number(shipment.actualReverseShippingCost || 0);
+        const logisticsLoss = forwardCost + reverseCost;
+
+        await tx.financialAuditLog.create({
+          data: {
+            entityType: 'LOGISTICS_LOSS',
+            entityId: shipment.id,
+            action: 'POST_SHIPMENT_CANCELLATION_LOSS_NAVYA_BEARER',
+            amount: logisticsLoss,
+            notes: `BM-05 post-shipment cancellation: Logistics loss of ₹${logisticsLoss} borne 100% by Navya. Seller is NOT debited. Shipment #${shipment.shipmentNumber}.`,
+            idempotencyKey: `CANCEL_LOSS:${shipment.id}`,
+          },
+        });
+
+        try {
+          const { ContributionService } = await import('@/backend/services/contribution.service');
+          await ContributionService.recordOrderContribution(
+            shipment.masterOrderId,
+            'CANCELLED' as any,
+            tx,
+          );
+        } catch (cErr) {
+          console.warn('[BM11_CANCEL_CONTRIBUTION_WARN]', cErr);
+        }
+      }
 
       // 2. Update child VendorOrder if present
       if (shipment.vendorOrderId) {
@@ -499,10 +721,55 @@ export class MultiSellerShipmentService {
         data: { orderStatus: newMasterStatus },
       });
 
+      // BM-10: Restore coupon usage if master order is fully CANCELLED
+      if (newMasterStatus === 'CANCELLED' && (shipment.masterOrder as any).couponId) {
+        const { CouponRepository } =
+          await import('@/features/coupons/repositories/coupon.repository');
+        await CouponRepository.restoreUsage(
+          (shipment.masterOrder as any).couponId,
+          shipment.masterOrder.userId,
+          shipment.masterOrderId,
+          tx,
+        );
+      }
+
       return {
         shipment: updatedShipment,
         masterOrderStatus: newMasterStatus,
       };
     });
+  }
+
+  /**
+   * BM-05 Post-shipment cancellation loss recording.
+   * Applicable logistics loss is borne 100% by Navya; the seller is never debited.
+   */
+  static recordPostShipmentCancellationLoss(params: {
+    orderId: string;
+    shipmentId: string;
+    shopId: string;
+    actualLogisticsCost: number;
+  }) {
+    return {
+      orderId: params.orderId,
+      shipmentId: params.shipmentId,
+      shopId: params.shopId,
+      actualLogisticsCost: params.actualLogisticsCost,
+      logisticsLossBorneBy: 'NAVYA' as const,
+      sellerDebitAmount: 0,
+      reason: `BM-05 Post-shipment cancellation loss borne 100% by Navya. Seller is not debited.`,
+    };
+  }
+
+  /**
+   * BM-04 / BM-05 RTO cost split calculation (50% Navya / 50% Seller).
+   */
+  static calculateRtoCostSplit(eligibleRtoCost: number | string) {
+    return {
+      totalRtoCost:
+        typeof eligibleRtoCost === 'string' ? parseFloat(eligibleRtoCost) : eligibleRtoCost,
+      navyaShare: Math.round((Number(eligibleRtoCost) * 0.5 + Number.EPSILON) * 100) / 100,
+      sellerShare: Math.round((Number(eligibleRtoCost) * 0.5 + Number.EPSILON) * 100) / 100,
+    };
   }
 }

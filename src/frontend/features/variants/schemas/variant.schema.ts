@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-export const createVariantSchema = z.object({
+import { CommissionService } from '@/backend/services/commission.service';
+
+export const baseVariantSchema = z.object({
   name: z.string().trim().min(1, 'Variant name is required'),
   sku: z
     .string()
@@ -23,11 +25,56 @@ export const createVariantSchema = z.object({
   status: z.enum(['active', 'inactive']).default('active'),
 });
 
+export const createVariantSchema = baseVariantSchema.superRefine((data, ctx) => {
+  if (data.compareAtPrice !== undefined && data.compareAtPrice !== null) {
+    if (data.price > data.compareAtPrice) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Selling price (₹${data.price}) cannot exceed MRP (₹${data.compareAtPrice})`,
+        path: ['price'],
+      });
+      return;
+    }
+    const floors = CommissionService.calculatePricingFloors(data.compareAtPrice);
+    if (CommissionService.roundMoney(data.price) < floors.psychologicalMinimumSellingPrice) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Selling price (₹${data.price}) exceeds maximum allowed discount (70% limit with ₹1 psychological floor is ₹${floors.psychologicalMinimumSellingPrice})`,
+        path: ['price'],
+      });
+    }
+  }
+});
+
 export const bulkCreateVariantsSchema = z.object({
   variants: z.array(createVariantSchema).min(1, 'At least one variant must be provided'),
 });
 
-export const updateVariantSchema = createVariantSchema.partial();
+export const updateVariantSchema = baseVariantSchema.partial().superRefine((data, ctx) => {
+  if (
+    data.price !== undefined &&
+    data.price !== null &&
+    data.compareAtPrice !== undefined &&
+    data.compareAtPrice !== null
+  ) {
+    if (data.price > data.compareAtPrice) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Selling price (₹${data.price}) cannot exceed MRP (₹${data.compareAtPrice})`,
+        path: ['price'],
+      });
+      return;
+    }
+    const floors = CommissionService.calculatePricingFloors(data.compareAtPrice);
+    if (CommissionService.roundMoney(data.price) < floors.psychologicalMinimumSellingPrice) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Selling price (₹${data.price}) exceeds maximum allowed discount (70% limit with ₹1 psychological floor is ₹${floors.psychologicalMinimumSellingPrice})`,
+        path: ['price'],
+      });
+    }
+  }
+});
 
 export const getVariantQuerySchema = z.object({
   status: z.enum(['active', 'inactive']).optional(),

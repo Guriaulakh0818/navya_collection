@@ -7,7 +7,10 @@ import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { generateParentSku, generateVariantSku } from '@/backend/lib/sku-generator';
 import { NotificationService } from '@/backend/services/notification.service';
 import { prisma } from '@/lib/prisma';
-import { sellerProductSchema } from '@/shared/validations/seller-product.schema';
+import {
+  enforceReturnPolicy,
+  sellerProductSchema,
+} from '@/shared/validations/seller-product.schema';
 
 function getJwtSecretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET || 'navya_collection_jwt_secret_key_2026_min_32chars';
@@ -204,7 +207,9 @@ export async function POST(request: NextRequest) {
         ? data.variants!.reduce((sum, v) => sum + Number(v.stock || 0), 0)
         : Number(data.stock || 0);
 
-      // 1. Create Product
+      // 1. Create Product with Enforced Return/Replacement Policy (Section 3)
+      const policy = enforceReturnPolicy(data.returnPolicyType);
+
       const product = await tx.product.create({
         data: {
           shopId: shop.id,
@@ -226,6 +231,12 @@ export async function POST(request: NextRequest) {
           color: data.color || null,
           fit: data.fit || (data.attributes?.fit as string) || null,
           occasion: data.occasion || (data.attributes?.occasion as string) || null,
+          // Return & Replacement Policy
+          returnPolicyType: policy.returnPolicyType,
+          returnAllowed: policy.returnAllowed,
+          returnWindowDays: policy.returnWindowDays,
+          replacementAllowed: policy.replacementAllowed,
+          replacementWindowDays: policy.replacementWindowDays,
           metaTitle: data.metaTitle || null,
           metaDescription: data.metaDescription || null,
           metaKeywords: metaKeywordsUpdate || null,

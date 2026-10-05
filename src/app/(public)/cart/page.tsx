@@ -154,6 +154,16 @@ export default function MultiVendorCartPage() {
                     <span className="text-xs sm:text-sm font-black text-navy font-mono">
                       {formatPrice(group.subtotal)}
                     </span>
+                    <span className="text-[10px] block font-bold mt-0.5">
+                      Delivery:{' '}
+                      <span
+                        className={
+                          group.subtotal >= 999 ? 'text-emerald-700' : 'text-slate-700 font-mono'
+                        }
+                      >
+                        {group.subtotal >= 999 ? 'FREE (≥₹999)' : '₹49 (<₹999)'}
+                      </span>
+                    </span>
                   </div>
                 </div>
 
@@ -300,6 +310,11 @@ export default function MultiVendorCartPage() {
                     {shippingTotal === 0 ? 'FREE' : formatPrice(shippingTotal)}
                   </span>
                 </div>
+                {shopGroups.length > 1 && (
+                  <p className="text-[10px] text-slate-500 italic">
+                    Free shipping (₹999+) is calculated independently per seller shipment.
+                  </p>
+                )}
 
                 <div className="flex justify-between text-sm sm:text-base font-extrabold text-navy pt-3 border-t border-slate-200">
                   <span>Grand Total</span>

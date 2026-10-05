@@ -188,8 +188,36 @@ export async function GET(request: NextRequest) {
         items: {
           include: {
             product: {
-              select: { name: true, sku: true, images: { select: { imageUrl: true }, take: 1 } },
+              select: {
+                name: true,
+                sku: true,
+                returnPolicyType: true,
+                returnAllowed: true,
+                returnWindowDays: true,
+                replacementAllowed: true,
+                replacementWindowDays: true,
+                images: { select: { imageUrl: true }, take: 1 },
+              },
             },
+            returnItems: {
+              include: { returnRequest: true },
+            },
+          },
+        },
+        settlement: {
+          select: {
+            id: true,
+            settlementNumber: true,
+            status: true,
+            grossProductValue: true,
+            commissionAmount: true,
+            forwardShippingActual: true,
+            reverseShippingActual: true,
+            returnShippingDeduction: true,
+            netSettlementAmount: true,
+            settlementEligibilityDate: true,
+            deliveryDate: true,
+            holdReason: true,
           },
         },
       },
@@ -311,6 +339,33 @@ export async function PATCH(request: NextRequest) {
     }
 
     // 5. Action: PACK / Manual Status Update
+    const rtoStatuses = ['RTO', 'RTO_INITIATED', 'RTO_IN_TRANSIT', 'RTO_DELIVERED'];
+    const isTargetingRto =
+      action === 'RTO' ||
+      rtoStatuses.includes((status || '').toUpperCase()) ||
+      rtoStatuses.includes((shippingStatus || '').toUpperCase());
+
+    if (isTargetingRto) {
+      if (!isAdmin) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              'Forbidden. Sellers cannot arbitrarily mark shipments as RTO. RTO is driven by courier events or admin authorization.',
+          },
+          { status: 403 },
+        );
+      }
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'Please use the authoritative Admin Shipping API (/api/v1/admin/shipping) with action PROCESS_RTO_DELIVERED or INITIATE_RTO to ensure financial and inventory integrity.',
+        },
+        { status: 400 },
+      );
+    }
+
     const requestedStatus =
       action === 'PACK' ? 'PACKED' : status || (shipment ? shipment.status : vendorOrder?.status);
 

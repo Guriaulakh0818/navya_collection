@@ -11,7 +11,7 @@ describe('Integration: Cart to Checkout Order Calculation Flow', () => {
     expect(subtotal).toBe(7897);
 
     // Free shipping threshold >= 999
-    const shipping = subtotal >= 999 ? 0 : 99;
+    const shipping = subtotal >= 999 ? 0 : 49;
     expect(shipping).toBe(0);
 
     // 10% coupon discount

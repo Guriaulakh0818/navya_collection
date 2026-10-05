@@ -23,9 +23,9 @@ export function testPricingAndTaxCalculations() {
   }
 
   const subtotalBelow = 499;
-  const shippingBelow = subtotalBelow >= 999 ? 0 : 99;
-  if (shippingBelow !== 99) {
-    throw new Error(`Standard shipping failed: Expected 99, got ${shippingBelow}`);
+  const shippingBelow = subtotalBelow >= 999 ? 0 : 49;
+  if (shippingBelow !== 49) {
+    throw new Error(`Standard shipping failed: Expected 49, got ${shippingBelow}`);
   }
 
   return true;

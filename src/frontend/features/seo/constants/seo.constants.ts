@@ -7,7 +7,7 @@ export const SEO_CONSTANTS = {
   SITE_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store',
   DEFAULT_OG_IMAGE: 'https://navyacollection.store/og-image.jpg',
   TWITTER_HANDLE: undefined,
-  THEME_COLOR: '#0A2342',
+  THEME_COLOR: '#09172E',
   DEFAULT_LOCALE: 'en_IN',
   ORGANIZATION: {
     NAME: 'Navya Collection',

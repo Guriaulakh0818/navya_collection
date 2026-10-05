@@ -6,7 +6,9 @@ export const calculateShippingSchema = z.object({
   state: z.string().trim().optional().nullable(),
   cartId: z.string().optional().nullable(),
   cartAmount: z.number().min(0).optional().nullable(),
-  shippingMethodCode: z.string().default('STANDARD'),
+  shippingMethodCode: z.string().optional().default('STANDARD'),
+  paymentMethod: z.string().optional().default('PREPAID'),
+  items: z.array(z.any()).optional().nullable(),
 });
 
-export type CalculateShippingInput = z.infer<typeof calculateShippingSchema>;
+export type CalculateShippingInput = z.input<typeof calculateShippingSchema>;

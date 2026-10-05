@@ -11,6 +11,10 @@ export interface CreateTransactionInput {
   currency?: string;
   status: PaymentStatus;
   method?: string;
+  gatewayFee?: number;
+  gatewayTax?: number;
+  netAmount?: number;
+  gatewayFeeStatus?: string;
   errorCode?: string;
   errorDescription?: string;
   payload?: any;
@@ -31,9 +35,36 @@ export class PaymentRepository {
         currency: input.currency || 'INR',
         status: input.status,
         method: input.method || 'RAZORPAY',
+        gatewayFee: input.gatewayFee ?? 0,
+        gatewayTax: input.gatewayTax ?? 0,
+        netAmount: input.netAmount ?? input.amount,
+        gatewayFeeStatus: input.gatewayFeeStatus || 'ESTIMATED',
         errorCode: input.errorCode,
         errorDescription: input.errorDescription,
         payload: input.payload || undefined,
+      },
+    });
+  }
+
+  /**
+   * Updates payment gateway fee details idempotently.
+   */
+  static async updateTransactionFee(
+    razorpayPaymentId: string,
+    data: {
+      gatewayFee: number;
+      gatewayTax?: number;
+      netAmount?: number;
+      gatewayFeeStatus?: string;
+    },
+  ) {
+    return prisma.paymentTransaction.updateMany({
+      where: { razorpayPaymentId },
+      data: {
+        gatewayFee: data.gatewayFee,
+        gatewayTax: data.gatewayTax ?? 0,
+        netAmount: data.netAmount ?? undefined,
+        gatewayFeeStatus: data.gatewayFeeStatus || 'ACTUAL',
       },
     });
   }

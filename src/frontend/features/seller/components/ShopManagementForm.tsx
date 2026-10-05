@@ -113,7 +113,7 @@ export function ShopManagementForm() {
             'Standard Pan-India delivery within 3-5 business days via Shiprocket Express.',
           returnPolicy:
             s.returnPolicy ||
-            '7-day easy return policy for unworn items with original tags intact.',
+            '3-day returns and 7-day size replacements for unworn items with original tags intact.',
           metaTitle: s.metaTitle || `${s.name} | Luxury Ethnic Couture on Navya Collection`,
           metaDescription: s.metaDescription || s.description || '',
           isClosed: s.isClosed || false,

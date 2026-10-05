@@ -25,33 +25,75 @@ type CheckoutProviderProps = {
 const STEPS: CheckoutStep[] = ['cart', 'address', 'delivery', 'payment', 'review'];
 
 const calculateInstantShippingData = (
-  cartAmount: number,
+  items: CartItem[] = [],
   pincode?: string | null,
   deliveryMethodId?: string | null,
+  paymentMethodCode?: string | null,
 ): ShippingCalculationData => {
   const isSameDay = deliveryMethodId === 'same-day';
-  const isStandard = deliveryMethodId === 'standard';
-  const threshold = isSameDay ? 1999 : 999;
-  const originalPrice = isSameDay ? 149 : isStandard ? 49 : 99;
+  const isExpress = deliveryMethodId === 'express';
+  const isCod = paymentMethodCode === 'COD';
+  const threshold = isCod ? 1999 : 999;
+  const rate = isSameDay ? 149 : isExpress ? 99 : 49;
 
-  const isFree = cartAmount >= threshold;
-  const remaining = isFree ? 0 : Math.max(0, threshold - cartAmount);
+  // Group items by seller/shop
+  const sellerSubtotals = new Map<string, number>();
+  if (items.length === 0) {
+    sellerSubtotals.set('default', 0);
+  } else {
+    for (const item of items) {
+      const sId = (item as any).shopId || 'default';
+      sellerSubtotals.set(sId, (sellerSubtotals.get(sId) || 0) + item.price * item.quantity);
+    }
+  }
+
+  let totalShipping = 0;
+  let allFree = true;
+  let maxRemaining = 0;
+  const breakdown: any[] = [];
+
+  for (const [sId, subtotal] of sellerSubtotals.entries()) {
+    // Under BM-05: Express & Same-Day are paid; Standard is free when subtotal >= threshold
+    const isFree = !isSameDay && !isExpress && subtotal >= threshold;
+    const charge = isFree ? 0 : rate;
+    totalShipping += charge;
+    if (!isFree) {
+      allFree = false;
+      if (!isSameDay && !isExpress) {
+        maxRemaining = Math.max(maxRemaining, threshold - subtotal);
+      }
+    }
+    breakdown.push({
+      sellerId: sId,
+      subtotal,
+      shippingCharge: charge,
+      freeShipping: isFree,
+      reason: isSameDay
+        ? 'Same-Day delivery is a paid service (₹149)'
+        : isExpress
+          ? 'Express delivery is a paid service (₹99)'
+          : isFree
+            ? `Seller shipment >= ₹${threshold}`
+            : `Seller shipment < ₹${threshold}`,
+    });
+  }
 
   return {
     isServiceable: true,
     pincode: pincode || null,
-    shippingCharge: isFree ? 0 : originalPrice,
-    deliveryDays: isSameDay ? 'Same day' : isStandard ? '5-7 business days' : '2-3 business days',
-    isFreeShipping: isFree,
+    shippingCharge: totalShipping,
+    deliveryDays: isSameDay ? 'Same day' : isExpress ? '2-3 business days' : '5-7 business days',
+    isFreeShipping: allFree,
     freeShippingThreshold: threshold,
-    freeShippingRemaining: remaining,
-    savedShippingAmount: isFree ? originalPrice : 0,
+    freeShippingRemaining: maxRemaining,
+    savedShippingAmount: 0,
     shippingMethod: isSameDay
       ? 'Same Day Delivery'
-      : isStandard
-        ? 'Standard Delivery'
-        : 'Express Delivery',
-    shippingMethodCode: isSameDay ? 'SAME-DAY' : isStandard ? 'STANDARD' : 'EXPRESS',
+      : isExpress
+        ? 'Express Delivery'
+        : 'Standard Delivery',
+    shippingMethodCode: isSameDay ? 'SAME-DAY' : isExpress ? 'EXPRESS' : 'STANDARD',
+    sellerBreakdown: breakdown,
   };
 };
 
@@ -88,7 +130,7 @@ export const CheckoutProvider: React.FC<{
     0,
   );
   const [shippingData, setShippingData] = useState<ShippingCalculationData | null>(() =>
-    calculateInstantShippingData(initialSubtotal),
+    calculateInstantShippingData(items),
   );
   const [taxData, setTaxData] = useState<TaxCalculationData | null>(null);
   const [isShippingLoading, setIsShippingLoading] = useState<boolean>(false);
@@ -100,9 +142,7 @@ export const CheckoutProvider: React.FC<{
       const cartAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
       // Instant 0ms local update so free shipping box appears immediately!
-      setShippingData(
-        calculateInstantShippingData(cartAmount, activeAddr?.pincode, deliveryMethod?.id),
-      );
+      setShippingData(calculateInstantShippingData(items, activeAddr?.pincode, deliveryMethod?.id));
 
       setIsShippingLoading(true);
       try {
@@ -115,6 +155,12 @@ export const CheckoutProvider: React.FC<{
             state: activeAddr?.state || undefined,
             cartAmount,
             shippingMethodCode: deliveryMethod?.id ? deliveryMethod.id.toUpperCase() : 'STANDARD',
+            items: items.map((i) => ({
+              productId: i.productId,
+              price: i.price,
+              quantity: i.quantity,
+              shopId: (i as any).shopId || undefined,
+            })),
           }),
         });
 
@@ -140,7 +186,9 @@ export const CheckoutProvider: React.FC<{
       try {
         const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const discount = activeCoupon ? activeCoupon.discountAmount : 0;
-        const shipping = shippingData ? shippingData.shippingCharge : subtotal >= 999 ? 0 : 99;
+        const currentShipping = shippingData
+          ? shippingData.shippingCharge
+          : calculateInstantShippingData(items).shippingCharge;
 
         const res = await fetch('/api/v1/tax/calculate', {
           method: 'POST',
@@ -149,7 +197,7 @@ export const CheckoutProvider: React.FC<{
             addressId: activeAddr?.id || undefined,
             subtotal,
             discount,
-            shipping,
+            shipping: currentShipping,
             couponCode: activeCoupon?.code || undefined,
           }),
         });
@@ -177,8 +225,7 @@ export const CheckoutProvider: React.FC<{
 
   const handleSetDeliveryMethod = (newMethod: DeliveryMethod | null) => {
     setDeliveryMethod(newMethod);
-    const cartAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    setShippingData(calculateInstantShippingData(cartAmount, address?.pincode, newMethod?.id));
+    setShippingData(calculateInstantShippingData(items, address?.pincode, newMethod?.id));
   };
 
   const handleSetAddress = (newAddress: Address | null) => {

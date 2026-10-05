@@ -7,6 +7,7 @@ export const calculateTaxSchema = z.object({
   discount: z.number().min(0).optional().nullable(),
   shipping: z.number().min(0).optional().nullable(),
   couponCode: z.string().optional().nullable(),
+  items: z.array(z.any()).optional().nullable(),
 });
 
 export type CalculateTaxInput = z.infer<typeof calculateTaxSchema>;

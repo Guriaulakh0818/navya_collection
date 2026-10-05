@@ -86,20 +86,29 @@ export default function ShippingPolicyPage() {
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
                 <Box className="w-5 h-5 text-amber-600" />
-                1. Shipping Charges &amp; Free Delivery
+                1. Shipping Charges &amp; Free Delivery Policy
               </h2>
               <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
                 <li>
-                  <strong className="text-navy">Orders above ₹999:</strong> 100% Free Express
-                  Delivery across India.
+                  <strong className="text-navy">Seller-Level Free Shipping Threshold:</strong> Free
+                  shipping is available when the selling-price subtotal for a seller&apos;s shipment
+                  is ₹999 or more. In a multi-seller order, the ₹999 threshold is calculated
+                  separately for each seller because products are dispatched directly from each
+                  seller&apos;s warehouse.
                 </li>
                 <li>
-                  <strong className="text-navy">Orders below ₹999:</strong> Nominal flat shipping
-                  fee of ₹99 per order.
+                  <strong className="text-navy">Standard Shipping:</strong> For seller shipments
+                  with a subtotal below ₹999, an applicable standard shipping charge of ₹49 applies
+                  per seller shipment.
                 </li>
                 <li>
-                  <strong className="text-navy">Cash on Delivery (COD):</strong> Available with zero
-                  hidden handling surcharges.
+                  <strong className="text-navy">Express &amp; Same Day Options:</strong> Where
+                  available, Express delivery (₹99) and Same Day delivery (₹149, free on seller
+                  shipments ₹1,999+) may be selected during checkout.
+                </li>
+                <li>
+                  <strong className="text-navy">Cash on Delivery (COD):</strong> Available across
+                  serviceable pin codes at standard rates with zero hidden surcharges.
                 </li>
               </ul>
             </section>
@@ -107,16 +116,17 @@ export default function ShippingPolicyPage() {
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
                 <PackageCheck className="w-5 h-5 text-amber-600" />
-                2. Multi-Seller Fulfillment &amp; Split Shipments
+                2. Multi-Seller Fulfillment &amp; Independent Vendor Shipments
               </h2>
               <p>
-                Navya Collection is a multi-vendor marketplace. If your cart contains items from
-                multiple boutique stores (e.g. Saniya Fashions and another boutique), each merchant
-                dispatches their product directly from their verified warehouse location.
+                Navya Collection is a curated designer marketplace. If your cart contains items from
+                multiple boutique partners, each seller prepares and dispatches their package
+                independently from their registered hub.
               </p>
               <p className="text-xs text-slate-600">
-                You will receive individual Airway Bill (AWB) tracking links for each split
-                consignment at no extra shipping cost to you.
+                Because each seller ships independently, shipping is assessed on a per-seller
+                shipment basis. Each shipment receives its own discrete Airway Bill (AWB) and live
+                tracking link.
               </p>
             </section>
 

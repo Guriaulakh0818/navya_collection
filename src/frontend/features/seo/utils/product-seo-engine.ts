@@ -76,7 +76,7 @@ export function generateProductMetaDescription(product: ProductSeoInput): string
       ? ' Check back soon for restocks.'
       : ' Available now.';
 
-  const baseText = `Buy ${product.name}${catText}${sellerText}${priceText} on ${SEO_CONSTANTS.SITE_NAME}.${stockText} Pan-India shipping & easy 7-day returns.`;
+  const baseText = `Buy ${product.name}${catText}${sellerText}${priceText} on ${SEO_CONSTANTS.SITE_NAME}.${stockText} Pan-India shipping, 3-day returns & 7-day replacements.`;
   return smartTruncate(baseText, 160);
 }
 

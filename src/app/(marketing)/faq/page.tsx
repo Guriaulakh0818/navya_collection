@@ -27,7 +27,7 @@ const FAQ_SECTIONS = [
   {
     title: 'About Navya Collection & Marketplace Model',
     icon: Store,
-    accent: 'text-[#F28C28] bg-amber-50 border-amber-200',
+    accent: 'text-orange bg-amber-50 border-amber-200',
     items: [
       {
         question: 'What is Navya Collection?',
@@ -86,7 +86,7 @@ const FAQ_SECTIONS = [
       {
         question: 'What are the shipping charges?',
         answer:
-          'Orders above ₹999 qualify for free express shipping across India. For orders below ₹999, a flat shipping fee of ₹99 applies.',
+          'Free standard shipping applies when a seller shipment subtotal is ₹999 or more. For seller shipments below ₹999, an applicable standard shipping charge of ₹49 applies per seller shipment. In multi-seller orders, the threshold is calculated separately for each seller because items dispatch from separate boutique locations.',
         link: { label: 'View Shipping Rates', href: '/shipping-policy' },
       },
       {
@@ -105,7 +105,7 @@ const FAQ_SECTIONS = [
       {
         question: 'What is the return and exchange window?',
         answer:
-          'Navya Collection offers a 7-day return and size replacement policy from the date of package delivery for unused garments with original tags intact.',
+          'Navya Collection offers a 3-day customer return policy and a 7-day size replacement policy from the date of package delivery for unused garments with original tags intact.',
         link: { label: 'Read Return Policy', href: '/return-policy' },
       },
       {

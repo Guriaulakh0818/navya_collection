@@ -101,7 +101,27 @@ function calculateTotals(items: CartStoreItem[]): CartCalculatedTotals {
   });
 
   const discount = Math.max(0, originalSubtotal - subtotal);
-  const shipping = subtotal >= 999 || subtotal === 0 ? 0 : 99;
+
+  // BM-05: Calculate seller-level shipping (₹49 standard per seller shipment < ₹999, free if >= ₹999)
+  const sellerSubtotals = new Map<string, number>();
+  for (const item of validItems) {
+    const sId = (item as any).shopId || 'default-shop';
+    sellerSubtotals.set(sId, (sellerSubtotals.get(sId) || 0) + item.price * item.quantity);
+  }
+
+  let shipping = 0;
+  let maxRemaining = 0;
+  for (const [, sTotal] of sellerSubtotals.entries()) {
+    if (sTotal < 999) {
+      shipping += 49;
+      maxRemaining = Math.max(maxRemaining, 999 - sTotal);
+    }
+  }
+  if (validItems.length === 0) {
+    shipping = 0;
+    maxRemaining = 0;
+  }
+
   const total = Math.max(0, subtotal + shipping);
 
   return {
@@ -112,7 +132,7 @@ function calculateTotals(items: CartStoreItem[]): CartCalculatedTotals {
     shipping,
     total,
     freeShippingThreshold: 999,
-    freeShippingRemaining: Math.max(0, 999 - subtotal),
+    freeShippingRemaining: maxRemaining,
   };
 }
 

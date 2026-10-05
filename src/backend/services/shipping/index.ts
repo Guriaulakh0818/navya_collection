@@ -14,4 +14,5 @@ export * from './shipment.service';
 export * from './shiprocket.service';
 export * from './shiprocket-module';
 export * from './tracking.service';
+export * from './customer-shipping.service';
 export * from './types';

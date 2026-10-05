@@ -7,7 +7,7 @@ const TRUST_FEATURES = [
     title: 'Verified Local Stores',
     description: 'Authentic boutiques from across India',
     icon: Store,
-    accent: 'text-[#F28C28] bg-amber-50 border-amber-200',
+    accent: 'text-orange bg-amber-50 border-amber-200',
   },
   {
     title: 'Unique & Trendy Styles',
@@ -22,8 +22,8 @@ const TRUST_FEATURES = [
     accent: 'text-blue-600 bg-blue-50 border-blue-200',
   },
   {
-    title: 'Easy 7-Day Returns',
-    description: 'Simple and hassle-free exchange process',
+    title: 'Hassle-Free Returns',
+    description: '3-day returns & 7-day size replacements',
     icon: RotateCcw,
     accent: 'text-emerald-600 bg-emerald-50 border-emerald-200',
   },
@@ -40,11 +40,11 @@ export function WhyShopNavyaSection() {
     <section className="space-y-4 sm:space-y-5 my-8 sm:my-10">
       {/* Header */}
       <div className="flex items-center gap-2.5">
-        <div className="p-2 rounded-xl bg-amber-50 text-[#F28C28]">
+        <div className="p-2 rounded-xl bg-amber-50 text-orange">
           <ShoppingBag className="w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-lg sm:text-xl font-black text-[#0A2342] tracking-tight">
+          <h2 className="text-lg sm:text-xl font-black text-navy-900 tracking-tight">
             Why Shop on Navya?
           </h2>
           <p className="text-xs text-slate-500 font-medium">
@@ -69,7 +69,7 @@ export function WhyShopNavyaSection() {
               </div>
 
               <div>
-                <h3 className="font-extrabold text-[#0A2342] text-xs sm:text-sm leading-tight">
+                <h3 className="font-extrabold text-navy-900 text-xs sm:text-sm leading-tight">
                   {feat.title}
                 </h3>
                 <p className="text-xs text-slate-500 font-normal mt-1 leading-relaxed">

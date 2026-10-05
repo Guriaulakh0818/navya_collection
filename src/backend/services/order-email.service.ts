@@ -363,8 +363,21 @@ export class OrderEmailNotificationService {
 
         const shopSubtotal = sData.items.reduce((sum, itm) => sum + Number(itm.total), 0);
         const estimatedPayout =
-          sData.vendorPayout !== undefined ? sData.vendorPayout : shopSubtotal * 0.9;
-        const marketplaceFee = shopSubtotal - estimatedPayout;
+          sData.vendorPayout !== undefined
+            ? sData.vendorPayout
+            : sData.items.reduce(
+                (sum, itm) =>
+                  sum +
+                  Number(
+                    (itm as any).sellerTotalPayout ??
+                      Math.max(0, Number(itm.total) - Number((itm as any).commissionAmount || 0)),
+                  ),
+                0,
+              );
+        const marketplaceFee = sData.items.reduce(
+          (sum, itm) => sum + Number((itm as any).commissionAmount || 0),
+          0,
+        );
 
         const sellerItemRows = sData.items
           .map((item) => {

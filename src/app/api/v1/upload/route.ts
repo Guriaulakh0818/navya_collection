@@ -4,16 +4,17 @@ import {
   CloudinaryFolder,
   deleteImageFromCloudinary,
   uploadImageToCloudinary,
+  uploadMediaToCloudinary,
   validateImageFile,
+  validateMediaFile,
 } from '@/lib/cloudinary';
 import { getCurrentUser } from '@/lib/session';
 
 /**
  * POST /api/v1/upload
  *
- * Server-side validated image upload endpoint supporting single and multiple file uploads.
- * Enforces per-folder file size limits (5MB for products, 10MB for banners) and MIME type checks.
- * RESTRICTED: Requires ADMIN or SUPER_ADMIN authorization.
+ * Server-side validated media upload endpoint supporting single and multiple file uploads.
+ * Supports image files (up to 5MB/10MB) and video evidence (up to 50MB) for seller packing proofs and customer return requests.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -42,6 +43,8 @@ export async function POST(request: NextRequest) {
       'users',
       'seller_shops',
       'seller_products',
+      'packing_proofs',
+      'return_evidence',
       'temp',
     ];
 
@@ -80,8 +83,8 @@ export async function POST(request: NextRequest) {
       for (let idx = 0; idx < files.length; idx++) {
         const file = files[idx];
 
-        // SERVER-SIDE STRICT VALIDATION (MIME & File Size)
-        const validation = validateImageFile(file.type, file.size, folderParam);
+        // SERVER-SIDE STRICT VALIDATION (Supports Images and Videos)
+        const validation = validateMediaFile(file.type, file.size, folderParam);
         if (!validation.valid) {
           return NextResponse.json({ success: false, message: validation.error }, { status: 400 });
         }
@@ -90,12 +93,13 @@ export async function POST(request: NextRequest) {
         const buffer = Buffer.from(arrayBuffer);
         const base64Data = `data:${file.type};base64,${buffer.toString('base64')}`;
 
-        const result = await uploadImageToCloudinary(base64Data, {
+        const result = await uploadMediaToCloudinary(base64Data, {
           folder: folderParam,
           categorySlug,
           productSlug,
           bannerSlug,
           imageNumber: idx + 1,
+          resourceType: file.type.startsWith('video/') ? 'video' : 'image',
         });
 
         uploadResults.push(result);

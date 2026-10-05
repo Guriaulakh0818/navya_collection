@@ -275,7 +275,11 @@ export type NormalizedTrackingStatus =
   | 'IN_TRANSIT'
   | 'OUT_FOR_DELIVERY'
   | 'DELIVERED'
+  | 'UNDELIVERED'
   | 'RTO'
+  | 'RTO_INITIATED'
+  | 'RTO_IN_TRANSIT'
+  | 'RTO_DELIVERED'
   | 'CANCELLED';
 
 export interface OrderTimelineItem {

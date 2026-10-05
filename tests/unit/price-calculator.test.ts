@@ -8,14 +8,14 @@ describe('Price & Tax Calculator', () => {
     expect(taxAmount).toBe(180);
   });
 
-  it('applies free shipping rule when subtotal >= 999', () => {
+  it('applies free shipping rule when subtotal >= 999 and ₹49 when below 999 (BM-04)', () => {
     const subtotalAbove = 1200;
-    const shippingAbove = subtotalAbove >= 999 ? 0 : 99;
+    const shippingAbove = subtotalAbove >= 999 ? 0 : 49;
     expect(shippingAbove).toBe(0);
 
     const subtotalBelow = 499;
-    const shippingBelow = subtotalBelow >= 999 ? 0 : 99;
-    expect(shippingBelow).toBe(99);
+    const shippingBelow = subtotalBelow >= 999 ? 0 : 49;
+    expect(shippingBelow).toBe(49);
   });
 
   it('calculates percentage coupon discount correctly', () => {

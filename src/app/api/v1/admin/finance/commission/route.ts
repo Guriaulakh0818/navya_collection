@@ -1,9 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getCurrentUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
+    const admin = await getCurrentUser();
+    if (
+      !admin ||
+      !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
+    ) {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden. Admin credentials required.' },
+        { status: admin ? 403 : 401 },
+      );
+    }
+
     // 1. Aggregate All Vendor Orders
     const vendorOrders = await prisma.vendorOrder.findMany({
       orderBy: { createdAt: 'desc' },
@@ -76,7 +88,7 @@ export async function GET(request: NextRequest) {
           totalCommissionRevenue,
           totalNetVendorPayouts,
           totalVendorOrders: vendorOrders.length,
-          effectiveCommissionRate: '10% + ₹15 Flat Fee',
+          effectiveCommissionRate: '10% on Product MRP (BM-02 Specification)',
         },
         shops: Array.from(shopMetricsMap.values()),
         orders: vendorOrders,

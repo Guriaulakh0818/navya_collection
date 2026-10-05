@@ -1,13 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getCurrentUser } from '@/backend/lib/session';
 import { updateCouponSchema } from '@/features/coupons/schemas/coupon.schema';
 import { CouponService } from '@/features/coupons/services/coupon.service';
 
 /**
  * PUT /api/v1/admin/coupons/[id]
+ * Protected: Requires ADMIN, SUPER_ADMIN, or OWNER role.
  */
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'Unauthorized. Please login.' },
+        { status: 401 },
+      );
+    }
+
+    if (!['ADMIN', 'SUPER_ADMIN', 'OWNER'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden. Admin access required.' },
+        { status: 403 },
+      );
+    }
+
     const body = await request.json();
     const validationResult = updateCouponSchema.safeParse(body);
 
@@ -31,12 +48,28 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
 /**
  * DELETE /api/v1/admin/coupons/[id]
+ * Protected: Requires ADMIN, SUPER_ADMIN, or OWNER role.
  */
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'Unauthorized. Please login.' },
+        { status: 401 },
+      );
+    }
+
+    if (!['ADMIN', 'SUPER_ADMIN', 'OWNER'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden. Admin access required.' },
+        { status: 403 },
+      );
+    }
+
     const { id } = await params;
     const response = await CouponService.deleteCoupon(id);
     return NextResponse.json(response, { status: response.statusCode });

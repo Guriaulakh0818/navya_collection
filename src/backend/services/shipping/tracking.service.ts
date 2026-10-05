@@ -30,6 +30,43 @@ export class TrackingService {
     if (!statusRaw) return 'PENDING';
     const strStatus = String(statusRaw).toUpperCase().trim();
 
+    // 1. RTO sub-lifecycle
+    if (
+      strStatus.includes('RTO DELIVERED') ||
+      strStatus.includes('RTO RECEIVED') ||
+      strStatus.includes('RTO ACKNOWLEDGED') ||
+      strStatus === '10' ||
+      strStatus === '11'
+    ) {
+      return 'RTO_DELIVERED';
+    }
+
+    if (
+      strStatus.includes('RTO IN TRANSIT') ||
+      strStatus.includes('RTO IN-TRANSIT') ||
+      strStatus.includes('RTO OFD') ||
+      strStatus.includes('RTO OUT FOR DELIVERY') ||
+      strStatus === '38'
+    ) {
+      return 'RTO_IN_TRANSIT';
+    }
+
+    // 2. Generic RTO / RTO INITIATED (Shiprocket ID 9)
+    if (strStatus === 'RTO INITIATED' || strStatus === '9' || strStatus === 'RTO') {
+      return 'RTO';
+    }
+
+    // 3. NDR / Undelivered (Shiprocket ID 8 = Undelivered)
+    // CRITICAL BM-09: NDR is NOT RTO. Delivery attempt failed; subsequent delivery attempts pending.
+    if (
+      strStatus.includes('UNDELIVERED') ||
+      strStatus.includes('DELIVERY ATTEMPT') ||
+      strStatus.includes('NDR') ||
+      strStatus === '8'
+    ) {
+      return 'UNDELIVERED';
+    }
+
     if (strStatus.includes('DELIVERED')) return 'DELIVERED';
     if (strStatus.includes('OUT FOR DELIVERY')) return 'OUT_FOR_DELIVERY';
     if (strStatus.includes('IN TRANSIT') || strStatus.includes('SHIPPED') || strStatus === '6') {
@@ -51,17 +88,45 @@ export class TrackingService {
     ) {
       return 'PACKED';
     }
-    if (
-      strStatus.includes('RTO') ||
-      strStatus.includes('RETURN') ||
-      strStatus.includes('UNDELIVERED') ||
-      strStatus === '9'
-    ) {
-      return 'RTO';
-    }
     if (strStatus.includes('CANCEL') || strStatus === '5') return 'CANCELLED';
 
     return 'PENDING';
+  }
+
+  /**
+   * Resolves granular RTO sub-status (BM-09).
+   */
+  static normalizeRtoStatus(
+    statusRaw?: string | number,
+  ): 'RTO_INITIATED' | 'RTO_IN_TRANSIT' | 'RTO_DELIVERED' | null {
+    if (!statusRaw) return null;
+    const strStatus = String(statusRaw).toUpperCase().trim();
+
+    if (
+      strStatus.includes('RTO DELIVERED') ||
+      strStatus.includes('RTO RECEIVED') ||
+      strStatus.includes('RTO ACKNOWLEDGED') ||
+      strStatus === '10' ||
+      strStatus === '11'
+    ) {
+      return 'RTO_DELIVERED';
+    }
+
+    if (
+      strStatus.includes('RTO IN TRANSIT') ||
+      strStatus.includes('RTO IN-TRANSIT') ||
+      strStatus.includes('RTO OFD') ||
+      strStatus.includes('RTO OUT FOR DELIVERY') ||
+      strStatus === '38'
+    ) {
+      return 'RTO_IN_TRANSIT';
+    }
+
+    if (strStatus.includes('RTO') || strStatus === '9') {
+      return 'RTO_INITIATED';
+    }
+
+    return null;
   }
 
   static buildTimeline(
@@ -97,11 +162,32 @@ export class TrackingService {
         description: 'Courier agent out for final delivery',
       },
       DELIVERED: { label: 'Delivered', description: 'Package successfully delivered to customer' },
+      UNDELIVERED: {
+        label: 'Delivery Attempted',
+        description: 'Delivery attempted. Re-attempt will be scheduled.',
+      },
       RTO: { label: 'Returned to Origin', description: 'Shipment returning to seller warehouse' },
+      RTO_INITIATED: {
+        label: 'RTO Initiated',
+        description: 'Delivery attempts completed. Shipment turning back to seller.',
+      },
+      RTO_IN_TRANSIT: {
+        label: 'Returning to Origin',
+        description: 'Shipment in reverse transit to seller warehouse.',
+      },
+      RTO_DELIVERED: {
+        label: 'RTO Delivered',
+        description: 'Shipment returned and received at seller warehouse.',
+      },
       CANCELLED: { label: 'Order Cancelled', description: 'Shipment or order has been cancelled' },
     };
 
-    const isAbnormal = currentStatus === 'RTO' || currentStatus === 'CANCELLED';
+    const isAbnormal =
+      currentStatus === 'RTO' ||
+      currentStatus === 'RTO_INITIATED' ||
+      currentStatus === 'RTO_IN_TRANSIT' ||
+      currentStatus === 'RTO_DELIVERED' ||
+      currentStatus === 'CANCELLED';
     const activeStatusIndex = isAbnormal ? -1 : statusOrder.indexOf(currentStatus);
 
     const timeline: OrderTimelineItem[] = statusOrder.map((st, idx) => {

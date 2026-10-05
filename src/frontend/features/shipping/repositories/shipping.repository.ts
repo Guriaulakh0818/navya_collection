@@ -37,7 +37,7 @@ const FALLBACK_ZONES = [
         minimumOrderAmount: 0,
         maximumOrderAmount: null,
         shippingCharge: 99,
-        freeShippingThreshold: 999,
+        freeShippingThreshold: null,
         estimatedDeliveryDays: '2-3 business days',
         isCodAvailable: true,
         isActive: true,
@@ -49,7 +49,7 @@ const FALLBACK_ZONES = [
         minimumOrderAmount: 0,
         maximumOrderAmount: null,
         shippingCharge: 149,
-        freeShippingThreshold: 1999,
+        freeShippingThreshold: null,
         estimatedDeliveryDays: 'Same day',
         isCodAvailable: true,
         isActive: true,
@@ -82,7 +82,7 @@ const FALLBACK_ZONES = [
         minimumOrderAmount: 0,
         maximumOrderAmount: null,
         shippingCharge: 99,
-        freeShippingThreshold: 999,
+        freeShippingThreshold: null,
         estimatedDeliveryDays: '2-3 business days',
         isCodAvailable: true,
         isActive: true,
@@ -94,7 +94,7 @@ const FALLBACK_ZONES = [
         minimumOrderAmount: 0,
         maximumOrderAmount: null,
         shippingCharge: 149,
-        freeShippingThreshold: 1999,
+        freeShippingThreshold: null,
         estimatedDeliveryDays: 'Same day',
         isCodAvailable: true,
         isActive: true,
@@ -156,4 +156,21 @@ export class ShippingRepository {
 
     return FALLBACK_ZONES[1]; // Rest of India default
   }
+
+  /**
+   * Evaluates first order eligibility (returns true if user has 0 prior orders).
+   */
+  static async evaluateFirstOrderEligibility(
+    userId?: string | null,
+  ): Promise<{ isEligible: boolean; reason?: string }> {
+    if (!userId) return { isEligible: false, reason: 'Guest checkout' };
+    try {
+      const count = await prisma.order.count({ where: { userId } });
+      return { isEligible: count === 0 };
+    } catch {
+      return { isEligible: false };
+    }
+  }
 }
+
+export { ShippingRepository as ShippingPolicyRepository };

@@ -4,6 +4,7 @@ export const orderPreviewQuerySchema = z.object({
   addressId: z.string().optional().nullable(),
   couponCode: z.string().trim().optional().nullable(),
   shippingMethodCode: z.string().optional().default('STANDARD'),
+  paymentMethod: z.string().optional().default('PREPAID'),
   items: z
     .array(
       z.object({

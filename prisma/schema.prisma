@@ -55,6 +55,7 @@ enum OrderStatus {
   RETURN_REQUESTED
   RETURNED
   EXCHANGED
+  RTO
 }
 
 enum PaymentStatus {
@@ -80,7 +81,11 @@ enum ShippingStatus {
   IN_TRANSIT
   OUT_FOR_DELIVERY
   DELIVERED
+  UNDELIVERED
   RTO
+  RTO_INITIATED
+  RTO_IN_TRANSIT
+  RTO_DELIVERED
   CANCELLED
   FAILED
 }
@@ -92,13 +97,50 @@ enum ReturnType {
 
 enum ReturnStatus {
   REQUESTED
+  UNDER_REVIEW
   APPROVED
   REJECTED
+  PICKUP_PENDING
   PICKUP_INITIATED
+  IN_TRANSIT
   RECEIVED
+  VERIFIED
+  REFUND_PENDING
   REFUNDED
+  REPLACEMENT_PENDING
   REPLACED
+  CLOSED
   CANCELLED
+}
+
+enum SettlementStatus {
+  PENDING_SETTLEMENT
+  ELIGIBLE_FOR_SETTLEMENT
+  ON_HOLD
+  SETTLED
+  ADJUSTED
+  CANCELLED
+}
+
+enum ContributionStatus {
+  ESTIMATED
+  PAYMENT_CAPTURED
+  SHIPPED
+  DELIVERED
+  SETTLED
+  RETURNED
+  RTO
+  CANCELLED
+  REALIZED
+  REVERSED
+}
+
+enum PlatformTaxType {
+  PLATFORM_COMMISSION_GST
+  COD_FEE_GST
+  PAYMENT_GATEWAY_GST
+  CUSTOMER_SHIPPING_GST
+  PRODUCT_GST
 }
 
 enum NotificationType {
@@ -139,6 +181,11 @@ enum NotificationStatus {
   FAILED
 }
 
+enum CouponFundingType {
+  NAVYA
+  SELLER
+}
+
 // ==========================================
 // USER & AUTHENTICATION MODELS
 // ===================================
@@ -146,7 +193,7 @@ enum NotificationStatus {
 model User {
   id                 String    @id @default(cuid())
   name               String?
-  email     String?   @unique
+  email              String?   @unique
   mobile             String?   @unique
   role               Role      @default(USER)
   avatar             String?
@@ -161,21 +208,28 @@ model User {
   updatedAt          DateTime  @updatedAt
   deletedAt          DateTime?
 
-  profile        CustomerProfile?
-  accounts       Account[]
-  sessions       Session[]
-  userSessions   UserSession[]
-  addresses      Address[]
-  orders         Order[]
-  reviews        Review[]
-  wishlist       Wishlist[]
-  cart           Cart?
-  notifications  Notification[]
-  returnRequests ReturnRequest[]
-  auditLogs      AuditLog[]
-  ownedShops     Shop[]           @relation("UserShops")
-  sellerProfile  SellerProfile?
-  shopReviews    ShopReview[]
+  profile             CustomerProfile?
+  accounts            Account[]
+  sessions            Session[]
+  userSessions        UserSession[]
+  addresses           Address[]
+  orders              Order[]
+  reviews             Review[]
+  wishlist            Wishlist[]
+  cart                Cart?
+  notifications       Notification[]
+  returnRequests      ReturnRequest[]
+  auditLogs           AuditLog[]
+  ownedShops          Shop[]               @relation("UserShops")
+  sellerProfile       SellerProfile?
+  shopReviews         ShopReview[]
+  returnAudits        ReturnAuditLog[]
+  reviewedReturns     ReturnRequest[]      @relation("ReturnReviewedBy")
+  sellerPackingProofs SellerPackingProof[]
+  financialAudits     FinancialAuditLog[]
+  customerRefunds     CustomerRefund[]
+  paymentIntents      PaymentIntent[]
+  couponUsages        CouponUsage[]
 
   @@map("users")
 }
@@ -266,8 +320,9 @@ model Address {
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders         Order[]
+  paymentIntents PaymentIntent[]
 
   @@index([userId])
   @@map("addresses")
@@ -291,8 +346,8 @@ model Category {
   metaTitle       String?
   metaDescription String?
   metaKeywords    String?
-  canonicalUrl     String?
-  bannerAlt        String?
+  canonicalUrl    String?
+  bannerAlt       String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
@@ -311,52 +366,67 @@ model Category {
 }
 
 model Product {
-  id                String    @id @default(cuid())
+  id                String   @id @default(cuid())
   name              String
-  slug              String    @unique
-  sku               String    @unique
+  slug              String   @unique
+  sku               String   @unique
   brand             String?
-  gender            String?   // men, women, unisex, kids
-  ageGroup          String?   // adults, kids, toddlers
-  fabric            String?   // silk, cotton, chiffon, georgette, velvet
-  description       String    @db.Text
-  price             Decimal   @db.Decimal(10, 2)
-  compareAtPrice    Decimal?  @db.Decimal(10, 2)
-  costPrice         Decimal?  @db.Decimal(10, 2)
-  stock             Int       @default(0)
-  lowStockThreshold Int       @default(5)
-  status            String    @default("active") // active, draft, archived
-  isFeatured        Boolean   @default(false)
-  isNewArrival      Boolean   @default(false)
+  gender            String? // men, women, unisex, kids
+  ageGroup          String? // adults, kids, toddlers
+  fabric            String? // silk, cotton, chiffon, georgette, velvet
+  description       String   @db.Text
+  price             Decimal  @db.Decimal(10, 2)
+  compareAtPrice    Decimal? @db.Decimal(10, 2)
+  costPrice         Decimal? @db.Decimal(10, 2)
+  stock             Int      @default(0)
+  lowStockThreshold Int      @default(5)
+  status            String   @default("active") // active, draft, archived
+  isFeatured        Boolean  @default(false)
+  isNewArrival      Boolean  @default(false)
   categoryId        String
-  rating            Float     @default(0)
-  reviewCount       Int       @default(0)
+  rating            Float    @default(0)
+  reviewCount       Int      @default(0)
 
   // Enterprise SEO & Extended Attributes
   metaTitle       String?
-  metaDescription String?   @db.Text
+  metaDescription String? @db.Text
   metaKeywords    String?
-  canonicalUrl     String?
+  canonicalUrl    String?
   ogImage         String?
-  robots           String?   // e.g. "index, follow" or "noindex, nofollow"
-  schemaEnabled   Boolean   @default(true)
+  robots          String? // e.g. "index, follow" or "noindex, nofollow"
+  schemaEnabled   Boolean @default(true)
   focusKeyword    String?
   color           String?
-  fit             String?   // slim, regular, relaxed, oversized
-  occasion        String?   // casual, formal, party, festive, ethnic
+  fit             String? // slim, regular, relaxed, oversized
+  occasion        String? // casual, formal, party, festive, ethnic
 
-  brandId         String?
+  brandId String?
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  deletedAt         DateTime?
+  // Return & Replacement Policy (Enforced Options: RETURN_AND_REPLACEMENT, REPLACEMENT_ONLY, NONE)
+  returnPolicyType      String  @default("RETURN_AND_REPLACEMENT") // RETURN_AND_REPLACEMENT, REPLACEMENT_ONLY, NONE
+  returnAllowed         Boolean @default(true)
+  returnWindowDays      Int     @default(3)
+  replacementAllowed    Boolean @default(true)
+  replacementWindowDays Int     @default(7)
 
-  category         Category        @relation(fields: [categoryId], references: [id])
-  brandRef         Brand?          @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  // BM-05 Special Shipping Policy
+  specialShippingMode String?  @default("STANDARD") // STANDARD, SPECIAL, FREE, SELLER_FUNDED, NAVYA_FUNDED, EXCLUDED
+  specialShippingRate Decimal? @db.Decimal(10, 2)
+
+  // BM-06 Tax & HSN Configuration
+  taxRate Decimal? @default(0) @db.Decimal(5, 2)
+  hsnCode String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  category         Category         @relation(fields: [categoryId], references: [id])
+  brandRef         Brand?           @relation(fields: [brandId], references: [id], onDelete: SetNull)
   shopId           String?
-  shop             Shop?           @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop             Shop?            @relation(fields: [shopId], references: [id], onDelete: Cascade)
   pickupLocationId String?
-  pickupLocation   PickupLocation? @relation(fields: [pickupLocationId], references: [id], onDelete: SetNull)
+  pickupLocation   PickupLocation?  @relation(fields: [pickupLocationId], references: [id], onDelete: SetNull)
   images           ProductImage[]
   variants         ProductVariant[]
   reviews          Review[]
@@ -449,7 +519,7 @@ model ProductVariant {
   color             String?
   weight            Float?
   dimensions        String?
-  attributes        Json?     // Flexible JSON structure for future attributes (fabric, fit, season, pattern, etc.)
+  attributes        Json? // Flexible JSON structure for future attributes (fabric, fit, season, pattern, etc.)
   status            String    @default("active") // active, inactive
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -542,13 +612,14 @@ model Order {
   totalAmount    Decimal       @db.Decimal(10, 2)
   discountAmount Decimal       @default(0) @db.Decimal(10, 2)
   shippingAmount Decimal       @default(0) @db.Decimal(10, 2)
+  taxAmount      Decimal       @default(0) @db.Decimal(10, 2)
   finalAmount    Decimal       @db.Decimal(10, 2)
   orderStatus    OrderStatus   @default(PENDING)
   paymentStatus  PaymentStatus @default(PENDING)
   paymentMethod  PaymentMethod @default(COD)
 
   // Razorpay Integration
-  razorpayOrderId   String?
+  razorpayOrderId   String? @unique
   razorpayPaymentId String?
   razorpaySignature String?
 
@@ -568,9 +639,29 @@ model Order {
   trackingUrl    String?
   labelUrl       String?
   notes          String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime?
+
+  // BM-05 Order Shipping Snapshot
+  shippingMode         String?  @default("STANDARD")
+  isFirstOrder         Boolean? @default(false)
+  shippingWaiverSource String?
+  shippingCostBearer   String?
+
+  // BM-07 Cash on Delivery (COD) Snapshot & Verification
+  codFee                Decimal?  @default(0) @db.Decimal(10, 2)
+  codFeeTax             Decimal?  @default(0) @db.Decimal(10, 2)
+  codVerificationStatus String?   @default("NONE") // NONE, PENDING, VERIFIED, REJECTED, EXPIRED
+  codConfirmedAt        DateTime?
+  codVerificationRef    String?
+
+  // BM-10 Coupon Snapshot & Funding
+  couponId          String?
+  couponCode        String?
+  couponType        String?
+  couponFundingType CouponFundingType?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   user                User                 @relation(fields: [userId], references: [id])
   address             Address              @relation(fields: [addressId], references: [id])
@@ -579,6 +670,10 @@ model Order {
   shipments           Shipment[]
   paymentTransactions PaymentTransaction[]
   returnRequests      ReturnRequest[]
+  sellerPackingProofs SellerPackingProof[]
+  customerRefunds     CustomerRefund[]
+  paymentIntent       PaymentIntent?
+  contributions       OrderContribution[]
 
   @@index([userId])
   @@index([addressId])
@@ -592,7 +687,7 @@ model Order {
 }
 
 model OrderItem {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   orderId       String
   productId     String
   variantId     String?
@@ -600,11 +695,41 @@ model OrderItem {
   vendorOrderId String?
   name          String
   sku           String
-  price         Decimal  @db.Decimal(10, 2)
+  price         Decimal @db.Decimal(10, 2)
   quantity      Int
-  total         Decimal  @db.Decimal(10, 2)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  total         Decimal @db.Decimal(10, 2)
+
+  // Commercial & Policy Snapshot at order placement (Section 21)
+  policyType            String?   @default("RETURN_AND_REPLACEMENT")
+  returnAllowed         Boolean   @default(true)
+  returnWindowDays      Int       @default(3)
+  replacementAllowed    Boolean   @default(true)
+  replacementWindowDays Int       @default(7)
+  deliveredAt           DateTime?
+
+  // BM-02 Pricing & Commission Snapshot at order placement (Authoritative)
+  mrp                          Decimal? @db.Decimal(10, 2)
+  sellingPrice                 Decimal? @db.Decimal(10, 2)
+  sellerDiscountAmount         Decimal? @default(0) @db.Decimal(10, 2)
+  sellerDiscountPercentage     Decimal? @default(0) @db.Decimal(5, 2)
+  commissionRate               Decimal? @default(10.00) @db.Decimal(5, 2)
+  commissionBaseAmount         Decimal? @db.Decimal(10, 2)
+  commissionAmount             Decimal? @default(0) @db.Decimal(10, 2)
+  taxRate                      Decimal? @default(0) @db.Decimal(5, 2)
+  taxAmount                    Decimal? @default(0) @db.Decimal(10, 2)
+  navyaCouponAmount            Decimal? @default(0) @db.Decimal(10, 2)
+  sellerCouponAmount           Decimal? @default(0) @db.Decimal(10, 2)
+  couponId                     String?
+  customerShippingAmount       Decimal? @default(0) @db.Decimal(10, 2)
+  sellerGstStatus              String? // REGISTERED, UNREGISTERED
+  sellerGstin                  String?
+  sellerBasePayout             Decimal? @db.Decimal(10, 2)
+  sellerGstAmount              Decimal? @default(0) @db.Decimal(10, 2)
+  sellerTotalPayout            Decimal? @db.Decimal(10, 2)
+  commissionCalculationVersion String?  @default("BM-03-MRP-V1")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   order         Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product       Product         @relation(fields: [productId], references: [id])
@@ -626,12 +751,17 @@ model PaymentTransaction {
   id                String        @id @default(cuid())
   orderId           String
   razorpayOrderId   String?
-  razorpayPaymentId String?
+  razorpayPaymentId String?       @unique
   razorpaySignature String?
   amount            Decimal       @db.Decimal(10, 2)
   currency          String        @default("INR")
   status            PaymentStatus @default(PENDING)
   method            String?
+  gatewayFee        Decimal?      @default(0) @db.Decimal(10, 2)
+  gatewayTax        Decimal?      @default(0) @db.Decimal(10, 2)
+  netAmount         Decimal?      @db.Decimal(10, 2)
+  gatewayFeeStatus  String?       @default("ESTIMATED")
+  paymentIntentId   String?
   errorCode         String?
   errorDescription  String?
   payload           Json?
@@ -643,6 +773,7 @@ model PaymentTransaction {
   @@index([orderId])
   @@index([razorpayOrderId])
   @@index([razorpayPaymentId])
+  @@index([paymentIntentId])
   @@map("payment_transactions")
 }
 
@@ -651,23 +782,70 @@ model PaymentTransaction {
 // ===================================
 
 model ReturnRequest {
-  id           String       @id @default(cuid())
-  orderId      String
-  userId       String
-  type         ReturnType   @default(RETURN)
-  reason       String       @db.Text
-  status       ReturnStatus @default(REQUESTED)
-  refundAmount Decimal?     @db.Decimal(10, 2)
-  adminNotes   String?      @db.Text
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  deletedAt    DateTime?
+  id                      String       @id @default(cuid())
+  requestNumber           String?      @unique // e.g. NC-RET-2026-XXXX
+  orderId                 String
+  vendorOrderId           String?
+  shopId                  String?
+  userId                  String
+  type                    ReturnType   @default(RETURN)
+  reason                  String       @db.Text
+  detailedReason          String?      @db.Text
+  status                  ReturnStatus @default(REQUESTED)
+  refundAmount            Decimal?     @db.Decimal(10, 2)
+  customerEvidenceUrls    String[]     @default([])
+  forwardShippingCost     Decimal?     @db.Decimal(10, 2)
+  reverseShippingCost     Decimal?     @db.Decimal(10, 2)
+  returnShippingDeduction Decimal?     @db.Decimal(10, 2)
 
-  order Order        @relation(fields: [orderId], references: [id])
-  user  User         @relation(fields: [userId], references: [id])
-  items ReturnItem[]
+  // Commission Reversal & Financial Adjustment (Section 1, 2, 6)
+  originalCommission    Decimal? @db.Decimal(10, 2)
+  commissionReversal    Decimal? @db.Decimal(10, 2)
+  gstReversal           Decimal? @default(0) @db.Decimal(10, 2)
+  sellerPayoutReversal  Decimal? @default(0) @db.Decimal(10, 2)
+  sellerFinalAdjustment Decimal? @db.Decimal(10, 2)
+
+  // Customer Refund Tracking (Section 3, 5, BM-08)
+  originalPaymentAmount Decimal?  @db.Decimal(10, 2)
+  refundStatus          String?   @default("PENDING") // PENDING, PROCESSED, FAILED
+  refundReference       String?
+  refundedAt            DateTime?
+
+  // BM-08 Customer Refund Method & COD Bank/UPI Destination
+  refundMethod          String?   @default("ORIGINAL_PAYMENT") // ORIGINAL_PAYMENT, BANK, UPI
+  bankAccountNumber     String?
+  bankIfsc              String?
+  accountHolderName     String?
+  upiId                 String?
+  inventoryRestored     Boolean   @default(false)
+  inventoryRestoredAt   DateTime?
+
+  reverseShipmentId     String?
+  reverseAwbCode        String?
+  deliveryDate          DateTime?
+  policyApplicable      String?
+  adminNotes            String?   @db.Text
+  resolutionNotes       String?   @db.Text
+  settlementHoldApplied Boolean   @default(false)
+  reviewedById          String?
+  reviewedAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime?
+
+  order          Order              @relation(fields: [orderId], references: [id])
+  vendorOrder    VendorOrder?       @relation(fields: [vendorOrderId], references: [id], onDelete: SetNull)
+  shop           Shop?              @relation(fields: [shopId], references: [id], onDelete: SetNull)
+  user           User               @relation(fields: [userId], references: [id])
+  reviewedBy     User?              @relation("ReturnReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  items          ReturnItem[]
+  auditLogs      ReturnAuditLog[]
+  adjustments    SellerAdjustment[]
+  customerRefund CustomerRefund?
 
   @@index([orderId])
+  @@index([vendorOrderId])
+  @@index([shopId])
   @@index([userId])
   @@index([status])
   @@map("return_requests")
@@ -688,6 +866,25 @@ model ReturnItem {
   @@index([returnRequestId])
   @@index([orderItemId])
   @@map("return_items")
+}
+
+model ReturnAuditLog {
+  id              String   @id @default(cuid())
+  returnRequestId String
+  performedById   String
+  action          String
+  previousStatus  String
+  newStatus       String
+  reason          String?  @db.Text
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  returnRequest ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+  performedBy   User          @relation(fields: [performedById], references: [id])
+
+  @@index([returnRequestId])
+  @@index([performedById])
+  @@map("return_audit_logs")
 }
 
 model Review {
@@ -722,25 +919,52 @@ model Review {
 // ===================================
 
 model Coupon {
-  id             String    @id @default(cuid())
-  code           String    @unique
-  shopId         String?
-  discountType   String // PERCENTAGE, FLAT
-  discountValue  Decimal   @db.Decimal(10, 2)
-  minOrderAmount Decimal   @default(0) @db.Decimal(10, 2)
-  maxDiscount    Decimal?  @db.Decimal(10, 2)
-  validUntil     DateTime
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime?
+  id                   String            @id @default(cuid())
+  code                 String            @unique
+  shopId               String?
+  fundingType          CouponFundingType @default(NAVYA)
+  title                String?
+  description          String?
+  discountType         String // PERCENTAGE, FLAT
+  discountValue        Decimal           @db.Decimal(10, 2)
+  minOrderAmount       Decimal           @default(0) @db.Decimal(10, 2)
+  maxDiscount          Decimal?          @db.Decimal(10, 2)
+  usageLimit           Int?
+  usagePerUser         Int               @default(1)
+  usedCount            Int               @default(0)
+  startDate            DateTime?         @default(now())
+  validUntil           DateTime
+  isActive             Boolean           @default(true)
+  applicableCategories String[]          @default([])
+  applicableProducts   String[]          @default([])
+  excludedProducts     String[]          @default([])
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  deletedAt            DateTime?
 
-  shop Shop? @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop   Shop?         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  usages CouponUsage[]
 
   @@index([code])
   @@index([shopId])
   @@index([isActive])
+  @@index([fundingType])
   @@map("coupons")
+}
+
+model CouponUsage {
+  id       String   @id @default(cuid())
+  couponId String
+  userId   String
+  orderId  String?
+  usedAt   DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([couponId, userId])
+  @@index([couponId, orderId])
+  @@map("coupon_usages")
 }
 
 model Notification {
@@ -833,27 +1057,27 @@ model OtpToken {
 // ===================================
 
 model SellerProfile {
-  id                   String            @id @default(cuid())
-  userId               String            @unique
-  businessName         String
-  legalName            String?
-  gstin                String?
-  panNumber            String?
-  city                 String
-  state                String
-  pincode              String
-  businessAddress      String            @db.Text
-  bankAccountHolder    String?
-  bankAccountNumber    String?
-  bankIfscCode         String?
-  bankName             String?
-  status               ShopStatus        @default(PENDING_VERIFICATION)
-  verificationBadge    VerificationBadge @default(NONE)
-  commissionRate       Decimal           @default(10.00) @db.Decimal(5, 2)
-  subscriptionTier     SubscriptionTier  @default(STARTER)
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  deletedAt            DateTime?
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  businessName      String
+  legalName         String?
+  gstin             String?
+  panNumber         String?
+  city              String
+  state             String
+  pincode           String
+  businessAddress   String            @db.Text
+  bankAccountHolder String?
+  bankAccountNumber String?
+  bankIfscCode      String?
+  bankName          String?
+  status            ShopStatus        @default(PENDING_VERIFICATION)
+  verificationBadge VerificationBadge @default(NONE)
+  commissionRate    Decimal           @default(10.00) @db.Decimal(5, 2)
+  subscriptionTier  SubscriptionTier  @default(STARTER)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  deletedAt         DateTime?
 
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   shops Shop[]
@@ -901,6 +1125,10 @@ model Shop {
   closedUntil          DateTime?
   vacationMessage      String?           @db.Text
 
+  // BM-05 Seller Funded Shipping Policy
+  sellerFundedShipping  Boolean  @default(false)
+  sellerFundedThreshold Decimal? @db.Decimal(10, 2)
+
   ownerId         String
   owner           User           @relation("UserShops", fields: [ownerId], references: [id], onDelete: Cascade)
   sellerProfileId String?
@@ -910,17 +1138,22 @@ model Shop {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  addresses       ShopAddress[]
-  pickupLocations PickupLocation[]
-  products        Product[]
-  vendorOrders    VendorOrder[]
-  shipments       Shipment[]
-  shopReviews     ShopReview[]
-  documents       SellerDocument[]
-  coupons         Coupon[]
-  payouts         VendorPayout[]
-  orderItems      OrderItem[]
-  productReviews  Review[]         @relation("ShopReviewsRelation")
+  addresses           ShopAddress[]
+  pickupLocations     PickupLocation[]
+  products            Product[]
+  vendorOrders        VendorOrder[]
+  shipments           Shipment[]
+  shopReviews         ShopReview[]
+  documents           SellerDocument[]
+  coupons             Coupon[]
+  payouts             VendorPayout[]
+  orderItems          OrderItem[]
+  productReviews      Review[]             @relation("ShopReviewsRelation")
+  sellerSettlements   SellerSettlement[]
+  sellerAdjustments   SellerAdjustment[]
+  sellerPackingProofs SellerPackingProof[]
+  returnRequests      ReturnRequest[]
+  contributions       OrderContribution[]
 
   @@index([shopCode])
   @@index([slug])
@@ -978,8 +1211,14 @@ model VendorOrder {
   shopId               String
   vendorOrderNumber    String         @unique
   totalAmount          Decimal        @db.Decimal(10, 2)
-  commissionAmount     Decimal        @db.Decimal(10, 2)
-  vendorPayoutAmount   Decimal        @db.Decimal(10, 2)
+  totalMrp             Decimal?       @db.Decimal(10, 2)
+  commissionAmount      Decimal            @db.Decimal(10, 2)
+  vendorPayoutAmount    Decimal            @db.Decimal(10, 2)
+  allocatedCouponAmount Decimal?           @default(0) @db.Decimal(10, 2)
+  couponFundingType     CouponFundingType?
+  sellerBasePayout      Decimal?           @db.Decimal(10, 2)
+  sellerGstAmount      Decimal?       @default(0) @db.Decimal(10, 2)
+  sellerGstStatus      String? // REGISTERED, UNREGISTERED
   status               OrderStatus    @default(PENDING)
   shippingStatus       ShippingStatus @default(PENDING)
   shiprocketOrderId    String?
@@ -991,10 +1230,14 @@ model VendorOrder {
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
-  masterOrder Order       @relation(fields: [masterOrderId], references: [id], onDelete: Cascade)
-  shop        Shop        @relation(fields: [shopId], references: [id])
-  items       OrderItem[]
-  shipments   Shipment[]
+  masterOrder    Order                @relation(fields: [masterOrderId], references: [id], onDelete: Cascade)
+  shop           Shop                 @relation(fields: [shopId], references: [id])
+  items          OrderItem[]
+  shipments      Shipment[]
+  settlement     SellerSettlement?
+  returnRequests ReturnRequest[]
+  packingProofs  SellerPackingProof[]
+  contributions  OrderContribution[]
 
   @@index([masterOrderId])
   @@index([shopId])
@@ -1015,7 +1258,8 @@ model VendorPayout {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  shop Shop @relation(fields: [shopId], references: [id])
+  shop        Shop               @relation(fields: [shopId], references: [id])
+  settlements SellerSettlement[]
 
   @@index([shopId])
   @@index([status])
@@ -1085,42 +1329,75 @@ model PickupLocation {
 }
 
 model Shipment {
-  id                     String         @id @default(cuid())
-  shipmentNumber         String         @unique // e.g. NAV-SHP-10001-01
-  masterOrderId          String
-  vendorOrderId          String?
-  sellerId               String
-  shopId                 String
-  pickupLocationId       String?
-  shiprocketOrderId      String?
-  shiprocketShipmentId   String?
-  awbCode                String?
-  courierName            String?
-  courierCompanyId       Int?
-  pickupAddressSnapshot  Json
+  id                      String        @id @default(cuid())
+  shipmentNumber          String        @unique // e.g. NAV-SHP-10001-01
+  masterOrderId           String
+  vendorOrderId           String?
+  sellerId                String
+  shopId                  String
+  pickupLocationId        String?
+  shiprocketOrderId       String?
+  shiprocketShipmentId    String?
+  awbCode                 String?
+  courierName             String?
+  courierCompanyId        Int?
+  pickupAddressSnapshot   Json
   deliveryAddressSnapshot Json
-  packageWeight          Float          @default(0.5)
-  packageLength          Float          @default(10.0)
-  packageBreadth         Float          @default(10.0)
-  packageHeight          Float          @default(10.0)
-  itemCount              Int            @default(1)
-  paymentMethod          PaymentMethod  @default(COD)
-  codAmount              Decimal        @default(0) @db.Decimal(10, 2)
-  shippingCharge         Decimal        @default(0) @db.Decimal(10, 2)
-  status                 String         @default("CREATED") // CREATED, PACKED, READY_TO_SHIP, PICKUP_SCHEDULED, PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, CANCELLED, FAILED, RTO_INITIATED, RTO_DELIVERED, RETURN_REQUESTED, RETURNED
-  trackingStatus         String         @default("PENDING")
-  labelUrl               String?
-  manifestUrl            String?
-  invoiceUrl             String?
-  pickupScheduledDate    DateTime?
-  pickupTokenNumber      String?
-  shippedAt              DateTime?
-  deliveredAt            DateTime?
-  cancelledAt            DateTime?
-  rtoStatus              String?
-  returnStatus           String?
-  createdAt              DateTime       @default(now())
-  updatedAt              DateTime       @updatedAt
+  packageWeight           Float         @default(0.5)
+  packageLength           Float         @default(10.0)
+  packageBreadth          Float         @default(10.0)
+  packageHeight           Float         @default(10.0)
+  itemCount               Int           @default(1)
+  paymentMethod           PaymentMethod @default(COD)
+  codAmount               Decimal       @default(0) @db.Decimal(10, 2)
+  shippingCharge          Decimal       @default(0) @db.Decimal(10, 2)
+  shippingMode            String        @default("STANDARD")
+  isFreeShipping          Boolean       @default(false)
+  freeShippingSource      String?
+  freeShippingThreshold   Decimal?      @db.Decimal(10, 2)
+  costBearer              String?
+  promotionId             String?
+  sellerSubtotal          Decimal?      @db.Decimal(10, 2)
+  status                  String        @default("CREATED") // CREATED, PACKED, READY_TO_SHIP, PICKUP_SCHEDULED, PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED, CANCELLED, FAILED, RTO_INITIATED, RTO_DELIVERED, RETURN_REQUESTED, RETURNED
+  trackingStatus          String        @default("PENDING")
+  labelUrl                String?
+  manifestUrl             String?
+  invoiceUrl              String?
+  pickupScheduledDate     DateTime?
+  pickupTokenNumber       String?
+  shippedAt               DateTime?
+  deliveredAt             DateTime?
+  cancelledAt             DateTime?
+  rtoStatus               String? // RTO_INITIATED, RTO_IN_TRANSIT, RTO_DELIVERED
+  rtoInitiatedAt          DateTime?
+  rtoInTransitAt          DateTime?
+  rtoDeliveredAt          DateTime?
+  rtoReason               String?
+  rtoShipmentId           String?
+  rtoVerifiedAt           DateTime?
+  rtoCostPending          Boolean?  @default(false)
+  rtoInventoryRestored    Boolean?  @default(false)
+  rtoRefundProcessed      Boolean?  @default(false)
+  rtoSettlementVoided     Boolean?  @default(false)
+  returnStatus            String?
+
+  // BM-07 COD Allocation & Remittance
+  codFee              Decimal?  @default(0) @db.Decimal(10, 2)
+  codFeeTax           Decimal?  @default(0) @db.Decimal(10, 2)
+  codRemittanceStatus String?   @default("PENDING") // PENDING, REMITTED, RECONCILED, DISPUTED
+  codRemittanceRef    String?
+  codRemittedAmount   Decimal?  @db.Decimal(10, 2)
+  remittedAt          DateTime?
+  remittanceBatchId   String?
+
+  // Actual Shipping Costs & Liability (Section 7, 8)
+  actualForwardShippingCost Decimal? @db.Decimal(10, 2)
+  actualReverseShippingCost Decimal? @db.Decimal(10, 2)
+  shippingCostStatus        String?  @default("ESTIMATED")
+  returnShippingDeduction   Decimal? @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   masterOrder    Order                   @relation(fields: [masterOrderId], references: [id], onDelete: Cascade)
   vendorOrder    VendorOrder?            @relation(fields: [vendorOrderId], references: [id], onDelete: SetNull)
@@ -1128,6 +1405,8 @@ model Shipment {
   pickupLocation PickupLocation?         @relation(fields: [pickupLocationId], references: [id], onDelete: SetNull)
   items          ShipmentItem[]
   trackingEvents ShipmentTrackingEvent[]
+  packingProofs  SellerPackingProof[]
+  contributions  OrderContribution[]
 
   @@index([masterOrderId])
   @@index([vendorOrderId])
@@ -1141,20 +1420,20 @@ model Shipment {
 }
 
 model ShipmentItem {
-  id           String   @id @default(cuid())
-  shipmentId   String
-  orderItemId  String
-  productId    String
-  variantId    String?
-  name         String
-  sku          String
-  size         String?
-  color        String?
-  price        Decimal  @db.Decimal(10, 2)
-  quantity     Int
-  total        Decimal  @db.Decimal(10, 2)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  shipmentId  String
+  orderItemId String
+  productId   String
+  variantId   String?
+  name        String
+  sku         String
+  size        String?
+  color       String?
+  price       Decimal  @db.Decimal(10, 2)
+  quantity    Int
+  total       Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   shipment  Shipment        @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
   orderItem OrderItem       @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
@@ -1198,8 +1477,18 @@ model Offer {
   isActive       Boolean   @default(true)
   startDate      DateTime?
   endDate        DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+
+  // BM-05 Promotional Free Shipping Configuration
+  costBearer               String?  @default("NAVYA") // NAVYA, SELLER
+  shippingMode             String?  @default("STANDARD")
+  minSellerSubtotal        Decimal? @db.Decimal(10, 2)
+  maxSellerSubtotal        Decimal? @db.Decimal(10, 2)
+  paymentMethodEligibility String?  @default("ALL") // ALL, PREPAID, COD
+  priority                 Int      @default(10)
+  maxShippingSubsidy       Decimal? @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([type])
   @@index([isActive])
@@ -1207,5 +1496,408 @@ model Offer {
   @@map("offers")
 }
 
+// ==========================================
+// SELLER PACKING EVIDENCE (Section 9)
+// ===================================
 
+model SellerPackingProof {
+  id            String   @id @default(cuid())
+  orderId       String
+  vendorOrderId String?
+  shipmentId    String?
+  shopId        String
+  sellerId      String
+  productId     String?
+  variantId     String?
+  mediaUrl      String
+  publicId      String?
+  mediaType     String // "IMAGE" | "VIDEO"
+  proofType     String // "PRODUCT_CONDITION" | "PACKED_PARCEL"
+  awbCode       String?
+  notes         String?  @db.Text
+  uploaderId    String
+  createdAt     DateTime @default(now())
 
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  vendorOrder VendorOrder? @relation(fields: [vendorOrderId], references: [id], onDelete: SetNull)
+  shipment    Shipment?    @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  shop        Shop         @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  uploader    User         @relation(fields: [uploaderId], references: [id])
+
+  @@index([orderId])
+  @@index([vendorOrderId])
+  @@index([shipmentId])
+  @@index([shopId])
+  @@index([sellerId])
+  @@map("seller_packing_proofs")
+}
+
+// ==========================================
+// SELLER SETTLEMENT & FINANCIAL LEDGER (Section 2, 11, 12, 13)
+// ===================================
+
+model SellerSettlement {
+  id                            String           @id @default(cuid())
+  settlementNumber              String           @unique // e.g. NC-SET-2026-XXXX
+  masterOrderId                 String
+  vendorOrderId                 String?          @unique
+  shopId                        String
+  sellerId                      String
+  grossProductValue             Decimal          @db.Decimal(10, 2)
+  totalMrp                      Decimal?         @db.Decimal(10, 2)
+  refundedProductValue          Decimal          @default(0) @db.Decimal(10, 2)
+  commissionRate                Decimal          @default(10.00) @db.Decimal(5, 2)
+  commissionAmount              Decimal          @db.Decimal(10, 2)
+  commissionReversal            Decimal          @default(0) @db.Decimal(10, 2)
+  sellerBasePayout              Decimal?         @db.Decimal(10, 2)
+  sellerGstStatus               String? // REGISTERED, UNREGISTERED
+  sellerGstRate                 Decimal?         @default(0) @db.Decimal(5, 2)
+  sellerGstAmount               Decimal?         @default(0) @db.Decimal(10, 2)
+  refundedGstAmount             Decimal?         @default(0) @db.Decimal(10, 2)
+  sellerTotalPayout             Decimal?         @db.Decimal(10, 2)
+  forwardShippingActual         Decimal          @default(0) @db.Decimal(10, 2)
+  reverseShippingActual         Decimal          @default(0) @db.Decimal(10, 2)
+  returnShippingDeduction       Decimal          @default(0) @db.Decimal(10, 2)
+  sellerDiscounts               Decimal          @default(0) @db.Decimal(10, 2)
+  sellerFundedShippingDeduction Decimal          @default(0) @db.Decimal(10, 2)
+  otherDeductions               Decimal          @default(0) @db.Decimal(10, 2)
+  adjustments                   Decimal          @default(0) @db.Decimal(10, 2)
+  netSettlementAmount           Decimal          @db.Decimal(10, 2)
+  status                        SettlementStatus @default(PENDING_SETTLEMENT)
+  holdReason                    String?          @db.Text
+  deliveryDate                  DateTime?
+  settlementEligibilityDate     DateTime
+  settledAt                     DateTime?
+  vendorPayoutId                String?
+  notes                         String?          @db.Text
+  createdAt                     DateTime         @default(now())
+  updatedAt                     DateTime         @updatedAt
+
+  vendorOrder     VendorOrder?       @relation(fields: [vendorOrderId], references: [id], onDelete: SetNull)
+  shop            Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  vendorPayout    VendorPayout?      @relation(fields: [vendorPayoutId], references: [id], onDelete: SetNull)
+  adjustmentsList SellerAdjustment[]
+
+  @@index([masterOrderId])
+  @@index([vendorOrderId])
+  @@index([shopId])
+  @@index([sellerId])
+  @@index([status])
+  @@index([settlementEligibilityDate])
+  @@map("seller_settlements")
+}
+
+model SellerAdjustment {
+  id               String    @id @default(cuid())
+  adjustmentNumber String    @unique // e.g. NC-ADJ-2026-XXXX
+  shopId           String
+  sellerId         String
+  settlementId     String?
+  returnRequestId  String?
+  type             String // "DEBIT" | "CREDIT"
+  category         String? // "RETURN_SHIPPING_LIABILITY", "PAYOUT_RECOVERY", "COMMISSION_ADJUSTMENT", "OTHER"
+  amount           Decimal   @db.Decimal(10, 2)
+  recoveredAmount  Decimal   @default(0) @db.Decimal(10, 2)
+  reason           String    @db.Text
+  status           String    @default("PENDING") // PENDING, APPLIED, CANCELLED
+  appliedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  shop          Shop              @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  settlement    SellerSettlement? @relation(fields: [settlementId], references: [id], onDelete: SetNull)
+  returnRequest ReturnRequest?    @relation(fields: [returnRequestId], references: [id], onDelete: SetNull)
+
+  @@index([shopId])
+  @@index([sellerId])
+  @@index([settlementId])
+  @@index([returnRequestId])
+  @@index([status])
+  @@map("seller_adjustments")
+}
+
+model FinancialAuditLog {
+  id            String   @id @default(cuid())
+  entityType    String // "SETTLEMENT", "COMMISSION", "RETURN_SHIPPING", "ADJUSTMENT", "PAYOUT"
+  entityId      String
+  action        String
+  performedById String?
+  amount        Decimal? @db.Decimal(10, 2)
+  oldValues      Json?
+  newValues      Json?
+  notes          String?  @db.Text
+  idempotencyKey String?  @unique
+  createdAt      DateTime @default(now())
+
+  performedBy User? @relation(fields: [performedById], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([performedById])
+  @@index([createdAt])
+  @@map("financial_audit_logs")
+}
+
+model CustomerRefund {
+  id                  String        @id @default(cuid())
+  refundNumber        String        @unique // e.g. NC-REF-2026-XXXX
+  orderId             String
+  returnRequestId     String?       @unique
+  userId              String
+  amount              Decimal       @db.Decimal(10, 2)
+  originalPayment     Decimal       @db.Decimal(10, 2)
+  status              PaymentStatus @default(PENDING) // PENDING, PAID, REFUNDED, FAILED
+  refundTransaction   String?
+  razorpayRefundId    String?       @unique
+  razorpayPaymentId   String?
+  gatewayRefundStatus String?       @default("PENDING") // PENDING, PROCESSED, FAILED
+  failureReason       String?
+  currency            String        @default("INR")
+  isPartial           Boolean       @default(false)
+  fee                 Decimal?      @default(0) @db.Decimal(10, 2)
+  notes               Json?
+  reason              String?       @db.Text
+  refundedAt          DateTime?
+
+  // BM-07 COD Payout & Refund Rail
+  refundMethod        String?  @default("RAZORPAY_REVERSAL") // RAZORPAY_REVERSAL, RAZORPAY_PAYOUT, BANK_TRANSFER, UPI
+  payoutReference     String?  @unique
+  payoutStatus        String?  @default("PENDING") // PENDING, PROCESSING, PROCESSED, FAILED, REVERSED
+  beneficiaryName     String?
+  bankAccountNumber   String?
+  bankIfsc            String?
+  upiId               String?
+  nonRefundableCodFee Decimal? @default(0) @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  returnRequest ReturnRequest? @relation(fields: [returnRequestId], references: [id], onDelete: SetNull)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([returnRequestId])
+  @@index([userId])
+  @@index([status])
+  @@index([razorpayRefundId])
+  @@map("customer_refunds")
+}
+
+// ==========================================
+// BM-06 PAYMENT INTENT & WEBHOOK IDEMPOTENCY
+// ===================================
+
+model PaymentIntent {
+  id                 String    @id @default(cuid())
+  intentNumber       String    @unique // e.g. NC-PI-2026-XXXX
+  userId             String
+  addressId          String
+  razorpayOrderId    String    @unique
+  razorpayPaymentId  String?   @unique
+  razorpaySignature  String?
+  amount             Decimal   @db.Decimal(10, 2)
+  currency           String    @default("INR")
+  status             String    @default("PAYMENT_PENDING") // PAYMENT_PENDING, AUTHORIZED, CAPTURED, FAILED, CANCELLED, REFUNDED
+  subtotal           Decimal   @db.Decimal(10, 2)
+  discountAmount     Decimal   @default(0) @db.Decimal(10, 2)
+  shippingAmount     Decimal   @default(0) @db.Decimal(10, 2)
+  taxAmount          Decimal   @default(0) @db.Decimal(10, 2)
+  finalAmount        Decimal   @db.Decimal(10, 2)
+  couponCode         String?
+  shippingMethodCode String?   @default("STANDARD")
+  cartSnapshot       Json // Immutable snapshot of items, prices, mrps, sellerIds, taxes
+  shippingSnapshot   Json? // Seller-level shipping breakdown snapshot
+  taxSnapshot        Json? // Dynamic tax breakdown snapshot
+  customerNotes      String?
+  metadata           Json?
+  expiresAt          DateTime?
+  fulfilledAt        DateTime?
+  failedAt           DateTime?
+  failureReason      String?
+  masterOrderId      String?   @unique
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user        User    @relation(fields: [userId], references: [id])
+  address     Address @relation(fields: [addressId], references: [id])
+  masterOrder Order?  @relation(fields: [masterOrderId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([addressId])
+  @@index([razorpayOrderId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("payment_intents")
+}
+
+model PaymentWebhookEvent {
+  id                String   @id @default(cuid())
+  eventId           String   @unique
+  eventType         String
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  status            String   @default("PROCESSED") // PROCESSED, FAILED, SKIPPED
+  payload           Json
+  errorMessage      String?
+  createdAt         DateTime @default(now())
+
+  @@index([eventId])
+  @@index([eventType])
+  @@index([razorpayOrderId])
+  @@index([razorpayPaymentId])
+  @@map("payment_webhook_events")
+}
+
+model TaxConfiguration {
+  id            String   @id @default(cuid())
+  name          String
+  country       String   @default("India")
+  state         String?
+  taxType       String   @default("GST") // GST, IGST, CGST_SGST
+  taxPercentage Decimal  @default(18.00) @db.Decimal(5, 2)
+  isDefault     Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([country])
+  @@index([state])
+  @@index([isActive])
+  @@map("tax_configurations")
+}
+
+// ==========================================
+// BM-07 COD REMITTANCE BATCH LEDGER
+// ===================================
+
+model CodRemittanceBatch {
+  id               String   @id @default(cuid())
+  batchNumber      String   @unique // e.g. NC-CRB-2026-XXXX
+  courierPartner   String   @default("Shiprocket")
+  remittanceDate   DateTime @default(now())
+  totalOrdersCount Int      @default(0)
+  totalCollected   Decimal  @db.Decimal(10, 2)
+  totalRemitted    Decimal  @db.Decimal(10, 2)
+  courierCharges   Decimal  @default(0) @db.Decimal(10, 2)
+  bankReference    String?
+  status           String   @default("RECEIVED") // RECEIVED, RECONCILED, DISCREPANCY
+  notes            String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([batchNumber])
+  @@index([status])
+  @@map("cod_remittance_batches")
+}
+
+// ==========================================
+// BM-11 ORDER UNIT ECONOMICS / CONTRIBUTION
+// ==========================================
+
+model OrderContribution {
+  id                             String             @id @default(cuid())
+  masterOrderId                  String
+  vendorOrderId                  String?
+  shopId                         String?
+  shipmentId                     String?
+  
+  // Status & Recognition Lifecycle
+  status                         ContributionStatus @default(ESTIMATED)
+  calculationVersion             String             @default("BM-11-V1")
+  
+  // Revenue Components
+  commissionEarned               Decimal            @default(0) @db.Decimal(10, 2)
+  customerShippingCollected      Decimal            @default(0) @db.Decimal(10, 2)
+  codFeeCollected                Decimal            @default(0) @db.Decimal(10, 2)
+  otherNavyaRevenue              Decimal            @default(0) @db.Decimal(10, 2)
+  applicablePlatformTax          Decimal            @default(0) @db.Decimal(10, 2)
+  revenueTotal                   Decimal            @default(0) @db.Decimal(10, 2)
+  
+  // Variable Cost Components
+  gatewayFeeActual               Decimal            @default(0) @db.Decimal(10, 2)
+  gatewayTaxActual               Decimal            @default(0) @db.Decimal(10, 2)
+  gatewayFeeEstimated            Decimal            @default(0) @db.Decimal(10, 2)
+  gatewayFeeStatus               String             @default("ESTIMATED") // "ESTIMATED" | "ACTUAL"
+  
+  navyaCouponSubsidy             Decimal            @default(0) @db.Decimal(10, 2)
+  
+  navyaForwardShippingCost       Decimal            @default(0) @db.Decimal(10, 2)
+  navyaFreeShippingSubsidy       Decimal            @default(0) @db.Decimal(10, 2)
+  shippingCostStatus             String             @default("ESTIMATED") // "ESTIMATED" | "ACTUAL" | "UNKNOWN"
+  
+  navyaReturnShippingCost        Decimal            @default(0) @db.Decimal(10, 2)
+  navyaRtoLogisticsCost          Decimal            @default(0) @db.Decimal(10, 2)
+  navyaCancellationLogisticsCost Decimal            @default(0) @db.Decimal(10, 2)
+  courierCodCollectionFee        Decimal            @default(0) @db.Decimal(10, 2)
+  otherVariableCost              Decimal            @default(0) @db.Decimal(10, 2)
+  variableCostTotal              Decimal            @default(0) @db.Decimal(10, 2)
+  
+  // Outputs
+  grossContribution              Decimal            @default(0) @db.Decimal(10, 2)
+  contributionMarginPercent      Decimal            @default(0) @db.Decimal(5, 2)
+  
+  // Traceability & Metadata
+  notes                          String?            @db.Text
+  metadata                       Json?
+  taxRuleVersion                 String?            @default("v1.0")
+  commissionTaxRate              Decimal?           @db.Decimal(5, 4)
+  codFeeTaxRate                  Decimal?           @db.Decimal(5, 4)
+  gatewayEstimateRate            Decimal?           @db.Decimal(5, 4)
+  gatewayEstimateTaxRate         Decimal?           @db.Decimal(5, 4)
+  calculatedAt                   DateTime           @default(now())
+  createdAt                      DateTime           @default(now())
+  updatedAt                      DateTime           @updatedAt
+
+  masterOrder Order        @relation(fields: [masterOrderId], references: [id], onDelete: Cascade)
+  vendorOrder VendorOrder? @relation(fields: [vendorOrderId], references: [id], onDelete: Cascade)
+  shop        Shop?        @relation(fields: [shopId], references: [id], onDelete: SetNull)
+  shipment    Shipment?    @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+
+  @@index([masterOrderId])
+  @@index([vendorOrderId])
+  @@index([shopId])
+  @@index([shipmentId])
+  @@index([status])
+  @@index([calculatedAt])
+  @@index([createdAt])
+  @@map("order_contributions")
+}
+
+// ==========================================
+// BM-11 GATEWAY & TAX CONFIGURATION
+// ==========================================
+
+model PaymentGatewayConfig {
+  id            String    @id @default(cuid())
+  provider      String    @default("RAZORPAY")
+  estimateRate  Decimal   @default(0.02) @db.Decimal(5, 4)
+  paymentMethod String?
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime?
+  isActive      Boolean   @default(true)
+  metadata      Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([provider, isActive])
+  @@index([effectiveFrom, effectiveTo])
+  @@map("payment_gateway_configs")
+}
+
+model PlatformTaxRule {
+  id            String          @id @default(cuid())
+  taxType       PlatformTaxType
+  rate          Decimal         @default(0.18) @db.Decimal(5, 4)
+  effectiveFrom DateTime        @default(now())
+  effectiveTo   DateTime?
+  isActive      Boolean         @default(true)
+  version       String          @default("v1.0")
+  description   String?
+  conditions    Json?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([taxType, isActive])
+  @@index([effectiveFrom, effectiveTo])
+  @@map("platform_tax_rules")
+}

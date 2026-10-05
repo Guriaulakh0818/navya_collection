@@ -22,7 +22,7 @@ export async function GET() {
     const userId = await ensureUserExists(user.id);
     const dbOrders = await OrderRepository.findManyByUserId(userId);
 
-    const formattedOrders = dbOrders.map((o) => ({
+    const formattedOrders = dbOrders.map((o: any) => ({
       id: o.id,
       orderNumber: o.orderNumber,
       date: o.createdAt.toISOString(),
@@ -41,7 +41,7 @@ export async function GET() {
       shipping: Number(o.shippingAmount),
       paymentMethod: o.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment (Razorpay)',
       paymentStatus: o.paymentStatus,
-      items: o.items.map((item) => ({
+      items: o.items.map((item: any) => ({
         id: item.id,
         productId: item.productId,
         name: item.name,

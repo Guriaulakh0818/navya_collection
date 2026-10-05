@@ -66,9 +66,11 @@ export const AEO_FACTS = {
   },
 
   RETURNS: {
-    WINDOW_DAYS: 7,
+    RETURN_WINDOW_DAYS: 3,
+    REPLACEMENT_WINDOW_DAYS: 7,
+    WINDOW_DAYS: 3,
     WINDOW_DESCRIPTION:
-      '7-day hassle-free return or size exchange window from the date of package delivery',
+      '3-day returns and 7-day size replacements from the date of package delivery',
     PICKUP_MODE: 'Doorstep reverse pickup across serviceable pin codes',
     REFUND_TIMELINE:
       'Refunds processed within 24 hours of warehouse inspection (banks reflect credit in 3–5 business days)',

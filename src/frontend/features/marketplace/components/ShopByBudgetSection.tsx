@@ -37,7 +37,7 @@ const BUDGET_CARDS = [
     description: 'Exclusive boutique couture & pure silks',
     href: '/shop?minPrice=1999',
     badge: 'BOUTIQUE LUXURY',
-    accent: 'from-indigo-500/15 via-[#0A2342]/10 to-transparent border-indigo-300',
+    accent: 'from-indigo-500/15 via-navy-900/10 to-transparent border-indigo-300',
     badgeBg: 'bg-indigo-100 text-indigo-900 border-indigo-300',
   },
 ];
@@ -48,11 +48,11 @@ export function ShopByBudgetSection() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 text-[#F28C28]">
+          <div className="p-2 rounded-xl bg-amber-50 text-orange">
             <Wallet className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-[#0A2342] tracking-tight">
+            <h2 className="text-lg sm:text-xl font-black text-navy-900 tracking-tight">
               Find Your Style, Fit Your Budget
             </h2>
             <p className="text-xs text-slate-500 font-medium">
@@ -63,7 +63,7 @@ export function ShopByBudgetSection() {
 
         <Link
           href="/shop"
-          className="text-xs sm:text-sm font-extrabold text-[#F28C28] hover:text-[#d97718] transition-colors flex items-center gap-1 shrink-0"
+          className="text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors flex items-center gap-1 shrink-0"
         >
           <span>Explore All Price Tiers</span>
           <span>→</span>
@@ -85,7 +85,7 @@ export function ShopByBudgetSection() {
                 {card.badge}
               </span>
 
-              <h3 className="text-2xl font-black text-[#0A2342] font-mono tracking-tight group-hover:text-[#F28C28] transition-colors">
+              <h3 className="text-2xl font-black text-navy-900 font-mono tracking-tight group-hover:text-orange transition-colors">
                 {card.title}
               </h3>
 
@@ -97,9 +97,9 @@ export function ShopByBudgetSection() {
               </div>
             </div>
 
-            <div className="pt-2 flex items-center justify-between text-xs font-extrabold text-[#0A2342] group-hover:text-[#F28C28] transition-colors border-t border-slate-200/60">
+            <div className="pt-2 flex items-center justify-between text-xs font-extrabold text-navy-900 group-hover:text-orange transition-colors border-t border-slate-200/60">
               <span>Browse Tier</span>
-              <div className="w-7 h-7 rounded-full bg-white border border-slate-200 group-hover:bg-[#F28C28] group-hover:text-white group-hover:border-[#F28C28] flex items-center justify-center transition-all shadow-2xs">
+              <div className="w-7 h-7 rounded-full bg-white border border-slate-200 group-hover:bg-orange group-hover:text-white group-hover:border-orange flex items-center justify-center transition-all shadow-2xs">
                 <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </div>

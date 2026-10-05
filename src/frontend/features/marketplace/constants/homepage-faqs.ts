@@ -32,7 +32,7 @@ export const HOMEPAGE_FAQS: FaqItem[] = [
   {
     question: 'What is the return policy on Navya Collection?',
     answer:
-      'Navya Collection offers a 7-day hassle-free return or exchange window from the date of package delivery for unused items with original tags intact.',
+      'Navya Collection offers a 3-day return window and a 7-day replacement window from the date of package delivery for unused items with original tags intact.',
   },
   {
     question: 'How can a local store become a seller?',

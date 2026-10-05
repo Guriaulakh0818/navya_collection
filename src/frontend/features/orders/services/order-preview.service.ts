@@ -1,7 +1,10 @@
+import { CommissionService } from '@/backend/services/commission.service';
+import { CustomerShippingService } from '@/backend/services/shipping/customer-shipping.service';
 import { AddressRepository } from '@/features/addresses/repositories/address.repository';
 import { CartRepository } from '@/features/cart/repositories/cart.repository';
 import { CartService } from '@/features/cart/services/cart.service';
 import { CouponService } from '@/features/coupons/services/coupon.service';
+import { ShippingPolicyRepository } from '@/features/shipping/repositories/shipping.repository';
 import { ShippingService } from '@/features/shipping/services/shipping.service';
 import { TaxService } from '@/features/tax/services/tax.service';
 import { ensureUserExists } from '@/lib/ensure-user';
@@ -99,11 +102,13 @@ export class OrderPreviewService {
             'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800';
           const quantity = Math.max(1, Number(i.quantity || 1));
           const itemSubtotal = price * quantity;
+          const taxRate = dbProduct?.taxRate ? Number(dbProduct.taxRate) : 5;
 
           return {
             id: dbProduct?.id || i.productId || `item_${idx}_${Date.now()}`,
             productId: dbProduct?.id || i.productId,
             variantId: i.variantId || null,
+            shopId: dbProduct?.shopId || i.shopId || 'default_shop',
             name,
             productName: name,
             productSlug: dbProduct?.slug || 'product',
@@ -118,10 +123,29 @@ export class OrderPreviewService {
             inStock: (dbProduct?.stock || 50) > 0,
             image,
             subtotal: itemSubtotal,
+            taxRate,
+            taxAmount: CommissionService.roundMoney((itemSubtotal * taxRate) / (100 + taxRate)),
           };
         });
 
         const inputSubtotal = resolvedItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+        const initialShip = await CustomerShippingService.calculateMultiSellerShipping(
+          userId,
+          resolvedItems.map((r: any) => ({
+            productId: r.productId,
+            shopId: r.shopId,
+            quantity: r.quantity,
+            price: r.price,
+          })),
+          {
+            customerAddressId: input.addressId,
+            shippingMethodCode: input.shippingMethodCode || 'STANDARD',
+            paymentMethod: input.paymentMethod || 'PREPAID',
+          },
+        );
+
+        const threshold = input.paymentMethod === 'COD' ? 1999 : 999;
         cartData = {
           id: `cart_${userId}`,
           userId,
@@ -129,10 +153,13 @@ export class OrderPreviewService {
           itemCount: resolvedItems.reduce((sum, item) => sum + item.quantity, 0),
           subtotal: inputSubtotal,
           discount: 0,
-          shipping: inputSubtotal >= 999 ? 0 : 99,
-          total: inputSubtotal + (inputSubtotal >= 999 ? 0 : 99),
-          freeShippingThreshold: 999,
-          freeShippingRemaining: Math.max(0, 999 - inputSubtotal),
+          shipping: initialShip.finalShippingAmount,
+          total: inputSubtotal + initialShip.finalShippingAmount,
+          freeShippingThreshold: threshold,
+          freeShippingRemaining: (initialShip.sellerBreakdown || []).reduce(
+            (m: number, s: any) => Math.max(m, s.freeShippingRemaining || 0),
+            0,
+          ),
         };
       } else {
         const cartRes = await CartService.getCart(userId);
@@ -199,6 +226,14 @@ export class OrderPreviewService {
         const couponRes = await CouponService.validateCoupon(userId, {
           code: input.couponCode,
           cartAmount: subtotal,
+          items: validatedItems.map((i: any) => ({
+            productId: i.productId,
+            shopId: i.shopId,
+            categoryId: i.categoryId,
+            price: i.price,
+            quantity: i.quantity,
+            total: i.subtotal,
+          })),
         });
 
         if (couponRes.success && couponRes.data) {
@@ -212,52 +247,180 @@ export class OrderPreviewService {
       const netSubtotal = Math.max(0, subtotal - discount);
 
       // 5. Re-calculate Shipping
-      let shipping = netSubtotal >= 999 ? 0 : 99;
+      let shipping = 0;
       let estimatedDelivery = '3-5 business days';
       let isServiceable = true;
 
-      const shipRes = await ShippingService.calculateShipping(userId, {
+      const shipRes = await CustomerShippingService.calculateMultiSellerShipping(
+        userId,
+        validatedItems.map((i: any) => ({
+          productId: i.productId,
+          shopId: i.shopId || 'DEFAULT_SHOP',
+          quantity: i.quantity,
+          price: i.price,
+        })),
+        {
+          customerAddressId: address?.id,
+          shippingMethodCode: input.shippingMethodCode || 'STANDARD',
+          paymentMethod: input.paymentMethod || 'PREPAID',
+        },
+      );
+
+      shipping = shipRes.finalShippingAmount;
+      estimatedDelivery = '3-5 business days';
+      isServiceable = shipRes.isServiceable ?? true;
+
+      // 6. Calculate Dynamic Tax (BM-06 Rule Engine)
+      let tax = 0;
+      let taxBreakdown: any = null;
+
+      const taxRes = await TaxService.calculateDynamicTax({
+        items: validatedItems.map((i: any) => ({
+          productId: i.productId,
+          shopId: i.shopId,
+          price: i.price,
+          quantity: i.quantity,
+          taxRate: i.taxRate,
+        })),
         addressId: address?.id,
-        pincode: address?.pincode,
-        state: address?.state,
-        cartAmount: netSubtotal,
-        shippingMethodCode: input.shippingMethodCode || 'STANDARD',
-      });
-
-      if (shipRes.success && shipRes.data) {
-        shipping = shipRes.data.shippingCharge;
-        estimatedDelivery = shipRes.data.deliveryDays || '3-5 business days';
-        isServiceable = shipRes.data.isServiceable;
-        if (!isServiceable) {
-          warnings.push(`Pincode ${address?.pincode || ''} is non-serviceable for shipping.`);
-        }
-      }
-
-      // 6. Re-calculate Centralized Server Tax (Exclusive 18% GST Model)
-      let tax = Math.round(((netSubtotal * 18) / 100) * 100) / 100;
-      let grandTotal = Math.round((netSubtotal + shipping + tax) * 100) / 100;
-      let taxBreakdown: any = { gst: 18, cgst: 9, sgst: 9, igst: 0, taxType: 'CGST_SGST' };
-
-      const taxRes = await TaxService.calculateTax(userId, {
-        addressId: address?.id,
-        subtotal,
-        discount,
-        shipping,
-        couponCode: appliedCouponData?.code,
+        shippingAmount: shipping,
+        discountAmount: discount,
       });
 
       if (taxRes.success && taxRes.data) {
         tax = taxRes.data.tax;
-        grandTotal = taxRes.data.grandTotal;
         taxBreakdown = taxRes.data.taxBreakdown;
       }
 
-      const totalSavings = Math.max(
-        0,
-        (cartData.discount || 0) + discount + (shipping === 0 ? 99 : 0),
-      );
+      let grandTotal = CommissionService.roundMoney(netSubtotal + shipping + tax);
+      const totalSavings = discount;
 
-      // 7. Payment Methods Preparation
+      // 7. BM-07 Cash on Delivery (COD) Rules & Multi-Seller Fee Breakdown
+      // Selling price limit: ₹5,000 max applied ONLY to product selling price subtotal
+      const isCodEligible = subtotal <= 5000;
+
+      let codFee = 0;
+      let codFeeTax = 0;
+      const sellerCodAllocations: Array<{
+        sellerId: string;
+        sellerSellingSubtotal: number;
+        sellerAllocatedCoupon: number;
+        sellerShippingCharge: number;
+        sellerTax: number;
+        sellerCodFeeBase: number;
+        sellerCodFee: number;
+        sellerCodFeeTax: number;
+        sellerShipmentCodAmount: number;
+      }> = [];
+
+      // Group validated items by shopId for multi-seller COD allocation
+      const shopItemsMap = new Map<string, typeof validatedItems>();
+      for (const item of validatedItems) {
+        const sId = item.shopId || 'DEFAULT_SHOP';
+        if (!shopItemsMap.has(sId)) shopItemsMap.set(sId, []);
+        shopItemsMap.get(sId)!.push(item);
+      }
+
+      const shopEntries = Array.from(shopItemsMap.entries());
+      let cumulativeAllocatedCoupon = 0;
+      let cumulativeCodFee = 0;
+      let cumulativeCodFeeTax = 0;
+
+      for (let idx = 0; idx < shopEntries.length; idx++) {
+        const [sId, sItems] = shopEntries[idx];
+        const isLastSeller = idx === shopEntries.length - 1;
+
+        const sellerSellingSubtotal = CommissionService.roundMoney(
+          sItems.reduce(
+            (sum: number, itm: any) => sum + Number(itm.subtotal || itm.price * itm.quantity),
+            0,
+          ),
+        );
+
+        let sellerAllocatedCoupon = 0;
+        if (appliedCouponData?.sellerAllocations) {
+          const alloc = appliedCouponData.sellerAllocations.find((s: any) => s.sellerId === sId);
+          sellerAllocatedCoupon = alloc ? alloc.allocatedDiscount : 0;
+        } else if (discount > 0 && subtotal > 0) {
+          if (isLastSeller) {
+            sellerAllocatedCoupon = Math.max(
+              0,
+              CommissionService.roundMoney(discount - cumulativeAllocatedCoupon),
+            );
+          } else {
+            const ratio = sellerSellingSubtotal / subtotal;
+            sellerAllocatedCoupon = CommissionService.roundMoney(discount * ratio);
+            cumulativeAllocatedCoupon = CommissionService.roundMoney(
+              cumulativeAllocatedCoupon + sellerAllocatedCoupon,
+            );
+          }
+        }
+
+        const sellerShipmentData = shipRes.sellerBreakdown?.find(
+          (b: any) => b.sellerId === sId || b.shopId === sId,
+        );
+        const sellerShippingCharge = Number(sellerShipmentData?.shippingCharge ?? 0);
+
+        const sellerTaxData = taxRes.data?.sellers?.find((s: any) => s.shopId === sId);
+        const sellerTax = Number(sellerTaxData?.taxAmount ?? 0);
+
+        // COD Fee Base = Product Selling Price - Allocated Coupon + Shipping + Tax
+        const sellerCodFeeBase = Math.max(
+          0,
+          CommissionService.roundMoney(
+            sellerSellingSubtotal - sellerAllocatedCoupon + sellerShippingCharge + sellerTax,
+          ),
+        );
+
+        let sellerCodFee = 0;
+        let sellerCodFeeTax = 0;
+
+        if (input.paymentMethod === 'COD' && isCodEligible) {
+          sellerCodFee = CommissionService.roundMoney(sellerCodFeeBase * 0.015);
+          const taxResCod = await TaxService.calculateCodFeeTax({
+            codFee: sellerCodFee,
+            customerState: address?.state,
+          });
+          sellerCodFeeTax = taxResCod.taxAmount;
+        }
+
+        cumulativeCodFee = CommissionService.roundMoney(cumulativeCodFee + sellerCodFee);
+        cumulativeCodFeeTax = CommissionService.roundMoney(cumulativeCodFeeTax + sellerCodFeeTax);
+
+        const sellerShipmentCodAmount = CommissionService.roundMoney(
+          sellerCodFeeBase + sellerCodFee + sellerCodFeeTax,
+        );
+
+        sellerCodAllocations.push({
+          sellerId: sId,
+          sellerSellingSubtotal,
+          sellerAllocatedCoupon,
+          sellerShippingCharge,
+          sellerTax,
+          sellerCodFeeBase,
+          sellerCodFee,
+          sellerCodFeeTax,
+          sellerShipmentCodAmount,
+        });
+      }
+
+      if (input.paymentMethod === 'COD') {
+        if (!isCodEligible) {
+          warnings.push(
+            'Cash on Delivery is unavailable for orders with product selling price exceeding ₹5,000.',
+          );
+        } else {
+          codFee = cumulativeCodFee;
+          codFeeTax = cumulativeCodFeeTax;
+          grandTotal = CommissionService.roundMoney(
+            netSubtotal + shipping + tax + codFee + codFeeTax,
+          );
+        }
+      } else {
+        grandTotal = CommissionService.roundMoney(netSubtotal + shipping + tax);
+      }
+
+      // 8. Payment Methods Preparation
       const paymentMethods = [
         {
           id: 'ONLINE',
@@ -271,9 +434,11 @@ export class OrderPreviewService {
           id: 'COD',
           code: 'COD',
           name: 'Cash on Delivery (COD)',
-          description: 'Pay cash upon package arrival at your doorstep',
-          isAvailable: grandTotal <= 50000,
-          badge: grandTotal > 50000 ? 'UNAVAILABLE ABOVE ₹50,000' : 'PAY ON DELIVERY',
+          description: isCodEligible
+            ? 'Pay cash upon package arrival at your doorstep (1.5% COD handling fee applies)'
+            : 'Cash on Delivery is unavailable for orders with product value exceeding ₹5,000',
+          isAvailable: isCodEligible,
+          badge: isCodEligible ? 'PAY ON DELIVERY (1.5% FEE)' : 'UNAVAILABLE ABOVE ₹5,000',
         },
       ];
 
@@ -291,13 +456,17 @@ export class OrderPreviewService {
           netSubtotal,
           shipping,
           tax,
+          codFee,
+          codFeeTax,
           grandTotal,
+          isCodEligible,
+          sellerCodAllocations,
           totalSavings,
           estimatedDelivery,
           appliedCoupon: appliedCouponData,
           taxBreakdown,
           isServiceable,
-          shippingData: shipRes.data || null,
+          shippingData: shipRes || null,
           paymentMethods,
           warnings,
         },

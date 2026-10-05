@@ -20,6 +20,8 @@ export interface CouponItem {
   startDate?: string;
   validUntil: string;
   isActive: boolean;
+  fundingType?: 'NAVYA' | 'SELLER';
+  shopId?: string | null;
   createdAt: string;
 }
 
@@ -45,6 +47,9 @@ export default function AdminCouponsPage() {
     maxDiscount: '',
     usageLimit: '',
     usagePerUser: 1,
+    fundingType: 'NAVYA' as 'NAVYA' | 'SELLER',
+    shopId: '',
+    startDate: new Date().toISOString().split('T')[0],
     validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     isActive: true,
   });
@@ -83,6 +88,9 @@ export default function AdminCouponsPage() {
       maxDiscount: '',
       usageLimit: '',
       usagePerUser: 1,
+      fundingType: 'NAVYA',
+      shopId: '',
+      startDate: new Date().toISOString().split('T')[0],
       validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       isActive: true,
     });
@@ -101,6 +109,11 @@ export default function AdminCouponsPage() {
       maxDiscount: coupon.maxDiscount ? String(coupon.maxDiscount) : '',
       usageLimit: coupon.usageLimit ? String(coupon.usageLimit) : '',
       usagePerUser: coupon.usagePerUser || 1,
+      fundingType: coupon.fundingType || 'NAVYA',
+      shopId: coupon.shopId || '',
+      startDate: coupon.startDate
+        ? new Date(coupon.startDate).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
       validUntil: new Date(coupon.validUntil).toISOString().split('T')[0],
       isActive: coupon.isActive,
     });
@@ -122,6 +135,9 @@ export default function AdminCouponsPage() {
       maxDiscount: form.maxDiscount ? Number(form.maxDiscount) : undefined,
       usageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
       usagePerUser: Number(form.usagePerUser || 1),
+      fundingType: form.fundingType,
+      shopId: form.fundingType === 'SELLER' ? form.shopId.trim() || undefined : undefined,
+      startDate: form.startDate ? new Date(form.startDate).toISOString() : undefined,
       validUntil: new Date(form.validUntil).toISOString(),
       isActive: form.isActive,
     };
@@ -270,6 +286,7 @@ export default function AdminCouponsPage() {
               <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-border">
                 <tr>
                   <th className="py-3.5 px-4">Coupon Code</th>
+                  <th className="py-3.5 px-4">Funding</th>
                   <th className="py-3.5 px-4">Discount</th>
                   <th className="py-3.5 px-4">Min Order</th>
                   <th className="py-3.5 px-4">Max Cap</th>
@@ -292,6 +309,23 @@ export default function AdminCouponsPage() {
                       {c.title && (
                         <p className="text-xs font-normal text-slate-500 mt-0.5">{c.title}</p>
                       )}
+                      {c.shopId && (
+                        <p className="text-[10px] font-mono text-amber-600 dark:text-amber-400">
+                          Shop: {c.shopId}
+                        </p>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      {c.fundingType === 'SELLER' ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                          SELLER-FUNDED
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 border border-indigo-500/20">
+                          NAVYA-FUNDED
+                        </span>
+                      )}
                     </td>
 
                     <td className="py-3.5 px-4 font-semibold text-emerald-600 dark:text-emerald-400">
@@ -310,7 +344,12 @@ export default function AdminCouponsPage() {
                     </td>
 
                     <td className="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-300">
-                      {c.usedCount} {c.usageLimit ? `/ ${c.usageLimit}` : ''}
+                      <div>
+                        {c.usedCount} {c.usageLimit ? `/ ${c.usageLimit}` : ''}
+                      </div>
+                      <span className="text-[10px] text-slate-400">
+                        Max {c.usagePerUser || 1}/user
+                      </span>
                     </td>
 
                     <td className="py-3.5 px-4 text-xs text-slate-500">
@@ -383,6 +422,74 @@ export default function AdminCouponsPage() {
                 />
               </div>
 
+              {/* Funding Responsibility (BM-10) */}
+              <div className="rounded-xl border border-border p-3.5 bg-slate-50/50 dark:bg-slate-800/40 space-y-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                  Funding Responsibility *
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label
+                    className={`flex items-start gap-2.5 p-2.5 rounded-lg border cursor-pointer transition ${
+                      form.fundingType === 'NAVYA'
+                        ? 'border-indigo-500 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                        : 'border-border bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="fundingType"
+                      value="NAVYA"
+                      checked={form.fundingType === 'NAVYA'}
+                      onChange={() => setForm({ ...form, fundingType: 'NAVYA' })}
+                      className="mt-0.5 accent-indigo-600"
+                    />
+                    <div>
+                      <span className="text-xs font-bold block">Navya-Funded</span>
+                      <span className="text-[10px] text-slate-500 block leading-tight">
+                        Platform absorbs promo; seller payout unaffected.
+                      </span>
+                    </div>
+                  </label>
+
+                  <label
+                    className={`flex items-start gap-2.5 p-2.5 rounded-lg border cursor-pointer transition ${
+                      form.fundingType === 'SELLER'
+                        ? 'border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                        : 'border-border bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="fundingType"
+                      value="SELLER"
+                      checked={form.fundingType === 'SELLER'}
+                      onChange={() => setForm({ ...form, fundingType: 'SELLER' })}
+                      className="mt-0.5 accent-amber-600"
+                    />
+                    <div>
+                      <span className="text-xs font-bold block">Seller-Funded</span>
+                      <span className="text-[10px] text-slate-500 block leading-tight">
+                        Seller absorbs discount; deducted from payout.
+                      </span>
+                    </div>
+                  </label>
+                </div>
+
+                {form.fundingType === 'SELLER' && (
+                  <div className="pt-2">
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      Applicable Seller / Shop ID *
+                    </label>
+                    <Input
+                      placeholder="e.g. shop_cm123456"
+                      value={form.shopId}
+                      onChange={(e) => setForm({ ...form, shopId: e.target.value })}
+                      required={form.fundingType === 'SELLER'}
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
@@ -437,11 +544,11 @@ export default function AdminCouponsPage() {
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
-                    Total Usage Limit
+                    Total Usage Limit (Global)
                   </label>
                   <Input
                     type="number"
-                    placeholder="Optional total limit"
+                    placeholder="Optional (e.g. 100)"
                     value={form.usageLimit}
                     onChange={(e) => setForm({ ...form, usageLimit: e.target.value })}
                   />
@@ -449,7 +556,32 @@ export default function AdminCouponsPage() {
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
-                    Valid Until *
+                    Usage Limit Per User *
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="e.g. 1"
+                    value={form.usagePerUser}
+                    onChange={(e) => setForm({ ...form, usagePerUser: Number(e.target.value) })}
+                    min={1}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
+                    Start Date
+                  </label>
+                  <Input
+                    type="date"
+                    value={form.startDate}
+                    onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1">
+                    Valid Until (Expiry) *
                   </label>
                   <Input
                     type="date"

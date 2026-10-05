@@ -1,79 +1,62 @@
 import { NextResponse } from 'next/server';
 
 import { PaymentService } from '@/features/payments/services/payment.service';
-import { ensureUserExists } from '@/lib/ensure-user';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/session';
-import { ShipmentService } from '@/services/shipping/shipment.service';
 
 /**
  * POST /api/v1/payments/create-cod-order
  *
- * Places a Cash on Delivery (COD) order atomically.
- * Auth protected: verifies user session.
+ * Places an authoritative Cash on Delivery (COD) order.
+ * - Strictly authenticated: requires valid customer session.
+ * - Validates customer ownership of the selected delivery address.
+ * - Enforces ₹5,000 product selling price subtotal limit.
+ * - Records non-refundable 1.5% COD fee and dynamic tax snapshot.
+ * - Enforces atomic inventory decrement.
+ * - Initiates Shiprocket COD verification (shipment dispatch blocked until VERIFIED).
  */
 export async function POST(request: Request) {
   try {
     const user = await getCurrentUser();
-    let userId = user?.id || '';
-
-    if (!userId) {
-      userId = await ensureUserExists('guest_checkout_user');
-    } else {
-      userId = await ensureUserExists(userId);
+    if (!user || !user.id) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required to place a Cash on Delivery order.' },
+        { status: 401 },
+      );
     }
+    const userId = user.id;
 
     const body = await request.json().catch(() => ({}));
     const { addressId, couponCode, items, shippingMethodCode } = body;
 
-    let validAddressId = addressId;
-    if (!validAddressId) {
-      const existingAddress = await prisma.address.findFirst({
-        where: { userId },
-        select: { id: true },
-      });
+    if (!addressId) {
+      return NextResponse.json(
+        { success: false, message: 'Delivery address is required to place a COD order.' },
+        { status: 400 },
+      );
+    }
 
-      if (existingAddress) {
-        validAddressId = existingAddress.id;
-      } else {
-        const anyAddress = await prisma.address.findFirst({
-          select: { id: true },
-        });
+    // Verify address belongs to the authenticated customer
+    const address = await prisma.address.findFirst({
+      where: { id: addressId, userId },
+    });
 
-        if (anyAddress) {
-          validAddressId = anyAddress.id;
-        } else {
-          const newAddress = await prisma.address.create({
-            data: {
-              userId,
-              fullName: 'Gurvinder Singh',
-              mobile: '9053883125',
-              pincode: '125050',
-              addressLine1: '240 haripura Hajrawan Khurd',
-              city: 'Fatehabad',
-              state: 'Haryana',
-              type: 'HOME',
-            },
-            select: { id: true },
-          });
-          validAddressId = newAddress.id;
-        }
-      }
+    if (!address) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Invalid delivery address. Address must belong to your account.',
+        },
+        { status: 400 },
+      );
     }
 
     const result = await PaymentService.createCodOrder(userId, {
-      addressId: validAddressId,
+      addressId,
       couponCode,
       shippingMethodCode,
       items,
     });
-
-    if (result.success && result.data?.id) {
-      // Trigger Shiprocket shipment creation asynchronously (non-blocking)
-      ShipmentService.createShipmentForOrder(result.data.id).catch((shipErr) => {
-        console.error('[COD_SHIPMENT_TRIGGER_ERROR]', shipErr);
-      });
-    }
 
     return NextResponse.json(result, { status: result.statusCode });
   } catch (error: any) {

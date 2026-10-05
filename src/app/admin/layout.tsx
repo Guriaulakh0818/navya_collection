@@ -17,6 +17,7 @@ const navigation = [
   { name: 'Product Approvals', href: '/admin/products/approvals', icon: 'products' },
   { name: 'Products Catalog', href: '/admin/products', icon: 'products' },
   { name: 'Orders', href: '/admin/orders', icon: 'orders' },
+  { name: 'Returns & Replacements', href: '/admin/returns', icon: 'returns' },
   { name: 'Shipping & Logistics', href: '/admin/shipping', icon: 'shipping' },
   { name: 'Offers & Promotions', href: '/admin/offers', icon: 'offers' },
   { name: 'Commission Revenue', href: '/admin/finance/commission', icon: 'dashboard' },
@@ -125,6 +126,18 @@ function NavIcon({ type }: { type: string }) {
           strokeLinejoin="round"
           strokeWidth={2}
           d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+        />
+      </svg>
+    );
+  }
+  if (type === 'returns') {
+    return (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
         />
       </svg>
     );

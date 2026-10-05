@@ -2,6 +2,7 @@
 
 import {
   Building2,
+  Camera,
   CheckCircle2,
   Clock,
   Eye,
@@ -9,13 +10,30 @@ import {
   Filter,
   Package,
   Printer,
+  RefreshCw,
   Search,
+  ShieldAlert,
   Tag,
   Truck,
+  UploadCloud,
+  Video,
   X,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
+
+import { Button } from '@/components/ui/button';
+import { formatPrice } from '@/utils/format-price';
+
+interface PackingProof {
+  id: string;
+  orderId: string;
+  proofType: 'PRODUCT_CONDITION' | 'PACKED_PARCEL';
+  mediaUrl: string;
+  mediaType: 'IMAGE' | 'VIDEO';
+  createdAt: string;
+}
 
 export default function SellerOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -24,6 +42,16 @@ export default function SellerOrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [trackingOrder, setTrackingOrder] = useState<any | null>(null);
+
+  // Packing Proof Modal State (Section 9, 16)
+  const [proofOrder, setProofOrder] = useState<any | null>(null);
+  const [proofsList, setProofsList] = useState<PackingProof[]>([]);
+  const [isLoadingProofs, setIsLoadingProofs] = useState(false);
+  const [selectedProofType, setSelectedProofType] = useState<'PRODUCT_CONDITION' | 'PACKED_PARCEL'>(
+    'PRODUCT_CONDITION',
+  );
+  const [isUploadingProof, setIsUploadingProof] = useState(false);
+  const [proofNotes, setProofNotes] = useState('');
 
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
@@ -55,7 +83,6 @@ export default function SellerOrdersPage() {
 
   const handleUpdateStatus = async (vendorOrderId: string, newStatus: string) => {
     setUpdatingOrderId(vendorOrderId);
-    // Optimistic UI update
     setOrders((prev) =>
       prev.map((o) => (o.id === vendorOrderId ? { ...o, status: newStatus } : o)),
     );
@@ -82,6 +109,78 @@ export default function SellerOrdersPage() {
     }
   };
 
+  const openPackingProofModal = async (order: any) => {
+    setProofOrder(order);
+    setIsLoadingProofs(true);
+    setProofNotes('');
+    try {
+      const res = await fetch(`/api/v1/seller/orders/${order.id}/packing-proof`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setProofsList(json.data);
+      } else {
+        setProofsList([]);
+      }
+    } catch (err) {
+      console.error('Failed to load packing proofs', err);
+      setProofsList([]);
+    } finally {
+      setIsLoadingProofs(false);
+    }
+  };
+
+  const handleUploadProofFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !proofOrder) return;
+
+    setIsUploadingProof(true);
+    try {
+      // 1. Upload to Cloudinary via /api/v1/upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'packing_proofs');
+
+      const uploadRes = await fetch('/api/v1/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const uploadJson = await uploadRes.json();
+
+      if (!uploadJson.success || !uploadJson.data?.url) {
+        throw new Error(uploadJson.message || 'Upload to storage failed.');
+      }
+
+      const mediaUrl = uploadJson.data.url;
+      const mediaType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE';
+
+      // 2. Persist in SellerPackingProof DB
+      const saveRes = await fetch(`/api/v1/seller/orders/${proofOrder.id}/packing-proof`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          proofType: selectedProofType,
+          mediaUrl,
+          mediaType,
+          notes: proofNotes || undefined,
+        }),
+      });
+
+      const saveJson = await saveRes.json();
+      if (!saveJson.success) {
+        throw new Error(saveJson.message || 'Failed to record packing proof in database.');
+      }
+
+      // Add to current proofs list
+      setProofsList((prev) => [saveJson.data, ...prev]);
+      alert('Packing proof recorded successfully!');
+    } catch (err: any) {
+      console.error('Packing proof upload error', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setIsUploadingProof(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -92,50 +191,42 @@ export default function SellerOrdersPage() {
             Vendor Orders & Dispatch Center
           </h1>
           <p className="text-xs text-slate-500 mt-1 font-medium">
-            Fulfill incoming customer orders, generate shipping labels, print GST tax invoices, and
-            track pickups.
+            Fulfill orders, record required packing proofs (photos/videos) before dispatch, track
+            7-day settlement eligibility, and monitor shipping deductions.
           </p>
         </div>
 
         {/* Search Input */}
-        <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:w-auto">
-          <div className="relative flex-1 md:w-64">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-            <input
-              type="text"
-              placeholder="Search by order # or item..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-amber-500 focus:outline-none shadow-xs"
-            />
-          </div>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
-          >
-            Search
-          </button>
+        <form onSubmit={handleSearchSubmit} className="relative w-full md:w-80">
+          <input
+            type="text"
+            placeholder="Search Order # or Buyer..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs text-navy focus:bg-white focus:border-amber-500 focus:outline-none transition-all"
+          />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </form>
       </div>
 
-      {/* Status Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto max-w-full scrollbar-none pb-2 text-xs font-bold border-b border-slate-200">
+      {/* Status Filter Tabs */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
         {[
-          { key: 'ALL', label: 'All Orders' },
-          { key: 'PENDING', label: 'Pending' },
-          { key: 'CONFIRMED', label: 'Confirmed' },
-          { key: 'PROCESSING', label: 'Processing' },
-          { key: 'SHIPPED', label: 'Shipped' },
-          { key: 'DELIVERED', label: 'Delivered' },
-          { key: 'CANCELLED', label: 'Cancelled' },
+          { label: 'All Orders', value: 'ALL' },
+          { label: 'Pending', value: 'PENDING' },
+          { label: 'Confirmed', value: 'CONFIRMED' },
+          { label: 'Processing', value: 'PROCESSING' },
+          { label: 'Shipped', value: 'SHIPPED' },
+          { label: 'Delivered', value: 'DELIVERED' },
+          { label: 'Cancelled', value: 'CANCELLED' },
         ].map((tab) => (
           <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap shrink-0 border cursor-pointer ${
-              activeTab === tab.key
-                ? 'bg-amber-50 text-amber-800 border-amber-400 font-extrabold shadow-xs'
-                : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+            key={tab.value}
+            onClick={() => setActiveTab(tab.value)}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === tab.value
+                ? 'bg-navy text-white shadow-xs'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
             }`}
           >
             {tab.label}
@@ -143,92 +234,146 @@ export default function SellerOrdersPage() {
         ))}
       </div>
 
-      {/* Orders Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      {/* Orders Table Container */}
+      <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-600 flex items-center justify-center gap-2">
-            <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
-            <span className="font-semibold text-xs">Loading vendor orders...</span>
+          <div className="py-20 text-center">
+            <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-xs font-semibold text-slate-500">Loading orders & settlements...</p>
           </div>
         ) : orders.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 space-y-2">
-            <Package className="w-10 h-10 text-slate-400 mx-auto" />
-            <p className="font-semibold text-sm">
-              No vendor orders found matching &quot;{activeTab}&quot; status.
-            </p>
+          <div className="py-20 text-center">
+            <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+            <p className="text-base font-extrabold text-navy">No Orders Found</p>
+            <p className="text-xs text-slate-400 mt-1">There are no orders matching this filter.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-slate-200">
-            <table className="w-full text-xs text-left text-slate-700 border-collapse">
-              <thead className="bg-slate-100/90 text-navy font-extrabold uppercase border-b-2 border-slate-200 tracking-wider">
-                <tr>
-                  <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap">
-                    Vendor Order #
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                  <th className="px-4 py-3.5 border-r border-slate-200">Order #</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200">Date</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200">Customer</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200">Items & Policy</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200">Commercial & 10% Comm.</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200">
+                    Settlement (Delivery+7d)
                   </th>
-                  <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap">Date</th>
-                  <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap">
-                    Customer
-                  </th>
-                  <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap">Items</th>
-                  <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap text-right">
-                    Subtotal
-                  </th>
-                  <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap text-right">
-                    Net Payout
-                  </th>
-                  <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap text-center">
-                    Status
-                  </th>
-                  <th className="px-4 py-3.5 whitespace-nowrap text-right">Actions</th>
+                  <th className="px-4 py-3.5 border-r border-slate-200 text-center">Status</th>
+                  <th className="px-4 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 bg-white">
+              <tbody className="divide-y divide-slate-200">
                 {orders.map((order) => {
                   const masterOrder = order.masterOrder || {};
                   const user = masterOrder.user || {};
                   const items = order.items || [];
+                  const settlement = order.settlement;
 
                   return (
-                    <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-4 py-4 border-r border-slate-200 whitespace-nowrap font-mono font-bold text-amber-700">
-                        {order.vendorOrderNumber}
-                        <span className="block text-[10px] text-slate-500 font-sans font-medium">
-                          Master: {masterOrder.orderNumber}
+                    <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
+                      {/* Order Number */}
+                      <td className="px-4 py-4 border-r border-slate-200 whitespace-nowrap">
+                        <span className="font-extrabold text-navy block">
+                          {order.vendorOrderNumber || order.id.slice(0, 8)}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          Master: #{masterOrder.orderNumber}
                         </span>
                       </td>
 
+                      {/* Date */}
                       <td className="px-4 py-4 border-r border-slate-200 text-slate-600 whitespace-nowrap font-medium">
                         {new Date(order.createdAt).toLocaleDateString('en-IN')}
                       </td>
 
+                      {/* Customer */}
                       <td className="px-4 py-4 border-r border-slate-200 whitespace-nowrap font-bold text-navy">
-                        {user.name || 'Boutique Buyer'}
+                        {user.name || 'Buyer'}
                         <span className="block text-[10px] text-slate-500 font-mono font-normal">
-                          📱 {user.mobile || masterOrder.address?.phone}
+                          {user.mobile || masterOrder.address?.phone || ''}
                         </span>
                       </td>
 
+                      {/* Items & Policy */}
                       <td className="px-4 py-4 border-r border-slate-200">
                         <div className="space-y-1 max-w-xs">
                           {items.map((it: any) => (
-                            <span key={it.id} className="block text-slate-800 font-medium truncate">
-                              • {it.name} (x{it.quantity})
-                            </span>
+                            <div key={it.id} className="text-slate-800 font-medium">
+                              <span className="truncate block font-semibold">
+                                • {it.name} (x{it.quantity})
+                              </span>
+                              <span className="inline-block rounded bg-slate-100 px-1.5 py-0.2 text-[9px] text-slate-600">
+                                Policy: {it.product?.returnPolicyType || 'STANDARD'}
+                              </span>
+                            </div>
                           ))}
                         </div>
                       </td>
 
-                      <td className="px-4 py-4 border-r border-slate-200 text-right font-extrabold text-slate-900 font-mono text-sm">
-                        ₹{Number(order.totalAmount || 0).toLocaleString('en-IN')}
+                      {/* Commercial & 10% Commission (Section 1) */}
+                      <td className="px-4 py-4 border-r border-slate-200 font-mono text-xs">
+                        <div className="text-slate-900 font-bold">
+                          Gross:{' '}
+                          {formatPrice(settlement?.grossProductValue || order.totalAmount || 0)}
+                        </div>
+                        <div className="text-amber-800 text-[11px]">
+                          Commission (10% MRP): -
+                          {formatPrice(
+                            settlement?.commissionAmount ??
+                              order.commissionAmount ??
+                              (order.totalMrp || order.totalAmount || 0) * 0.1,
+                          )}
+                        </div>
+                        {settlement && settlement.returnShippingDeduction > 0 && (
+                          <div className="text-rose-700 text-[10px] font-bold">
+                            Return Deduct: -{formatPrice(settlement.returnShippingDeduction)}
+                          </div>
+                        )}
                       </td>
 
-                      <td className="px-4 py-4 border-r border-slate-200 text-right font-extrabold text-emerald-700 font-mono text-sm">
-                        ₹{Number(order.vendorPayoutAmount || 0).toLocaleString('en-IN')}
+                      {/* Settlement & Delivery + 7d (Section 2, 16) */}
+                      <td className="px-4 py-4 border-r border-slate-200 text-xs">
+                        <div className="font-black text-emerald-800 font-mono">
+                          Net:{' '}
+                          {formatPrice(
+                            settlement?.netSettlementAmount ??
+                              order.vendorPayoutAmount ??
+                              Math.max(0, (order.totalAmount || 0) - (order.commissionAmount || 0)),
+                          )}
+                        </div>
+                        <div className="text-[10px] text-slate-500 mt-0.5">
+                          Status:{' '}
+                          <span
+                            className={`font-bold ${
+                              settlement?.status === 'ELIGIBLE_FOR_SETTLEMENT'
+                                ? 'text-emerald-700'
+                                : settlement?.status === 'ON_HOLD'
+                                  ? 'text-rose-700'
+                                  : 'text-amber-700'
+                            }`}
+                          >
+                            {settlement?.status || 'PENDING'}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          Eligible:{' '}
+                          {settlement?.settlementEligibilityDate
+                            ? new Date(settlement.settlementEligibilityDate).toLocaleDateString()
+                            : 'Delivery + 7d'}
+                        </div>
+                        {settlement?.holdReason && (
+                          <div className="text-[9px] text-rose-600 italic max-w-[150px]">
+                            {settlement.holdReason}
+                          </div>
+                        )}
                       </td>
 
+                      {/* Status */}
                       <td className="px-4 py-4 border-r border-slate-200 text-center whitespace-nowrap">
                         <span
-                          className={`px-3 py-1 rounded-full text-[11px] font-extrabold border ${
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold border ${
                             order.status === 'DELIVERED'
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                               : order.status === 'SHIPPED'
@@ -246,15 +391,26 @@ export default function SellerOrdersPage() {
                         </span>
                       </td>
 
+                      {/* Actions */}
                       <td className="px-4 py-4 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center justify-end gap-2">
+                        <div className="inline-flex items-center justify-end gap-1.5">
+                          {/* Packing Proof Button (Section 9) */}
+                          <button
+                            onClick={() => openPackingProofModal(order)}
+                            className="p-1.5 inline-flex bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 border border-slate-200 rounded-xl transition-colors shadow-2xs"
+                            title="Upload/View Packing Proof (Photo/Video)"
+                          >
+                            <Camera className="w-4 h-4 text-amber-700" />
+                          </button>
+
                           {/* Status Transition Select Dropdown */}
                           <div className="relative inline-block">
                             <select
                               value={order.status || 'PENDING'}
                               disabled={updatingOrderId === order.id}
                               onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                              className="appearance-none bg-navy hover:bg-slate-800 disabled:opacity-60 border border-slate-700 hover:border-amber-500 rounded-xl pl-3 pr-7 py-1.5 text-[11px] font-bold text-amber-300 focus:border-amber-500 focus:outline-none shadow-xs transition-colors cursor-pointer"
+                              aria-label="Update vendor order status"
+                              className="appearance-none bg-navy hover:bg-slate-800 disabled:opacity-60 border border-slate-700 hover:border-amber-500 rounded-xl pl-2.5 pr-6 py-1.5 text-[11px] font-bold text-amber-300 focus:border-amber-500 focus:outline-none shadow-xs transition-colors cursor-pointer"
                             >
                               <option value="PENDING" className="bg-slate-900 text-white">
                                 Pending
@@ -275,23 +431,6 @@ export default function SellerOrdersPage() {
                                 Cancelled
                               </option>
                             </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-slate-400">
-                              {updatingOrderId === order.id ? (
-                                <div className="w-3 h-3 border border-amber-400 border-t-transparent rounded-full animate-spin" />
-                              ) : (
-                                <svg
-                                  className="w-3.5 h-3.5 text-amber-400"
-                                  viewBox="0 0 20 20"
-                                  fill="currentColor"
-                                >
-                                  <path
-                                    fillRule="evenodd"
-                                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                                    clipRule="evenodd"
-                                  />
-                                </svg>
-                              )}
-                            </div>
                           </div>
 
                           {/* Print Invoice Button */}
@@ -302,16 +441,6 @@ export default function SellerOrdersPage() {
                             title="Print Tax Invoice"
                           >
                             <FileText className="w-4 h-4 text-amber-600" />
-                          </Link>
-
-                          {/* Print Label Button */}
-                          <Link
-                            href={`/seller/orders/${order.id}/label`}
-                            target="_blank"
-                            className="p-1.5 inline-flex bg-slate-100 hover:bg-indigo-50 text-slate-700 hover:text-indigo-900 border border-slate-200 rounded-xl transition-colors shadow-2xs"
-                            title="Print 4x6 Shipping Label"
-                          >
-                            <Printer className="w-4 h-4 text-indigo-600" />
                           </Link>
 
                           {/* Track Button */}
@@ -333,9 +462,160 @@ export default function SellerOrdersPage() {
         )}
       </div>
 
+      {/* PACKING PROOF MODAL (Section 9, 16) */}
+      {proofOrder && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-xl w-full space-y-5 shadow-2xl relative">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <Camera className="w-5 h-5 text-amber-600" />
+                <h3 className="font-extrabold text-navy text-base">
+                  Packing Proof Evidence — Order #
+                  {proofOrder.vendorOrderNumber || proofOrder.id.slice(0, 8)}
+                </h3>
+              </div>
+              <button
+                onClick={() => setProofOrder(null)}
+                className="p-1 text-slate-400 hover:text-slate-700 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500">
+              Per Navya marketplace safety policy (Section 9), capture product condition and packed
+              parcel proof before dispatch. This protects you in customer return disputes.
+            </p>
+
+            {/* Proof Type Selector */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setSelectedProofType('PRODUCT_CONDITION')}
+                className={`p-3 rounded-2xl border font-bold text-center transition-colors ${
+                  selectedProofType === 'PRODUCT_CONDITION'
+                    ? 'border-amber-600 bg-amber-50 text-amber-950'
+                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                1. Product Condition Proof
+                <span className="block text-[10px] font-normal text-slate-500 mt-0.5">
+                  Item state before packaging
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedProofType('PACKED_PARCEL')}
+                className={`p-3 rounded-2xl border font-bold text-center transition-colors ${
+                  selectedProofType === 'PACKED_PARCEL'
+                    ? 'border-amber-600 bg-amber-50 text-amber-950'
+                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                2. Packed Parcel Proof
+                <span className="block text-[10px] font-normal text-slate-500 mt-0.5">
+                  Sealed box/bag with shipping label
+                </span>
+              </button>
+            </div>
+
+            {/* Upload Area */}
+            <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50/40 p-4 text-center space-y-2">
+              <div className="mx-auto w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700">
+                <UploadCloud className="w-5 h-5" />
+              </div>
+              <p className="text-xs font-bold text-navy">Upload Photo or Video (Up to 50MB)</p>
+              <p className="text-[10px] text-slate-500">
+                Supports JPG, PNG, WEBP, MP4, MOV, WEBM stored securely via Cloudinary
+              </p>
+
+              <div className="pt-2">
+                <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 text-xs shadow-xs transition-colors">
+                  {isUploadingProof ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Uploading & Storing...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4" />
+                      Select Photo / Video File
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    disabled={isUploadingProof}
+                    onChange={handleUploadProofFile}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* List of Existing Uploaded Proofs */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-navy flex items-center justify-between">
+                <span>Recorded Evidence ({proofsList.length})</span>
+                {isLoadingProofs && (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600" />
+                )}
+              </h4>
+
+              {proofsList.length === 0 ? (
+                <div className="text-center py-6 border rounded-2xl bg-slate-50 text-xs text-slate-400">
+                  No proofs recorded yet for this order.
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
+                  {proofsList.map((proof) => (
+                    <div
+                      key={proof.id}
+                      className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-black/5"
+                    >
+                      {proof.mediaType === 'VIDEO' ? (
+                        <video
+                          src={proof.mediaUrl}
+                          className="w-full h-full object-cover"
+                          controls
+                        />
+                      ) : (
+                        <a href={proof.mediaUrl} target="_blank" rel="noopener noreferrer">
+                          <Image
+                            src={proof.mediaUrl}
+                            alt={proof.proofType}
+                            fill
+                            sizes="(max-width: 768px) 33vw, 20vw"
+                            className="object-cover group-hover:scale-105 transition-transform"
+                          />
+                        </a>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 bg-black/75 px-1 py-0.5 text-[8px] text-white truncate">
+                        {proof.proofType === 'PRODUCT_CONDITION' ? 'Condition' : 'Packed Parcel'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setProofOrder(null)}
+                className="rounded-xl text-xs font-bold"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* TRACKING TIMELINE MODAL */}
       {trackingOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full space-y-6 shadow-2xl relative">
             <button
               onClick={() => setTrackingOrder(null)}
@@ -380,30 +660,33 @@ export default function SellerOrdersPage() {
               ].map((step, idx) => (
                 <div key={idx} className="flex items-start gap-3">
                   <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 ${
+                    className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 ${
                       step.done
-                        ? 'bg-emerald-500 text-slate-950 font-extrabold'
-                        : 'bg-slate-800 text-slate-500'
+                        ? 'bg-emerald-500 text-white shadow-xs shadow-emerald-500/50'
+                        : 'bg-slate-800 text-slate-500 border border-slate-700'
                     }`}
                   >
                     {step.done ? '✓' : idx + 1}
                   </div>
                   <div>
-                    <h4 className={`font-bold ${step.done ? 'text-white' : 'text-slate-500'}`}>
+                    <p className={`font-bold ${step.done ? 'text-white' : 'text-slate-400'}`}>
                       {step.title}
-                    </h4>
-                    <p className="text-[11px] text-slate-400">{step.desc}</p>
+                    </p>
+                    <p className="text-slate-500 text-[11px]">{step.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <button
-              onClick={() => setTrackingOrder(null)}
-              className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition-all"
-            >
-              Close Tracking Window
-            </button>
+            <div className="flex justify-end pt-2 border-t border-slate-800">
+              <Button
+                variant="outline"
+                onClick={() => setTrackingOrder(null)}
+                className="bg-slate-800 hover:bg-slate-700 text-white border-slate-700 text-xs rounded-xl"
+              >
+                Close
+              </Button>
+            </div>
           </div>
         </div>
       )}

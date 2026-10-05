@@ -101,7 +101,7 @@ export default async function OrderSuccessPage({ params }: { params: Promise<{ i
               </h3>
 
               <div className="space-y-2.5">
-                {order.items.map((item) => (
+                {order.items.map((item: any) => (
                   <div
                     key={item.id}
                     className="flex items-center justify-between rounded-2xl border border-slate-200 p-3.5 bg-white"

@@ -64,13 +64,19 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       paymentMethod:
         order.paymentMethod === 'COD' ? 'Cash on Delivery' : 'Online Payment (Razorpay)',
       paymentStatus: order.paymentStatus,
-      items: order.items.map((item) => ({
+      items: order.items.map((item: any) => ({
         id: item.id,
         productId: item.productId,
         name: item.name,
         price: Number(item.price),
         quantity: item.quantity,
         total: Number(item.total),
+        policyType: item.policyType || 'RETURN_AND_REPLACEMENT',
+        returnAllowed: item.returnAllowed ?? true,
+        returnWindowDays: item.returnWindowDays ?? 3,
+        replacementAllowed: item.replacementAllowed ?? true,
+        replacementWindowDays: item.replacementWindowDays ?? 7,
+        deliveredAt: item.deliveredAt?.toISOString() || null,
         image:
           item.product?.images?.[0]?.imageUrl ||
           'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800',

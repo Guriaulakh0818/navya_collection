@@ -16,31 +16,50 @@ export class StatusAggregatorService {
 
     const statuses = shipments.map((s) => (s.status || '').toUpperCase());
 
+    const isRto = (s: string) => s === 'RTO' || s.startsWith('RTO_');
+    const isCancelled = (s: string) => s === 'CANCELLED';
+    const isTerminated = (s: string) => isCancelled(s) || isRto(s);
+
     // 1. All Cancelled -> CANCELLED
-    if (statuses.every((s) => s === 'CANCELLED')) {
+    if (statuses.every(isCancelled)) {
       return OrderStatus.CANCELLED;
     }
 
-    // Filter out cancelled shipments to evaluate remaining active fulfillment
-    const activeStatuses = statuses.filter((s) => s !== 'CANCELLED');
+    // 2. All RTO (or combination of RTO and Cancelled)
+    if (statuses.every(isTerminated)) {
+      if (statuses.some(isRto)) {
+        return OrderStatus.RTO;
+      }
+      return OrderStatus.CANCELLED;
+    }
+
+    // Filter out cancelled and RTO shipments to evaluate remaining active fulfillment (BM-09 Multi-seller isolation)
+    const activeStatuses = statuses.filter((s) => !isTerminated(s));
     if (activeStatuses.length === 0) {
-      return OrderStatus.CANCELLED;
+      return statuses.some(isRto) ? OrderStatus.RTO : OrderStatus.CANCELLED;
     }
 
-    // 2. All active Delivered -> DELIVERED
+    // 3. All remaining active Delivered -> DELIVERED
     if (activeStatuses.every((s) => s === 'DELIVERED')) {
       return OrderStatus.DELIVERED;
     }
 
-    // 3. Any active in transit or out for delivery -> SHIPPED
+    // 4. Any active in transit or out for delivery -> SHIPPED
     const hasShippedOrInTransit = activeStatuses.some((s) =>
-      ['SHIPPED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'PICKED_UP', 'DISPATCHED'].includes(s),
+      [
+        'SHIPPED',
+        'IN_TRANSIT',
+        'OUT_FOR_DELIVERY',
+        'PICKED_UP',
+        'DISPATCHED',
+        'UNDELIVERED',
+      ].includes(s),
     );
     if (hasShippedOrInTransit) {
       return OrderStatus.SHIPPED;
     }
 
-    // 4. Any packed, processing, ready, or pickup scheduled -> PROCESSING
+    // 5. Any packed, processing, ready, or pickup scheduled -> PROCESSING
     const hasProcessing = activeStatuses.some((s) =>
       ['PACKED', 'PROCESSING', 'READY_TO_SHIP', 'READY', 'PICKUP_SCHEDULED'].includes(s),
     );
@@ -48,7 +67,7 @@ export class StatusAggregatorService {
       return OrderStatus.PROCESSING;
     }
 
-    // 5. Any confirmed or created -> CONFIRMED
+    // 6. Any confirmed or created -> CONFIRMED
     const hasConfirmed = activeStatuses.some((s) => ['CREATED', 'CONFIRMED'].includes(s));
     if (hasConfirmed) {
       return OrderStatus.CONFIRMED;

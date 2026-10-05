@@ -1,39 +1,77 @@
 'use client';
 
 import {
+  AlertCircle,
   Building2,
+  Calendar,
   CheckCircle2,
   Clock,
   CreditCard,
   Download,
   FileText,
+  Filter,
   IndianRupee,
   Landmark,
+  Package,
+  Play,
+  RefreshCw,
+  Search,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
   TrendingUp,
+  Truck,
   X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
+
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { formatPrice } from '@/utils/format-price';
+
+const SETTLEMENT_STATUS_STYLE: Record<string, { bg: string; text: string; border: string }> = {
+  PENDING_SETTLEMENT: { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-300' },
+  ELIGIBLE_FOR_SETTLEMENT: {
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-800',
+    border: 'border-emerald-300',
+  },
+  ON_HOLD: { bg: 'bg-rose-50', text: 'text-rose-800', border: 'border-rose-300' },
+  SETTLED: { bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-300' },
+  ADJUSTED: { bg: 'bg-purple-50', text: 'text-purple-800', border: 'border-purple-300' },
+  CANCELLED: { bg: 'bg-gray-100', text: 'text-gray-500', border: 'border-gray-200' },
+};
 
 export default function AdminManualSettlementsPage() {
   const [data, setData] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
+  const [activeTab, setActiveTab] = useState<'order-settlements' | 'pending' | 'history'>(
+    'order-settlements',
+  );
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedShopForPayout, setSelectedShopForPayout] = useState<any | null>(null);
+  const [settlementStatusFilter, setSettlementStatusFilter] = useState('ALL');
+  const [search, setSearch] = useState('');
+  const [cronRunning, setCronRunning] = useState(false);
+  const [cronResult, setCronResult] = useState<string | null>(null);
 
   // Payout Modal Form State
+  const [selectedShopForPayout, setSelectedShopForPayout] = useState<any | null>(null);
   const [payoutAmount, setPayoutAmount] = useState<string>('');
   const [referenceNumber, setReferenceNumber] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<string>('NEFT/RTGS Bank Transfer');
   const [notes, setNotes] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchSettlementsData = async () => {
+  const fetchSettlementsData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/v1/admin/finance/settlements');
+      const params = new URLSearchParams();
+      if (settlementStatusFilter !== 'ALL')
+        params.append('settlementStatus', settlementStatusFilter);
+      if (search) params.append('search', search);
+
+      const res = await fetch(`/api/v1/admin/finance/settlements?${params.toString()}`);
       const json = await res.json();
       if (json.success) {
         setData(json.data);
@@ -43,11 +81,35 @@ export default function AdminManualSettlementsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [settlementStatusFilter, search]);
 
   useEffect(() => {
-    fetchSettlementsData();
-  }, []);
+    const t = setTimeout(() => {
+      fetchSettlementsData();
+    }, 300);
+    return () => clearTimeout(t);
+  }, [fetchSettlementsData]);
+
+  const handleRunCron = async () => {
+    setCronRunning(true);
+    setCronResult(null);
+    try {
+      const res = await fetch('/api/v1/admin/finance/settlements/cron', {
+        method: 'POST',
+      });
+      const json = await res.json();
+      if (json.success) {
+        setCronResult(json.message);
+        await fetchSettlementsData();
+      } else {
+        setCronResult(`Error: ${json.message}`);
+      }
+    } catch (err: any) {
+      setCronResult(`Network error: ${err.message}`);
+    } finally {
+      setCronRunning(false);
+    }
+  };
 
   const openPayoutModal = (shopBalance: any) => {
     setSelectedShopForPayout(shopBalance);
@@ -79,374 +141,545 @@ export default function AdminManualSettlementsPage() {
 
       const json = await res.json();
       if (json.success) {
-        alert(json.message || 'Payout processed successfully!');
+        alert(json.message || 'Payout recorded successfully!');
         setSelectedShopForPayout(null);
-        fetchSettlementsData();
+        await fetchSettlementsData();
       } else {
-        alert(json.message || 'Failed to process payout.');
+        alert(json.message || 'Payout failed.');
       }
-    } catch (err) {
-      console.error('Error processing payout:', err);
+    } catch (err: any) {
+      alert(err.message || 'Network error processing payout.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const summary = data?.summary || {};
+  const sellerSettlements = data?.sellerSettlements || [];
   const pendingBalances = data?.pendingBalances || [];
   const payoutHistory = data?.payoutHistory || [];
 
   return (
-    <div className="space-y-8 p-6 bg-slate-50 text-slate-900 min-h-screen font-sans">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+    <div className="space-y-6 p-4 sm:p-6 md:p-8">
+      {/* Header */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-            <Landmark className="w-7 h-7 text-amber-600" />
-            Manual Merchant Settlement & Disbursal Hub
+          <h1 className="text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">
+            Seller Settlements & Commercial Operations
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Review pending merchant balances, disburse manual bank/UPI payouts with UTR reference
-            tracking, and maintain audit integrity.
+          <p className="text-sm text-gray-600">
+            Enforces 10% commission, delivery + 7 calendar days hold window, return shipping
+            deductions, and bank payouts.
           </p>
         </div>
-
-        <button
-          onClick={() => alert('Settlements CSV statement exported successfully.')}
-          className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-amber-700 font-bold text-xs rounded-xl flex items-center gap-2 transition-all shadow-xs"
-        >
-          <Download className="w-4 h-4" /> Export CSV Report
-        </button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={handleRunCron}
+            disabled={cronRunning}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm"
+          >
+            {cronRunning ? (
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Play className="h-3.5 w-3.5 fill-current" />
+            )}
+            Run 7-Day Eligibility Job
+          </Button>
+          <Button
+            onClick={fetchSettlementsData}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      {/* METRIC CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-amber-50 border border-amber-200 rounded-3xl p-6 space-y-2 shadow-sm">
-          <div className="flex items-center justify-between text-amber-700">
-            <span className="text-xs font-bold uppercase tracking-wider">Pending Disbursals</span>
-            <Clock className="w-5 h-5 text-amber-600" />
-          </div>
-          <p className="text-2xl font-extrabold text-amber-700 font-mono">
-            ₹{Number(summary.totalPendingDisbursals || 0).toLocaleString('en-IN')}
-          </p>
-          <span className="text-[10px] text-amber-700">
-            {summary.pendingShopsCount || 0} Merchant Shops Awaiting Payout
+      {cronResult && (
+        <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-medium flex items-center justify-between">
+          <span>{cronResult}</span>
+          <button
+            onClick={() => setCronResult(null)}
+            className="text-indigo-400 hover:text-indigo-700"
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <Card className="border border-emerald-200 bg-emerald-50/40 p-4 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+            Eligible for Settlement
           </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-2 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-bold uppercase tracking-wider">
-              Total Disbursed To Date
-            </span>
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-          </div>
-          <p className="text-2xl font-extrabold text-emerald-700 font-mono">
-            ₹{Number(summary.totalDisbursedToDate || 0).toLocaleString('en-IN')}
+          <p className="mt-1 text-2xl font-black text-emerald-950">
+            {formatPrice(summary.totalEligibleSettlement || 0)}
           </p>
-          <span className="text-[10px] text-slate-500">Total Settled Disbursals</span>
-        </div>
+          <p className="mt-1 text-[11px] text-emerald-700">7-day hold passed, no returns</p>
+        </Card>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-2 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Settlement Mode</span>
-            <CreditCard className="w-5 h-5 text-indigo-600" />
-          </div>
-          <p className="text-xl font-extrabold text-navy">Manual UTR / Bank / UPI</p>
-          <span className="text-[10px] text-slate-500">Razorpay Payouts / NEFT / IMPS / UPI</span>
-        </div>
+        <Card className="border border-amber-200 bg-amber-50/40 p-4 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800">
+            Pending 7-Day Hold
+          </span>
+          <p className="mt-1 text-2xl font-black text-amber-950">
+            {formatPrice(summary.totalPendingSettlement || 0)}
+          </p>
+          <p className="mt-1 text-[11px] text-amber-700">delivery + 7 days window</p>
+        </Card>
+
+        <Card className="border border-rose-200 bg-rose-50/40 p-4 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-rose-800">
+            On Hold (Safety)
+          </span>
+          <p className="mt-1 text-2xl font-black text-rose-950">
+            {formatPrice(summary.totalOnHoldSettlement || 0)}
+          </p>
+          <p className="mt-1 text-[11px] text-rose-700">Active Return / Dispute blocking</p>
+        </Card>
+
+        <Card className="border border-purple-200 bg-purple-50/40 p-4 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-purple-800">
+            Return Shipping Deductions
+          </span>
+          <p className="mt-1 text-2xl font-black text-purple-950">
+            {formatPrice(summary.totalReturnShippingDeductions || 0)}
+          </p>
+          <p className="mt-1 text-[11px] text-purple-700">Actual Forward + Reverse</p>
+        </Card>
+
+        <Card className="border border-blue-200 bg-blue-50/40 p-4 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
+            Total Settled
+          </span>
+          <p className="mt-1 text-2xl font-black text-blue-950">
+            {formatPrice(summary.totalSettled || 0)}
+          </p>
+          <p className="mt-1 text-[11px] text-blue-700">Historical payouts completed</p>
+        </Card>
       </div>
 
-      {/* TABS HEADER */}
-      <div className="flex border-b border-slate-200 gap-4 text-xs font-bold">
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200">
         <button
-          onClick={() => setActiveTab('pending')}
-          className={`pb-3 border-b-2 transition-all flex items-center gap-2 ${
-            activeTab === 'pending'
-              ? 'border-amber-600 text-amber-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+          onClick={() => setActiveTab('order-settlements')}
+          className={`px-5 py-3 text-xs font-bold border-b-2 transition-colors ${
+            activeTab === 'order-settlements'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <Clock className="w-4 h-4" /> Pending Disbursals (
-          {pendingBalances.filter((b: any) => b.pendingAmount > 0).length})
+          Order Settlements (10% & Delivery+7d) ({sellerSettlements.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('pending')}
+          className={`px-5 py-3 text-xs font-bold border-b-2 transition-colors ${
+            activeTab === 'pending'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Shop Bank Payout Balances ({pendingBalances.length})
         </button>
         <button
           onClick={() => setActiveTab('history')}
-          className={`pb-3 border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+          className={`px-5 py-3 text-xs font-bold border-b-2 transition-colors ${
             activeTab === 'history'
-              ? 'border-amber-600 text-amber-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-900'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
-          <CheckCircle2 className="w-4 h-4" /> Settlement History ({payoutHistory.length})
+          Payout Audit History ({payoutHistory.length})
         </button>
       </div>
 
-      {/* TAB CONTENT: PENDING DISBURSALS */}
-      {activeTab === 'pending' && (
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-extrabold text-navy tracking-tight flex items-center gap-2">
-            <Landmark className="w-5 h-5 text-amber-600" /> Merchant Shops Awaiting Settlement
-          </h2>
-
-          {isLoading ? (
-            <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2">
-              <div className="w-5 h-5 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
-              Calculating shop balances...
-            </div>
-          ) : pendingBalances.length === 0 ? (
-            <div className="p-8 text-center text-slate-500">
-              No merchant shops with pending balances.
-            </div>
-          ) : (
-            <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
-              <table className="w-full text-xs text-left text-slate-800 border-collapse">
-                <thead className="bg-slate-100/90 text-navy font-extrabold uppercase border-b-2 border-slate-200 tracking-wider">
-                  <tr>
-                    <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap">
-                      Merchant Store
-                    </th>
-                    <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap">
-                      Settlement Account / UPI
-                    </th>
-                    <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap text-right">
-                      Net Unsettled Balance
-                    </th>
-                    <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap text-right">
-                      Already Paid
-                    </th>
-                    <th className="px-4 py-3.5 whitespace-nowrap text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 bg-white">
-                  {pendingBalances.map((b: any) => {
-                    return (
-                      <tr key={b.shopId} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="px-4 py-4 border-r border-slate-200 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-amber-600 font-bold">
-                              {b.shopLogo ? (
-                                <Image
-                                  src={b.shopLogo}
-                                  alt={b.shopName}
-                                  width={40}
-                                  height={40}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <Building2 className="w-5 h-5" />
-                              )}
-                            </div>
-                            <div>
-                              <span className="font-extrabold text-navy text-sm block">
-                                {b.shopName}
-                              </span>
-                              <span className="text-[10px] text-amber-700 font-mono font-bold">
-                                /shop/{b.shopSlug}
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-
-                        <td className="px-4 py-4 border-r border-slate-200 whitespace-nowrap space-y-0.5">
-                          <div className="font-bold text-slate-900">
-                            {b.bankName || 'HDFC Bank'} •{' '}
-                            <span className="font-mono text-amber-800 font-extrabold">
-                              {b.bankAccountNumber
-                                ? `•••• ${b.bankAccountNumber.slice(-4)}`
-                                : '•••• 9876'}
-                            </span>
-                          </div>
-                          <div className="text-[10px] text-slate-500 font-mono font-medium">
-                            IFSC: {b.bankIfscCode || 'HDFC0001234'} | Holder:{' '}
-                            {b.bankAccountHolder || 'Boutique Merchant'}
-                          </div>
-                        </td>
-
-                        <td className="px-4 py-4 border-r border-slate-200 whitespace-nowrap text-right font-extrabold text-amber-700 font-mono text-sm">
-                          ₹{Number(b.pendingAmount || 0).toLocaleString('en-IN')}
-                        </td>
-
-                        <td className="px-4 py-4 border-r border-slate-200 whitespace-nowrap text-right font-bold text-slate-600 font-mono">
-                          ₹{Number(b.totalPaidAmount || 0).toLocaleString('en-IN')}
-                        </td>
-
-                        <td className="px-4 py-4 whitespace-nowrap text-right">
-                          <button
-                            onClick={() => openPayoutModal(b)}
-                            className={`px-4 py-2 text-xs font-extrabold rounded-xl shadow-sm transition-all cursor-pointer ${
-                              b.pendingAmount > 0
-                                ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                                : 'bg-amber-500 hover:bg-amber-600 text-slate-950'
-                            }`}
-                          >
-                            Mark Paid & Process Payout
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB CONTENT: SETTLEMENT HISTORY */}
-      {activeTab === 'history' && (
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-extrabold text-navy tracking-tight flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" /> Historical Payouts Ledger
-          </h2>
-
-          {payoutHistory.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 font-medium">
-              No historical payout records found.
-            </div>
-          ) : (
-            <div className="overflow-x-auto rounded-2xl border border-slate-200">
-              <table className="w-full text-xs text-left text-slate-800 border-collapse">
-                <thead className="bg-slate-100/90 text-navy font-extrabold uppercase border-b-2 border-slate-200 tracking-wider">
-                  <tr>
-                    <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap">
-                      Disbursal Date
-                    </th>
-                    <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap">
-                      Merchant Store
-                    </th>
-                    <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap">
-                      UTR / Reference #
-                    </th>
-                    <th className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap text-right">
-                      Amount Disbursed
-                    </th>
-                    <th className="px-4 py-3.5 whitespace-nowrap text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 bg-white">
-                  {payoutHistory.map((p: any) => (
-                    <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-4 py-4 border-r border-slate-200 text-slate-600 whitespace-nowrap font-medium">
-                        {new Date(p.paidAt || p.createdAt).toLocaleDateString('en-IN')}
-                      </td>
-                      <td className="px-4 py-4 border-r border-slate-200 whitespace-nowrap font-bold text-navy">
-                        {p.shop?.name || 'Boutique Merchant'}
-                      </td>
-                      <td className="px-4 py-4 border-r border-slate-200 whitespace-nowrap font-mono font-bold text-amber-800">
-                        {p.referenceNumber || 'N/A'}
-                      </td>
-                      <td className="px-4 py-4 border-r border-slate-200 whitespace-nowrap text-right font-extrabold text-emerald-700 font-mono text-sm">
-                        ₹{Number(p.amount || 0).toLocaleString('en-IN')}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-center">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-300">
-                          {p.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* MARK PAID MODAL DIALOG */}
-      {selectedShopForPayout && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 max-w-md w-full space-y-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
-            <button
-              onClick={() => setSelectedShopForPayout(null)}
-              className="absolute top-5 right-5 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-              <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 font-bold shrink-0">
-                <Landmark className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-navy text-lg">Disburse Seller Payout</h3>
-                <p className="text-xs text-amber-700 font-extrabold">
-                  Shop: {selectedShopForPayout.shopName}
-                </p>
-              </div>
-            </div>
-
-            <form onSubmit={handleProcessPayout} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-700 font-extrabold mb-1.5">
-                  Disbursal Payout Amount (₹)
-                </label>
-                <input
-                  type="number"
-                  value={payoutAmount}
-                  onChange={(e) => setPayoutAmount(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-mono font-bold text-sm focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none transition-all"
-                  required
+      {/* Tab 1: Order-by-Order Settlements */}
+      {activeTab === 'order-settlements' && (
+        <div className="space-y-4">
+          {/* Filters Bar */}
+          <Card className="border border-gray-200 bg-white p-3 shadow-sm">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search by Settlement #, Order #, Shop name, or Seller..."
+                  className="pl-9 text-xs"
                 />
               </div>
 
-              <div>
-                <label className="block text-slate-700 font-extrabold mb-1.5">
-                  Bank UTR / Reference ID
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. UTR1234567890"
-                  value={referenceNumber}
-                  onChange={(e) => setReferenceNumber(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-mono focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none transition-all font-semibold"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-extrabold mb-1.5">Payment Method</label>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-medium text-gray-500">Status:</span>
                 <select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none font-bold transition-all"
+                  value={settlementStatusFilter}
+                  onChange={(e) => setSettlementStatusFilter(e.target.value)}
+                  aria-label="Filter settlements by status"
+                  className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none"
                 >
-                  <option value="NEFT/RTGS Bank Transfer">NEFT / RTGS Bank Transfer</option>
-                  <option value="IMPS Instant Transfer">IMPS Instant Transfer</option>
-                  <option value="UPI Direct Payout">UPI Direct Payout</option>
-                  <option value="Razorpay Payouts API">Razorpay Payouts API</option>
+                  <option value="ALL">All Statuses</option>
+                  <option value="PENDING_SETTLEMENT">PENDING_SETTLEMENT (Within 7d)</option>
+                  <option value="ELIGIBLE_FOR_SETTLEMENT">ELIGIBLE_FOR_SETTLEMENT (Ready)</option>
+                  <option value="ON_HOLD">ON_HOLD (Return Dispute)</option>
+                  <option value="SETTLED">SETTLED (Paid)</option>
+                  <option value="ADJUSTED">ADJUSTED</option>
+                  <option value="CANCELLED">CANCELLED</option>
                 </select>
               </div>
+            </div>
+          </Card>
+
+          {/* Table */}
+          <Card className="overflow-hidden border border-gray-200 bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-left text-xs">
+                <thead className="bg-gray-50 font-semibold uppercase tracking-wider text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3">Settlement / Order</th>
+                    <th className="px-4 py-3">Seller / Shop</th>
+                    <th className="px-4 py-3">Delivery & Eligibility</th>
+                    <th className="px-4 py-3">Commercial Breakdown</th>
+                    <th className="px-4 py-3">Net Settlement</th>
+                    <th className="px-4 py-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-12 text-center text-sm text-gray-500">
+                        <RefreshCw className="mx-auto mb-2 h-6 w-6 animate-spin text-gray-400" />
+                        Loading settlement records...
+                      </td>
+                    </tr>
+                  ) : sellerSettlements.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-12 text-center text-sm text-gray-500">
+                        No settlement records found matching filters.
+                      </td>
+                    </tr>
+                  ) : (
+                    sellerSettlements.map((set: any) => {
+                      const badge = SETTLEMENT_STATUS_STYLE[set.status] || {
+                        bg: 'bg-gray-100',
+                        text: 'text-gray-700',
+                        border: 'border-gray-300',
+                      };
+
+                      return (
+                        <tr key={set.id} className="hover:bg-gray-50/80 transition-colors">
+                          {/* Settlement / Order */}
+                          <td className="px-4 py-3">
+                            <div className="font-bold text-gray-900">{set.settlementNumber}</div>
+                            <div className="text-gray-500">
+                              Order: {set.masterOrder?.orderNumber || set.vendorOrder?.orderNumber}
+                            </div>
+                            <div className="text-[10px] text-gray-400">
+                              Created: {new Date(set.createdAt).toLocaleDateString()}
+                            </div>
+                          </td>
+
+                          {/* Seller / Shop */}
+                          <td className="px-4 py-3">
+                            <div className="font-semibold text-gray-900">
+                              {set.shop?.shopName || 'Shop'}
+                            </div>
+                            <div className="text-gray-500">{set.seller?.name}</div>
+                            {set.shop?.bankAccountNumber && (
+                              <div className="text-[10px] text-gray-400">
+                                A/C: ••••{set.shop.bankAccountNumber.slice(-4)} (
+                                {set.shop.bankIfscCode})
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Delivery & Eligibility */}
+                          <td className="px-4 py-3">
+                            <div className="text-gray-700">
+                              <span className="font-semibold">Delivered:</span>{' '}
+                              {set.deliveryDate
+                                ? new Date(set.deliveryDate).toLocaleDateString()
+                                : 'Pending'}
+                            </div>
+                            <div className="text-indigo-900 font-semibold mt-0.5">
+                              <span>Eligible:</span>{' '}
+                              {set.settlementEligibilityDate
+                                ? new Date(set.settlementEligibilityDate).toLocaleDateString()
+                                : 'Pending Delivery'}
+                            </div>
+                            <div className="text-[10px] text-gray-400">
+                              Rule: delivery + 7 calendar days
+                            </div>
+                          </td>
+
+                          {/* Commercial Breakdown (Section 1, 2, 7, 11, 15) */}
+                          <td className="px-4 py-3">
+                            <div className="space-y-0.5">
+                              <div className="flex justify-between gap-4 text-gray-700">
+                                <span>Gross Product:</span>
+                                <span className="font-semibold">
+                                  {formatPrice(set.grossProductValue)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between gap-4 text-amber-700">
+                                <span>Navya Commission (10%):</span>
+                                <span>-{formatPrice(set.commissionAmount)}</span>
+                              </div>
+                              {Number(set.commissionReversal || 0) > 0 && (
+                                <div className="flex justify-between gap-4 text-emerald-700 font-bold">
+                                  <span>Commission Reversal:</span>
+                                  <span>+{formatPrice(set.commissionReversal)}</span>
+                                </div>
+                              )}
+                              {Number(set.refundedProductValue || 0) > 0 && (
+                                <div className="flex justify-between gap-4 text-rose-700">
+                                  <span>Refunded Product:</span>
+                                  <span>-{formatPrice(set.refundedProductValue)}</span>
+                                </div>
+                              )}
+                              {Number(set.forwardShippingActual || 0) > 0 && (
+                                <div className="flex justify-between gap-4 text-slate-500 text-[11px]">
+                                  <span>Forward Shipping:</span>
+                                  <span>-{formatPrice(set.forwardShippingActual)}</span>
+                                </div>
+                              )}
+                              {Number(set.reverseShippingActual || 0) > 0 && (
+                                <div className="flex justify-between gap-4 text-slate-500 text-[11px]">
+                                  <span>Reverse Shipping:</span>
+                                  <span>-{formatPrice(set.reverseShippingActual)}</span>
+                                </div>
+                              )}
+                              {Number(set.returnShippingDeduction || 0) > 0 && (
+                                <div className="flex justify-between gap-4 text-rose-700 font-bold border-t border-gray-100 pt-0.5">
+                                  <span>Return Shipping Liability:</span>
+                                  <span>-{formatPrice(set.returnShippingDeduction)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Net Settlement */}
+                          <td className="px-4 py-3">
+                            <div className="text-sm font-black text-gray-950">
+                              {formatPrice(set.netSettlementAmount)}
+                            </div>
+                            {set.adjustmentsList?.length > 0 && (
+                              <div className="text-[10px] text-purple-700 font-medium">
+                                {set.adjustmentsList.length} adjustment(s) (
+                                {formatPrice(
+                                  set.adjustmentsList.reduce(
+                                    (acc: number, a: any) =>
+                                      acc +
+                                      (a.type === 'DEBIT' ? -Number(a.amount) : Number(a.amount)),
+                                    0,
+                                  ),
+                                )}
+                                )
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Status */}
+                          <td className="px-4 py-3">
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${badge.bg} ${badge.text} ${badge.border}`}
+                            >
+                              {set.status}
+                            </span>
+                            {set.holdReason && (
+                              <div className="mt-1 max-w-[180px] text-[10px] text-rose-700 italic">
+                                {set.holdReason}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Tab 2: Pending Shop Balances (for batch bank disbursal) */}
+      {activeTab === 'pending' && (
+        <Card className="overflow-hidden border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 text-left text-xs">
+              <thead className="bg-gray-50 font-semibold uppercase tracking-wider text-gray-500">
+                <tr>
+                  <th className="px-4 py-3">Shop</th>
+                  <th className="px-4 py-3">Bank Details</th>
+                  <th className="px-4 py-3">Total Orders</th>
+                  <th className="px-4 py-3">Gross GMV</th>
+                  <th className="px-4 py-3">Commission (10%)</th>
+                  <th className="px-4 py-3">Total Disbursed</th>
+                  <th className="px-4 py-3">Pending Disbursal</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {pendingBalances.map((shop: any) => (
+                  <tr key={shop.shopId} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 font-bold text-gray-900">{shop.shopName}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {shop.bankAccountNumber ? (
+                        <div>
+                          <div>{shop.bankName}</div>
+                          <div className="text-[11px]">A/C: {shop.bankAccountNumber}</div>
+                          <div className="text-[10px] text-gray-400">IFSC: {shop.bankIfscCode}</div>
+                        </div>
+                      ) : (
+                        <span className="text-rose-500">Missing Bank Info</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">{shop.totalOrdersCount}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">
+                      {formatPrice(shop.totalGrossGMV)}
+                    </td>
+                    <td className="px-4 py-3 text-amber-700">
+                      -{formatPrice(shop.totalCommissionDeducted)}
+                    </td>
+                    <td className="px-4 py-3 text-blue-700">{formatPrice(shop.totalPaidAmount)}</td>
+                    <td className="px-4 py-3 text-sm font-black text-emerald-800">
+                      {formatPrice(shop.pendingAmount)}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button
+                        size="sm"
+                        disabled={shop.pendingAmount <= 0}
+                        onClick={() => openPayoutModal(shop)}
+                        className="bg-emerald-700 text-xs text-white hover:bg-emerald-800"
+                      >
+                        Process Payout
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Tab 3: Historical Payouts */}
+      {activeTab === 'history' && (
+        <Card className="overflow-hidden border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 text-left text-xs">
+              <thead className="bg-gray-50 font-semibold uppercase tracking-wider text-gray-500">
+                <tr>
+                  <th className="px-4 py-3">Shop</th>
+                  <th className="px-4 py-3">Amount</th>
+                  <th className="px-4 py-3">Reference / UTR</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Disbursed Date</th>
+                  <th className="px-4 py-3">Notes</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {payoutHistory.map((p: any) => (
+                  <tr key={p.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-bold text-gray-900">{p.shop?.name}</td>
+                    <td className="px-4 py-3 font-black text-emerald-800">
+                      {formatPrice(p.amount)}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-gray-700">{p.referenceNumber}</td>
+                    <td className="px-4 py-3">
+                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">
+                      {p.paidAt ? new Date(p.paidAt).toLocaleString() : 'N/A'}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500">{p.notes || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* Payout Modal */}
+      {selectedShopForPayout && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="font-bold text-gray-950">Record Seller Payout</h3>
+              <button
+                onClick={() => setSelectedShopForPayout(null)}
+                className="text-gray-400 hover:text-gray-700"
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handleProcessPayout} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">Shop Name</label>
+                <Input value={selectedShopForPayout.shopName} disabled className="bg-gray-50" />
+              </div>
 
               <div>
-                <label className="block text-slate-700 font-extrabold mb-1.5">
-                  Admin Payout Notes
-                </label>
-                <textarea
-                  placeholder="Optional admin settlement notes..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={2}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-medium focus:bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none transition-all"
+                <label className="block font-semibold text-gray-700 mb-1">Payout Amount (₹)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={payoutAmount}
+                  onChange={(e) => setPayoutAmount(e.target.value)}
+                  required
                 />
               </div>
 
-              <div className="pt-2 flex gap-3">
-                <button
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">
+                  Bank UTR / Reference #
+                </label>
+                <Input
+                  value={referenceNumber}
+                  onChange={(e) => setReferenceNumber(e.target.value)}
+                  placeholder="e.g. UTR-982341908"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">Payment Method</label>
+                <Input value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">Internal Notes</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Optional audit notes..."
+                  rows={2}
+                  className="w-full rounded-md border border-gray-300 p-2 text-xs"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t">
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setSelectedShopForPayout(null)}
-                  className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-xl transition-all cursor-pointer"
+                  disabled={isSubmitting}
                 >
                   Cancel
-                </button>
-
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold"
                 >
-                  {isSubmitting ? 'Processing...' : 'Confirm Disbursal ✓'}
-                </button>
+                  {isSubmitting ? 'Recording...' : 'Confirm & Disburse'}
+                </Button>
               </div>
             </form>
           </div>

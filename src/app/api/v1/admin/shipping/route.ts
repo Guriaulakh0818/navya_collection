@@ -348,6 +348,50 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(dispatchResult);
     }
 
+    if (action === 'INITIATE_RTO' && body.shipmentId) {
+      const { RtoService } = await import('@/backend/services/shipping/rto.service');
+      const initiated = await RtoService.registerRtoInitiated({
+        shipmentId: body.shipmentId,
+        reason: body.reason,
+        rtoShipmentId: body.rtoShipmentId,
+      });
+      return NextResponse.json({
+        success: true,
+        message: 'RTO initiated successfully.',
+        data: initiated,
+      });
+    }
+
+    if (action === 'PROCESS_RTO_DELIVERED' && body.shipmentId) {
+      const { RtoService } = await import('@/backend/services/shipping/rto.service');
+      const result = await RtoService.processRtoDelivered({
+        shipmentId: body.shipmentId,
+        rtoCost: body.actualRtoCost ?? body.rtoCost,
+        performedById: currentUser.id,
+        notes: body.notes,
+        rtoReason: body.reason,
+      });
+      return NextResponse.json({
+        success: true,
+        message: result.message,
+        data: result,
+      });
+    }
+
+    if (action === 'UPDATE_RTO_COST' && body.shipmentId && body.actualCost !== undefined) {
+      const { RtoService } = await import('@/backend/services/shipping/rto.service');
+      const result = await RtoService.updateConfirmedRtoCost({
+        shipmentId: body.shipmentId,
+        actualCost: body.actualCost,
+        performedById: currentUser.id,
+      });
+      return NextResponse.json({
+        success: true,
+        message: 'Confirmed RTO logistics cost updated and 50/50 liability allocated.',
+        data: result,
+      });
+    }
+
     return NextResponse.json(
       { success: false, message: 'Invalid action provided.' },
       { status: 400 },

@@ -16,20 +16,30 @@ export const MARKETPLACE_CONFIG = {
   // Order & Inventory Oversell Protection Rules
   SELLER_ORDER_CONFIRMATION_TIMEOUT_HOURS: 24,
 
-  // Cash on Delivery (COD) Rules (India Launch Checklist)
+  // Cash on Delivery (COD) Rules (BM-07 Final Architecture)
   COD: {
     ENABLED: true,
-    MAX_ORDER_VALUE: 3000, // Capped at ₹3,000 to mitigate courier RTO fraud/losses
-    MIN_ORDER_VALUE: 199,
-    REQUIRES_OTP_VERIFICATION: true,
+    MAX_SELLING_PRICE: 5000, // BM-07: Capped strictly at ₹5,000 product selling price subtotal
+    MAX_ORDER_VALUE: 5000, // Backwards compatible alias
+    MIN_SELLING_PRICE: 0, // BM-07: No minimum limit
+    MIN_ORDER_VALUE: 0,
+    FEE_PERCENTAGE: 0.015, // BM-07: 1.5% COD fee
+    REQUIRES_SHIPROCKET_VERIFICATION: true,
     RECONCILIATION_CYCLE_DAYS: 7, // Shiprocket COD remittance cycle
+  },
+
+  // Return & Replacement Policy Rules (BM-08 Authoritative Architecture)
+  RETURNS: {
+    RETURN_WINDOW_DAYS: 3, // Customer return window: 3 calendar days from delivery
+    REPLACEMENT_WINDOW_DAYS: 7, // Replacement window: 7 calendar days from delivery
   },
 
   // Shipping & Logistics Rules
   SHIPPING: {
     FREE_SHIPPING_THRESHOLD: 999, // Free shipping for orders >= ₹999
     STANDARD_SHIPPING_FEE: 99,
-    RETURN_WINDOW_DAYS: 7,
+    RETURN_WINDOW_DAYS: 3, // Synchronized with BM-08 return window
+    REPLACEMENT_WINDOW_DAYS: 7,
     COURIER_PARTNER: 'Shiprocket',
   },
 
@@ -52,6 +62,15 @@ export const MARKETPLACE_CONFIG = {
 
     // 4. Commission GST on Marketplace Services (Navya -> Seller Commission Invoice)
     COMMISSION_SERVICE_GST_RATE: 0.18, // 18% GST (Service Output Liability)
+    COD_FEE_GST_RATE: 0.18, // 18% GST on COD fees
+    PAYMENT_GATEWAY_GST_RATE: 0.18, // 18% GST on Gateway fees
+  },
+
+  // Payment Gateway Configuration Defaults (BM-11 Hardening)
+  GATEWAY: {
+    DEFAULT_PROVIDER: 'RAZORPAY',
+    ESTIMATED_MDR_RATE: 0.02, // 2% MDR baseline estimate
+    DEFAULT_TAX_RATE: 0.18, // 18% GST on MDR
   },
 
   // Seller Marketplace Commission Slabs

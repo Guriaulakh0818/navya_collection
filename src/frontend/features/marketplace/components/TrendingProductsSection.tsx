@@ -63,11 +63,11 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 text-[#F28C28]">
-            <Zap className="w-5 h-5 fill-[#F28C28]" />
+          <div className="p-2 rounded-xl bg-amber-50 text-orange">
+            <Zap className="w-5 h-5 fill-orange" />
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-[#0A2342] tracking-tight">
+            <h2 className="text-lg sm:text-xl font-black text-navy-900 tracking-tight">
               Trending Marketplace Items
             </h2>
             <p className="text-xs text-slate-500 font-medium">
@@ -79,7 +79,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
         <div className="flex items-center gap-3">
           <Link
             href="/shop?sort=trending"
-            className="text-xs sm:text-sm font-extrabold text-[#F28C28] hover:text-[#d97718] transition-colors flex items-center gap-1 shrink-0"
+            className="text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors flex items-center gap-1 shrink-0"
           >
             <span>Explore All</span>
             <span>→</span>
@@ -127,7 +127,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
             return (
               <div
                 key={p.id}
-                className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl overflow-hidden hover:border-[#F28C28]/60 hover:shadow-lg transition-all duration-300 shadow-xs flex flex-col justify-between w-[200px] xs:w-[220px] sm:w-[240px] shrink-0 snap-start group"
+                className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl overflow-hidden hover:border-orange/60 hover:shadow-lg transition-all duration-300 shadow-xs flex flex-col justify-between w-[200px] xs:w-[220px] sm:w-[240px] shrink-0 snap-start group"
               >
                 {/* Product Image Container with Badges */}
                 <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden select-none">
@@ -145,12 +145,12 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                   {/* Badges (Top Left) */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1 z-10 pointer-events-none">
                     {discountPercent && (
-                      <span className="px-2 py-0.5 rounded-md bg-[#FF4500] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
+                      <span className="px-2 py-0.5 rounded-md bg-orange-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
                         {discountPercent}% OFF
                       </span>
                     )}
                     {index === 0 && !discountPercent && (
-                      <span className="px-2 py-0.5 rounded-md bg-[#F28C28] text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
+                      <span className="px-2 py-0.5 rounded-md bg-orange text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs">
                         BESTSELLER
                       </span>
                     )}
@@ -174,7 +174,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                 <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2.5">
                   <div>
                     <Link href={`/product/${p.slug}`}>
-                      <h3 className="font-extrabold text-[#0A2342] text-xs sm:text-sm group-hover:text-[#F28C28] transition-colors line-clamp-1">
+                      <h3 className="font-extrabold text-navy-900 text-xs sm:text-sm group-hover:text-orange transition-colors line-clamp-1">
                         {p.name}
                       </h3>
                     </Link>
@@ -185,7 +185,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
 
                     {/* Price & Rating Row */}
                     <div className="flex items-baseline gap-2 mt-2">
-                      <span className="text-sm sm:text-base font-black text-[#0A2342] font-mono">
+                      <span className="text-sm sm:text-base font-black text-navy-900 font-mono">
                         ₹{priceNum.toLocaleString('en-IN')}
                       </span>
                       {comparePriceNum && comparePriceNum > priceNum && (
@@ -228,8 +228,8 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 
             <div className="relative z-10">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-[#0A2342] text-xs font-bold shadow-xs">
-                <Sparkles className="w-3.5 h-3.5 text-[#F28C28]" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 backdrop-blur-md text-navy-900 text-xs font-bold shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 text-orange" />
                 <span>Season 2026 Drop</span>
               </span>
             </div>
@@ -248,7 +248,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
 
               <Link
                 href="/shop?filter=new"
-                className="w-11 h-11 rounded-full bg-[#F28C28] hover:bg-[#e07d1e] text-white flex items-center justify-center shadow-lg transition-all active:scale-95 cursor-pointer"
+                className="w-11 h-11 rounded-full bg-orange hover:bg-orange-600 text-white flex items-center justify-center shadow-lg transition-all active:scale-95 cursor-pointer"
                 aria-label="Explore latest arrivals"
               >
                 <ArrowRight className="w-5 h-5" />

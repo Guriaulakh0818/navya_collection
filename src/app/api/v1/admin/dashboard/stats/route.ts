@@ -24,6 +24,7 @@ export async function GET() {
       recentOrdersList,
       recentShopsList,
       ordersAgg,
+      vendorOrdersAgg,
     ] = await Promise.all([
       prisma.order.count(),
       prisma.shop.count({ where: { status: 'APPROVED' } }),
@@ -84,12 +85,16 @@ export async function GET() {
       prisma.order.aggregate({
         _sum: { totalAmount: true },
       }),
+
+      // Vendor orders aggregate for authoritative commission and payout
+      prisma.vendorOrder.aggregate({
+        _sum: { commissionAmount: true, vendorPayoutAmount: true },
+      }),
     ]);
 
     const totalRevenue = Number(ordersAgg._sum.totalAmount || 0);
-    // Estimated 10% average commission earned
-    const adminCommissionEarned = Math.round(totalRevenue * 0.1);
-    const pendingPayoutsAmount = Math.round(totalRevenue * 0.9);
+    const adminCommissionEarned = Number(vendorOrdersAgg._sum.commissionAmount || 0);
+    const pendingPayoutsAmount = Number(vendorOrdersAgg._sum.vendorPayoutAmount || 0);
 
     const formattedPendingSellers = pendingSellersList.map((s) => ({
       id: s.id,

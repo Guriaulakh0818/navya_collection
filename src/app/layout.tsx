@@ -28,7 +28,7 @@ const dmSans = DM_Sans({
 export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
-    { media: '(prefers-color-scheme: dark)', color: '#0A2342' },
+    { media: '(prefers-color-scheme: dark)', color: '#09172E' },
   ],
   width: 'device-width',
   initialScale: 1,

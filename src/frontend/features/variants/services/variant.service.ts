@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 
+import { CommissionService } from '@/backend/services/commission.service';
 import { ProductRepository } from '@/features/products/repositories/product.repository';
 
 import { VariantRepository } from '../repositories/variant.repository';
@@ -44,6 +45,29 @@ export class VariantService {
           message: `Variant with SKU '${input.sku.toUpperCase()}' already exists.`,
           statusCode: 409,
         };
+      }
+
+      // Check Pricing Floors (70% Max Discount + ₹1 Psychological Allowance)
+      if (
+        input.compareAtPrice !== undefined &&
+        input.compareAtPrice !== null &&
+        input.compareAtPrice > 0
+      ) {
+        if (input.price > input.compareAtPrice) {
+          return {
+            success: false,
+            message: `Selling price (₹${input.price}) cannot exceed MRP (₹${input.compareAtPrice}).`,
+            statusCode: 400,
+          };
+        }
+        const floors = CommissionService.calculatePricingFloors(input.compareAtPrice);
+        if (CommissionService.roundMoney(input.price) < floors.psychologicalMinimumSellingPrice) {
+          return {
+            success: false,
+            message: `Selling price (₹${input.price}) exceeds maximum allowed discount (70% limit with ₹1 psychological floor is ₹${floors.psychologicalMinimumSellingPrice}).`,
+            statusCode: 400,
+          };
+        }
       }
 
       // 3. Check Duplicate Size + Color Combination for this Product
@@ -132,6 +156,25 @@ export class VariantService {
             message: `Variant with SKU '${formattedSku}' already exists in database.`,
             statusCode: 409,
           };
+        }
+
+        // Validate pricing floor per variant
+        if (v.compareAtPrice !== undefined && v.compareAtPrice !== null && v.compareAtPrice > 0) {
+          if (v.price > v.compareAtPrice) {
+            return {
+              success: false,
+              message: `Selling price (₹${v.price}) cannot exceed MRP (₹${v.compareAtPrice}) for variant '${v.name || formattedSku}'.`,
+              statusCode: 400,
+            };
+          }
+          const floors = CommissionService.calculatePricingFloors(v.compareAtPrice);
+          if (CommissionService.roundMoney(v.price) < floors.psychologicalMinimumSellingPrice) {
+            return {
+              success: false,
+              message: `Selling price (₹${v.price}) exceeds maximum allowed discount (70% limit with ₹1 psychological floor is ₹${floors.psychologicalMinimumSellingPrice}) for variant '${v.name || formattedSku}'.`,
+              statusCode: 400,
+            };
+          }
         }
       }
 
@@ -294,6 +337,36 @@ export class VariantService {
             success: false,
             message: `Variant with Size '${newSize || 'N/A'}' and Color '${newColor || 'N/A'}' already exists.`,
             statusCode: 409,
+          };
+        }
+      }
+
+      // Check Pricing Floors on Update
+      const effectivePrice =
+        input.price !== undefined ? input.price : Number(existingVariant.price);
+      const effectiveCompareAt =
+        input.compareAtPrice !== undefined
+          ? input.compareAtPrice
+          : existingVariant.compareAtPrice
+            ? Number(existingVariant.compareAtPrice)
+            : null;
+
+      if (effectiveCompareAt && effectiveCompareAt > 0) {
+        if (effectivePrice > effectiveCompareAt) {
+          return {
+            success: false,
+            message: `Selling price (₹${effectivePrice}) cannot exceed MRP (₹${effectiveCompareAt}).`,
+            statusCode: 400,
+          };
+        }
+        const floors = CommissionService.calculatePricingFloors(effectiveCompareAt);
+        if (
+          CommissionService.roundMoney(effectivePrice) < floors.psychologicalMinimumSellingPrice
+        ) {
+          return {
+            success: false,
+            message: `Selling price (₹${effectivePrice}) exceeds maximum allowed discount (70% limit with ₹1 psychological floor is ₹${floors.psychologicalMinimumSellingPrice}).`,
+            statusCode: 400,
           };
         }
       }

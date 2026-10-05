@@ -83,11 +83,11 @@ export function ShopByCategorySection() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 text-[#F28C28]">
+          <div className="p-2 rounded-xl bg-amber-50 text-orange">
             <ShoppingBag className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-[#0A2342] tracking-tight">
+            <h2 className="text-lg sm:text-xl font-black text-navy-900 tracking-tight">
               Shop by Category
             </h2>
             <p className="text-xs text-slate-500 font-medium">
@@ -98,7 +98,7 @@ export function ShopByCategorySection() {
 
         <Link
           href="/category"
-          className="text-xs sm:text-sm font-extrabold text-[#F28C28] hover:text-[#d97718] transition-colors flex items-center gap-1 shrink-0"
+          className="text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors flex items-center gap-1 shrink-0"
         >
           <span>View All Categories</span>
           <span>→</span>
@@ -118,7 +118,7 @@ export function ShopByCategorySection() {
               className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full p-1 border-2 transition-all duration-300 flex items-center justify-center ${
                 item.isSpecial
                   ? 'border-amber-400 bg-amber-50/50 shadow-xs'
-                  : 'border-slate-200/90 bg-white group-hover:border-[#F28C28] group-hover:shadow-md'
+                  : 'border-slate-200/90 bg-white group-hover:border-orange group-hover:shadow-md'
               }`}
             >
               <div className="w-full h-full rounded-full overflow-hidden relative bg-slate-100">
@@ -147,8 +147,8 @@ export function ShopByCategorySection() {
             <h3
               className={`mt-2 text-xs sm:text-sm font-extrabold transition-colors line-clamp-1 tracking-tight ${
                 item.isSpecial
-                  ? 'text-amber-900 group-hover:text-[#F28C28]'
-                  : 'text-[#0A2342] group-hover:text-[#F28C28]'
+                  ? 'text-amber-900 group-hover:text-orange'
+                  : 'text-navy-900 group-hover:text-orange'
               }`}
             >
               {item.name}

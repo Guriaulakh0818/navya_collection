@@ -156,13 +156,20 @@ export default function SellerAgreementPage() {
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
                 <Scale className="w-5 h-5 text-amber-600" />
-                4. Returns, Exchanges &amp; Reverse Shipping Costs
+                4. Customer Returns vs. RTO Logistics Policy (BM-01 &amp; BM-04)
               </h2>
               <p className="text-xs sm:text-sm">
-                If a customer initiates a return within the 7-day window due to size exchange,
-                defective stitching, or damaged fabric, reverse pickup will be routed back to the
-                seller&apos;s warehouse. In case of seller-fault returns (wrong item/damaged piece
-                dispatched), return courier freight is borne by the seller.
+                <strong>Approved Customer Returns (BM-01):</strong> If a customer initiates a return
+                within the approved return window, the item is routed back to the seller. Navya
+                reverses its 10% commission and customer refund is issued. Actual logistics freight
+                liability is handled according to the BM-01 return financial model.
+              </p>
+              <p className="text-xs sm:text-sm">
+                <strong>RTO (Return to Origin / Undelivered Consignments - BM-04):</strong> When a
+                shipment cannot be delivered to the customer and is returned to the seller as RTO,
+                the actual eligible logistics cost is shared equally:{' '}
+                <strong>50% borne by Navya Collection</strong> and{' '}
+                <strong>50% borne by the seller</strong> via an adjustment ledger entry.
               </p>
             </section>
           </div>

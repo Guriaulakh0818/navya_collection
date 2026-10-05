@@ -57,23 +57,23 @@ export function MarketplaceHero() {
     <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-amber-50/30 rounded-3xl border border-slate-200/90 shadow-sm p-5 sm:p-8 lg:p-10 my-4 sm:my-6">
       {/* Background Glows */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#0A2342]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-navy-900/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
         {/* Left Column (Editorial Headline, CTA, Trust Badges) */}
         <div className="lg:col-span-7 space-y-6">
           {/* Eyebrow Pill */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-[#F28C28] animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
             <span>Local Stores • Real Fashion • Nationwide</span>
           </div>
 
           {/* Headline */}
           <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-black tracking-tight text-[#0A2342] leading-[1.12] font-sans">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl xl:text-6xl font-black tracking-tight text-navy-900 leading-[1.12] font-sans">
               Har Gali Ka Style,
               <br />
-              Ab India Ke <span className="text-[#F28C28]">Har Shehar Tak.</span>
+              Ab India Ke <span className="text-orange">Har Shehar Tak.</span>
             </h1>
             <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed max-w-xl pt-2">
               Discover fashion from verified local boutiques and clothing stores — trendy,
@@ -85,7 +85,7 @@ export function MarketplaceHero() {
           <div className="flex flex-wrap items-center gap-3.5 pt-1">
             <Link
               href="/shop"
-              className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3.5 bg-[#F28C28] hover:bg-[#e07d1e] text-white font-bold text-sm rounded-xl shadow-md shadow-[#F28C28]/25 transition-all duration-200 active:scale-95 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3.5 bg-orange hover:bg-orange-600 text-white font-bold text-sm rounded-xl shadow-md shadow-orange/25 transition-all duration-200 active:scale-95 cursor-pointer"
             >
               <ShoppingBag className="w-4 h-4" />
               <span>Shop Fashion →</span>
@@ -93,9 +93,9 @@ export function MarketplaceHero() {
 
             <Link
               href="/become-seller"
-              className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3.5 bg-white hover:bg-slate-50 text-[#0A2342] border-2 border-[#0A2342] hover:bg-[#0A2342] hover:text-white font-bold text-sm rounded-xl shadow-xs transition-all duration-200 active:scale-95 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3.5 bg-white text-navy-900 border-2 border-navy-900 hover:bg-navy-900 hover:text-white font-bold text-sm rounded-xl shadow-xs transition-all duration-200 active:scale-95 cursor-pointer"
             >
-              <Store className="w-4 h-4 text-[#F28C28]" />
+              <Store className="w-4 h-4 text-orange" />
               <span>Become a Seller</span>
             </Link>
           </div>
@@ -107,7 +107,7 @@ export function MarketplaceHero() {
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-[#0A2342] leading-tight">
+                <p className="text-xs font-bold text-navy-900 leading-tight">
                   Verified Local Stores
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5">Shop with confidence</p>
@@ -119,18 +119,20 @@ export function MarketplaceHero() {
                 <Truck className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-[#0A2342] leading-tight">Pan-India Shipping</p>
+                <p className="text-xs font-bold text-navy-900 leading-tight">Pan-India Shipping</p>
                 <p className="text-xs text-slate-500 mt-0.5">Across 29,000+ pincodes</p>
               </div>
             </div>
 
             <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white/80 border border-slate-100 shadow-2xs">
-              <div className="p-1.5 rounded-lg bg-amber-50 text-[#F28C28] shrink-0 mt-0.5">
+              <div className="p-1.5 rounded-lg bg-amber-50 text-orange shrink-0 mt-0.5">
                 <RotateCcw className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-[#0A2342] leading-tight">7-Day Easy Returns</p>
-                <p className="text-xs text-slate-500 mt-0.5">Hassle-free exchange</p>
+                <p className="text-xs font-bold text-navy-900 leading-tight">
+                  Easy Returns & Replacements
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">3-day return & 7-day exchange</p>
               </div>
             </div>
 
@@ -139,7 +141,7 @@ export function MarketplaceHero() {
                 <CreditCard className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-[#0A2342] leading-tight">
+                <p className="text-xs font-bold text-navy-900 leading-tight">
                   COD & Online Payments
                 </p>
                 <p className="text-xs text-slate-500 mt-0.5">Multiple secure options</p>
@@ -174,14 +176,14 @@ export function MarketplaceHero() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none z-20" />
 
             {/* Dynamic Floating Editorial Badge 1 (Top Right) */}
-            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 shadow-lg text-xs font-bold text-[#0A2342] flex items-center gap-1.5 z-30 transition-all duration-300 animate-bounce-slow">
-              <Sparkles className="w-3.5 h-3.5 text-[#F28C28]" />
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 shadow-lg text-xs font-bold text-navy-900 flex items-center gap-1.5 z-30 transition-all duration-300 animate-bounce-slow">
+              <Sparkles className="w-3.5 h-3.5 text-orange" />
               <span>{activeSlide.topBadge}</span>
             </div>
 
             {/* Dynamic Floating Editorial Badge 2 (Bottom Right) */}
-            <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-[#0A2342]/95 backdrop-blur-md text-white px-4 py-2 rounded-2xl border border-white/20 shadow-xl max-w-[210px] text-right z-30 transition-all duration-300">
-              <p className="text-xs font-bold text-[#F28C28]">{activeSlide.bottomSub}</p>
+            <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-navy-900/95 backdrop-blur-md text-white px-4 py-2 rounded-2xl border border-white/20 shadow-xl max-w-[210px] text-right z-30 transition-all duration-300">
+              <p className="text-xs font-bold text-orange">{activeSlide.bottomSub}</p>
               <p className="text-xs sm:text-sm font-extrabold tracking-tight leading-tight">
                 {activeSlide.bottomMain}
               </p>
@@ -196,7 +198,7 @@ export function MarketplaceHero() {
                   onClick={() => setCurrentSlide(index)}
                   className={`transition-all duration-300 rounded-full cursor-pointer ${
                     index === currentSlide
-                      ? 'w-5 h-2 bg-[#F28C28]'
+                      ? 'w-5 h-2 bg-orange'
                       : 'w-2 h-2 bg-white/60 hover:bg-white'
                   }`}
                   aria-label={`Go to slide ${index + 1}`}

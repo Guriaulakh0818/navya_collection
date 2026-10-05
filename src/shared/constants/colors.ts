@@ -1,6 +1,7 @@
 export const COLORS = {
-  NAVY: '#1E3A8A',
-  ORANGE: '#FF6B00',
+  NAVY: '#183A73',
+  NAVY_DARK: '#09172E',
+  ORANGE: '#F15A25',
   BG: '#FAFAFA',
   SURFACE: '#FFFFFF',
   TEXT: '#111827',
@@ -14,6 +15,7 @@ export const COLORS = {
 
 export const TAILWIND_COLORS = {
   navy: COLORS.NAVY,
+  navyDark: COLORS.NAVY_DARK,
   orange: COLORS.ORANGE,
   bg: COLORS.BG,
   surface: COLORS.SURFACE,

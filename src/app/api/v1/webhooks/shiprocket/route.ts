@@ -29,11 +29,25 @@ export async function POST(req: NextRequest) {
 
     ShiprocketLogger.info('[SHIPROCKET_WEBHOOK_RECEIVED]', undefined, body);
 
-    // Optional: Validate Webhook Secret or X-Api-Key if configured
+    // Validate Webhook Secret or X-Api-Key (Mandatory in production - BM-09 AC-18)
     const webhookSecret = process.env.SHIPROCKET_WEBHOOK_SECRET;
+    if (process.env.NODE_ENV === 'production' && !webhookSecret) {
+      ShiprocketLogger.error('[SHIPROCKET_WEBHOOK_SECRET_MISSING_IN_PRODUCTION]');
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Server configuration error: Webhook secret missing in production.',
+        },
+        { status: 500 },
+      );
+    }
+
     if (webhookSecret) {
       const authHeader = req.headers.get('x-api-key') || req.headers.get('authorization');
-      if (authHeader && authHeader !== webhookSecret && authHeader !== `Bearer ${webhookSecret}`) {
+      if (
+        !authHeader ||
+        (authHeader !== webhookSecret && authHeader !== `Bearer ${webhookSecret}`)
+      ) {
         ShiprocketLogger.warn('[SHIPROCKET_WEBHOOK_UNAUTHORIZED_REJECTED]');
         return NextResponse.json(
           { success: false, message: 'Unauthorized webhook request' },
@@ -56,6 +70,23 @@ export async function POST(req: NextRequest) {
 
     const queryIdentifier = order_id || shipment_id || awb;
     if (!queryIdentifier) {
+      // Check if this is a buyer confirmation / verification webhook
+      if (
+        body.verification_status ||
+        body.event === 'order_verification' ||
+        body.confirmed !== undefined
+      ) {
+        const { ShiprocketCodService } =
+          await import('@/backend/services/shipping/shiprocket-cod.service');
+        const verResult = await ShiprocketCodService.handleVerificationWebhook({
+          orderNumber: String(body.order_number || body.order_id || body.orderId),
+          status: String(body.verification_status || (body.confirmed ? 'VERIFIED' : 'REJECTED')),
+          referenceId: body.reference_id ? String(body.reference_id) : undefined,
+          channel: body.channel || 'shiprocket_webhook',
+        });
+        return NextResponse.json(verResult, { status: verResult.success ? 200 : 400 });
+      }
+
       // Acknowledge test pings / verification handshakes from Shiprocket with 200 OK
       ShiprocketLogger.info('[SHIPROCKET_WEBHOOK_TEST_HANDSHAKE_RECEIVED]', undefined, body);
       return NextResponse.json(
@@ -91,11 +122,26 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const normalizedStatus = TrackingService.normalizeStatus(current_status || current_status_id);
+    const rawStatus = current_status || current_status_id;
+    const normalizedStatus = TrackingService.normalizeStatus(rawStatus);
+    const rtoSubStatus = TrackingService.normalizeRtoStatus(rawStatus);
     const latestScan = scans.length > 0 ? scans[scans.length - 1] : null;
     const eventTime = latestScan?.date ? new Date(latestScan.date) : new Date();
     const activity = latestScan?.activity || current_status || 'Tracking status update';
     const eventLocation = latestScan?.location || location || null;
+
+    // Transition Guard: Check if state transition is legally permitted
+    const { RtoService } = await import('@/backend/services/shipping/rto.service');
+    const transitionCheck = RtoService.validateTransition(shipment.status, normalizedStatus);
+    if (!transitionCheck.allowed) {
+      ShiprocketLogger.warn(
+        `[SHIPROCKET_ILLEGAL_TRANSITION_IGNORED] Shipment: ${shipment.shipmentNumber}, Current: ${shipment.status}, Target: ${normalizedStatus}. Reason: ${transitionCheck.reason}`,
+      );
+      return NextResponse.json({
+        success: true,
+        message: `Illegal transition ignored: ${transitionCheck.reason}`,
+      });
+    }
 
     // 2. Generate Idempotency Event Key
     const eventHash = crypto
@@ -110,6 +156,34 @@ export async function POST(req: NextRequest) {
     if (existingEvent) {
       ShiprocketLogger.info(`[SHIPROCKET_WEBHOOK_DUPLICATE_IGNORED] Event: ${eventHash}`);
       return NextResponse.json({ success: true, message: 'Duplicate event already processed.' });
+    }
+
+    // If authoritative RTO Delivered event arrives, trigger complete RTO financial & inventory execution
+    if (rtoSubStatus === 'RTO_DELIVERED' || normalizedStatus === 'RTO_DELIVERED') {
+      await prisma.shipmentTrackingEvent.create({
+        data: {
+          shipmentId: shipment.id,
+          eventId: eventHash,
+          status: 'RTO_DELIVERED',
+          activity,
+          location: eventLocation,
+          eventTimestamp: eventTime,
+          rawData: body,
+        },
+      });
+
+      const rtoResult = await RtoService.processRtoDelivered({
+        shipmentId: shipment.id,
+        rtoReason: activity,
+      });
+
+      TrackingService.clearCache();
+
+      return NextResponse.json({
+        success: true,
+        message: 'Shiprocket RTO delivered processed successfully.',
+        data: rtoResult,
+      });
     }
 
     // 3. Atomically Record Tracking Event & Update Shipment
@@ -128,6 +202,8 @@ export async function POST(req: NextRequest) {
       });
 
       // Update Shipment
+      const isCod =
+        shipment.paymentMethod === 'COD' || shipment.masterOrder.paymentMethod === 'COD';
       const updateData: any = {
         status: normalizedStatus,
         trackingStatus: normalizedStatus,
@@ -135,36 +211,55 @@ export async function POST(req: NextRequest) {
 
       if (awb && !shipment.awbCode) updateData.awbCode = String(awb);
       if (courier_name && !shipment.courierName) updateData.courierName = String(courier_name);
-      if (normalizedStatus === 'DELIVERED') updateData.deliveredAt = eventTime;
+      if (normalizedStatus === 'DELIVERED') {
+        updateData.deliveredAt = eventTime;
+        if (isCod) {
+          updateData.codRemittanceStatus = 'REMITTANCE_PENDING';
+        }
+      }
       if (normalizedStatus === 'IN_TRANSIT' && !shipment.shippedAt)
         updateData.shippedAt = eventTime;
       if (normalizedStatus === 'CANCELLED') updateData.cancelledAt = eventTime;
+      if (rtoSubStatus === 'RTO_INITIATED' || normalizedStatus === 'RTO') {
+        updateData.rtoStatus = 'RTO_INITIATED';
+        if (!shipment.rtoInitiatedAt) updateData.rtoInitiatedAt = eventTime;
+      }
+      if (rtoSubStatus === 'RTO_IN_TRANSIT') {
+        updateData.rtoStatus = 'RTO_IN_TRANSIT';
+        if (!shipment.rtoInTransitAt) updateData.rtoInTransitAt = eventTime;
+      }
 
       await tx.shipment.update({
         where: { id: shipment.id },
         data: updateData,
       });
 
-      // Update linked VendorOrder if present
+      // Update linked VendorOrder if present (BM-09 Multi-seller isolation)
       if (shipment.vendorOrderId) {
+        const isDelivered = normalizedStatus === 'DELIVERED';
+        const isCancelled = normalizedStatus === 'CANCELLED';
+        const isRto = normalizedStatus === 'RTO' || normalizedStatus.startsWith('RTO_');
+        const isUndelivered = normalizedStatus === 'UNDELIVERED';
+
+        let voShippingStatus: any = 'IN_TRANSIT';
+        if (isDelivered) voShippingStatus = 'DELIVERED';
+        else if (isCancelled) voShippingStatus = 'CANCELLED';
+        else if (isRto) voShippingStatus = 'RTO_INITIATED';
+        else if (isUndelivered) voShippingStatus = 'UNDELIVERED';
+
         await tx.vendorOrder
           .update({
             where: { id: shipment.vendorOrderId },
             data: {
-              shippingStatus:
-                normalizedStatus === 'DELIVERED'
-                  ? 'DELIVERED'
-                  : normalizedStatus === 'CANCELLED'
-                    ? 'CANCELLED'
-                    : 'IN_TRANSIT',
-              ...(normalizedStatus === 'DELIVERED' ? { status: 'DELIVERED' } : {}),
-              ...(normalizedStatus === 'CANCELLED' ? { status: 'CANCELLED' } : {}),
+              shippingStatus: voShippingStatus,
+              ...(isDelivered ? { status: 'DELIVERED' } : {}),
+              ...(isCancelled ? { status: 'CANCELLED' } : {}),
             },
           })
           .catch(() => {});
       }
 
-      // 4. Recalculate Master Order Status
+      // 4. Recalculate Master Order Status & COD Delivery Payment State (BM-07 Section 13 & BM-09)
       const allShipments = shipment.masterOrder.shipments.map((s) =>
         s.id === shipment.id ? { ...s, status: normalizedStatus } : s,
       );
@@ -172,12 +267,20 @@ export async function POST(req: NextRequest) {
       const aggregatedOrderStatus =
         StatusAggregatorService.calculateMasterOrderStatus(allShipments);
 
+      const orderUpdateData: any = {
+        orderStatus: aggregatedOrderStatus,
+        ...(aggregatedOrderStatus === 'DELIVERED' ? { shippingStatus: 'DELIVERED' } : {}),
+      };
+
+      // When COD order is delivered, cash is collected at doorstep by courier partner:
+      // Transition internal COD payment state to PAID
+      if (isCod && (aggregatedOrderStatus === 'DELIVERED' || normalizedStatus === 'DELIVERED')) {
+        orderUpdateData.paymentStatus = 'PAID';
+      }
+
       await tx.order.update({
         where: { id: shipment.masterOrderId },
-        data: {
-          orderStatus: aggregatedOrderStatus,
-          ...(aggregatedOrderStatus === 'DELIVERED' ? { shippingStatus: 'DELIVERED' } : {}),
-        },
+        data: orderUpdateData,
       });
     });
 

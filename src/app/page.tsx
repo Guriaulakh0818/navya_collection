@@ -119,16 +119,16 @@ export default async function MultiVendorMarketplaceHomePage() {
         {primaryOffer && (
           <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-300/80 rounded-3xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
             <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-[#F28C28] text-white flex items-center justify-center font-black shadow-xs shrink-0 text-sm">
+              <div className="w-10 h-10 rounded-2xl bg-orange text-white flex items-center justify-center font-black shadow-xs shrink-0 text-sm">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div className="space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-extrabold text-[#0A2342] text-sm sm:text-base tracking-tight">
+                  <h3 className="font-extrabold text-navy-900 text-sm sm:text-base tracking-tight">
                     {primaryOffer.title}
                   </h3>
                   {primaryOffer.firstOrderOnly && (
-                    <span className="px-2 py-0.5 bg-[#F28C28] text-white text-[10px] font-black rounded-full uppercase tracking-wider">
+                    <span className="px-2 py-0.5 bg-orange text-white text-[10px] font-black rounded-full uppercase tracking-wider">
                       First Order Only
                     </span>
                   )}
@@ -150,7 +150,7 @@ export default async function MultiVendorMarketplaceHomePage() {
             <div className="flex items-center gap-2 shrink-0">
               <Link
                 href="/shop"
-                className="px-5 py-2.5 bg-[#F28C28] hover:bg-[#e07d1e] text-white font-extrabold text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2.5 bg-orange hover:bg-orange-600 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>Explore Catalog & Claim Offer →</span>

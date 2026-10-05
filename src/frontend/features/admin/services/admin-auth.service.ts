@@ -68,32 +68,18 @@ export class AdminAuthService {
       // Database offline/unreachable fallback
     }
 
-    const isMasterOwnerEmail =
-      normalizedEmail === 'gurvindersingh0218@gmail.com' ||
-      normalizedEmail === 'guriaulakh0818@gmail.com' ||
-      normalizedEmail === 'admin@navyacollection.store' ||
-      normalizedEmail === 'admin@navyacollection.com' ||
-      normalizedEmail === 'info@navyacollection.store' ||
-      normalizedEmail.includes('gurvinder') ||
-      normalizedEmail.includes('guriaulakh') ||
-      normalizedEmail.startsWith('admin@') ||
-      normalizedEmail.startsWith('owner@');
+    const isMasterOwnerEmail = normalizedEmail === 'gurvindersingh0218@gmail.com';
 
-    // 1. Auto-provision or upgrade owner/admin if not present or role mismatch
+    // 1. Auto-provision or upgrade owner if not present or role mismatch
     if (isMasterOwnerEmail) {
-      const isOwner =
-        normalizedEmail.includes('gurvinder') ||
-        normalizedEmail.includes('guriaulakh') ||
-        normalizedEmail === 'info@navyacollection.store' ||
-        normalizedEmail.startsWith('owner@');
-      const targetRole = isOwner ? Role.OWNER : Role.ADMIN;
+      const targetRole = Role.OWNER;
       const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
       if (!user) {
         try {
           user = await prisma.user.create({
             data: {
-              name: isOwner ? 'Gurvinder Singh (Owner)' : 'Navya Admin',
+              name: 'Gurvinder Singh (Owner)',
               email: normalizedEmail,
               mobile: '+919053883125',
               password: hashedPassword,
@@ -108,7 +94,7 @@ export class AdminAuthService {
           // If DB create failed (e.g. transient issue), fallback to in-memory user
           user = {
             id: `usr_${Date.now()}`,
-            name: isOwner ? 'Gurvinder Singh (Owner)' : 'Navya Admin',
+            name: 'Gurvinder Singh (Owner)',
             email: normalizedEmail,
             mobile: '+919053883125',
             role: targetRole,
@@ -121,9 +107,8 @@ export class AdminAuthService {
           };
         }
       } else {
-        // Upgrade existing user account if not already an admin/owner
-        const currentRoleStr = String(user.role);
-        if (!['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(currentRoleStr)) {
+        // Upgrade existing user account if not already an owner
+        if (user.role !== Role.OWNER) {
           try {
             user = await prisma.user.update({
               where: { id: user.id },
@@ -179,12 +164,7 @@ export class AdminAuthService {
             where: { id: user.id },
             data: {
               password: newHash,
-              role:
-                normalizedEmail.includes('gurvinder') ||
-                normalizedEmail.includes('guriaulakh') ||
-                normalizedEmail === 'info@navyacollection.store'
-                  ? Role.OWNER
-                  : Role.ADMIN,
+              role: Role.OWNER,
               approvalStatus: 'APPROVED',
               loginAttempts: 0,
               lockUntil: null,

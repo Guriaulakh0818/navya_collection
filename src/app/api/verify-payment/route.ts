@@ -3,17 +3,16 @@ import { NextResponse } from 'next/server';
 import { verifyRazorpaySignature } from '@/backend/lib/razorpay';
 
 /**
- * POST /api/verify-payment
+ * POST /api/verify-payment (DEPRECATED & SECURED)
  *
- * Verifies Razorpay Payment Signature using HMAC-SHA256 algorithm.
- * Formula: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET) === razorpay_signature
- * Request body: { razorpay_order_id, razorpay_payment_id, razorpay_signature }
+ * Verifies Razorpay Payment Signature using cryptographically safe HMAC-SHA256 comparison.
+ * Note: Under BM-06, full order fulfillment and atomic inventory management are handled via
+ * POST /api/v1/payments/verify. This endpoint is retained solely for legacy status checks.
  */
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
 
-    // Accept both snake_case and camelCase parameters
     const orderId = body.razorpay_order_id || body.razorpayOrderId;
     const paymentId = body.razorpay_payment_id || body.razorpayPaymentId;
     const signature = body.razorpay_signature || body.razorpaySignature;
@@ -32,7 +31,7 @@ export async function POST(request: Request) {
     const isValid = verifyRazorpaySignature(orderId, paymentId, signature);
 
     if (!isValid) {
-      console.warn(`[SIGNATURE_MISMATCH] Order ID: ${orderId}, Payment ID: ${paymentId}`);
+      console.warn(`[LEGACY_SIGNATURE_MISMATCH] Order ID: ${orderId}, Payment ID: ${paymentId}`);
       return NextResponse.json(
         {
           success: false,
@@ -45,7 +44,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: true,
-        message: 'Payment verified successfully!',
+        message: 'Payment signature verified. Use /api/v1/payments/verify for order fulfillment.',
         order_id: orderId,
         payment_id: paymentId,
       },

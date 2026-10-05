@@ -12,8 +12,10 @@ import {
   Package,
   Percent,
   Plus,
+  RotateCcw,
   Save,
   Send,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
   Tag,
@@ -27,6 +29,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { CommissionService } from '@/backend/services/commission.service';
 import {
   CATEGORY_TAXONOMY,
   getFlattenedCategoryOptions,
@@ -124,6 +127,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     manufacturerDetails:
       initialData?.manufacturerDetails || 'Navya Collection Artisan Partner, India',
     status: initialData?.status || 'active',
+    returnPolicyType: initialData?.returnPolicyType || 'RETURN_AND_REPLACEMENT',
     categoryId: initialData?.categoryId || '',
     metaTitle: initialData?.metaTitle || '',
     metaDescription: initialData?.metaDescription || '',
@@ -178,15 +182,33 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     return resolveSizeSystem(primaryCategoryId, formData.productType);
   }, [primaryCategoryId, formData.productType]);
 
-  // Live Auto-calculated Discount %
-  const discountPercent = useMemo(() => {
+  // Live Pricing Floors & Auto-calculated Discount %
+  const pricingFloors = useMemo(() => {
+    const mrp = Number(formData.compareAtPrice);
+    if (mrp > 0) {
+      return CommissionService.calculatePricingFloors(mrp);
+    }
+    return null;
+  }, [formData.compareAtPrice]);
+
+  const discountDetails = useMemo(() => {
     const mrp = Number(formData.compareAtPrice);
     const selling = Number(formData.price);
-    if (mrp > 0 && mrp > selling) {
-      return Math.round(((mrp - selling) / mrp) * 100);
+    if (mrp > 0 && selling > 0 && mrp >= selling) {
+      const disc = CommissionService.calculateDiscount(mrp, selling);
+      const isIntegerPercent = disc.discountPercent % 1 === 0;
+      const formattedPercent = isIntegerPercent
+        ? `${disc.discountPercent}%`
+        : `${disc.discountPercent.toFixed(2)}%`;
+      return {
+        ...disc,
+        formattedPercent,
+      };
     }
-    return 0;
+    return null;
   }, [formData.compareAtPrice, formData.price]);
+
+  const discountPercent = discountDetails ? discountDetails.displayDiscountPercent : 0;
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -561,6 +583,24 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     if (formData.images.length === 0) {
       showToast('Please upload at least 1 product image.', 'error');
       return;
+    }
+
+    // Pricing validation (Section 4, 5, 6, 8)
+    const sellingPrice = Number(formData.price);
+    const mrp = Number(formData.compareAtPrice);
+    if (mrp > 0) {
+      if (sellingPrice > mrp) {
+        showToast(`Selling price (₹${sellingPrice}) cannot exceed MRP (₹${mrp}).`, 'error');
+        return;
+      }
+      const floors = CommissionService.calculatePricingFloors(mrp);
+      if (CommissionService.roundMoney(sellingPrice) < floors.psychologicalMinimumSellingPrice) {
+        showToast(
+          `Selling price (₹${sellingPrice}) exceeds maximum allowed discount (70% limit with ₹1 psychological floor is ₹${floors.psychologicalMinimumSellingPrice}).`,
+          'error',
+        );
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -1118,14 +1158,88 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               onChange={(e) => setFormData({ ...formData, compareAtPrice: Number(e.target.value) })}
               className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 font-mono font-bold text-base focus:outline-none"
             />
-            {discountPercent > 0 ? (
+            {discountDetails ? (
               <p className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
-                ⚡ {discountPercent}% OFF Customer Savings
+                ⚡ Discount: {discountDetails.formattedPercent} OFF
               </p>
             ) : (
               <p className="text-[10px] text-slate-400">Printed tag MRP</p>
             )}
           </div>
+
+          {/* Pricing Floor & Psychological Pricing Action Callout */}
+          {pricingFloors && formData.price === pricingFloors.normalMinimumSellingPrice && (
+            <div className="col-span-full bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 p-3 rounded-xl flex flex-wrap items-center justify-between gap-2 shadow-xs">
+              <div className="text-purple-900">
+                <span className="font-bold text-xs">
+                  70% Discount Price: ₹{pricingFloors.normalMinimumSellingPrice}
+                </span>
+                <p className="text-[11px] text-purple-700">
+                  Optional psychological pricing: reduce selling price by ₹1 more.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData({
+                    ...formData,
+                    price: pricingFloors.psychologicalMinimumSellingPrice,
+                  })
+                }
+                className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <span>Use ₹1 Extra Discount</span>
+                <span className="bg-purple-800 px-1.5 py-0.5 rounded font-mono text-[11px]">
+                  ₹{pricingFloors.normalMinimumSellingPrice} → ₹
+                  {pricingFloors.psychologicalMinimumSellingPrice}
+                </span>
+              </button>
+            </div>
+          )}
+
+          {pricingFloors && formData.price === pricingFloors.psychologicalMinimumSellingPrice && (
+            <div className="col-span-full bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex flex-wrap items-center justify-between gap-2 shadow-xs">
+              <div className="text-emerald-900">
+                <span className="font-bold text-xs">
+                  ✓ Psychological Pricing Active (₹{pricingFloors.psychologicalMinimumSellingPrice})
+                </span>
+                <p className="text-[11px] text-emerald-700">
+                  70% discount floor with ₹1 psychological allowance applied.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData({ ...formData, price: pricingFloors.normalMinimumSellingPrice })
+                }
+                className="text-emerald-800 hover:text-emerald-950 underline text-xs font-semibold cursor-pointer"
+              >
+                Reset to 70% (₹{pricingFloors.normalMinimumSellingPrice})
+              </button>
+            </div>
+          )}
+
+          {pricingFloors &&
+            Number(formData.price) > 0 &&
+            Number(formData.price) < pricingFloors.psychologicalMinimumSellingPrice && (
+              <div className="col-span-full bg-rose-50 border border-rose-300 p-3 rounded-xl text-rose-800 text-xs font-semibold flex items-center gap-2">
+                <span className="text-rose-600 font-black">⚠️ Discount Exceeds 70% Limit:</span>
+                <span>
+                  Minimum allowed selling price is ₹{pricingFloors.psychologicalMinimumSellingPrice}{' '}
+                  (70% limit of ₹{pricingFloors.normalMinimumSellingPrice} with ₹1 psychological
+                  floor).
+                </span>
+              </div>
+            )}
+
+          {formData.compareAtPrice && Number(formData.price) > Number(formData.compareAtPrice) && (
+            <div className="col-span-full bg-rose-50 border border-rose-300 p-3 rounded-xl text-rose-800 text-xs font-semibold flex items-center gap-2">
+              <span className="text-rose-600 font-black">⚠️ Pricing Error:</span>
+              <span>
+                Selling price (₹{formData.price}) cannot exceed MRP (₹{formData.compareAtPrice}).
+              </span>
+            </div>
+          )}
 
           <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
             <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">
@@ -1291,6 +1405,157 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 font-medium focus:bg-white focus:outline-none"
             />
           </div>
+        </div>
+      </div>
+
+      {/* SECTION 4B: MANDATORY RETURN & REPLACEMENT POLICY (Section 3 Business Rules) */}
+      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+          <div>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <RotateCcw className="w-4 h-4 text-amber-600" /> Section 4B: Return & Replacement
+              Policy <span className="text-rose-500">*</span>
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Select one of the 3 standardized marketplace policy options. Window durations are
+              strictly locked and enforced by Navya Collection.
+            </p>
+          </div>
+          <span className="text-[11px] font-bold text-slate-400">Step 4B</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* OPTION A: Return + Replacement */}
+          <div
+            onClick={() => setFormData({ ...formData, returnPolicyType: 'RETURN_AND_REPLACEMENT' })}
+            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all relative ${
+              formData.returnPolicyType === 'RETURN_AND_REPLACEMENT'
+                ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500/20 shadow-xs'
+                : 'border-slate-200 bg-white hover:bg-slate-50'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                Option A • Full Flexibility
+              </span>
+              <div
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                  formData.returnPolicyType === 'RETURN_AND_REPLACEMENT'
+                    ? 'border-amber-600 bg-amber-600 text-white'
+                    : 'border-slate-300 bg-white'
+                }`}
+              >
+                {formData.returnPolicyType === 'RETURN_AND_REPLACEMENT' && (
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                )}
+              </div>
+            </div>
+            <h3 className="font-extrabold text-navy text-sm mb-1">Return + Replacement</h3>
+            <p className="text-[11px] text-slate-600 leading-relaxed mb-4">
+              Allows customers to request either a full return or a product replacement within the
+              verified eligibility windows.
+            </p>
+            <div className="bg-white/80 rounded-xl p-3 border border-slate-200 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500 text-[11px]">Return Window:</span>
+                <span className="font-extrabold text-navy text-[11px]">Max 3 Days</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 text-[11px]">Replacement Window:</span>
+                <span className="font-extrabold text-navy text-[11px]">Max 7 Days</span>
+              </div>
+            </div>
+          </div>
+
+          {/* OPTION B: Replacement Only */}
+          <div
+            onClick={() => setFormData({ ...formData, returnPolicyType: 'REPLACEMENT_ONLY' })}
+            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all relative ${
+              formData.returnPolicyType === 'REPLACEMENT_ONLY'
+                ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500/20 shadow-xs'
+                : 'border-slate-200 bg-white hover:bg-slate-50'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300">
+                Option B • Size/Defect Exchange
+              </span>
+              <div
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                  formData.returnPolicyType === 'REPLACEMENT_ONLY'
+                    ? 'border-amber-600 bg-amber-600 text-white'
+                    : 'border-slate-300 bg-white'
+                }`}
+              >
+                {formData.returnPolicyType === 'REPLACEMENT_ONLY' && (
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                )}
+              </div>
+            </div>
+            <h3 className="font-extrabold text-navy text-sm mb-1">Replacement Only</h3>
+            <p className="text-[11px] text-slate-600 leading-relaxed mb-4">
+              Returns for refund are not allowed. Customers may only request replacement for size or
+              damaged items.
+            </p>
+            <div className="bg-white/80 rounded-xl p-3 border border-slate-200 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500 text-[11px]">Return Window:</span>
+                <span className="font-bold text-rose-600 text-[11px]">Not Allowed</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 text-[11px]">Replacement Window:</span>
+                <span className="font-extrabold text-navy text-[11px]">Max 7 Days</span>
+              </div>
+            </div>
+          </div>
+
+          {/* OPTION C: None */}
+          <div
+            onClick={() => setFormData({ ...formData, returnPolicyType: 'NONE' })}
+            className={`p-5 rounded-2xl border-2 cursor-pointer transition-all relative ${
+              formData.returnPolicyType === 'NONE'
+                ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500/20 shadow-xs'
+                : 'border-slate-200 bg-white hover:bg-slate-50'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-800 border border-slate-300">
+                Option C • Final Sale
+              </span>
+              <div
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                  formData.returnPolicyType === 'NONE'
+                    ? 'border-amber-600 bg-amber-600 text-white'
+                    : 'border-slate-300 bg-white'
+                }`}
+              >
+                {formData.returnPolicyType === 'NONE' && <CheckCircle2 className="w-3.5 h-3.5" />}
+              </div>
+            </div>
+            <h3 className="font-extrabold text-navy text-sm mb-1">None (Final Sale)</h3>
+            <p className="text-[11px] text-slate-600 leading-relaxed mb-4">
+              Strictly no returns or replacements are accepted once the parcel has been delivered to
+              the customer.
+            </p>
+            <div className="bg-white/80 rounded-xl p-3 border border-slate-200 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500 text-[11px]">Return Window:</span>
+                <span className="font-bold text-slate-500 text-[11px]">Not Allowed</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 text-[11px]">Replacement Window:</span>
+                <span className="font-bold text-slate-500 text-[11px]">Not Allowed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-2 text-[11px] text-slate-600">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>
+            <strong>Enforced by Navya Marketplace:</strong> Sellers cannot input arbitrary return
+            days. When an order is placed, this policy is permanently locked to that order.
+          </span>
         </div>
       </div>
 

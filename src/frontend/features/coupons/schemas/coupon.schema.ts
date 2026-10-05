@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const discountTypeEnum = z.enum(['PERCENTAGE', 'FIXED']);
+export const couponFundingTypeEnum = z.enum(['NAVYA', 'SELLER']);
 
 export const validateCouponSchema = z.object({
   code: z
@@ -14,9 +15,11 @@ export const validateCouponSchema = z.object({
     .array(
       z.object({
         productId: z.string(),
+        shopId: z.string().optional().nullable(),
         categoryId: z.string().optional().nullable(),
         price: z.number(),
         quantity: z.number(),
+        originalPrice: z.number().optional().nullable(),
       }),
     )
     .optional(),
@@ -24,7 +27,7 @@ export const validateCouponSchema = z.object({
 
 export const applyCouponSchema = validateCouponSchema;
 
-export const createCouponSchema = z.object({
+export const baseCouponSchema = z.object({
   code: z
     .string()
     .trim()
@@ -35,6 +38,8 @@ export const createCouponSchema = z.object({
     ),
   title: z.string().trim().max(100).optional().nullable(),
   description: z.string().trim().max(250).optional().nullable(),
+  fundingType: couponFundingTypeEnum.default('NAVYA'),
+  shopId: z.string().trim().optional().nullable(),
   discountType: discountTypeEnum,
   discountValue: z.number().positive('Discount value must be greater than 0.'),
   minOrderAmount: z.number().min(0).default(0),
@@ -44,12 +49,40 @@ export const createCouponSchema = z.object({
   startDate: z.string().or(z.date()).optional().nullable(),
   validUntil: z.string().or(z.date()),
   isActive: z.boolean().default(true),
-  applicableCategories: z.array(z.string()).optional().nullable(),
-  applicableProducts: z.array(z.string()).optional().nullable(),
-  excludedProducts: z.array(z.string()).optional().nullable(),
+  applicableCategories: z.array(z.string()).default([]),
+  applicableProducts: z.array(z.string()).default([]),
+  excludedProducts: z.array(z.string()).default([]),
 });
 
-export const updateCouponSchema = createCouponSchema.partial();
+export const createCouponSchema = baseCouponSchema.refine(
+  (data) => {
+    if (data.discountType === 'PERCENTAGE' && data.discountValue > 100) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: 'Percentage discount cannot exceed 100%.',
+    path: ['discountValue'],
+  },
+);
+
+export const updateCouponSchema = baseCouponSchema.partial().refine(
+  (data) => {
+    if (
+      data.discountType === 'PERCENTAGE' &&
+      data.discountValue !== undefined &&
+      data.discountValue > 100
+    ) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: 'Percentage discount cannot exceed 100%.',
+    path: ['discountValue'],
+  },
+);
 
 export type ValidateCouponInput = z.infer<typeof validateCouponSchema>;
 export type ApplyCouponInput = z.infer<typeof applyCouponSchema>;

@@ -19,10 +19,10 @@ export function HomepageFaqSection() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-slate-200">
         <div className="space-y-2 max-w-xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold">
-            <HelpCircle className="w-3.5 h-3.5 text-[#F28C28]" />
+            <HelpCircle className="w-3.5 h-3.5 text-orange" />
             <span>Questions & Answers</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-[#0A2342] tracking-tight font-sans">
+          <h2 className="text-2xl sm:text-3xl font-black text-navy-900 tracking-tight font-sans">
             Frequently Asked Questions
           </h2>
           <p className="text-sm text-slate-600 font-normal leading-relaxed">
@@ -32,7 +32,7 @@ export function HomepageFaqSection() {
 
         <Link
           href="/contact"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-[#F28C28] hover:text-[#d97718] transition-colors shrink-0"
+          className="inline-flex items-center gap-1.5 text-sm font-bold text-orange hover:text-orange-600 transition-colors shrink-0"
         >
           <span>Need more help? Contact Support</span>
           <span aria-hidden="true">→</span>
@@ -48,7 +48,7 @@ export function HomepageFaqSection() {
               key={faq.question}
               className={`border rounded-xl transition-all duration-200 overflow-hidden ${
                 isOpen
-                  ? 'border-slate-300 bg-slate-50/70 border-l-4 border-l-[#F28C28] shadow-xs'
+                  ? 'border-slate-300 bg-slate-50/70 border-l-4 border-l-orange shadow-xs'
                   : 'border-slate-200 bg-white hover:border-slate-300'
               }`}
             >
@@ -58,14 +58,12 @@ export function HomepageFaqSection() {
                 className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-3 cursor-pointer select-none"
                 aria-expanded={isOpen}
               >
-                <h3 className="text-sm sm:text-base font-bold text-[#0A2342] leading-snug">
+                <h3 className="text-sm sm:text-base font-bold text-navy-900 leading-snug">
                   {faq.question}
                 </h3>
                 <div
                   className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
-                    isOpen
-                      ? 'bg-slate-200 text-[#0A2342] rotate-180'
-                      : 'bg-slate-100 text-slate-500'
+                    isOpen ? 'bg-slate-200 text-navy-900 rotate-180' : 'bg-slate-100 text-slate-500'
                   }`}
                 >
                   <ChevronDown className="w-4 h-4" />

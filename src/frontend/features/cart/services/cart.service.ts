@@ -1,3 +1,4 @@
+import { CustomerShippingService } from '@/backend/services/shipping/customer-shipping.service';
 import { prisma } from '@/lib/prisma';
 
 import { CartRepository } from '../repositories/cart.repository';
@@ -61,6 +62,11 @@ export class CartService {
           variantName: item.variant?.name || null,
           size: item.variant?.size || null,
           color: item.variant?.color || null,
+          shopId: item.product.shopId || null,
+          taxRate:
+            item.product.taxRate !== undefined && item.product.taxRate !== null
+              ? Number(item.product.taxRate)
+              : undefined,
           sku: item.variant?.sku || item.product.sku,
           price: itemPrice,
           compareAtPrice: itemCompareAtPrice,
@@ -72,8 +78,17 @@ export class CartService {
       });
 
     const discount = Math.max(0, originalSubtotal - subtotal);
-    // Free shipping threshold ₹999, standard shipping ₹99
-    const shipping = subtotal >= 999 || subtotal === 0 ? 0 : 99;
+    // BM-04 Authoritative Seller-Level Shipping: ₹49 per seller shipment under ₹999; free if >= ₹999
+    const shippingCalc = CustomerShippingService.calculateCustomerShipping({
+      items: formattedItems.map((item: any) => ({
+        productId: item.productId,
+        price: item.price,
+        quantity: item.quantity,
+        shopId: item.shopId || undefined,
+      })),
+      shippingMethodCode: 'STANDARD',
+    });
+    const shipping = formattedItems.length === 0 ? 0 : shippingCalc.finalShippingAmount;
     const total = Math.max(0, subtotal + shipping);
 
     return {
@@ -87,6 +102,7 @@ export class CartService {
       total,
       freeShippingThreshold: 999,
       freeShippingRemaining: Math.max(0, 999 - subtotal),
+      sellerBreakdown: shippingCalc.sellerBreakdown,
     };
   }
 

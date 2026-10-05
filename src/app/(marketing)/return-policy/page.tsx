@@ -8,14 +8,14 @@ import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/feat
 export const metadata: Metadata = {
   title: `Return, Replacement & Refund Policy | ${SEO_CONSTANTS.SITE_NAME}`,
   description:
-    '7-Day hassle-free return and replacement policy for Navya Collection multi-vendor fashion marketplace orders across India.',
+    '3-Day hassle-free return and 7-day size replacement policy for Navya Collection multi-vendor fashion marketplace orders across India.',
   alternates: {
     canonical: `${SEO_CONSTANTS.SITE_URL}/return-policy`,
   },
   openGraph: {
     title: `Return, Replacement & Refund Policy | ${SEO_CONSTANTS.SITE_NAME}`,
     description:
-      '7-Day hassle-free return and replacement policy for Navya Collection multi-vendor fashion marketplace orders across India.',
+      '3-Day hassle-free return and 7-day size replacement policy for Navya Collection multi-vendor fashion marketplace orders across India.',
     url: `${SEO_CONSTANTS.SITE_URL}/return-policy`,
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,
@@ -44,7 +44,7 @@ export default function ReturnPolicyPage() {
           <div className="border-b border-slate-200 pb-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold mb-3">
               <RefreshCw className="w-4 h-4 text-amber-600" />
-              7-Day Buyer Protection Guarantee
+              Buyer Protection: 3-Day Returns &amp; 7-Day Replacements
             </div>
             <h1 className="font-heading text-3xl sm:text-4xl font-extrabold text-navy">
               Return, Replacement &amp; Refund Policy
@@ -59,9 +59,10 @@ export default function ReturnPolicyPage() {
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3">
               <Clock className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-bold text-navy text-sm">7-Day Window</h3>
+                <h3 className="font-bold text-navy text-sm">3-Day Return / 7-Day Exchange</h3>
                 <p className="text-xs text-slate-600 mt-1">
-                  Initiate return or size exchange within 7 days of package delivery.
+                  Initiate customer returns within 3 days or size replacements within 7 days of
+                  delivery.
                 </p>
               </div>
             </div>
@@ -71,7 +72,7 @@ export default function ReturnPolicyPage() {
               <div>
                 <h3 className="font-bold text-navy text-sm">Doorstep Reverse Pickup</h3>
                 <p className="text-xs text-slate-600 mt-1">
-                  Free automated reverse pickup across 19,000+ Indian pincodes.
+                  Automated reverse pickup across 19,000+ Indian pincodes upon return verification.
                 </p>
               </div>
             </div>
@@ -79,9 +80,10 @@ export default function ReturnPolicyPage() {
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3">
               <ShieldCheck className="w-6 h-6 text-indigo-600 shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-bold text-navy text-sm">Instant Refund / Credit</h3>
+                <h3 className="font-bold text-navy text-sm">Verified Refund Disbursal</h3>
                 <p className="text-xs text-slate-600 mt-1">
-                  Refund processed to original payment method or bank account in 3-5 days.
+                  Refund processed to original method (Prepaid) or direct IMPS/UPI (COD) post
+                  warehouse verification.
                 </p>
               </div>
             </div>
@@ -99,8 +101,8 @@ export default function ReturnPolicyPage() {
                     Eligible for Return
                   </div>
                   <ul className="text-xs text-emerald-900 space-y-1 pl-5 list-disc">
-                    <li>Size mismatch or incorrect fit</li>
-                    <li>Defective, damaged, or torn fabric received</li>
+                    <li>Size mismatch or incorrect fit (Replacement up to 7 days)</li>
+                    <li>Defective, damaged, or torn fabric received (Return up to 3 days)</li>
                     <li>Incorrect product or color variation dispatched</li>
                     <li>Unused garments with original tags and packaging intact</li>
                   </ul>
@@ -114,8 +116,8 @@ export default function ReturnPolicyPage() {
                   <ul className="text-xs text-rose-900 space-y-1 pl-5 list-disc">
                     <li>Custom tailored / altered outfits per buyer instructions</li>
                     <li>Used, washed, perfume-sprayed, or soiled clothing</li>
-                    <li>Items returned after the 7-day delivery window</li>
-                    <li>Intimate apparel or hygiene-sensitive items</li>
+                    <li>Items requested after the 3-day return or 7-day replacement window</li>
+                    <li>Intimate apparel, jewelry, or hygiene-sensitive items (Final Sale)</li>
                   </ul>
                 </div>
               </div>

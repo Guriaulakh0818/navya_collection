@@ -54,11 +54,11 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 text-[#F28C28]">
+          <div className="p-2 rounded-xl bg-amber-50 text-orange">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-[#0A2342] tracking-tight">
+            <h2 className="text-lg sm:text-xl font-black text-navy-900 tracking-tight">
               Fresh Arrivals
             </h2>
             <p className="text-xs text-slate-500 font-medium">
@@ -70,7 +70,7 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
         <div className="flex items-center gap-3">
           <Link
             href="/shop?filter=new"
-            className="text-xs sm:text-sm font-extrabold text-[#F28C28] hover:text-[#d97718] transition-colors flex items-center gap-1 shrink-0"
+            className="text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors flex items-center gap-1 shrink-0"
           >
             <span>View All</span>
             <span>→</span>
@@ -111,7 +111,7 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
           return (
             <div
               key={p.id}
-              className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl overflow-hidden hover:border-[#F28C28]/60 hover:shadow-lg transition-all duration-300 shadow-xs flex flex-col justify-between w-[180px] xs:w-[200px] sm:w-[220px] md:w-[240px] shrink-0 snap-start group"
+              className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl overflow-hidden hover:border-orange/60 hover:shadow-lg transition-all duration-300 shadow-xs flex flex-col justify-between w-[180px] xs:w-[200px] sm:w-[220px] md:w-[240px] shrink-0 snap-start group"
             >
               {/* Product Image Container with NEW Badge */}
               <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden select-none">
@@ -128,7 +128,7 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
                 </Link>
 
                 <div className="absolute top-2 left-2 z-10 pointer-events-none">
-                  <span className="px-2 py-0.5 rounded-md bg-[#0A2342] text-white text-[9px] font-black uppercase tracking-wider shadow-xs">
+                  <span className="px-2 py-0.5 rounded-md bg-navy-900 text-white text-[9px] font-black uppercase tracking-wider shadow-xs">
                     NEW
                   </span>
                 </div>
@@ -145,7 +145,7 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
               <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2.5">
                 <div>
                   <Link href={`/product/${p.slug}`}>
-                    <h3 className="font-extrabold text-[#0A2342] text-xs sm:text-sm group-hover:text-[#F28C28] transition-colors line-clamp-1">
+                    <h3 className="font-extrabold text-navy-900 text-xs sm:text-sm group-hover:text-orange transition-colors line-clamp-1">
                       {p.name}
                     </h3>
                   </Link>
@@ -155,7 +155,7 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
                   </p>
 
                   <div className="flex items-baseline gap-2 mt-2">
-                    <span className="text-sm sm:text-base font-black text-[#0A2342] font-mono">
+                    <span className="text-sm sm:text-base font-black text-navy-900 font-mono">
                       ₹{priceNum.toLocaleString('en-IN')}
                     </span>
                     {comparePriceNum && comparePriceNum > priceNum && (

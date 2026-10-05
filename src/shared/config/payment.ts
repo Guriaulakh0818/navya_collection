@@ -14,6 +14,11 @@ export const PAYMENT_CONFIG = {
     },
   },
   tax: {
-    gstRate: 0.18,
+    /**
+     * @deprecated Hardcoded GST is prohibited under BM-06 Decision 2.
+     * All GST calculations must be dynamically determined via TaxService.calculateItemDynamicTax.
+     */
+    gstRate: 0,
+    dynamicGstEnabled: true,
   },
 } as const;
