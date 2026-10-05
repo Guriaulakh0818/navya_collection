@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { handleApiError } from '@/backend/lib/api-error-handler';
 import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
@@ -94,7 +95,6 @@ export async function POST(request: NextRequest) {
       message: `Product "${product.name}" rejected successfully. Seller notified.`,
     });
   } catch (error: any) {
-    console.error('❌ POST Reject Product Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'POST Reject Product Error', { isAdmin: true });
   }
 }

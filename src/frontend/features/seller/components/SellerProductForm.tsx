@@ -228,6 +228,88 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     fetchCategories();
   }, []);
 
+  // Fetch product data if editing an existing product
+  useEffect(() => {
+    if (!productId) return;
+    const fetchProductDetails = async () => {
+      try {
+        const res = await fetch(`/api/v1/seller/products/${productId}`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          const prod = data.data;
+          const loadedVariants = (prod.variants || []).map((v: any) => ({
+            ...v,
+            imageUrl: v.imageUrl || (v.attributes as any)?.imageUrl || v.image || '',
+          }));
+
+          setFormData((prev) => ({
+            ...prev,
+            name: prod.name || '',
+            brand: prod.brand || '',
+            sku: prod.sku || '',
+            barcode: prod.barcode || '',
+            description: prod.description || '',
+            videoUrl: prod.videoUrl || '',
+            productType: prod.productType || '',
+            price: Number(prod.price || 0),
+            compareAtPrice: prod.compareAtPrice ? Number(prod.compareAtPrice) : 0,
+            costPrice: prod.costPrice ? Number(prod.costPrice) : 0,
+            taxGstRate: prod.taxRate ? Number(prod.taxRate) : 5,
+            hsnCode: prod.hsnCode || '6204',
+            stock: Number(prod.stock || 0),
+            lowStockThreshold: Number(prod.lowStockThreshold || 5),
+            weight: prod.weight ? Number(prod.weight) : 500,
+            packageLength: prod.packageLength ? Number(prod.packageLength) : 30,
+            packageWidth: prod.packageWidth ? Number(prod.packageWidth) : 25,
+            packageHeight: prod.packageHeight ? Number(prod.packageHeight) : 5,
+            countryOfOrigin: prod.countryOfOrigin || 'India',
+            manufacturerDetails:
+              prod.manufacturerDetails || 'Navya Collection Artisan Partner, India',
+            status: prod.status || 'active',
+            returnPolicyType: prod.returnPolicyType || 'RETURN_AND_REPLACEMENT',
+            categoryId: prod.categoryId || '',
+            metaTitle: prod.metaTitle || '',
+            metaDescription: prod.metaDescription || '',
+            metaKeywords: prod.metaKeywords || '',
+            focusKeyword: prod.focusKeyword || '',
+            occasion: prod.occasion || '',
+            color: prod.color || '',
+            fabric: prod.fabric || '',
+            fit: prod.fit || '',
+            pattern: prod.pattern || '',
+            sleeve: prod.sleeve || '',
+            neck: prod.neck || '',
+            attributes: prod.attributes || {},
+            images: prod.images || [],
+            variants: loadedVariants,
+          }));
+
+          if (prod.categoryId) {
+            setSelectedCategoryIds([prod.categoryId]);
+          }
+
+          if (loadedVariants.length > 0) {
+            const hasSize = loadedVariants.some((v: any) => v.size && v.size !== '');
+            const hasColor = loadedVariants.some((v: any) => v.color && v.color !== '');
+            if (hasSize && hasColor) setVariantMode('SIZE_AND_COLOR');
+            else if (hasSize) setVariantMode('SIZE_ONLY');
+            else if (hasColor) setVariantMode('COLOR_ONLY');
+
+            setSelectedColors(
+              Array.from(new Set(loadedVariants.map((v: any) => v.color).filter(Boolean))),
+            );
+            setSelectedSizes(
+              Array.from(new Set(loadedVariants.map((v: any) => v.size).filter(Boolean))),
+            );
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load product details:', err);
+      }
+    };
+    fetchProductDetails();
+  }, [productId]);
+
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ type, text });
     setTimeout(() => setToastMessage(null), 5000);
@@ -378,8 +460,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         body: uploadData,
       });
       const data = await res.json();
-      if (data.success && data.data?.secure_url) {
-        const uploadedUrl = data.data.secure_url;
+      const uploadedUrl =
+        data.data?.[0]?.secureUrl ||
+        data.data?.[0]?.url ||
+        data.data?.secureUrl ||
+        data.data?.url ||
+        data.data?.secure_url;
+
+      if (data.success && uploadedUrl) {
         const targetVariant = formData.variants[index];
         const targetColor = targetVariant?.color;
 
@@ -392,7 +480,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             return v;
           });
 
-          const hasInGallery = prev.images.some((img: any) => img.imageUrl === uploadedUrl);
+          const hasInGallery = prev.images.some(
+            (img: any) => (img.imageUrl || img.url) === uploadedUrl,
+          );
           const updatedImages = hasInGallery
             ? prev.images
             : [...prev.images, { imageUrl: uploadedUrl, isPrimary: prev.images.length === 0 }];
@@ -406,10 +496,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
         showToast('Variant photo uploaded successfully!', 'success');
       } else {
-        showToast(data.message || 'Failed to upload variant image', 'error');
+        showToast(data.message || 'Server error: please try again after sometime', 'error');
       }
     } catch (err: any) {
-      showToast(err.message || 'Failed to upload variant photo', 'error');
+      showToast('Server error: please try again after sometime', 'error');
     } finally {
       setVariantUploadingIndex(null);
     }
@@ -634,10 +724,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           router.push('/seller/products');
         }, 1500);
       } else {
-        showToast(data.message || 'Failed to save product.', 'error');
+        showToast(data.message || 'Server error: please try again after sometime', 'error');
       }
     } catch (err: any) {
-      showToast(err.message || 'An error occurred while saving product.', 'error');
+      showToast('Server error: please try again after sometime', 'error');
     } finally {
       setIsSubmitting(false);
     }

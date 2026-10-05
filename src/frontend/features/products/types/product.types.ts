@@ -17,6 +17,8 @@ export interface ProductVariant {
   size?: string;
   color?: string;
   material?: string;
+  imageUrl?: string;
+  image?: string;
 }
 
 export interface ProductCategory {

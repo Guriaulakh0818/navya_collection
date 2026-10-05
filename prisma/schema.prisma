@@ -517,6 +517,7 @@ model ProductVariant {
   lastRestockedAt   DateTime?
   size              String?
   color             String?
+  imageUrl          String?
   weight            Float?
   dimensions        String?
   attributes        Json? // Flexible JSON structure for future attributes (fabric, fit, season, pattern, etc.)
@@ -1128,6 +1129,7 @@ model Shop {
   // BM-05 Seller Funded Shipping Policy
   sellerFundedShipping  Boolean  @default(false)
   sellerFundedThreshold Decimal? @db.Decimal(10, 2)
+  sellerfundingshipping Boolean? @default(false)
 
   ownerId         String
   owner           User           @relation("UserShops", fields: [ownerId], references: [id], onDelete: Cascade)

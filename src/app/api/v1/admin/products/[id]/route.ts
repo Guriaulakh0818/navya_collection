@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { handleApiError } from '@/backend/lib/api-error-handler';
 import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
@@ -90,8 +91,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       data: updated,
     });
   } catch (error: any) {
-    console.error('❌ PATCH Admin Product Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'PATCH Admin Product Error', { isAdmin: true });
   }
 }
 
@@ -129,7 +129,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       message: `Product '${existingProduct.name}' deleted successfully.`,
     });
   } catch (error: any) {
-    console.error('❌ DELETE Admin Product Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'DELETE Admin Product Error', { isAdmin: true });
   }
 }

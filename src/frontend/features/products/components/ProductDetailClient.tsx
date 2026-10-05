@@ -113,7 +113,8 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       name: product.name,
       price: price,
       quantity: quantity,
-      image: product.images?.[0]?.url || product.images?.[0]?.imageUrl || '',
+      image:
+        activeVariantImageUrl || product.images?.[0]?.url || product.images?.[0]?.imageUrl || '',
       shopId: product.shop?.id || product.shopId || 'independent-shop',
       shopName: product.shop?.name || 'Independent Boutique',
       shopSlug: product.shop?.slug || 'shop',
@@ -149,7 +150,11 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   };
 
   const activeVariantImageUrl =
-    activeVariant?.attributes?.imageUrl || activeVariant?.imageUrl || activeVariant?.image;
+    activeVariant?.imageUrl ||
+    activeVariant?.image ||
+    (typeof activeVariant?.attributes === 'object' && activeVariant?.attributes !== null
+      ? activeVariant.attributes.imageUrl
+      : null);
 
   const displayImages = useMemo(() => {
     const base = [...(product.images || [])];
@@ -370,6 +375,12 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                   const variantStock = v.stock !== undefined && v.stock !== null ? v.stock : 10;
                   const isOut = variantStock <= 0;
                   const isSelected = selectedVariant === v.id;
+                  const variantImg =
+                    v.imageUrl ||
+                    v.image ||
+                    (typeof v.attributes === 'object' && v.attributes !== null
+                      ? v.attributes.imageUrl
+                      : null);
 
                   return (
                     <button
@@ -377,12 +388,27 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                       type="button"
                       onClick={() => setSelectedVariant(v.id)}
                       disabled={isOut}
-                      className={`group flex items-center gap-2.5 px-3.5 py-2 rounded-xl border transition-all text-left cursor-pointer active:scale-95 ${
+                      className={`group flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border transition-all text-left cursor-pointer active:scale-95 ${
                         isSelected
                           ? 'border-navy bg-navy text-white shadow-sm ring-2 ring-navy/20'
                           : 'border-slate-200 bg-white text-slate-800 hover:border-amber-500 hover:bg-amber-50/40'
                       } ${isOut ? 'opacity-40 cursor-not-allowed line-through' : ''}`}
                     >
+                      {variantImg ? (
+                        <div
+                          className={`relative w-8 h-9 rounded-lg overflow-hidden border shrink-0 bg-slate-50 ${
+                            isSelected
+                              ? 'border-amber-400 ring-1 ring-amber-400'
+                              : 'border-slate-200'
+                          }`}
+                        >
+                          <img
+                            src={variantImg}
+                            alt={variantLabel}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : null}
                       <span className="font-extrabold text-xs sm:text-sm tracking-tight whitespace-nowrap">
                         {variantLabel}
                       </span>

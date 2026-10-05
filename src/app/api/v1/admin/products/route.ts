@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { handleApiError } from '@/backend/lib/api-error-handler';
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { getAdminUser } from '@/backend/lib/session';
 import { generateParentSku } from '@/backend/lib/sku-generator';
@@ -107,8 +108,7 @@ export async function GET(request: NextRequest) {
       counts,
     });
   } catch (error: any) {
-    console.error('❌ GET Admin Products Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'GET Admin Products Error', { isAdmin: true });
   }
 }
 
@@ -215,7 +215,6 @@ export async function POST(request: NextRequest) {
       data: newProduct,
     });
   } catch (error: any) {
-    console.error('❌ POST Admin Create Product Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'POST Admin Create Product Error', { isAdmin: true });
   }
 }

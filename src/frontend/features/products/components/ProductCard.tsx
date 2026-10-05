@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -16,14 +17,33 @@ type ProductCardProps = {
 };
 
 export function ProductCard({ product }: ProductCardProps) {
+  const [hoveredImage, setHoveredImage] = useState<string | null>(null);
   const discount = calculateDiscount(product.price, product.compareAtPrice);
   const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
-  const imageSrc =
+  const defaultImageSrc =
     (primaryImage as any)?.url ||
     (primaryImage as any)?.imageUrl ||
     (typeof primaryImage === 'string' ? primaryImage : undefined) ||
     (product as any)?.imageUrl ||
     (product as any)?.image;
+
+  const imageSrc = hoveredImage || defaultImageSrc;
+
+  // Extract distinct color variations with photos
+  const colorVariants = useMemo(() => {
+    if (!product.variants || product.variants.length === 0) return [];
+    const seen = new Set<string>();
+    const list: { color: string; imageUrl?: string }[] = [];
+    for (const v of product.variants) {
+      const c = (v.color || (v as any).colorName)?.trim();
+      const img = v.imageUrl || (v as any).image || (v.attributes as any)?.imageUrl;
+      if (c && !seen.has(c.toLowerCase())) {
+        seen.add(c.toLowerCase());
+        list.push({ color: c, imageUrl: img });
+      }
+    }
+    return list;
+  }, [product.variants]);
 
   return (
     <div className="group relative rounded-2xl bg-brand-surface border border-brand-border shadow-card hover:shadow-premium transition-all duration-300 flex flex-col overflow-hidden">
@@ -76,6 +96,39 @@ export function ProductCard({ product }: ProductCardProps) {
               {product.name}
             </h3>
           </Link>
+
+          {/* Color Variation Thumbnails Preview */}
+          {colorVariants.length > 1 && (
+            <div className="mt-2 flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar">
+              {colorVariants.slice(0, 5).map((cv, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onMouseEnter={() => cv.imageUrl && setHoveredImage(cv.imageUrl)}
+                  onMouseLeave={() => setHoveredImage(null)}
+                  className={`w-5 h-6 rounded-md overflow-hidden border transition-transform hover:scale-110 shrink-0 ${
+                    hoveredImage === cv.imageUrl
+                      ? 'border-amber-500 ring-1 ring-amber-500'
+                      : 'border-slate-200'
+                  }`}
+                  title={cv.color}
+                >
+                  {cv.imageUrl ? (
+                    <img src={cv.imageUrl} alt={cv.color} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="w-full h-full bg-slate-200 text-[8px] flex items-center justify-center font-bold text-slate-600">
+                      {cv.color.charAt(0)}
+                    </span>
+                  )}
+                </button>
+              ))}
+              {colorVariants.length > 5 && (
+                <span className="text-[10px] font-bold text-slate-400">
+                  +{colorVariants.length - 5}
+                </span>
+              )}
+            </div>
+          )}
 
           <div className="mt-2 flex items-center justify-between">
             <ProductPrice price={product.price} compareAtPrice={product.compareAtPrice} />

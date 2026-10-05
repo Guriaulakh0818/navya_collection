@@ -2,6 +2,7 @@ import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { handleApiError } from '@/backend/lib/api-error-handler';
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { ADMIN_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { generateParentSku, generateVariantSku } from '@/backend/lib/sku-generator';
@@ -155,8 +156,7 @@ export async function GET(request: NextRequest) {
       counts,
     });
   } catch (error: any) {
-    console.error('❌ GET Seller Products Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'GET Seller Products Error');
   }
 }
 
@@ -294,10 +294,25 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // 2. Create Product Images
-      if (data.images && data.images.length > 0) {
+      // 2. Collect & Create Product Images (including any variant-specific images)
+      const allImages = [...(data.images || [])];
+      if (hasVariants) {
+        data.variants!.forEach((v) => {
+          const vUrl = v.imageUrl || v.image;
+          if (vUrl && !allImages.some((img) => img.imageUrl === vUrl)) {
+            allImages.push({
+              imageUrl: vUrl,
+              altText: `${data.name} - ${v.color || 'Variant'}`,
+              isPrimary: allImages.length === 0,
+              sortOrder: allImages.length,
+            });
+          }
+        });
+      }
+
+      if (allImages.length > 0) {
         await tx.productImage.createMany({
-          data: data.images.map((img, index) => ({
+          data: allImages.map((img, index) => ({
             productId: product.id,
             imageUrl: img.imageUrl,
             altText: img.altText || data.name,
@@ -307,7 +322,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // 3. Create Product Variants with Auto-Generated Variant SKUs & Dynamic Attributes
+      // 3. Create Product Variants with Auto-Generated Variant SKUs, Dedicated Image URL & Attributes
       if (hasVariants) {
         await tx.productVariant.createMany({
           data: data.variants!.map((v, index) => {
@@ -335,6 +350,7 @@ export async function POST(request: NextRequest) {
               availableStock: Number(v.stock || 0),
               size: v.size || null,
               color: v.color || null,
+              imageUrl: variantImgUrl || null,
               weight: v.weight ? Number(v.weight) : null,
               attributes: Object.keys(attributesPayload).length > 0 ? attributesPayload : undefined,
               status: 'active',
@@ -400,7 +416,6 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     );
   } catch (error: any) {
-    console.error('❌ POST Create Seller Product Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'POST Create Seller Product Error');
   }
 }

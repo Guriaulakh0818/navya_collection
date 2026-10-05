@@ -2,6 +2,7 @@ import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { handleApiError } from '@/backend/lib/api-error-handler';
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { generateVariantSku } from '@/backend/lib/sku-generator';
@@ -62,9 +63,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, message: 'Product not found.' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: product });
+    const mappedProduct = {
+      ...product,
+      variants: product.variants.map((v) => ({
+        ...v,
+        imageUrl: v.imageUrl || (v.attributes as any)?.imageUrl || '',
+      })),
+    };
+
+    return NextResponse.json({ success: true, data: mappedProduct });
   } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'GET Seller Product by ID');
   }
 }
 
@@ -177,11 +186,26 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         },
       });
 
-      // 2. Refresh Product Images
+      // 2. Refresh Product Images (including variant photos)
       if (data.images) {
+        const allImages = [...data.images];
+        if (hasVariants && data.variants) {
+          data.variants.forEach((v) => {
+            const vUrl = v.imageUrl || v.image;
+            if (vUrl && !allImages.some((img) => img.imageUrl === vUrl)) {
+              allImages.push({
+                imageUrl: vUrl,
+                altText: `${data.name} - ${v.color || 'Variant'}`,
+                isPrimary: allImages.length === 0,
+                sortOrder: allImages.length,
+              });
+            }
+          });
+        }
+
         await tx.productImage.deleteMany({ where: { productId: id } });
         await tx.productImage.createMany({
-          data: data.images.map((img, idx) => ({
+          data: allImages.map((img, idx) => ({
             productId: id,
             imageUrl: img.imageUrl,
             altText: img.altText || data.name,
@@ -191,7 +215,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         });
       }
 
-      // 3. Refresh Variants with Auto-Generated Variant SKUs & Dynamic Attributes
+      // 3. Refresh Variants with Auto-Generated Variant SKUs, Dedicated Image URL & Dynamic Attributes
       if (data.variants) {
         await tx.productVariant.deleteMany({ where: { productId: id } });
         if (hasVariants) {
@@ -221,6 +245,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                 availableStock: Number(v.stock || 0),
                 size: v.size || null,
                 color: v.color || null,
+                imageUrl: variantImgUrl || null,
                 weight: v.weight ? Number(v.weight) : null,
                 attributes:
                   Object.keys(attributesPayload).length > 0 ? attributesPayload : undefined,
@@ -279,8 +304,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       data: result,
     });
   } catch (error: any) {
-    console.error('❌ PUT Seller Product Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'PUT Seller Product Error');
   }
 }
 
@@ -341,7 +365,6 @@ export async function DELETE(
       message: `Product "${product.name}" deleted successfully.`,
     });
   } catch (error: any) {
-    console.error('❌ DELETE Seller Product Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'DELETE Seller Product Error');
   }
 }

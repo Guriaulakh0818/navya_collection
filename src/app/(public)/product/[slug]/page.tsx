@@ -55,29 +55,56 @@ async function getFormattedProduct(slug: string) {
               slug: dbProd.category.slug,
             }
           : null,
-        images:
-          dbProd.images && dbProd.images.length > 0
-            ? dbProd.images.map((img: any) => ({
-                id: img.id,
-                url: img.imageUrl,
-                alt: img.altText || dbProd.name,
-                isPrimary: Boolean(img.isPrimary),
-              }))
-            : [],
+        images: (() => {
+          const combinedImages = (dbProd.images || []).map((img: any) => ({
+            id: img.id,
+            url: img.imageUrl,
+            alt: img.altText || dbProd.name,
+            isPrimary: Boolean(img.isPrimary),
+          }));
+
+          if (dbProd.variants && dbProd.variants.length > 0) {
+            dbProd.variants.forEach((v: any) => {
+              const vImg = v.imageUrl || (v.attributes as any)?.imageUrl || v.image;
+              if (vImg && !combinedImages.some((img: any) => img.url === vImg)) {
+                combinedImages.push({
+                  id: `v-img-${v.id}`,
+                  url: vImg,
+                  alt: `${dbProd.name} - ${v.color || 'Variant'}`,
+                  isPrimary: combinedImages.length === 0,
+                });
+              }
+            });
+          }
+          return combinedImages;
+        })(),
         variants:
           dbProd.variants && dbProd.variants.length > 0
-            ? dbProd.variants.map((v: any) => ({
-                id: v.id,
-                sku: v.sku || `${dbProd.sku}-${v.id}`,
-                name: v.name || v.color || v.size || 'Standard',
-                color: v.color || v.colorName || null,
-                price: Number(v.price !== undefined && v.price !== null ? v.price : dbProd.price),
-                stock:
-                  v.stock !== undefined && v.stock !== null
-                    ? Number(v.stock)
-                    : Number(dbProd.stock || 0),
-                size: v.size || null,
-              }))
+            ? dbProd.variants.map((v: any) => {
+                const variantImg =
+                  v.imageUrl ||
+                  (typeof v.attributes === 'object' && v.attributes !== null
+                    ? (v.attributes as any).imageUrl
+                    : null) ||
+                  v.image ||
+                  null;
+
+                return {
+                  id: v.id,
+                  sku: v.sku || `${dbProd.sku}-${v.id}`,
+                  name: v.name || v.color || v.size || 'Standard',
+                  color: v.color || v.colorName || null,
+                  price: Number(v.price !== undefined && v.price !== null ? v.price : dbProd.price),
+                  stock:
+                    v.stock !== undefined && v.stock !== null
+                      ? Number(v.stock)
+                      : Number(dbProd.stock || 0),
+                  size: v.size || null,
+                  imageUrl: variantImg,
+                  image: variantImg,
+                  attributes: v.attributes || null,
+                };
+              })
             : [],
         reviews,
         shop: dbProd.shop

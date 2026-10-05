@@ -25,6 +25,10 @@ export interface ProductVariant {
   price: number;
   stock: number;
   attributes: Record<string, string>;
+  color?: string;
+  size?: string;
+  imageUrl?: string;
+  image?: string;
 }
 
 export interface Category {

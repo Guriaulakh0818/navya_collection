@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { handleApiError } from '@/backend/lib/api-error-handler';
 import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
@@ -91,7 +92,6 @@ export async function GET(request: NextRequest) {
       counts,
     });
   } catch (error: any) {
-    console.error('❌ GET Admin Product Approvals Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return handleApiError(error, 'GET Admin Product Approvals Error', { isAdmin: true });
   }
 }
