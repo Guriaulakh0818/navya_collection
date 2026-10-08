@@ -15,6 +15,7 @@ import Link from 'next/link';
 
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/providers';
 
 interface ShopData {
   id: string;
@@ -42,6 +43,7 @@ export default function AdminShopsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const { toast } = useToast();
 
   useEffect(() => {
     async function loadShops() {
@@ -63,15 +65,18 @@ export default function AdminShopsPage() {
               suspendedShops: 0,
             },
           );
+        } else {
+          toast(json?.message || 'Failed to load shops', 'error');
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to load admin shops:', err);
+        toast('Network connection error while fetching shops.', 'error');
       } finally {
         setIsLoading(false);
       }
     }
     loadShops();
-  }, [search, statusFilter]);
+  }, [search, statusFilter, toast]);
 
   return (
     <div className="space-y-6 font-sans">

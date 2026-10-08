@@ -16,43 +16,48 @@ export async function GET() {
     }
 
     // 1. Fetch live metrics and platform aggregates (Batch 1: Metrics)
-    const [ordersAgg, shopStatusGroups, vendorOrdersAgg, productsCount, customersCount] =
-      await Promise.all([
-        prisma.order
-          .aggregate({
-            _count: { id: true },
-            _sum: { totalAmount: true },
-          })
-          .catch((err) => {
-            console.error('Failed to aggregate orders:', err);
-            return { _count: { id: 0 }, _sum: { totalAmount: 0 } };
-          }),
+    const [
+      ordersAgg,
+      approvedShopsCount,
+      pendingShopsCount,
+      vendorOrdersAgg,
+      productsCount,
+      customersCount,
+      directOrdersCount,
+    ] = await Promise.all([
+      prisma.order
+        .aggregate({
+          _count: { id: true },
+          _sum: { totalAmount: true },
+        })
+        .catch((err) => {
+          console.error('Failed to aggregate orders:', err);
+          return { _count: { id: 0 }, _sum: { totalAmount: 0 } };
+        }),
 
-        prisma.shop
-          .groupBy({
-            by: ['status'],
-            _count: { _all: true },
-          })
-          .catch((err) => {
-            console.error('Failed to group shops by status:', err);
-            return [];
-          }),
+      prisma.shop.count({ where: { status: 'APPROVED' } }).catch(() => 0),
 
-        prisma.vendorOrder
-          .aggregate({
-            _sum: { commissionAmount: true, vendorPayoutAmount: true },
-          })
-          .catch((err) => {
-            console.error('Failed to aggregate vendor orders:', err);
-            return { _sum: { commissionAmount: 0, vendorPayoutAmount: 0 } };
-          }),
+      prisma.shop
+        .count({ where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } } })
+        .catch(() => 0),
 
-        prisma.product.count({ where: { status: 'draft' } }).catch(() => 0),
+      prisma.vendorOrder
+        .aggregate({
+          _sum: { commissionAmount: true, vendorPayoutAmount: true },
+        })
+        .catch((err) => {
+          console.error('Failed to aggregate vendor orders:', err);
+          return { _sum: { commissionAmount: 0, vendorPayoutAmount: 0 } };
+        }),
 
-        prisma.user.count({ where: { role: { in: ['USER', 'CUSTOMER'] } } }).catch(() => 0),
-      ]);
+      prisma.product.count({ where: { status: 'draft' } }).catch(() => 0),
 
-    // 2. Fetch recent feeds (Batch 2: Feed listings)
+      prisma.user.count({ where: { role: { in: ['USER', 'CUSTOMER'] } } }).catch(() => 0),
+
+      prisma.order.count().catch(() => 0),
+    ]);
+
+    // 2. Fetch recent feeds (Batch 2: Feed listings) with multi-stage fallback
     const [sellersList, productsList, ordersList, shopsList] = await Promise.all([
       // Pending seller onboarding applications
       prisma.shop
@@ -67,7 +72,26 @@ export async function GET() {
             addresses: { take: 1 },
           },
         })
-        .catch(() => []),
+        .catch(() =>
+          prisma.shop
+            .findMany({
+              where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } },
+              take: 5,
+              orderBy: { createdAt: 'desc' },
+              include: {
+                owner: { select: { name: true, email: true, mobile: true } },
+              },
+            })
+            .catch(() =>
+              prisma.shop
+                .findMany({
+                  where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } },
+                  take: 5,
+                  orderBy: { createdAt: 'desc' },
+                })
+                .catch(() => []),
+            ),
+        ),
 
       // Pending products waiting for moderation
       prisma.product
@@ -81,7 +105,24 @@ export async function GET() {
             category: { select: { name: true } },
           },
         })
-        .catch(() => []),
+        .catch(() =>
+          prisma.product
+            .findMany({
+              where: { status: 'draft' },
+              take: 5,
+              orderBy: { createdAt: 'desc' },
+              include: { images: { take: 1 } },
+            })
+            .catch(() =>
+              prisma.product
+                .findMany({
+                  where: { status: 'draft' },
+                  take: 5,
+                  orderBy: { createdAt: 'desc' },
+                })
+                .catch(() => []),
+            ),
+        ),
 
       // Recent orders feed
       prisma.order
@@ -98,7 +139,22 @@ export async function GET() {
             },
           },
         })
-        .catch(() => []),
+        .catch(() =>
+          prisma.order
+            .findMany({
+              take: 8,
+              orderBy: { createdAt: 'desc' },
+              include: { user: { select: { name: true, email: true } } },
+            })
+            .catch(() =>
+              prisma.order
+                .findMany({
+                  take: 8,
+                  orderBy: { createdAt: 'desc' },
+                })
+                .catch(() => []),
+            ),
+        ),
 
       // Recent shops
       prisma.shop
@@ -109,20 +165,23 @@ export async function GET() {
             owner: { select: { name: true } },
           },
         })
-        .catch(() => []),
+        .catch(() =>
+          prisma.shop
+            .findMany({
+              take: 5,
+              orderBy: { createdAt: 'desc' },
+            })
+            .catch(() => []),
+        ),
     ]);
 
-    // Calculate shop status breakdown
-    const shopCountsMap: Record<string, number> = {};
-    for (const group of shopStatusGroups) {
-      shopCountsMap[group.status] = group._count?._all || 0;
-    }
-
-    const totalOrdersCount = Number(ordersAgg?._count?.id || 0);
-    const activeShopsCount = Number(shopCountsMap['APPROVED'] || 0);
-    const pendingSellersCount = Number(
-      (shopCountsMap['PENDING_VERIFICATION'] || 0) + (shopCountsMap['UNDER_REVIEW'] || 0),
+    const totalOrdersCount = Math.max(
+      Number(ordersAgg?._count?.id || 0),
+      Number(directOrdersCount || 0),
+      ordersList ? ordersList.length : 0,
     );
+    const activeShopsCount = Number(approvedShopsCount || 0);
+    const pendingSellersCount = Number(pendingShopsCount || 0);
     const pendingProductsCount = Number(productsCount || 0);
     const totalCustomersCount = Number(customersCount || 0);
     const pendingSellersList = sellersList || [];

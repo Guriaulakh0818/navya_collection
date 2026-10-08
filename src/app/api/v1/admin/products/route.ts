@@ -61,8 +61,23 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const [products, totalCount, statusGroups] = await Promise.all([
-      prisma.product.findMany({
+    // 1. Compute verified tab counts defensively
+    const [totalCount, countAll, countActive, countPending, countDraft, countArchived] =
+      await Promise.all([
+        prisma.product.count({ where: whereCondition }).catch(() => 0),
+        prisma.product.count({ where: { deletedAt: null } }).catch(() => 0),
+        prisma.product.count({ where: { status: 'active', deletedAt: null } }).catch(() => 0),
+        prisma.product
+          .count({ where: { status: { in: ['pending_approval', 'draft'] }, deletedAt: null } })
+          .catch(() => 0),
+        prisma.product.count({ where: { status: 'draft', deletedAt: null } }).catch(() => 0),
+        prisma.product.count({ where: { status: 'archived', deletedAt: null } }).catch(() => 0),
+      ]);
+
+    // 2. Fetch products with multi-stage fallback to prevent relation errors
+    let products: any[] = [];
+    try {
+      products = await prisma.product.findMany({
         where: whereCondition,
         include: {
           images: { orderBy: { sortOrder: 'asc' } },
@@ -82,31 +97,46 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
-      }),
-      prisma.product.count({ where: whereCondition }),
-      prisma.product
-        .groupBy({
-          by: ['status'],
-          where: { deletedAt: null },
-          _count: { _all: true },
-        })
-        .catch(() => []),
-    ]);
-
-    const countsMap: Record<string, number> = {};
-    let totalAllProducts = 0;
-    for (const item of statusGroups) {
-      const c = item._count?._all || 0;
-      countsMap[item.status] = c;
-      totalAllProducts += c;
+      });
+    } catch (err: any) {
+      console.warn(
+        '⚠️ Full product include failed, attempting resilient fallback fetch:',
+        err?.message,
+      );
+      try {
+        products = await prisma.product.findMany({
+          where: whereCondition,
+          include: {
+            images: true,
+            variants: true,
+            category: { select: { id: true, name: true, slug: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        });
+      } catch (fallbackErr: any) {
+        console.error(
+          '⚠️ Secondary product fetch failed, attempting minimal fetch:',
+          fallbackErr?.message,
+        );
+        products = await prisma.product
+          .findMany({
+            where: whereCondition,
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: limit,
+          })
+          .catch(() => []);
+      }
     }
 
     const counts = {
-      ALL: totalAllProducts,
-      active: countsMap['active'] || 0,
-      pending_approval: (countsMap['pending_approval'] || 0) + (countsMap['draft'] || 0),
-      draft: countsMap['draft'] || 0,
-      archived: countsMap['archived'] || 0,
+      ALL: countAll,
+      active: countActive,
+      pending_approval: countPending,
+      draft: countDraft,
+      archived: countArchived,
     };
 
     return NextResponse.json({

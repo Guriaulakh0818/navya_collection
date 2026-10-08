@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/providers';
 import { formatPrice } from '@/utils/format-price';
 
 interface RealOrderData {
@@ -85,6 +86,7 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const fetchRealOrders = useCallback(async () => {
     setIsLoading(true);
@@ -98,13 +100,16 @@ export default function AdminOrdersPage() {
       if (res.ok && json?.success && json?.data) {
         setOrders(json.data.orders || []);
         setStats(json.data.stats || { totalOrders: 0, totalRevenue: 0 });
+      } else {
+        toast(json?.message || 'Failed to load orders', 'error');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load real admin orders:', err);
+      toast('Network connection error while fetching orders.', 'error');
     } finally {
       setIsLoading(false);
     }
-  }, [search, statusFilter]);
+  }, [search, statusFilter, toast]);
 
   useEffect(() => {
     fetchRealOrders();
@@ -188,7 +193,7 @@ export default function AdminOrdersPage() {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-navy focus:outline-none"
             >
-              <option value="ALL">All Statuses ({orders.length})</option>
+              <option value="ALL">All Statuses ({stats.totalOrders || orders.length})</option>
               <option value="PENDING">Pending</option>
               <option value="CONFIRMED">Confirmed</option>
               <option value="SHIPPED">Shipped</option>

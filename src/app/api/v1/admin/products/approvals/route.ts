@@ -71,7 +71,49 @@ export async function GET(request: NextRequest) {
             skip,
             take: limit,
           })
-          .catch(() => []),
+          .catch(() =>
+            prisma.product
+              .findMany({
+                where: whereCondition,
+                include: {
+                  images: { orderBy: { sortOrder: 'asc' } },
+                  variants: true,
+                  category: { select: { id: true, name: true, slug: true } },
+                  shop: {
+                    select: {
+                      id: true,
+                      name: true,
+                      slug: true,
+                    },
+                  },
+                },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit,
+              })
+              .catch(() =>
+                prisma.product
+                  .findMany({
+                    where: whereCondition,
+                    include: {
+                      images: { orderBy: { sortOrder: 'asc' } },
+                    },
+                    orderBy: { createdAt: 'desc' },
+                    skip,
+                    take: limit,
+                  })
+                  .catch(() =>
+                    prisma.product
+                      .findMany({
+                        where: whereCondition,
+                        orderBy: { createdAt: 'desc' },
+                        skip,
+                        take: limit,
+                      })
+                      .catch(() => []),
+                  ),
+              ),
+          ),
         prisma.product.count({ where: whereCondition }).catch(() => 0),
         prisma.product.count({ where: { deletedAt: null } }).catch(() => 0),
         prisma.product

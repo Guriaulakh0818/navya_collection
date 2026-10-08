@@ -36,15 +36,22 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const [totalShops, approvedShops, pendingShops, suspendedShops, shopsList] = await Promise.all([
-      prisma.shop.count(),
-      prisma.shop.count({ where: { status: 'APPROVED' } }),
-      prisma.shop.count({
-        where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } },
-      }),
-      prisma.shop.count({ where: { status: 'SUSPENDED' } }),
+    // 1. Fetch counts defensively
+    let [totalShops, approvedShops, pendingShops, suspendedShops] = await Promise.all([
+      prisma.shop.count({ where: { deletedAt: null } }).catch(() => 0),
+      prisma.shop.count({ where: { status: 'APPROVED', deletedAt: null } }).catch(() => 0),
+      prisma.shop
+        .count({
+          where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] }, deletedAt: null },
+        })
+        .catch(() => 0),
+      prisma.shop.count({ where: { status: 'SUSPENDED', deletedAt: null } }).catch(() => 0),
+    ]);
 
-      prisma.shop.findMany({
+    // 2. Fetch shops with relational fallback to prevent crashes
+    let shopsList: any[] = [];
+    try {
+      shopsList = await prisma.shop.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         take: limit,
@@ -56,8 +63,47 @@ export async function GET(request: NextRequest) {
             select: { products: true, orderItems: true },
           },
         },
-      }),
-    ]);
+      });
+    } catch (err: any) {
+      console.warn(
+        '⚠️ Full shop include failed, falling back to basic owner include:',
+        err?.message,
+      );
+      try {
+        shopsList = await prisma.shop.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          include: {
+            owner: {
+              select: { name: true, email: true, mobile: true },
+            },
+          },
+        });
+      } catch (fallbackErr: any) {
+        console.error(
+          '⚠️ Secondary shop fetch failed, attempting minimal fetch:',
+          fallbackErr?.message,
+        );
+        shopsList = await prisma.shop
+          .findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            take: limit,
+          })
+          .catch(() => []);
+      }
+    }
+
+    // Auto-reconcile stats from fetched list if individual counts were zeroed out
+    if (totalShops === 0 && shopsList.length > 0) {
+      totalShops = shopsList.length;
+      approvedShops = shopsList.filter((s) => s.status === 'APPROVED').length;
+      pendingShops = shopsList.filter((s) =>
+        ['PENDING_VERIFICATION', 'UNDER_REVIEW'].includes(s.status),
+      ).length;
+      suspendedShops = shopsList.filter((s) => s.status === 'SUSPENDED').length;
+    }
 
     return NextResponse.json({
       success: true,
@@ -74,9 +120,9 @@ export async function GET(request: NextRequest) {
           slug: s.slug,
           status: s.status,
           commissionRate: Number(s.commissionRate || 10.0),
-          verificationBadge: s.verificationBadge,
-          productCount: s._count.products,
-          ordersCount: s._count.orderItems,
+          verificationBadge: s.verificationBadge || 'NONE',
+          productCount: s._count?.products ?? 0,
+          ordersCount: s._count?.orderItems ?? 0,
           ownerName: s.owner?.name || 'Store Owner',
           ownerEmail: s.owner?.email || 'N/A',
           ownerMobile: s.owner?.mobile || 'N/A',

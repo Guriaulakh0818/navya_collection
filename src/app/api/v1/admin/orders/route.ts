@@ -44,10 +44,47 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const [totalOrders, ordersList, totalRevenueAgg] = await Promise.all([
-      prisma.order.count({ where }).catch(() => 0),
+    // 1. Fetch aggregate metrics (count and revenue in one consistent query)
+    const [orderStats, directCount] = await Promise.all([
       prisma.order
-        .findMany({
+        .aggregate({
+          where,
+          _count: { id: true },
+          _sum: { totalAmount: true },
+        })
+        .catch((err) => {
+          console.warn('⚠️ Order aggregate failed:', err?.message);
+          return { _count: { id: 0 }, _sum: { totalAmount: 0 } };
+        }),
+      prisma.order.count({ where }).catch(() => 0),
+    ]);
+
+    // 2. Fetch orders with multi-stage relation fallback
+    let ordersList: any[] = [];
+    try {
+      ordersList = await prisma.order.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          user: { select: { id: true, name: true, email: true, mobile: true } },
+          address: true,
+          items: {
+            include: {
+              shop: { select: { id: true, name: true, slug: true } },
+              product: { select: { name: true, images: { take: 1 } } },
+            },
+          },
+        },
+      });
+    } catch (err: any) {
+      console.warn(
+        '⚠️ Full order include failed, attempting fallback with basic items include:',
+        err?.message,
+      );
+      try {
+        ordersList = await prisma.order.findMany({
           where,
           orderBy: { createdAt: 'desc' },
           skip,
@@ -58,19 +95,45 @@ export async function GET(request: NextRequest) {
             items: {
               include: {
                 shop: { select: { id: true, name: true, slug: true } },
-                product: { select: { name: true, images: { take: 1 } } },
               },
             },
           },
-        })
-        .catch(() => []),
-      prisma.order
-        .aggregate({
-          where,
-          _sum: { totalAmount: true },
-        })
-        .catch(() => ({ _sum: { totalAmount: 0 } })),
-    ]);
+        });
+      } catch (fallbackErr: any) {
+        console.warn(
+          '⚠️ Secondary order include failed, attempting basic items fetch:',
+          fallbackErr?.message,
+        );
+        try {
+          ordersList = await prisma.order.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: limit,
+            include: {
+              user: { select: { id: true, name: true, email: true, mobile: true } },
+              address: true,
+              items: true,
+            },
+          });
+        } catch {
+          ordersList = await prisma.order
+            .findMany({
+              where,
+              orderBy: { createdAt: 'desc' },
+              skip,
+              take: limit,
+            })
+            .catch(() => []);
+        }
+      }
+    }
+
+    const totalOrders = Math.max(
+      Number(orderStats?._count?.id || directCount || 0),
+      ordersList.length,
+    );
+    const totalRevenueAgg = orderStats;
 
     const formattedOrders = (ordersList || []).map((o: any) => ({
       id: o.id,

@@ -45,14 +45,23 @@ export function SellerApprovalTable() {
       if (searchQuery) url.searchParams.set('q', searchQuery);
 
       const res = await fetch(url.toString());
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
-      if (data.success) {
+      if (res.ok && data?.success) {
         setShops(data.data || []);
         if (data.counts) setCounts(data.counts);
+      } else {
+        setToastMessage({
+          type: 'error',
+          text: data?.message || 'Failed to fetch sellers list.',
+        });
       }
     } catch (err: any) {
       console.error('Failed to fetch sellers:', err);
+      setToastMessage({
+        type: 'error',
+        text: 'Network connection error while fetching sellers.',
+      });
     } finally {
       setIsLoading(false);
     }

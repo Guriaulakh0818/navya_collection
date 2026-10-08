@@ -30,7 +30,7 @@ export function handleApiError(
   const userMessage =
     options?.userMessage ||
     (options?.isAdmin
-      ? `Operation issue in ${context}. Please retry.`
+      ? `[${context}]: ${err?.message || 'Server operation error'}`
       : USER_FRIENDLY_SERVER_ERROR);
 
   const responseBody: Record<string, any> = {

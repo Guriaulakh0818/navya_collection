@@ -47,10 +47,55 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Execute list query and ALL tab counts concurrently in ONE Promise.all
-    const [shops, countAll, countPending, countApproved, countRejected, countSuspended] =
-      await Promise.all([
-        prisma.shop.findMany({
+    // 1. Calculate tab counts
+    let [countAll, countPending, countApproved, countRejected, countSuspended] = await Promise.all([
+      prisma.shop.count({ where: { deletedAt: null } }).catch(() => 0),
+      prisma.shop
+        .count({
+          where: {
+            status: { in: [ShopStatus.PENDING_VERIFICATION, 'UNDER_REVIEW' as any] },
+            deletedAt: null,
+          },
+        })
+        .catch(() => 0),
+      prisma.shop.count({ where: { status: ShopStatus.APPROVED, deletedAt: null } }).catch(() => 0),
+      prisma.shop.count({ where: { status: ShopStatus.REJECTED, deletedAt: null } }).catch(() => 0),
+      prisma.shop
+        .count({ where: { status: ShopStatus.SUSPENDED, deletedAt: null } })
+        .catch(() => 0),
+    ]);
+
+    // 2. Fetch shops with relational fallbacks
+    let shops: any[] = [];
+    try {
+      shops = await prisma.shop.findMany({
+        where: whereCondition,
+        include: {
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              mobile: true,
+              role: true,
+              approvalStatus: true,
+              createdAt: true,
+            },
+          },
+          sellerProfile: true,
+          addresses: true,
+          documents: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      });
+    } catch (err: any) {
+      console.warn(
+        '⚠️ Full seller include failed, falling back to basic owner include:',
+        err?.message,
+      );
+      try {
+        shops = await prisma.shop.findMany({
           where: whereCondition,
           include: {
             owner: {
@@ -64,32 +109,32 @@ export async function GET(request: NextRequest) {
                 createdAt: true,
               },
             },
-            sellerProfile: true,
-            addresses: true,
-            documents: true,
           },
           orderBy: { createdAt: 'desc' },
           take: 100,
-        }),
-        prisma.shop.count({ where: { deletedAt: null } }).catch(() => 0),
-        prisma.shop
-          .count({
-            where: {
-              status: { in: [ShopStatus.PENDING_VERIFICATION, 'UNDER_REVIEW' as any] },
-              deletedAt: null,
-            },
+        });
+      } catch (fallbackErr: any) {
+        console.error('⚠️ Minimal seller fetch fallback:', fallbackErr?.message);
+        shops = await prisma.shop
+          .findMany({
+            where: whereCondition,
+            orderBy: { createdAt: 'desc' },
+            take: 100,
           })
-          .catch(() => 0),
-        prisma.shop
-          .count({ where: { status: ShopStatus.APPROVED, deletedAt: null } })
-          .catch(() => 0),
-        prisma.shop
-          .count({ where: { status: ShopStatus.REJECTED, deletedAt: null } })
-          .catch(() => 0),
-        prisma.shop
-          .count({ where: { status: ShopStatus.SUSPENDED, deletedAt: null } })
-          .catch(() => 0),
-      ]);
+          .catch(() => []);
+      }
+    }
+
+    // Auto-reconcile tab counts from fetched shops if individual counts were zeroed out
+    if (countAll === 0 && shops.length > 0) {
+      countAll = shops.length;
+      countPending = shops.filter((s) =>
+        [ShopStatus.PENDING_VERIFICATION, 'UNDER_REVIEW'].includes(s.status),
+      ).length;
+      countApproved = shops.filter((s) => s.status === ShopStatus.APPROVED).length;
+      countRejected = shops.filter((s) => s.status === ShopStatus.REJECTED).length;
+      countSuspended = shops.filter((s) => s.status === ShopStatus.SUSPENDED).length;
+    }
 
     const counts = {
       ALL: countAll,
