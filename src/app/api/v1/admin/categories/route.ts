@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
       orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
     });
 
-    // 2. Fast Bulk Auto-Seed if DB taxonomy is empty or missing
-    if (categories.length < 25 && !query) {
+    // 2. Fast Bulk Auto-Seed ONLY if DB taxonomy is completely empty
+    if (categories.length === 0 && !query) {
       const primaryItems: any[] = [];
       const subItems: any[] = [];
 

@@ -27,7 +27,7 @@ export function SellerApprovalTable() {
     REJECTED: 0,
     SUSPENDED: 0,
   });
-  const [activeTab, setActiveTab] = useState<string>('PENDING_VERIFICATION');
+  const [activeTab, setActiveTab] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedShop, setSelectedShop] = useState<any | null>(null);

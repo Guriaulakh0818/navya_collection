@@ -30,7 +30,7 @@ export function AdminProductApprovalTable() {
     draft: 0,
     archived: 0,
   });
-  const [activeTab, setActiveTab] = useState<string>('pending_approval');
+  const [activeTab, setActiveTab] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
