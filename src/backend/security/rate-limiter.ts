@@ -86,5 +86,5 @@ export const RATE_LIMIT_POLICIES = {
   CHECKOUT: { limit: 10, windowMs: 10 * 60 * 1000 }, // 10 req / 10 min
   CONTACT: { limit: 10, windowMs: 10 * 60 * 1000 }, // 10 req / 10 min
   REVIEWS: { limit: 10, windowMs: 10 * 60 * 1000 }, // 10 req / 10 min
-  ADMIN_API: { limit: 30, windowMs: 60 * 1000 }, // 30 req / 1 min
+  ADMIN_API: { limit: 300, windowMs: 60 * 1000 }, // 300 req / 1 min (Resilient administrative operations)
 };

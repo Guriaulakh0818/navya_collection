@@ -269,7 +269,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           </div>
           <div>
             <p className="text-2xl font-black text-slate-900">
-              ₹{data.stats.totalRevenue.toLocaleString('en-IN')}
+              ₹{Number(data?.stats?.totalRevenue || 0).toLocaleString('en-IN')}
             </p>
             <p className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1 mt-1">
               <TrendingUp className="w-3 h-3" /> +14.2% GMV Volume
@@ -289,7 +289,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           </div>
           <div>
             <p className="text-2xl font-black text-slate-900">
-              ₹{data.stats.adminCommissionEarned.toLocaleString('en-IN')}
+              ₹{Number(data?.stats?.adminCommissionEarned || 0).toLocaleString('en-IN')}
             </p>
             <p className="text-[11px] font-semibold text-indigo-600 mt-1">Platform Revenue</p>
           </div>
@@ -307,8 +307,10 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <p className="text-2xl font-black text-slate-900">{data.stats.pendingSellersCount}</p>
-              {data.stats.pendingSellersCount > 0 && (
+              <p className="text-2xl font-black text-slate-900">
+                {Number(data?.stats?.pendingSellersCount || 0)}
+              </p>
+              {Number(data?.stats?.pendingSellersCount || 0) > 0 && (
                 <span className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-[10px] font-extrabold">
                   Action Needed
                 </span>
@@ -331,9 +333,9 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           <div>
             <div className="flex items-baseline gap-2">
               <p className="text-2xl font-black text-slate-900">
-                {data.stats.pendingProductsCount}
+                {Number(data?.stats?.pendingProductsCount || 0)}
               </p>
-              {data.stats.pendingProductsCount > 0 && (
+              {Number(data?.stats?.pendingProductsCount || 0) > 0 && (
                 <span className="px-2 py-0.5 bg-sky-100 text-sky-800 rounded-full text-[10px] font-extrabold">
                   Review
                 </span>
@@ -357,9 +359,11 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
             </div>
           </div>
           <div>
-            <p className="text-2xl font-black text-slate-900">{data.stats.activeShopsCount}</p>
+            <p className="text-2xl font-black text-slate-900">
+              {Number(data?.stats?.activeShopsCount || 0)}
+            </p>
             <p className="text-[11px] font-semibold text-purple-600 mt-1">
-              View All Shops ({data.stats.activeShopsCount}) →
+              View All Shops ({Number(data?.stats?.activeShopsCount || 0)}) →
             </p>
           </div>
         </Link>
@@ -378,7 +382,9 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
             </div>
           </div>
           <div>
-            <p className="text-2xl font-black text-slate-900">{data.stats.totalCustomersCount}</p>
+            <p className="text-2xl font-black text-slate-900">
+              {Number(data?.stats?.totalCustomersCount || 0)}
+            </p>
             <p className="text-[11px] font-semibold text-rose-600 mt-1">View Users Directory →</p>
           </div>
         </Link>
@@ -562,7 +568,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                       <div className="space-y-0.5 min-w-0">
                         <p className="font-bold text-xs text-slate-900 truncate">{prod.title}</p>
                         <p className="text-[11px] text-amber-700 font-extrabold">
-                          ₹{prod.price.toLocaleString('en-IN')}
+                          ₹{Number(prod?.price || 0).toLocaleString('en-IN')}
                         </p>
                         <p className="text-[10px] text-slate-500 truncate">Shop: {prod.shopName}</p>
                       </div>
@@ -622,7 +628,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                 Gross Platform Sales (GMV)
               </p>
               <p className="text-3xl font-black text-amber-600 font-mono">
-                ₹{data.stats.totalRevenue.toLocaleString('en-IN')}
+                ₹{Number(data?.stats?.totalRevenue || 0).toLocaleString('en-IN')}
               </p>
               <p className="text-[11px] text-slate-500 font-medium">
                 Total gross value processed across all boutiques.
@@ -634,7 +640,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                 Net Admin Commission Revenue
               </p>
               <p className="text-3xl font-black text-emerald-700 font-mono">
-                ₹{data.stats.adminCommissionEarned.toLocaleString('en-IN')}
+                ₹{Number(data?.stats?.adminCommissionEarned || 0).toLocaleString('en-IN')}
               </p>
               <p className="text-[11px] text-emerald-700/80 font-medium">
                 Net platform fee retained after vendor settlement payouts.
@@ -646,7 +652,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                 Pending Seller Payout Balance
               </p>
               <p className="text-3xl font-black text-amber-700 font-mono">
-                ₹{data.stats.pendingPayoutsAmount.toLocaleString('en-IN')}
+                ₹{Number(data?.stats?.pendingPayoutsAmount || 0).toLocaleString('en-IN')}
               </p>
               <p className="text-[11px] text-amber-700/80 font-medium">
                 Balance queued for bi-weekly merchant bank transfer payouts.
@@ -696,7 +702,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                     <td className="py-3 px-4 font-semibold text-slate-800">{ord.customerName}</td>
                     <td className="py-3 px-4 text-slate-600">{ord.shopName}</td>
                     <td className="py-3 px-4 font-bold text-slate-900">
-                      ₹{ord.totalAmount.toLocaleString('en-IN')}
+                      ₹{Number(ord?.totalAmount || 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-3 px-4">
                       <span className="px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-extrabold rounded-md">
@@ -719,7 +725,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                       </span>
                     </td>
                     <td className="py-3 px-4 text-slate-500">
-                      {new Date(ord.createdAt).toLocaleDateString('en-IN')}
+                      {ord?.createdAt ? new Date(ord.createdAt).toLocaleDateString('en-IN') : 'N/A'}
                     </td>
                   </tr>
                 ))}

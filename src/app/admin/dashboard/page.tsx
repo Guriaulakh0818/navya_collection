@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
-import { getCurrentUser } from '@/backend/lib/session';
+import { getAdminUser } from '@/backend/lib/session';
 import {
   AdminDashboardClient,
   AdminDashboardData,
@@ -17,98 +17,138 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
-  const admin = await getCurrentUser();
+  const admin = await getAdminUser();
 
   if (
     !admin ||
-    !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
+    !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes((admin.role || '').toUpperCase())
   ) {
     redirect('/admin/login');
   }
 
-  // Fetch initial live platform data from Prisma
-  const [
-    totalOrdersCount,
-    activeShopsCount,
-    pendingSellersCount,
-    pendingProductsCount,
-    totalCustomersCount,
-    pendingSellersList,
-    pendingProductsList,
-    recentOrdersList,
-    recentShopsList,
-    ordersAgg,
-    vendorOrdersAgg,
-  ] = await Promise.all([
-    prisma.order.count(),
-    prisma.shop.count({ where: { status: 'APPROVED' } }),
-    prisma.shop.count({ where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } } }),
-    prisma.product.count({ where: { status: 'draft' } }),
-    prisma.user.count({ where: { role: { in: ['USER', 'CUSTOMER'] } } }),
+  // Fetch initial platform data from Prisma with defensive try/catch guard
+  let totalOrdersCount = 0;
+  let activeShopsCount = 0;
+  let pendingSellersCount = 0;
+  let pendingProductsCount = 0;
+  let totalCustomersCount = 0;
+  let pendingSellersList: any[] = [];
+  let pendingProductsList: any[] = [];
+  let recentOrdersList: any[] = [];
+  let recentShopsList: any[] = [];
+  let totalRevenue = 0;
+  let adminCommissionEarned = 0;
+  let pendingPayoutsAmount = 0;
 
-    // Pending seller onboarding applications
-    prisma.shop.findMany({
-      where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } },
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        owner: {
-          select: { name: true, email: true, mobile: true },
-        },
-        addresses: { take: 1 },
-      },
-    }),
+  try {
+    const [
+      ordersCount,
+      shopsCount,
+      sellersCount,
+      productsCount,
+      customersCount,
+      sellersList,
+      productsList,
+      ordersList,
+      shopsList,
+      ordersAgg,
+      vendorOrdersAgg,
+    ] = await Promise.all([
+      prisma.order.count().catch(() => 0),
+      prisma.shop.count({ where: { status: 'APPROVED' } }).catch(() => 0),
+      prisma.shop
+        .count({ where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } } })
+        .catch(() => 0),
+      prisma.product.count({ where: { status: 'draft' } }).catch(() => 0),
+      prisma.user.count({ where: { role: { in: ['USER', 'CUSTOMER'] } } }).catch(() => 0),
 
-    // Pending products waiting for moderation
-    prisma.product.findMany({
-      where: { status: 'draft' },
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        shop: { select: { name: true } },
-        images: { take: 1 },
-        category: { select: { name: true } },
-      },
-    }),
+      // Pending seller onboarding applications
+      prisma.shop
+        .findMany({
+          where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } },
+          take: 5,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            owner: {
+              select: { name: true, email: true, mobile: true },
+            },
+            addresses: { take: 1 },
+          },
+        })
+        .catch(() => []),
 
-    // Recent orders feed
-    prisma.order.findMany({
-      take: 8,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: { select: { name: true, email: true } },
-        items: {
-          take: 1,
+      // Pending products waiting for moderation
+      prisma.product
+        .findMany({
+          where: { status: 'draft' },
+          take: 5,
+          orderBy: { createdAt: 'desc' },
           include: {
             shop: { select: { name: true } },
+            images: { take: 1 },
+            category: { select: { name: true } },
           },
-        },
-      },
-    }),
+        })
+        .catch(() => []),
 
-    // Recent shops
-    prisma.shop.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        owner: { select: { name: true } },
-      },
-    }),
+      // Recent orders feed
+      prisma.order
+        .findMany({
+          take: 8,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: { select: { name: true, email: true } },
+            items: {
+              take: 1,
+              include: {
+                shop: { select: { name: true } },
+              },
+            },
+          },
+        })
+        .catch(() => []),
 
-    // Revenue aggregate
-    prisma.order.aggregate({
-      _sum: { totalAmount: true },
-    }),
+      // Recent shops
+      prisma.shop
+        .findMany({
+          take: 5,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            owner: { select: { name: true } },
+          },
+        })
+        .catch(() => []),
 
-    // Vendor orders aggregate for authoritative commission and payout
-    prisma.vendorOrder.aggregate({
-      _sum: { commissionAmount: true, vendorPayoutAmount: true },
-    }),
-  ]);
+      // Revenue aggregate
+      prisma.order
+        .aggregate({
+          _sum: { totalAmount: true },
+        })
+        .catch(() => ({ _sum: { totalAmount: 0 } })),
 
-  const totalRevenue = Number(ordersAgg._sum.totalAmount || 0);
-  const adminCommissionEarned = Number(vendorOrdersAgg._sum.commissionAmount || 0);
-  const pendingPayoutsAmount = Number(vendorOrdersAgg._sum.vendorPayoutAmount || 0);
+      // Vendor orders aggregate for authoritative commission and payout
+      prisma.vendorOrder
+        .aggregate({
+          _sum: { commissionAmount: true, vendorPayoutAmount: true },
+        })
+        .catch(() => ({ _sum: { commissionAmount: 0, vendorPayoutAmount: 0 } })),
+    ]);
+
+    totalOrdersCount = Number(ordersCount || 0);
+    activeShopsCount = Number(shopsCount || 0);
+    pendingSellersCount = Number(sellersCount || 0);
+    pendingProductsCount = Number(productsCount || 0);
+    totalCustomersCount = Number(customersCount || 0);
+    pendingSellersList = sellersList || [];
+    pendingProductsList = productsList || [];
+    recentOrdersList = ordersList || [];
+    recentShopsList = shopsList || [];
+    totalRevenue = Number(ordersAgg?._sum?.totalAmount || 0);
+    adminCommissionEarned = Number(vendorOrdersAgg?._sum?.commissionAmount || 0);
+    pendingPayoutsAmount = Number(vendorOrdersAgg?._sum?.vendorPayoutAmount || 0);
+  } catch (err) {
+    console.error('Non-blocking admin dashboard data fetch error:', err);
+  }
 
   const initialData: AdminDashboardData = {
     stats: {
@@ -126,11 +166,11 @@ export default async function AdminDashboardPage() {
       name: s.name,
       slug: s.slug,
       status: s.status,
-      createdAt: s.createdAt.toISOString(),
+      createdAt: s.createdAt ? new Date(s.createdAt).toISOString() : new Date().toISOString(),
       ownerName: s.owner?.name || 'Applicant',
       ownerEmail: s.owner?.email || 'N/A',
       ownerMobile: s.owner?.mobile || undefined,
-      city: s.addresses[0]?.city || undefined,
+      city: s.addresses?.[0]?.city || undefined,
     })),
     pendingProducts: pendingProductsList.map((p) => ({
       id: p.id,
@@ -138,19 +178,19 @@ export default async function AdminDashboardPage() {
       price: Number(p.price || 0),
       category: p.category?.name,
       shopName: p.shop?.name || 'Seller Boutique',
-      createdAt: p.createdAt.toISOString(),
-      imageUrl: p.images[0]?.imageUrl || undefined,
+      createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
+      imageUrl: p.images?.[0]?.imageUrl || undefined,
     })),
     recentOrders: recentOrdersList.map((o) => ({
       id: o.id,
       orderNumber: o.orderNumber,
       customerName: o.user?.name || 'Customer',
-      shopName: o.items[0]?.shop?.name || 'Navya Boutique',
+      shopName: o.items?.[0]?.shop?.name || 'Navya Boutique',
       totalAmount: Number(o.totalAmount || 0),
       status: o.orderStatus,
       paymentStatus: o.paymentStatus,
       paymentMethod: o.paymentMethod || 'PREPAID',
-      createdAt: o.createdAt.toISOString(),
+      createdAt: o.createdAt ? new Date(o.createdAt).toISOString() : new Date().toISOString(),
     })),
     recentShops: recentShopsList.map((s) => ({
       id: s.id,
@@ -158,7 +198,7 @@ export default async function AdminDashboardPage() {
       slug: s.slug,
       status: s.status,
       ownerName: s.owner?.name || 'Owner',
-      createdAt: s.createdAt.toISOString(),
+      createdAt: s.createdAt ? new Date(s.createdAt).toISOString() : new Date().toISOString(),
     })),
   };
 

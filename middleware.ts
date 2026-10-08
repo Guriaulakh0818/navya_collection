@@ -283,15 +283,19 @@ export default async function middleware(req: NextRequest) {
       );
     }
   } else if (effectivePathname.startsWith('/api/v1/admin')) {
+    const hasAdminCookie = Boolean(
+      req.cookies.get(ADMIN_COOKIE)?.value || req.cookies.get(SESSION_COOKIE_NAME)?.value,
+    );
+    const adminLimit = hasAdminCookie ? 600 : RATE_LIMIT_POLICIES.ADMIN_API.limit;
     const rateCheck = checkRateLimit(
       `admin_api:${ip}`,
-      RATE_LIMIT_POLICIES.ADMIN_API.limit,
+      adminLimit,
       RATE_LIMIT_POLICIES.ADMIN_API.windowMs,
     );
     if (!rateCheck.allowed) {
       logSecurityEvent('RATE_LIMIT_EXCEEDED', `Admin API rate limit exceeded for IP: ${ip}`);
       return NextResponse.json(
-        { success: false, message: 'Admin API rate limit exceeded.' },
+        { success: false, message: 'Admin API rate limit exceeded. Please wait a moment.' },
         { status: 429 },
       );
     }

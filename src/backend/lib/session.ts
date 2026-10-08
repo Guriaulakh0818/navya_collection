@@ -152,7 +152,8 @@ export async function getCurrentUser(targetCookieName?: string): Promise<Session
     const cookieStore = await cookies();
     const token = targetCookieName
       ? cookieStore.get(targetCookieName)?.value
-      : cookieStore.get(SESSION_COOKIE_NAME)?.value;
+      : cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value ||
+        cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
     if (!token) return null;
 
@@ -172,7 +173,7 @@ export async function getCurrentUser(targetCookieName?: string): Promise<Session
 
     // 3. Database session validation
     try {
-      const session = await prisma.userSession.findUnique({
+      const session = await (prisma as any).userSession?.findUnique?.({
         where: { tokenHash },
         include: {
           user: {
@@ -187,18 +188,18 @@ export async function getCurrentUser(targetCookieName?: string): Promise<Session
         },
       });
 
-      if (session) {
+      if (session && session.user) {
         // Check session expiry
-        if (session.expiresAt < new Date()) {
-          await prisma.userSession.delete({ where: { tokenHash } }).catch(() => {});
+        if (session.expiresAt && session.expiresAt < new Date()) {
+          await (prisma as any).userSession?.delete?.({ where: { tokenHash } }).catch(() => {});
           return null;
         }
 
         // Refresh lastActiveAt (throttled to avoid DB spam on every millisecond)
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-        if (session.lastActiveAt < fiveMinutesAgo) {
-          await prisma.userSession
-            .update({
+        if (session.lastActiveAt && session.lastActiveAt < fiveMinutesAgo) {
+          await (prisma as any).userSession
+            ?.update?.({
               where: { tokenHash },
               data: { lastActiveAt: new Date() },
             })
@@ -211,8 +212,8 @@ export async function getCurrentUser(targetCookieName?: string): Promise<Session
           role: session.user.role || decoded.role || 'USER',
           name: session.user.profile?.name || session.user.name || null,
           email: session.user.email,
-          shopName: session.user.ownedShops[0]?.name || null,
-          shopId: session.user.ownedShops[0]?.id || null,
+          shopName: session.user.ownedShops?.[0]?.name || null,
+          shopId: session.user.ownedShops?.[0]?.id || null,
         };
       }
 
@@ -233,8 +234,8 @@ export async function getCurrentUser(targetCookieName?: string): Promise<Session
           role: directUser.role || decoded.role || 'USER',
           name: directUser.name || null,
           email: directUser.email,
-          shopName: directUser.ownedShops[0]?.name || null,
-          shopId: directUser.ownedShops[0]?.id || null,
+          shopName: directUser.ownedShops?.[0]?.name || null,
+          shopId: directUser.ownedShops?.[0]?.id || null,
         };
       }
 
@@ -263,12 +264,19 @@ export async function getCurrentUser(targetCookieName?: string): Promise<Session
  */
 export async function getAdminUser(): Promise<SessionUser | null> {
   const adminUser = await getCurrentUser(ADMIN_SESSION_COOKIE_NAME);
-  if (adminUser) return adminUser;
+  if (
+    adminUser &&
+    ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes((adminUser.role || '').toUpperCase())
+  ) {
+    return adminUser;
+  }
 
   const fallbackUser = await getCurrentUser(SESSION_COOKIE_NAME);
   if (
     fallbackUser &&
-    ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(fallbackUser.role.toUpperCase())
+    ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(
+      (fallbackUser.role || '').toUpperCase(),
+    )
   ) {
     return fallbackUser;
   }

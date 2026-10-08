@@ -1194,9 +1194,9 @@ export default function AdminProductsPage() {
                       <div className="text-right space-y-0.5 shrink-0">
                         <span className="font-extrabold text-emerald-700 font-mono text-xs block">
                           ₹
-                          {Number(variant.price || selectedProductForDetails.price).toLocaleString(
-                            'en-IN',
-                          )}
+                          {Number(
+                            variant?.price || selectedProductForDetails?.price || 0,
+                          ).toLocaleString('en-IN')}
                         </span>
                         <span className="text-[10px] font-bold text-slate-500 block">
                           {variant.stock} in stock

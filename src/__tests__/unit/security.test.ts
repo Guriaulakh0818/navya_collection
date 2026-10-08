@@ -51,7 +51,7 @@ export async function testSecurityModule() {
     RATE_LIMIT_POLICIES.CHECKOUT.limit !== 10 ||
     RATE_LIMIT_POLICIES.CONTACT.limit !== 10 ||
     RATE_LIMIT_POLICIES.REVIEWS.limit !== 10 ||
-    RATE_LIMIT_POLICIES.ADMIN_API.limit !== 30
+    RATE_LIMIT_POLICIES.ADMIN_API.limit !== 300
   ) {
     throw new Error('Rate limit policy thresholds do not match OWASP enterprise specifications.');
   }

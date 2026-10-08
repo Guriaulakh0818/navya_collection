@@ -56,7 +56,7 @@ export function AdminRoute({ children, fallback }: AdminRouteProps) {
         if (!res.ok) {
           res = await fetch('/api/v1/auth/profile');
         }
-        const data = await res.json();
+        const data = (await res.json().catch(() => null)) || {};
 
         const userObj = data?.user;
         if (userObj) {

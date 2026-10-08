@@ -167,7 +167,8 @@ function NavIcon({ type }: { type: string }) {
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const rawPathname = usePathname();
+  const pathname = rawPathname || '';
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const user = useAdminAuthStore((s) => s.user);
   const logout = useAdminAuthStore((s) => s.logout);
@@ -207,7 +208,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <nav className="mt-6 px-3 space-y-1">
             {navigation.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              const isActive =
+                pathname === item.href || (pathname ? pathname.startsWith(item.href + '/') : false);
               return (
                 <Link
                   key={item.name}
@@ -265,7 +267,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
             <div className="flex-1">
               <h2 className="font-heading text-lg font-bold text-navy capitalize">
-                {pathname.replace('/admin/', '').replace('/', ' - ') || 'Dashboard'}
+                {pathname
+                  ? pathname.replace('/admin/', '').replace('/', ' - ') || 'Dashboard'
+                  : 'Dashboard'}
               </h2>
             </div>
             <Link
