@@ -82,6 +82,7 @@ export default function AdminProductsPage() {
     setIsLoading(true);
     try {
       const url = new URL('/api/v1/admin/products', window.location.origin);
+      url.searchParams.set('_t', String(Date.now()));
       url.searchParams.set('status', activeTab);
       if (selectedCategory !== 'ALL') {
         url.searchParams.set('categoryId', selectedCategory);
@@ -90,7 +91,7 @@ export default function AdminProductsPage() {
       url.searchParams.set('limit', '10');
       if (search) url.searchParams.set('q', search);
 
-      const res = await fetch(url.toString());
+      const res = await fetch(url.toString(), { cache: 'no-store' });
       const data = await res.json().catch(() => null);
 
       if (res.ok && data?.success) {

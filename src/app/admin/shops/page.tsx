@@ -50,10 +50,11 @@ export default function AdminShopsPage() {
       setIsLoading(true);
       try {
         const url = new URL('/api/v1/admin/shops', window.location.origin);
+        url.searchParams.set('_t', String(Date.now()));
         if (search) url.searchParams.set('search', search);
         if (statusFilter !== 'ALL') url.searchParams.set('status', statusFilter);
 
-        const res = await fetch(url.toString());
+        const res = await fetch(url.toString(), { cache: 'no-store' });
         const json = await res.json().catch(() => null);
         if (res.ok && json?.success && json?.data) {
           setShops(json.data.shops || []);

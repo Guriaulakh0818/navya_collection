@@ -45,18 +45,29 @@ export function AdminProductApprovalTable() {
     setIsLoading(true);
     try {
       const url = new URL('/api/v1/admin/products/approvals', window.location.origin);
+      url.searchParams.set('_t', String(Date.now()));
       url.searchParams.set('status', activeTab);
       url.searchParams.set('page', String(page));
       url.searchParams.set('limit', '10');
       if (searchQuery) url.searchParams.set('q', searchQuery);
 
-      const res = await fetch(url.toString());
-      const data = await res.json();
+      const res = await fetch(url.toString(), { cache: 'no-store' });
+      const data = await res.json().catch(() => null);
 
-      if (data.success) {
+      if (data?.success) {
         setProducts(data.data || []);
         if (data.pagination) setPagination(data.pagination);
-        if (data.counts) setCounts(data.counts);
+        if (data.counts) {
+          setCounts(data.counts);
+          // If queue has 0 pending items but approved or all has items, view active catalog products
+          if (
+            activeTab === 'pending_approval' &&
+            data.counts.pending_approval === 0 &&
+            (data.counts.active > 0 || data.counts.ALL > 0)
+          ) {
+            setActiveTab(data.counts.active > 0 ? 'active' : 'ALL');
+          }
+        }
       }
     } catch (err: any) {
       console.error('Failed to fetch product approvals queue:', err);

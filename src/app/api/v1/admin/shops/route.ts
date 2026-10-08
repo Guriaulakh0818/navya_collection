@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/v1/admin/shops
  * Returns total registered merchant shops metrics and full list of boutique stores.

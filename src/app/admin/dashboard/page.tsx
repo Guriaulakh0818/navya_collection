@@ -77,7 +77,26 @@ export default async function AdminDashboardPage() {
             addresses: { take: 1 },
           },
         })
-        .catch(() => []),
+        .catch(() =>
+          prisma.shop
+            .findMany({
+              where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } },
+              take: 5,
+              orderBy: { createdAt: 'desc' },
+              include: {
+                owner: { select: { name: true, email: true, mobile: true } },
+              },
+            })
+            .catch(() =>
+              prisma.shop
+                .findMany({
+                  where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } },
+                  take: 5,
+                  orderBy: { createdAt: 'desc' },
+                })
+                .catch(() => []),
+            ),
+        ),
 
       // Pending products waiting for moderation
       prisma.product
@@ -91,7 +110,24 @@ export default async function AdminDashboardPage() {
             category: { select: { name: true } },
           },
         })
-        .catch(() => []),
+        .catch(() =>
+          prisma.product
+            .findMany({
+              where: { status: { in: ['pending_approval', 'draft'] }, deletedAt: null },
+              take: 5,
+              orderBy: { createdAt: 'desc' },
+              include: { images: { take: 1 } },
+            })
+            .catch(() =>
+              prisma.product
+                .findMany({
+                  where: { status: { in: ['pending_approval', 'draft'] }, deletedAt: null },
+                  take: 5,
+                  orderBy: { createdAt: 'desc' },
+                })
+                .catch(() => []),
+            ),
+        ),
 
       // Recent orders feed
       prisma.order
@@ -108,7 +144,22 @@ export default async function AdminDashboardPage() {
             },
           },
         })
-        .catch(() => []),
+        .catch(() =>
+          prisma.order
+            .findMany({
+              take: 8,
+              orderBy: { createdAt: 'desc' },
+              include: { user: { select: { name: true, email: true } } },
+            })
+            .catch(() =>
+              prisma.order
+                .findMany({
+                  take: 8,
+                  orderBy: { createdAt: 'desc' },
+                })
+                .catch(() => []),
+            ),
+        ),
 
       // Recent shops
       prisma.shop
@@ -119,7 +170,14 @@ export default async function AdminDashboardPage() {
             owner: { select: { name: true } },
           },
         })
-        .catch(() => []),
+        .catch(() =>
+          prisma.shop
+            .findMany({
+              take: 5,
+              orderBy: { createdAt: 'desc' },
+            })
+            .catch(() => []),
+        ),
 
       // Revenue aggregate
       prisma.order

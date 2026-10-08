@@ -41,15 +41,26 @@ export function SellerApprovalTable() {
     setIsLoading(true);
     try {
       const url = new URL('/api/v1/admin/sellers', window.location.origin);
+      url.searchParams.set('_t', String(Date.now()));
       url.searchParams.set('status', activeTab);
       if (searchQuery) url.searchParams.set('q', searchQuery);
 
-      const res = await fetch(url.toString());
+      const res = await fetch(url.toString(), { cache: 'no-store' });
       const data = await res.json().catch(() => null);
 
       if (res.ok && data?.success) {
         setShops(data.data || []);
-        if (data.counts) setCounts(data.counts);
+        if (data.counts) {
+          setCounts(data.counts);
+          // If pending has 0 items but approved or all has items, gracefully view active merchants
+          if (
+            activeTab === 'PENDING_VERIFICATION' &&
+            data.counts.PENDING_VERIFICATION === 0 &&
+            (data.counts.APPROVED > 0 || data.counts.ALL > 0)
+          ) {
+            setActiveTab(data.counts.APPROVED > 0 ? 'APPROVED' : 'ALL');
+          }
+        }
       } else {
         setToastMessage({
           type: 'error',
