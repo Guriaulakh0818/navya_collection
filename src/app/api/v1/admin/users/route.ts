@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCurrentUser } from '@/backend/lib/session';
+import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
-    const admin = await getCurrentUser();
+    const admin = await getAdminUser();
     if (
       !admin ||
       !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const roleFilter = searchParams.get('role') || 'ALL';
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '50', 10), 1), 100);
 
     const where: any = {};
     if (roleFilter !== 'ALL') {
@@ -47,6 +48,7 @@ export async function GET(request: NextRequest) {
       prisma.user.findMany({
         where,
         orderBy: { createdAt: 'desc' },
+        take: limit,
         select: {
           id: true,
           name: true,
@@ -80,7 +82,7 @@ export async function GET(request: NextRequest) {
           role: u.role,
           status: u.approvalStatus || 'APPROVED',
           shopName: u.ownedShops[0]?.name || null,
-          createdAt: u.createdAt.toISOString(),
+          createdAt: u.createdAt ? new Date(u.createdAt).toISOString() : new Date().toISOString(),
         })),
       },
     });

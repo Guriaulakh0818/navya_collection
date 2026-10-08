@@ -42,10 +42,10 @@ const DEFAULT_FIRST_ORDER_OFFER: OfferData = {
 };
 
 export class OfferService {
-  private static isTableInitialized = false;
+  private static isTableInitialized = true;
 
   /**
-   * Automatically ensure the 'offers' table and indexes exist in the PostgreSQL database.
+   * Automatically ensure the 'offers' table and indexes exist in the PostgreSQL database if needed.
    */
   private static async ensureTableExists(): Promise<void> {
     if (this.isTableInitialized) return;

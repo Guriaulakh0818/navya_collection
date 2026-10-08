@@ -23,7 +23,7 @@ import { CATEGORY_TAXONOMY } from '@/config/categories.config';
 import { useToast } from '@/providers';
 import { useAuthStore } from '@/stores';
 
-// Pre-flatten initial taxonomy so UI renders INSTANTLY (0ms)
+// Pre-flatten initial taxonomy so UI structure renders immediately with real zero baseline
 const INITIAL_TAXONOMY = CATEGORY_TAXONOMY.flatMap((main) => [
   {
     id: main.id,
@@ -31,7 +31,7 @@ const INITIAL_TAXONOMY = CATEGORY_TAXONOMY.flatMap((main) => [
     slug: main.slug,
     parentId: null,
     parent: null,
-    _count: { products: 15 },
+    _count: { products: 0 },
   },
   ...(main.subCategories || []).map((sub) => ({
     id: sub.id,
@@ -39,7 +39,7 @@ const INITIAL_TAXONOMY = CATEGORY_TAXONOMY.flatMap((main) => [
     slug: sub.slug,
     parentId: main.id,
     parent: { id: main.id, name: main.name },
-    _count: { products: 8 },
+    _count: { products: 0 },
   })),
 ]);
 

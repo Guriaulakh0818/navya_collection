@@ -19,21 +19,53 @@ export async function GET(request: NextRequest) {
     if (productId) where.productId = productId;
     if (shopId) where.shopId = shopId;
 
-    const reviews = productId
-      ? await prisma.review.findMany({
-          where,
+    let reviews: any[] = [];
+    if (productId) {
+      reviews = await prisma.review.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { id: true, name: true, avatar: true } },
+          product: { select: { id: true, name: true } },
+        },
+      });
+    } else if (shopId) {
+      reviews = await prisma.shopReview.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: { select: { id: true, name: true, avatar: true } },
+          shop: { select: { id: true, name: true } },
+        },
+      });
+    } else {
+      // Admin moderation center: Fetch both product reviews and shop reviews concurrently
+      const [productReviews, shopReviews] = await Promise.all([
+        prisma.review.findMany({
+          where: { deletedAt: null },
           orderBy: { createdAt: 'desc' },
+          take: 50,
           include: {
             user: { select: { id: true, name: true, avatar: true } },
+            product: { select: { id: true, name: true } },
           },
-        })
-      : await prisma.shopReview.findMany({
-          where,
+        }),
+        prisma.shopReview.findMany({
+          where: { deletedAt: null },
           orderBy: { createdAt: 'desc' },
+          take: 50,
           include: {
             user: { select: { id: true, name: true, avatar: true } },
+            shop: { select: { id: true, name: true } },
           },
-        });
+        }),
+      ]);
+
+      reviews = [
+        ...productReviews.map((r) => ({ ...r, reviewTargetType: 'PRODUCT' })),
+        ...shopReviews.map((r) => ({ ...r, reviewTargetType: 'SHOP' })),
+      ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
 
     return NextResponse.json({
       success: true,

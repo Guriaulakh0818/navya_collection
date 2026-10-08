@@ -59,7 +59,9 @@ export default async function AdminDashboardPage() {
       prisma.shop
         .count({ where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } } })
         .catch(() => 0),
-      prisma.product.count({ where: { status: 'draft' } }).catch(() => 0),
+      prisma.product
+        .count({ where: { status: { in: ['pending_approval', 'draft'] }, deletedAt: null } })
+        .catch(() => 0),
       prisma.user.count({ where: { role: { in: ['USER', 'CUSTOMER'] } } }).catch(() => 0),
 
       // Pending seller onboarding applications
@@ -80,7 +82,7 @@ export default async function AdminDashboardPage() {
       // Pending products waiting for moderation
       prisma.product
         .findMany({
-          where: { status: 'draft' },
+          where: { status: { in: ['pending_approval', 'draft'] }, deletedAt: null },
           take: 5,
           orderBy: { createdAt: 'desc' },
           include: {

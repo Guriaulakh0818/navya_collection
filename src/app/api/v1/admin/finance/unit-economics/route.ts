@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCurrentUser } from '@/backend/lib/session';
+import { getAdminUser, getCurrentUser } from '@/backend/lib/session';
 import { ContributionService } from '@/backend/services/contribution.service';
 
 /**
@@ -12,7 +12,7 @@ import { ContributionService } from '@/backend/services/contribution.service';
  */
 export async function GET(request: NextRequest) {
   try {
-    const admin = await getCurrentUser();
+    const admin = (await getAdminUser()) || (await getCurrentUser());
     if (
       !admin ||
       !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())

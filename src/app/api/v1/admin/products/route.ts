@@ -61,39 +61,45 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const [products, totalCount] = await Promise.all([
-      prisma.product.findMany({
-        where: whereCondition,
-        include: {
-          images: { orderBy: { sortOrder: 'asc' } },
-          variants: true,
-          category: { select: { id: true, name: true, slug: true } },
-          shop: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              owner: {
-                select: { id: true, name: true, email: true },
+    const [products, totalCount, countAll, countActive, countPending, countDraft, countArchived] =
+      await Promise.all([
+        prisma.product.findMany({
+          where: whereCondition,
+          include: {
+            images: { orderBy: { sortOrder: 'asc' } },
+            variants: true,
+            category: { select: { id: true, name: true, slug: true } },
+            shop: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                owner: {
+                  select: { id: true, name: true, email: true },
+                },
               },
             },
           },
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      prisma.product.count({ where: whereCondition }),
-    ]);
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.product.count({ where: whereCondition }),
+        prisma.product.count({ where: { deletedAt: null } }).catch(() => 0),
+        prisma.product.count({ where: { status: 'active', deletedAt: null } }).catch(() => 0),
+        prisma.product
+          .count({ where: { status: { in: ['pending_approval', 'draft'] }, deletedAt: null } })
+          .catch(() => 0),
+        prisma.product.count({ where: { status: 'draft', deletedAt: null } }).catch(() => 0),
+        prisma.product.count({ where: { status: 'archived', deletedAt: null } }).catch(() => 0),
+      ]);
 
     const counts = {
-      ALL: await prisma.product.count({ where: { deletedAt: null } }),
-      active: await prisma.product.count({ where: { status: 'active', deletedAt: null } }),
-      pending_approval: await prisma.product.count({
-        where: { status: 'pending_approval', deletedAt: null },
-      }),
-      draft: await prisma.product.count({ where: { status: 'draft', deletedAt: null } }),
-      archived: await prisma.product.count({ where: { status: 'archived', deletedAt: null } }),
+      ALL: countAll,
+      active: countActive,
+      pending_approval: countPending,
+      draft: countDraft,
+      archived: countArchived,
     };
 
     return NextResponse.json({

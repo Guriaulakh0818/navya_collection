@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCurrentUser } from '@/backend/lib/session';
+import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -10,7 +10,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
-    const admin = await getCurrentUser();
+    const admin = await getAdminUser();
     if (
       !admin ||
       !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
@@ -155,11 +155,14 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Gather packing proofs for orders in this list
-    const orderIds = requests.map((r) => r.orderId);
-    const packingProofs = await prisma.sellerPackingProof.findMany({
-      where: { orderId: { in: orderIds } },
-      orderBy: { createdAt: 'desc' },
-    });
+    const orderIds = requests.map((r) => r.orderId).filter(Boolean);
+    const packingProofs =
+      orderIds.length > 0
+        ? await prisma.sellerPackingProof.findMany({
+            where: { orderId: { in: orderIds } },
+            orderBy: { createdAt: 'desc' },
+          })
+        : [];
 
     const packingProofsByOrder = new Map<string, typeof packingProofs>();
     for (const proof of packingProofs) {

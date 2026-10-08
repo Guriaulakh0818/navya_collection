@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCurrentUser } from '@/backend/lib/session';
+import { getAdminUser } from '@/backend/lib/session';
 import { getShiprocketMetrics } from '@/backend/lib/shiprocket';
 import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/v1/admin/shipping
@@ -10,10 +12,12 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
-    const currentUser = await getCurrentUser();
+    const currentUser = await getAdminUser();
     if (
       !currentUser ||
-      !['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(currentUser.role)
+      !['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(
+        (currentUser.role || '').toUpperCase(),
+      )
     ) {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Admin access required.' },
@@ -26,6 +30,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const paymentMethod = searchParams.get('paymentMethod');
     const query = (searchParams.get('q') || '').trim();
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '50', 10), 1), 100);
 
     const where: any = {};
 
@@ -51,27 +56,118 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Query Shipments
-    const shipments = await prisma.shipment.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-      include: {
-        shop: {
+    // Run Shipments, Shops, and all 6 Counts in parallel for sub-second performance
+    const [
+      shipments,
+      shops,
+      totalShipments,
+      inTransitCount,
+      deliveredCount,
+      rtoCount,
+      totalPickupLocations,
+      connectedPickupLocations,
+    ] = await Promise.all([
+      prisma.shipment
+        .findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          include: {
+            shop: {
+              select: {
+                id: true,
+                shopCode: true,
+                name: true,
+                fullAddress: true,
+                city: true,
+                state: true,
+                pincode: true,
+                owner: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    mobile: true,
+                  },
+                },
+                pickupLocations: {
+                  select: {
+                    id: true,
+                    locationCode: true,
+                    name: true,
+                    addressLine1: true,
+                    city: true,
+                    state: true,
+                    pincode: true,
+                    contactName: true,
+                    contactPhone: true,
+                    shiprocketStatus: true,
+                    isPrimary: true,
+                  },
+                },
+              },
+            },
+            masterOrder: {
+              select: {
+                orderNumber: true,
+                paymentStatus: true,
+                paymentMethod: true,
+                user: { select: { name: true, email: true, mobile: true } },
+              },
+            },
+            pickupLocation: {
+              select: {
+                id: true,
+                locationCode: true,
+                name: true,
+                addressLine1: true,
+                city: true,
+                state: true,
+                pincode: true,
+                contactName: true,
+                contactPhone: true,
+                shiprocketStatus: true,
+              },
+            },
+            items: true,
+            trackingEvents: {
+              orderBy: { eventTimestamp: 'desc' },
+              take: 3,
+            },
+          },
+        })
+        .catch(() => []),
+
+      prisma.shop
+        .findMany({
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'asc' },
           select: {
             id: true,
             shopCode: true,
             name: true,
+            slug: true,
+            phone: true,
+            email: true,
             fullAddress: true,
             city: true,
             state: true,
             pincode: true,
+            bankAccountHolder: true,
+            shiprocketPickupName: true,
+            status: true,
             owner: {
               select: {
                 id: true,
                 name: true,
                 email: true,
                 mobile: true,
+              },
+            },
+            sellerProfile: {
+              select: {
+                businessName: true,
+                legalName: true,
               },
             },
             pickupLocations: {
@@ -85,47 +181,47 @@ export async function GET(request: NextRequest) {
                 pincode: true,
                 contactName: true,
                 contactPhone: true,
+                contactEmail: true,
+                shiprocketPickupName: true,
                 shiprocketStatus: true,
+                shiprocketResponse: true,
                 isPrimary: true,
+                updatedAt: true,
               },
             },
           },
-        },
-        masterOrder: {
-          select: {
-            orderNumber: true,
-            paymentStatus: true,
-            paymentMethod: true,
-            user: { select: { name: true, email: true, mobile: true } },
-          },
-        },
-        pickupLocation: {
-          select: {
-            id: true,
-            locationCode: true,
-            name: true,
-            addressLine1: true,
-            city: true,
-            state: true,
-            pincode: true,
-            contactName: true,
-            contactPhone: true,
-            shiprocketStatus: true,
-          },
-        },
-        items: true,
-        trackingEvents: {
-          orderBy: { eventTimestamp: 'desc' },
-          take: 5,
-        },
-      },
-    });
+        })
+        .catch(() => []),
 
-    // Enrich shipments with live shop details and primary pickup location to ensure updated address is always displayed
-    const enrichedShipments = shipments.map((shp) => {
+      prisma.shipment.count().catch(() => 0),
+      prisma.shipment
+        .count({
+          where: { status: { in: ['IN_TRANSIT', 'SHIPPED', 'OUT_FOR_DELIVERY', 'PICKED_UP'] } },
+        })
+        .catch(() => 0),
+      prisma.shipment
+        .count({
+          where: { status: 'DELIVERED' },
+        })
+        .catch(() => 0),
+      prisma.shipment
+        .count({
+          where: { status: { in: ['RTO_INITIATED', 'RTO_DELIVERED', 'RETURNED', 'CANCELLED'] } },
+        })
+        .catch(() => 0),
+      prisma.pickupLocation.count().catch(() => 0),
+      prisma.pickupLocation
+        .count({
+          where: { shiprocketStatus: 'CONNECTED' },
+        })
+        .catch(() => 0),
+    ]);
+
+    // Enrich shipments with live shop details and primary pickup location
+    const enrichedShipments = (shipments || []).map((shp: any) => {
       const activeShop = shp.shop;
       const primaryPickup =
-        activeShop?.pickupLocations?.find((p) => p.isPrimary) ||
+        activeShop?.pickupLocations?.find((p: any) => p.isPrimary) ||
         activeShop?.pickupLocations?.[0] ||
         shp.pickupLocation;
 
@@ -161,6 +257,7 @@ export async function GET(request: NextRequest) {
 
       return {
         ...shp,
+        createdAt: shp.createdAt ? new Date(shp.createdAt).toISOString() : new Date().toISOString(),
         shop: activeShop
           ? {
               ...activeShop,
@@ -188,76 +285,6 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Fetch all active shops with their pickup locations
-    const shops = await prisma.shop.findMany({
-      where: { deletedAt: null },
-      orderBy: { createdAt: 'asc' },
-      select: {
-        id: true,
-        shopCode: true,
-        name: true,
-        slug: true,
-        phone: true,
-        email: true,
-        fullAddress: true,
-        city: true,
-        state: true,
-        pincode: true,
-        bankAccountHolder: true,
-        shiprocketPickupName: true,
-        status: true,
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            mobile: true,
-          },
-        },
-        sellerProfile: {
-          select: {
-            businessName: true,
-            legalName: true,
-          },
-        },
-        pickupLocations: {
-          select: {
-            id: true,
-            locationCode: true,
-            name: true,
-            addressLine1: true,
-            city: true,
-            state: true,
-            pincode: true,
-            contactName: true,
-            contactPhone: true,
-            contactEmail: true,
-            shiprocketPickupName: true,
-            shiprocketStatus: true,
-            shiprocketResponse: true,
-            isPrimary: true,
-            updatedAt: true,
-          },
-        },
-      },
-    });
-
-    // Compute Logistics Statistics
-    const totalShipments = await prisma.shipment.count();
-    const inTransitCount = await prisma.shipment.count({
-      where: { status: { in: ['IN_TRANSIT', 'SHIPPED', 'OUT_FOR_DELIVERY', 'PICKED_UP'] } },
-    });
-    const deliveredCount = await prisma.shipment.count({
-      where: { status: 'DELIVERED' },
-    });
-    const rtoCount = await prisma.shipment.count({
-      where: { status: { in: ['RTO_INITIATED', 'RTO_DELIVERED', 'RETURNED', 'CANCELLED'] } },
-    });
-    const totalPickupLocations = await prisma.pickupLocation.count();
-    const connectedPickupLocations = await prisma.pickupLocation.count({
-      where: { shiprocketStatus: 'CONNECTED' },
-    });
-
     // Shiprocket API Connection Health
     const hasCredentials = Boolean(process.env.SHIPROCKET_EMAIL && process.env.SHIPROCKET_PASSWORD);
     const metrics = getShiprocketMetrics();
@@ -266,7 +293,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         shipments: enrichedShipments,
-        shops,
+        shops: shops || [],
         stats: {
           totalShipments,
           inTransitCount,
@@ -285,7 +312,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ GET Admin Shipping Error:', error);
     return NextResponse.json(
-      { success: false, message: error.message || 'Failed to load shipping data.' },
+      { success: false, message: error?.message || 'Failed to load shipping data.' },
       { status: 500 },
     );
   }
@@ -297,10 +324,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const currentUser = await getCurrentUser();
+    const currentUser = await getAdminUser();
     if (
       !currentUser ||
-      !['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(currentUser.role)
+      !['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(
+        (currentUser.role || '').toUpperCase(),
+      )
     ) {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Admin access required.' },
@@ -362,44 +391,14 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (action === 'PROCESS_RTO_DELIVERED' && body.shipmentId) {
-      const { RtoService } = await import('@/backend/services/shipping/rto.service');
-      const result = await RtoService.processRtoDelivered({
-        shipmentId: body.shipmentId,
-        rtoCost: body.actualRtoCost ?? body.rtoCost,
-        performedById: currentUser.id,
-        notes: body.notes,
-        rtoReason: body.reason,
-      });
-      return NextResponse.json({
-        success: true,
-        message: result.message,
-        data: result,
-      });
-    }
-
-    if (action === 'UPDATE_RTO_COST' && body.shipmentId && body.actualCost !== undefined) {
-      const { RtoService } = await import('@/backend/services/shipping/rto.service');
-      const result = await RtoService.updateConfirmedRtoCost({
-        shipmentId: body.shipmentId,
-        actualCost: body.actualCost,
-        performedById: currentUser.id,
-      });
-      return NextResponse.json({
-        success: true,
-        message: 'Confirmed RTO logistics cost updated and 50/50 liability allocated.',
-        data: result,
-      });
-    }
-
     return NextResponse.json(
-      { success: false, message: 'Invalid action provided.' },
+      { success: false, message: 'Unknown action specified.' },
       { status: 400 },
     );
   } catch (error: any) {
     console.error('❌ POST Admin Shipping Error:', error);
     return NextResponse.json(
-      { success: false, message: error.message || 'Failed to execute shipping action.' },
+      { success: false, message: error?.message || 'Failed to execute shipping action.' },
       { status: 500 },
     );
   }

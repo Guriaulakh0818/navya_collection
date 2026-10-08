@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCurrentUser } from '@/backend/lib/session';
+import { getAdminUser } from '@/backend/lib/session';
 import { OfferService } from '@/backend/services/offer.service';
 
 /**
@@ -9,10 +9,12 @@ import { OfferService } from '@/backend/services/offer.service';
  */
 export async function GET(request: NextRequest) {
   try {
-    const currentUser = await getCurrentUser();
+    const currentUser = await getAdminUser();
     if (
       !currentUser ||
-      !['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(currentUser.role)
+      !['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(
+        (currentUser.role || '').toUpperCase(),
+      )
     ) {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Admin access required.' },
@@ -40,10 +42,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const currentUser = await getCurrentUser();
+    const currentUser = await getAdminUser();
     if (
       !currentUser ||
-      !['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(currentUser.role)
+      !['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(
+        (currentUser.role || '').toUpperCase(),
+      )
     ) {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Admin access required.' },

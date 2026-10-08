@@ -200,17 +200,24 @@ export class ReviewService {
   /**
    * Admin Review Moderation
    */
-  static async updateReviewStatus(reviewId: string, status: string, isShopReview = false) {
-    if (isShopReview) {
+  static async updateReviewStatus(reviewId: string, status: string, isShopReview?: boolean) {
+    if (isShopReview === true) {
       return await prisma.shopReview.update({
         where: { id: reviewId },
         data: { status },
       });
     }
 
-    return await prisma.review.update({
-      where: { id: reviewId },
-      data: { status },
-    });
+    try {
+      return await prisma.review.update({
+        where: { id: reviewId },
+        data: { status },
+      });
+    } catch {
+      return await prisma.shopReview.update({
+        where: { id: reviewId },
+        data: { status },
+      });
+    }
   }
 }

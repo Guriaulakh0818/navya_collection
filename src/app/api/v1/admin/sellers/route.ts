@@ -1,13 +1,16 @@
 import { ShopStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCurrentUser } from '@/backend/lib/session';
+import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user || !['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
+    const user = await getAdminUser();
+    if (
+      !user ||
+      !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes((user.role || '').toUpperCase())
+    ) {
       return NextResponse.json(
         { success: false, message: 'Forbidden. Admin access required.' },
         { status: 403 },
@@ -24,7 +27,11 @@ export async function GET(request: NextRequest) {
     };
 
     if (status !== 'ALL') {
-      whereCondition.status = status as ShopStatus;
+      if (status === 'PENDING_VERIFICATION') {
+        whereCondition.status = { in: [ShopStatus.PENDING_VERIFICATION, 'UNDER_REVIEW'] };
+      } else {
+        whereCondition.status = status as ShopStatus;
+      }
     }
 
     if (query) {
@@ -40,42 +47,56 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const shops = await prisma.shop.findMany({
-      where: whereCondition,
-      include: {
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            mobile: true,
-            role: true,
-            approvalStatus: true,
-            createdAt: true,
+    // Execute list query and ALL tab counts concurrently in ONE Promise.all
+    const [shops, countAll, countPending, countApproved, countRejected, countSuspended] =
+      await Promise.all([
+        prisma.shop.findMany({
+          where: whereCondition,
+          include: {
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                mobile: true,
+                role: true,
+                approvalStatus: true,
+                createdAt: true,
+              },
+            },
+            sellerProfile: true,
+            addresses: true,
+            documents: true,
           },
-        },
-        sellerProfile: true,
-        addresses: true,
-        documents: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+          orderBy: { createdAt: 'desc' },
+          take: 100,
+        }),
+        prisma.shop.count({ where: { deletedAt: null } }).catch(() => 0),
+        prisma.shop
+          .count({
+            where: {
+              status: { in: [ShopStatus.PENDING_VERIFICATION, 'UNDER_REVIEW' as any] },
+              deletedAt: null,
+            },
+          })
+          .catch(() => 0),
+        prisma.shop
+          .count({ where: { status: ShopStatus.APPROVED, deletedAt: null } })
+          .catch(() => 0),
+        prisma.shop
+          .count({ where: { status: ShopStatus.REJECTED, deletedAt: null } })
+          .catch(() => 0),
+        prisma.shop
+          .count({ where: { status: ShopStatus.SUSPENDED, deletedAt: null } })
+          .catch(() => 0),
+      ]);
 
-    // Counts for status tabs
     const counts = {
-      ALL: await prisma.shop.count({ where: { deletedAt: null } }),
-      PENDING_VERIFICATION: await prisma.shop.count({
-        where: { status: ShopStatus.PENDING_VERIFICATION, deletedAt: null },
-      }),
-      APPROVED: await prisma.shop.count({
-        where: { status: ShopStatus.APPROVED, deletedAt: null },
-      }),
-      REJECTED: await prisma.shop.count({
-        where: { status: ShopStatus.REJECTED, deletedAt: null },
-      }),
-      SUSPENDED: await prisma.shop.count({
-        where: { status: ShopStatus.SUSPENDED, deletedAt: null },
-      }),
+      ALL: countAll,
+      PENDING_VERIFICATION: countPending,
+      APPROVED: countApproved,
+      REJECTED: countRejected,
+      SUSPENDED: countSuspended,
     };
 
     return NextResponse.json({

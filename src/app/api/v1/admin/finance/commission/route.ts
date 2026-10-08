@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCurrentUser } from '@/backend/lib/session';
+import { getAdminUser, getCurrentUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    const admin = await getCurrentUser();
+    const admin = (await getAdminUser()) || (await getCurrentUser());
     if (
       !admin ||
       !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
           effectiveCommissionRate: '10% on Product MRP (BM-02 Specification)',
         },
         shops: Array.from(shopMetricsMap.values()),
-        orders: vendorOrders,
+        orders: vendorOrders.slice(0, 50),
       },
     });
   } catch (error: any) {

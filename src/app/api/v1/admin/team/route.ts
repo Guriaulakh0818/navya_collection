@@ -27,9 +27,12 @@ function checkIsOwner(user: any) {
 export async function GET(request: NextRequest) {
   try {
     const user = await getAdminUser();
-    if (!checkIsOwner(user)) {
+    if (
+      !user ||
+      !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes((user.role || '').toUpperCase())
+    ) {
       return NextResponse.json(
-        { success: false, message: 'Only the Owner can manage admin team members.' },
+        { success: false, message: 'Forbidden. Admin credentials required.' },
         { status: 403 },
       );
     }

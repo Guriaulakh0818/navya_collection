@@ -1,7 +1,7 @@
 import { SettlementStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getCurrentUser } from '@/backend/lib/session';
+import { getAdminUser } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -13,7 +13,7 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(request: NextRequest) {
   try {
-    const admin = await getCurrentUser();
+    const admin = await getAdminUser();
     if (
       !admin ||
       !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
@@ -57,109 +57,121 @@ export async function GET(request: NextRequest) {
       historicalPayouts,
       pendingDebitsList,
     ] = await Promise.all([
-      prisma.sellerSettlement.findMany({
-        where: settlementWhere,
-        include: {
-          shop: {
-            select: {
-              id: true,
-              name: true,
-              bankName: true,
-              bankAccountNumber: true,
-              bankIfscCode: true,
-              owner: {
-                select: { id: true, name: true, email: true, mobile: true },
+      prisma.sellerSettlement
+        .findMany({
+          where: settlementWhere,
+          include: {
+            shop: {
+              select: {
+                id: true,
+                name: true,
+                bankName: true,
+                bankAccountNumber: true,
+                bankIfscCode: true,
+                owner: {
+                  select: { id: true, name: true, email: true, mobile: true },
+                },
               },
             },
-          },
-          vendorOrder: {
-            select: {
-              id: true,
-              vendorOrderNumber: true,
-              status: true,
-              masterOrder: {
-                select: {
-                  id: true,
-                  orderNumber: true,
-                  orderStatus: true,
-                  createdAt: true,
-                  returnRequests: {
-                    select: {
-                      id: true,
-                      requestNumber: true,
-                      status: true,
-                      type: true,
-                      returnShippingDeduction: true,
+            vendorOrder: {
+              select: {
+                id: true,
+                vendorOrderNumber: true,
+                status: true,
+                masterOrder: {
+                  select: {
+                    id: true,
+                    orderNumber: true,
+                    orderStatus: true,
+                    createdAt: true,
+                    returnRequests: {
+                      select: {
+                        id: true,
+                        requestNumber: true,
+                        status: true,
+                        type: true,
+                        returnShippingDeduction: true,
+                      },
                     },
                   },
                 },
               },
             },
-          },
-          adjustmentsList: {
-            orderBy: { createdAt: 'desc' },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-      }),
-      prisma.sellerSettlement.count({ where: settlementWhere }),
-      prisma.sellerSettlement.groupBy({
-        by: ['status'],
-        _sum: {
-          grossProductValue: true,
-          commissionAmount: true,
-          returnShippingDeduction: true,
-          netSettlementAmount: true,
-        },
-        _count: {
-          id: true,
-        },
-      }),
-      prisma.shop.findMany({
-        where: { status: 'APPROVED', deletedAt: null },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          logo: true,
-          phone: true,
-          email: true,
-          gstin: true,
-          bankAccountHolder: true,
-          bankAccountNumber: true,
-          bankIfscCode: true,
-          bankName: true,
-          vendorOrders: {
-            select: {
-              id: true,
-              totalAmount: true,
-              commissionAmount: true,
-              vendorPayoutAmount: true,
-              status: true,
-              createdAt: true,
+            adjustmentsList: {
+              orderBy: { createdAt: 'desc' },
             },
           },
-        },
-      }),
-      prisma.vendorPayout.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: {
-          shop: {
-            select: {
-              name: true,
-              slug: true,
-              logo: true,
-              bankName: true,
-              bankAccountNumber: true,
-              bankIfscCode: true,
+          orderBy: { createdAt: 'desc' },
+          take: 100,
+        })
+        .catch(() => []),
+      prisma.sellerSettlement.count({ where: settlementWhere }).catch(() => 0),
+      prisma.sellerSettlement
+        .groupBy({
+          by: ['status'],
+          _sum: {
+            grossProductValue: true,
+            commissionAmount: true,
+            returnShippingDeduction: true,
+            netSettlementAmount: true,
+          },
+          _count: {
+            id: true,
+          },
+        })
+        .catch(() => []),
+      prisma.shop
+        .findMany({
+          where: { status: 'APPROVED', deletedAt: null },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logo: true,
+            phone: true,
+            email: true,
+            gstin: true,
+            bankAccountHolder: true,
+            bankAccountNumber: true,
+            bankIfscCode: true,
+            bankName: true,
+            vendorOrders: {
+              select: {
+                id: true,
+                totalAmount: true,
+                commissionAmount: true,
+                vendorPayoutAmount: true,
+                status: true,
+                createdAt: true,
+              },
             },
           },
-        },
-      }),
-      prisma.sellerAdjustment.findMany({
-        where: { type: 'DEBIT', status: 'PENDING' },
-      }),
+        })
+        .catch(() => []),
+      prisma.vendorPayout
+        .findMany({
+          orderBy: { createdAt: 'desc' },
+          take: 50,
+          include: {
+            shop: {
+              select: {
+                name: true,
+                slug: true,
+                logo: true,
+                bankName: true,
+                bankAccountNumber: true,
+                bankIfscCode: true,
+              },
+            },
+          },
+        })
+        .catch(() => []),
+      prisma.sellerAdjustment
+        .findMany({
+          where: { type: 'DEBIT', status: 'PENDING' },
+          take: 50,
+        })
+        .catch(() => []),
     ]);
 
     // Compute Summary Status Metrics
@@ -258,7 +270,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const admin = await getCurrentUser();
+    const admin = await getAdminUser();
     if (
       !admin ||
       !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(admin.role?.toUpperCase())
