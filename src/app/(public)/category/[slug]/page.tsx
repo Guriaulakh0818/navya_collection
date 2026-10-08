@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { CategoryBanner } from '@/features/categories/components/CategoryBanner';
@@ -16,6 +16,22 @@ import {
   JsonLd,
 } from '@/frontend/features/seo';
 
+const CATEGORY_ALIAS_MAP: Record<string, string> = {
+  sarees: 'women-sarees',
+  'banarasi-sarees': 'women-sarees',
+  lehengas: 'women-lehengas',
+  kurtis: 'women-kurtas',
+  'kurtis-tunics': 'women-kurtas',
+  'anarkalis-suits': 'women-kurta-sets',
+  'salwar-suits': 'women-kurta-sets',
+  suits: 'women-kurta-sets',
+  dresses: 'women-dresses',
+  'phulkari-dupattas': 'dupattas-stoles',
+  shirts: 'men-shirts',
+  't-shirts': 'men-t-shirts',
+  jeans: 'men-jeans',
+};
+
 type Props = {
   params: Promise<{ slug: string }>;
 };
@@ -25,6 +41,15 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const cleanSlug = (slug || '').toLowerCase().trim();
+
+  if (CATEGORY_ALIAS_MAP[cleanSlug]) {
+    return {
+      alternates: {
+        canonical: `https://navyacollection.store/category/${CATEGORY_ALIAS_MAP[cleanSlug]}`,
+      },
+      robots: { index: false, follow: true },
+    };
+  }
 
   let dbCategory: any = null;
   let publicProductCount = 0;
@@ -159,6 +184,10 @@ export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
   const cleanSlug = (slug || '').toLowerCase().trim();
 
+  if (CATEGORY_ALIAS_MAP[cleanSlug]) {
+    redirect(`/category/${CATEGORY_ALIAS_MAP[cleanSlug]}`);
+  }
+
   let dbCategory: any = null;
   try {
     const { prisma } = await import('@/lib/prisma');
@@ -220,57 +249,68 @@ export default async function CategoryPage({ params }: Props) {
   try {
     const { prisma } = await import('@/lib/prisma');
 
-    // Determine gender filters if applicable
-    const isMen = cleanSlug === 'men' || cleanSlug.startsWith('men-');
-    const isWomen = cleanSlug === 'women' || cleanSlug.startsWith('women-');
+    // Determine department filters if applicable
+    const isMen =
+      cleanSlug === 'men' ||
+      cleanSlug.startsWith('men-') ||
+      category.id === 'group_men' ||
+      category.parentId === 'group_men';
+    const isWomen =
+      cleanSlug === 'women' ||
+      cleanSlug.startsWith('women-') ||
+      category.id === 'group_women' ||
+      category.parentId === 'group_women';
     const isKids =
       cleanSlug === 'kids' ||
       cleanSlug.startsWith('kids-') ||
       cleanSlug.startsWith('baby-') ||
       cleanSlug.startsWith('boys-') ||
-      cleanSlug.startsWith('girls-');
+      cleanSlug.startsWith('girls-') ||
+      category.id === 'group_kids' ||
+      category.parentId === 'group_kids';
 
-    // Build targeted OR conditions
-    const orConditions: any[] = [
-      { categoryId: category.id },
-      { category: { slug: category.slug } },
-      { category: { slug: cleanSlug } },
-      { category: { parentId: category.id } },
-      { metaKeywords: { contains: category.id, mode: 'insensitive' as const } },
-      { metaKeywords: { contains: category.slug, mode: 'insensitive' as const } },
-      { metaKeywords: { contains: cleanSlug, mode: 'insensitive' as const } },
-    ];
+    // Build targeted OR conditions strictly scoped to department/category
+    let orConditions: any[] = [];
+    const andConditions: any[] = [];
 
-    if (category.name) {
-      orConditions.push(
-        { category: { name: { contains: category.name, mode: 'insensitive' as const } } },
-        { name: { contains: category.name, mode: 'insensitive' as const } },
-      );
+    if (cleanSlug === 'men') {
+      orConditions = [
+        { categoryId: category.id },
+        { category: { slug: 'men' } },
+        { category: { parentId: category.id } },
+        { category: { parent: { slug: 'men' } } },
+        { category: { slug: { startsWith: 'men-' } } },
+      ];
+    } else if (cleanSlug === 'women') {
+      orConditions = [
+        { categoryId: category.id },
+        { category: { slug: 'women' } },
+        { category: { parentId: category.id } },
+        { category: { parent: { slug: 'women' } } },
+        { category: { slug: { startsWith: 'women-' } } },
+      ];
+    } else if (cleanSlug === 'kids') {
+      orConditions = [
+        { categoryId: category.id },
+        { category: { slug: 'kids' } },
+        { category: { parentId: category.id } },
+        { category: { parent: { slug: 'kids' } } },
+        { category: { slug: { startsWith: 'kids-' } } },
+        { category: { slug: { startsWith: 'boys-' } } },
+        { category: { slug: { startsWith: 'girls-' } } },
+        { category: { slug: { startsWith: 'baby-' } } },
+      ];
+    } else {
+      // Specific subcategory or curated category
+      orConditions = [
+        { categoryId: category.id },
+        { category: { slug: category.slug } },
+        { category: { slug: cleanSlug } },
+        { category: { parentId: category.id } },
+      ];
     }
 
-    if (isMen && cleanSlug === 'men') {
-      orConditions.push({ gender: { equals: 'men', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'men', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'shirt', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 't-shirt', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'kurta', mode: 'insensitive' as const } });
-    } else if (isWomen && cleanSlug === 'women') {
-      orConditions.push({ gender: { equals: 'women', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'women', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'saree', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'lehenga', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'kurti', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'dress', mode: 'insensitive' as const } });
-    } else if (isKids && cleanSlug === 'kids') {
-      orConditions.push({ gender: { equals: 'kids', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'kid', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'baby', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'boy', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'girl', mode: 'insensitive' as const } });
-      orConditions.push({ name: { contains: 'frock', mode: 'insensitive' as const } });
-    }
-
-    // Dynamic Price Deals & Curations Matching
+    // Dynamic Price Deals & Curations Matching (Only for curated hubs)
     if (cleanSlug.includes('under-499') || cleanSlug.includes('budget-finds')) {
       orConditions.push({ price: { lte: 499 } });
     }
@@ -358,36 +398,85 @@ export default async function CategoryPage({ params }: Props) {
         { name: { contains: 'hoodie', mode: 'insensitive' as const } },
         { name: { contains: 't-shirt', mode: 'insensitive' as const } },
       );
-    } else if (isGeneralSpotlight) {
-      if (isMen) {
-        orConditions.push({ gender: { equals: 'men', mode: 'insensitive' as const } });
-        orConditions.push({
-          metaKeywords: { contains: 'group_men', mode: 'insensitive' as const },
-        });
-        orConditions.push({
-          metaKeywords: { contains: 'cat_men_new_arrivals', mode: 'insensitive' as const },
-        });
-      } else if (isWomen) {
-        orConditions.push({ gender: { equals: 'women', mode: 'insensitive' as const } });
-        orConditions.push({
-          metaKeywords: { contains: 'group_women', mode: 'insensitive' as const },
-        });
-        orConditions.push({
-          metaKeywords: { contains: 'cat_women_new_arrivals', mode: 'insensitive' as const },
-        });
-      } else if (isKids) {
-        orConditions.push({ gender: { equals: 'kids', mode: 'insensitive' as const } });
-        orConditions.push({
-          metaKeywords: { contains: 'group_kids', mode: 'insensitive' as const },
-        });
-        orConditions.push({
-          metaKeywords: { contains: 'cat_kids_new_arrivals', mode: 'insensitive' as const },
-        });
-      } else {
-        orConditions.push({ isNewArrival: true });
-        orConditions.push({ isFeatured: true });
-        orConditions.push({ status: 'active' });
-      }
+    } else if (isGeneralSpotlight && !isMen && !isWomen && !isKids) {
+      orConditions.push({ isNewArrival: true });
+      orConditions.push({ isFeatured: true });
+      orConditions.push({ status: 'active' });
+    }
+
+    // Strict Department Isolation Constraints
+    if (isMen) {
+      andConditions.push({
+        category: {
+          NOT: {
+            OR: [
+              { parentId: 'group_women' },
+              { parent: { slug: 'women' } },
+              { slug: { startsWith: 'women-' } },
+              { parentId: 'group_kids' },
+              { parent: { slug: 'kids' } },
+              { slug: { startsWith: 'kids-' } },
+              { slug: { startsWith: 'boys-' } },
+              { slug: { startsWith: 'girls-' } },
+              { slug: { startsWith: 'baby-' } },
+            ],
+          },
+        },
+      });
+      andConditions.push({
+        OR: [
+          { gender: null },
+          { gender: { equals: 'men', mode: 'insensitive' as const } },
+          { gender: { equals: 'unisex', mode: 'insensitive' as const } },
+        ],
+      });
+    } else if (isWomen) {
+      andConditions.push({
+        category: {
+          NOT: {
+            OR: [
+              { parentId: 'group_men' },
+              { parent: { slug: 'men' } },
+              { slug: { startsWith: 'men-' } },
+              { parentId: 'group_kids' },
+              { parent: { slug: 'kids' } },
+              { slug: { startsWith: 'kids-' } },
+              { slug: { startsWith: 'boys-' } },
+              { slug: { startsWith: 'girls-' } },
+              { slug: { startsWith: 'baby-' } },
+            ],
+          },
+        },
+      });
+      andConditions.push({
+        OR: [
+          { gender: null },
+          { gender: { equals: 'women', mode: 'insensitive' as const } },
+          { gender: { equals: 'unisex', mode: 'insensitive' as const } },
+        ],
+      });
+    } else if (isKids) {
+      andConditions.push({
+        category: {
+          NOT: {
+            OR: [
+              { parentId: 'group_men' },
+              { parent: { slug: 'men' } },
+              { slug: { startsWith: 'men-' } },
+              { parentId: 'group_women' },
+              { parent: { slug: 'women' } },
+              { slug: { startsWith: 'women-' } },
+            ],
+          },
+        },
+      });
+      andConditions.push({
+        OR: [
+          { gender: null },
+          { gender: { equals: 'kids', mode: 'insensitive' as const } },
+          { gender: { equals: 'unisex', mode: 'insensitive' as const } },
+        ],
+      });
     }
 
     // Specific category keyword extraction with strict distinctions
@@ -414,83 +503,6 @@ export default async function CategoryPage({ params }: Props) {
       !isSweatshirt &&
       (cleanSlug.includes('shirt') || categoryLower.includes('shirt'));
 
-    if (categoryLower.includes('saree') || cleanSlug.includes('saree')) {
-      orConditions.push(
-        { name: { contains: 'saree', mode: 'insensitive' as const } },
-        { name: { contains: 'sari', mode: 'insensitive' as const } },
-        { name: { contains: 'banarasi', mode: 'insensitive' as const } },
-        { name: { contains: 'kanjeevaram', mode: 'insensitive' as const } },
-      );
-    }
-
-    if (isShirt) {
-      orConditions.push(
-        { name: { contains: 'shirt', mode: 'insensitive' as const } },
-        { name: { contains: 'oxford', mode: 'insensitive' as const } },
-        { name: { contains: 'button down', mode: 'insensitive' as const } },
-      );
-    } else if (isTShirt) {
-      orConditions.push(
-        { name: { contains: 't-shirt', mode: 'insensitive' as const } },
-        { name: { contains: 'tshirt', mode: 'insensitive' as const } },
-        { name: { contains: 'polo', mode: 'insensitive' as const } },
-        { name: { contains: 'tee', mode: 'insensitive' as const } },
-      );
-    } else if (isSweater) {
-      orConditions.push(
-        { name: { contains: 'sweater', mode: 'insensitive' as const } },
-        { name: { contains: 'cardigan', mode: 'insensitive' as const } },
-        { name: { contains: 'woolen', mode: 'insensitive' as const } },
-        { name: { contains: 'pullover', mode: 'insensitive' as const } },
-      );
-    } else if (isSweatshirt) {
-      orConditions.push(
-        { name: { contains: 'sweatshirt', mode: 'insensitive' as const } },
-        { name: { contains: 'fleece', mode: 'insensitive' as const } },
-      );
-    }
-
-    if (
-      categoryLower.includes('kurta') ||
-      categoryLower.includes('kurti') ||
-      cleanSlug.includes('kurta')
-    ) {
-      orConditions.push(
-        { name: { contains: 'kurta', mode: 'insensitive' as const } },
-        { name: { contains: 'kurti', mode: 'insensitive' as const } },
-        { name: { contains: 'anarkali', mode: 'insensitive' as const } },
-        { name: { contains: 'suit', mode: 'insensitive' as const } },
-      );
-    }
-    if (categoryLower.includes('lehenga') || cleanSlug.includes('lehenga')) {
-      orConditions.push(
-        { name: { contains: 'lehenga', mode: 'insensitive' as const } },
-        { name: { contains: 'choli', mode: 'insensitive' as const } },
-        { name: { contains: 'ghagra', mode: 'insensitive' as const } },
-      );
-    }
-    if (
-      categoryLower.includes('jeans') ||
-      cleanSlug.includes('jeans') ||
-      cleanSlug.includes('denim')
-    ) {
-      orConditions.push(
-        { name: { contains: 'jean', mode: 'insensitive' as const } },
-        { name: { contains: 'denim', mode: 'insensitive' as const } },
-      );
-    }
-    if (
-      categoryLower.includes('dress') ||
-      categoryLower.includes('frock') ||
-      cleanSlug.includes('dress')
-    ) {
-      orConditions.push(
-        { name: { contains: 'dress', mode: 'insensitive' as const } },
-        { name: { contains: 'frock', mode: 'insensitive' as const } },
-        { name: { contains: 'gown', mode: 'insensitive' as const } },
-      );
-    }
-
     const rawProducts = await prisma.product.findMany({
       where: {
         status: 'active',
@@ -500,6 +512,7 @@ export default async function CategoryPage({ params }: Props) {
           deletedAt: null,
         },
         OR: orConditions,
+        ...(andConditions.length > 0 ? { AND: andConditions } : {}),
       },
       include: {
         images: {

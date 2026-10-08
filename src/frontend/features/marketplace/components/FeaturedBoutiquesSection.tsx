@@ -109,8 +109,9 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
             const productCount = shop._count?.products || (shop.products?.length ?? 0);
             const bannerUrl = shop.banner || '/images/default-shop-banner.png';
             const cityDisplay = shop.city || 'India';
-            const ratingDisplay = shop.rating ? Number(shop.rating).toFixed(1) : '4.9';
-            const reviewsCount = shop.reviewCount || 48 + index * 12;
+            const hasReviews = Boolean(shop.rating && (shop.reviewCount ?? 0) > 0);
+            const ratingDisplay = shop.rating ? Number(shop.rating).toFixed(1) : null;
+            const reviewsCount = shop.reviewCount || 0;
 
             return (
               <div
@@ -164,11 +165,18 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                           <MapPin className="w-3.5 h-3.5 text-slate-400" />
                           <span>{cityDisplay}</span>
                         </span>
-                        <span className="flex items-center gap-1 font-bold text-amber-600">
-                          <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                          <span>{ratingDisplay}</span>
-                          <span className="text-slate-500 text-xs">({reviewsCount})</span>
-                        </span>
+                        {hasReviews ? (
+                          <span className="flex items-center gap-1 font-bold text-amber-600">
+                            <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                            <span>{ratingDisplay}</span>
+                            <span className="text-slate-500 text-xs">({reviewsCount})</span>
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 font-bold text-orange">
+                            <Sparkles className="w-3.5 h-3.5 text-orange" />
+                            <span>Verified Boutique</span>
+                          </span>
+                        )}
                       </div>
                     </div>
 

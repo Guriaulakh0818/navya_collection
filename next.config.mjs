@@ -106,6 +106,71 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/men',
+        destination: '/category/men',
+        permanent: true,
+      },
+      {
+        source: '/women',
+        destination: '/category/women',
+        permanent: true,
+      },
+      {
+        source: '/kids',
+        destination: '/category/kids',
+        permanent: true,
+      },
+      {
+        source: '/category/sarees',
+        destination: '/category/women-sarees',
+        permanent: true,
+      },
+      {
+        source: '/category/banarasi-sarees',
+        destination: '/category/women-sarees',
+        permanent: true,
+      },
+      {
+        source: '/category/lehengas',
+        destination: '/category/women-lehengas',
+        permanent: true,
+      },
+      {
+        source: '/category/kurtis',
+        destination: '/category/women-kurtas',
+        permanent: true,
+      },
+      {
+        source: '/category/kurtis-tunics',
+        destination: '/category/women-kurtas',
+        permanent: true,
+      },
+      {
+        source: '/category/anarkalis-suits',
+        destination: '/category/women-kurta-sets',
+        permanent: true,
+      },
+      {
+        source: '/category/salwar-suits',
+        destination: '/category/women-kurta-sets',
+        permanent: true,
+      },
+      {
+        source: '/category/suits',
+        destination: '/category/women-kurta-sets',
+        permanent: true,
+      },
+      {
+        source: '/category/dresses',
+        destination: '/category/women-dresses',
+        permanent: true,
+      },
+      {
+        source: '/category/phulkari-dupattas',
+        destination: '/category/dupattas-stoles',
+        permanent: true,
+      },
+      {
         source: '/:path*',
         has: [
           {

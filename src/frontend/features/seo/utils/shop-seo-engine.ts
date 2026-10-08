@@ -104,7 +104,9 @@ export function generateShopMetadata(
 
   return {
     metadataBase: new URL(options?.baseUrl || DEFAULT_BASE_URL),
-    title,
+    title: {
+      absolute: title,
+    },
     description,
     keywords: [
       shop.name,

@@ -121,8 +121,9 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
               comparePriceNum && comparePriceNum > priceNum
                 ? Math.round(((comparePriceNum - priceNum) / comparePriceNum) * 100)
                 : null;
-            const ratingNum = p.rating ? Number(p.rating).toFixed(1) : '4.6';
-            const reviewsCount = p.reviewCount || 24 + index * 8;
+            const hasReviews = Boolean(p.rating && (p.reviewCount ?? 0) > 0);
+            const ratingNum = p.rating ? Number(p.rating).toFixed(1) : null;
+            const reviewsCount = p.reviewCount || 0;
 
             return (
               <div
@@ -195,10 +196,20 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1 text-xs text-amber-600 font-bold mt-1">
-                      <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                      <span>{ratingNum}</span>
-                      <span className="text-slate-400 font-normal text-xs">({reviewsCount})</span>
+                    <div className="flex items-center gap-1 text-xs mt-1">
+                      {hasReviews ? (
+                        <>
+                          <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                          <span className="font-bold text-amber-600">{ratingNum}</span>
+                          <span className="text-slate-400 font-normal text-xs">
+                            ({reviewsCount})
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-[11px] text-slate-500 font-medium truncate">
+                          {p.category?.name || 'Verified Style'}
+                        </span>
+                      )}
                     </div>
                   </div>
 

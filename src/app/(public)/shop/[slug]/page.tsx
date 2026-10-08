@@ -130,7 +130,9 @@ export async function generateMetadata({ params }: ShopPageProps): Promise<Metad
 
   if (!data || !data.shop) {
     return {
-      title: 'Shop Not Found | Navya Collection',
+      title: {
+        absolute: 'Shop Not Found | Navya Collection',
+      },
       robots: {
         index: false,
         follow: false,

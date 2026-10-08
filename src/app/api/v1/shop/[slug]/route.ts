@@ -18,6 +18,28 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const category = searchParams.get('category');
     const sort = searchParams.get('sort') || 'newest';
 
+    const publicShopSelect = {
+      id: true,
+      name: true,
+      slug: true,
+      logo: true,
+      banner: true,
+      description: true,
+      city: true,
+      state: true,
+      pincode: true,
+      fullAddress: true,
+      phone: true,
+      email: true,
+      rating: true,
+      reviewCount: true,
+      verificationBadge: true,
+      shippingPolicy: true,
+      returnPolicy: true,
+      isClosed: true,
+      vacationMessage: true,
+    };
+
     // 1. Fetch Shop details: Require status = APPROVED and deletedAt = null for public storefront
     let shop = await prisma.shop.findFirst({
       where: {
@@ -25,27 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         status: 'APPROVED',
         deletedAt: null,
       },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            mobile: true,
-          },
-        },
-        sellerProfile: {
-          select: {
-            businessName: true,
-            legalName: true,
-            city: true,
-            state: true,
-            pincode: true,
-            businessAddress: true,
-          },
-        },
-        addresses: true,
-      },
+      select: publicShopSelect,
     });
 
     if (!shop) {
@@ -55,27 +57,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           status: 'APPROVED',
           deletedAt: null,
         },
-        include: {
-          owner: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              mobile: true,
-            },
-          },
-          sellerProfile: {
-            select: {
-              businessName: true,
-              legalName: true,
-              city: true,
-              state: true,
-              pincode: true,
-              businessAddress: true,
-            },
-          },
-          addresses: true,
-        },
+        select: publicShopSelect,
       });
     }
 

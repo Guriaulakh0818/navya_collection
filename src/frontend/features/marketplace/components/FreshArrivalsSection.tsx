@@ -106,7 +106,6 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
             p.images?.[0]?.imageUrl || p.images?.[0]?.url || '/images/categories/men-shirts.jpg';
           const priceNum = Number(p.price || 0);
           const comparePriceNum = p.compareAtPrice ? Number(p.compareAtPrice) : null;
-          const ratingNum = p.rating ? Number(p.rating).toFixed(1) : '4.7';
 
           return (
             <div

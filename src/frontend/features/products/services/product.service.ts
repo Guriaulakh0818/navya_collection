@@ -122,9 +122,14 @@ export class ProductService {
       if (isFeatured !== undefined) where.isFeatured = isFeatured;
       if (isNewArrival !== undefined) where.isNewArrival = isNewArrival;
 
-      // Category filter (support categoryId or categorySlug)
+      // Category filter (support categoryId, categorySlug, or parent category hierarchy)
       if (category) {
-        where.OR = [{ categoryId: category }, { category: { slug: category } }];
+        where.OR = [
+          { categoryId: category },
+          { category: { slug: category } },
+          { category: { parentId: category } },
+          { category: { parent: { slug: category } } },
+        ];
       }
 
       // Search filter (by Product Name or SKU)
@@ -151,6 +156,11 @@ export class ProductService {
           ...(minPrice !== undefined ? { gte: new Prisma.Decimal(minPrice) } : {}),
           ...(maxPrice !== undefined ? { lte: new Prisma.Decimal(maxPrice) } : {}),
         };
+      }
+
+      // Shop filter (multi-tenant isolation)
+      if (params.shopId) {
+        where.shopId = params.shopId;
       }
 
       const orderBy: Prisma.ProductOrderByWithRelationInput = {

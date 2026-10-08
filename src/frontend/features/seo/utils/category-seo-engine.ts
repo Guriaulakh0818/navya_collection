@@ -60,7 +60,7 @@ export function generateCategoryMetadata(
   // If category is not found or inactive
   if (!category || category.status === 'inactive') {
     return {
-      title: `Category Not Found | ${SEO_CONSTANTS.SITE_NAME}`,
+      title: { absolute: `Category Not Found | ${SEO_CONSTANTS.SITE_NAME}` },
       description: 'The requested category is not available on Navya Collection.',
       robots: {
         index: false,
@@ -71,13 +71,13 @@ export function generateCategoryMetadata(
 
   const cleanSlug = (category.slug || options?.slug || '').toLowerCase().trim();
   const canonicalUrl = `${siteUrl}/category/${cleanSlug}`;
-  const title = category.metaTitle || `${category.name} | ${SEO_CONSTANTS.SITE_NAME}`;
+  const fullTitle = category.metaTitle || `${category.name} | ${SEO_CONSTANTS.SITE_NAME}`;
   const description = buildNaturalCategoryDescription(category, options?.parentName);
   const imageUrl = category.banner || category.image || SEO_CONSTANTS.DEFAULT_OG_IMAGE;
   const isIndexable = options?.hasPublicProducts !== false;
 
   return {
-    title,
+    title: { absolute: fullTitle },
     description,
     keywords: [
       category.name,
@@ -97,7 +97,7 @@ export function generateCategoryMetadata(
       'max-video-preview': -1,
     },
     openGraph: {
-      title,
+      title: fullTitle,
       description,
       url: canonicalUrl,
       siteName: SEO_CONSTANTS.SITE_NAME,
@@ -114,7 +114,7 @@ export function generateCategoryMetadata(
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: fullTitle,
       description,
       images: [imageUrl],
     },
@@ -182,7 +182,7 @@ export function generateCategoryDirectoryMetadata(): Metadata {
     'Explore verified clothing categories, regional ethnic wear, designer collections, and boutique fashion from local stores across India on Navya Collection.';
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: {
       canonical: canonicalUrl,

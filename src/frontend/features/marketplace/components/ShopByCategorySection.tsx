@@ -45,7 +45,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
   {
     id: 'sarees',
     name: 'Sarees',
-    image: '/images/categories/women-sarees.jpg',
+    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
     href: '/category/women-sarees',
   },
   {
@@ -57,7 +57,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
   {
     id: 'shirts',
     name: 'Shirts',
-    image: '/images/categories/men-casual-shirts.jpg',
+    image: '/images/categories/men-shirts.jpg',
     href: '/category/men-shirts',
   },
   {

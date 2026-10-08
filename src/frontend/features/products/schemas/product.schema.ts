@@ -75,6 +75,7 @@ export const getProductQuerySchema = z.object({
     .transform((v) => (v === 'true' ? true : v === 'false' ? false : undefined)),
   minPrice: z.coerce.number().optional(),
   maxPrice: z.coerce.number().optional(),
+  shopId: z.string().trim().optional(),
   sortBy: z.enum(['createdAt', 'price', 'name', 'rating', 'stock']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });

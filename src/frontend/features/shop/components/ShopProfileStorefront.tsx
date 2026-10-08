@@ -39,23 +39,19 @@ export function ShopProfileStorefront({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoadingCatalog, setIsLoadingCatalog] = useState<boolean>(false);
 
-  const owner = shop.owner || {};
-  const profile = shop.sellerProfile || {};
-
-  // Filter Catalog Fetcher
+  // Filter Catalog Fetcher (Strict Shop Isolation)
   const filterCatalog = async (q: string, cat: string, sort: string) => {
     setIsLoadingCatalog(true);
     try {
-      const url = new URL('/api/v1/products', window.location.origin);
-      url.searchParams.set('shopId', shop.id);
+      const url = new URL(`/api/v1/shop/${shop.slug}`, window.location.origin);
       if (q) url.searchParams.set('q', q);
       if (cat && cat !== 'all') url.searchParams.set('category', cat);
       if (sort) url.searchParams.set('sort', sort);
 
       const res = await fetch(url.toString());
       const json = await res.json();
-      if (json.success) {
-        setProducts(json.data || []);
+      if (json.success && json.data) {
+        setProducts(json.data.products || []);
       }
     } catch (err) {
       console.error('Failed to filter shop catalog:', err);
@@ -176,18 +172,22 @@ export function ShopProfileStorefront({
 
             {/* Quick Contact Badge */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-              <a
-                href={`tel:${shop.phone || owner.mobile || ''}`}
-                className="px-4 py-2.5 bg-navy hover:bg-navy/90 text-white font-extrabold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
-              >
-                <Phone className="w-4 h-4 text-amber-400" /> Call Boutique
-              </a>
-              <a
-                href={`mailto:${shop.email || owner.email || ''}`}
-                className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
-              >
-                <Mail className="w-4 h-4" /> Inquiry Email
-              </a>
+              {shop.phone && (
+                <a
+                  href={`tel:${shop.phone}`}
+                  className="px-4 py-2.5 bg-navy hover:bg-navy/90 text-white font-extrabold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+                >
+                  <Phone className="w-4 h-4 text-amber-400" /> Call Boutique
+                </a>
+              )}
+              {shop.email && (
+                <a
+                  href={`mailto:${shop.email}`}
+                  className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+                >
+                  <Mail className="w-4 h-4" /> Inquiry Email
+                </a>
+              )}
             </div>
           </div>
 
@@ -404,21 +404,19 @@ export function ShopProfileStorefront({
               <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3">
                 <h3 className="font-extrabold text-slate-900 text-sm">Pickup Warehouse Address</h3>
                 <p className="text-slate-700 font-semibold">
-                  {shop.fullAddress ||
-                    profile.businessAddress ||
-                    [shop.city, shop.state, 'India'].filter(Boolean).join(', ')}
+                  {shop.fullAddress || [shop.city, shop.state, 'India'].filter(Boolean).join(', ')}
                 </p>
                 <div className="flex gap-4 text-slate-500 pt-2 border-t border-slate-200">
                   <span>
-                    City: <strong className="text-slate-900">{shop.city || profile.city}</strong>
+                    City: <strong className="text-slate-900">{shop.city || 'N/A'}</strong>
                   </span>
                   <span>
-                    State: <strong className="text-slate-900">{shop.state || profile.state}</strong>
+                    State: <strong className="text-slate-900">{shop.state || 'N/A'}</strong>
                   </span>
                   <span>
                     Pincode:{' '}
                     <strong className="text-amber-800 font-mono font-bold">
-                      {shop.pincode || profile.pincode}
+                      {shop.pincode || 'N/A'}
                     </strong>
                   </span>
                 </div>
@@ -428,14 +426,10 @@ export function ShopProfileStorefront({
                 <h3 className="font-extrabold text-slate-900 text-sm">Merchant Direct Support</h3>
                 <div className="space-y-2 text-slate-600 font-medium">
                   <div>
-                    Primary Phone:{' '}
-                    <strong className="text-slate-900">
-                      {shop.phone || owner.mobile || 'N/A'}
-                    </strong>
+                    Primary Phone: <strong className="text-slate-900">{shop.phone || 'N/A'}</strong>
                   </div>
                   <div>
-                    Support Email:{' '}
-                    <strong className="text-slate-900">{shop.email || owner.email || 'N/A'}</strong>
+                    Support Email: <strong className="text-slate-900">{shop.email || 'N/A'}</strong>
                   </div>
                 </div>
               </div>

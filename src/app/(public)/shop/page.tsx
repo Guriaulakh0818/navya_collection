@@ -6,7 +6,9 @@ import { MarketplaceCatalogContent } from '@/frontend/features/shop/components/M
 
 export const metadata: Metadata = {
   metadataBase: new URL(SEO_CONSTANTS.SITE_URL),
-  title: 'Explore Boutique Shops & Designers | Navya Collection',
+  title: {
+    absolute: 'Explore Boutique Shops & Designers | Navya Collection',
+  },
   description:
     'Discover verified boutique partner stores across India on Navya Collection. Shop authentic designer fashion, luxury ethnic wear, and handcrafted garments.',
   keywords: [

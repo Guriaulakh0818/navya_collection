@@ -16,7 +16,7 @@ import {
   Tag,
   X,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import { ProductCard } from '@/frontend/features/products/components/ProductCard';
@@ -171,6 +171,17 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
   // Mobile drawer state
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [mobileActiveTab, setMobileActiveTab] = useState<string>('print_type');
+
+  // Lock body scroll when mobile filter drawer is open
+  useEffect(() => {
+    if (isMobileFilterOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isMobileFilterOpen]);
 
   // Filter states
   const [selectedPrintTypes, setSelectedPrintTypes] = useState<string[]>([]);
@@ -389,12 +400,14 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
       const minSelectedRating = Math.min(
         ...selectedRatings.map((rId) => RATING_OPTIONS.find((r) => r.id === rId)?.minRating || 4.0),
       );
-      list = list.filter((p) => (p.rating ?? 4.8) >= minSelectedRating);
+      list = list.filter((p) => (Number(p.rating) || 0) >= minSelectedRating);
     }
 
     // 6. N-Assured (Navya Assured / Verified)
     if (isNavyaAssuredOnly) {
-      list = list.filter((p) => p.shop?.verificationBadge || (p.rating ?? 4.8) >= 4.5);
+      list = list.filter((p) =>
+        Boolean(p.shop?.verificationBadge || (Number(p.rating) || 0) >= 4.5),
+      );
     }
 
     // 7. Discounts
@@ -516,7 +529,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
     list.sort((a, b) => {
       if (sortBy === 'price_asc') return Number(a.price || 0) - Number(b.price || 0);
       if (sortBy === 'price_desc') return Number(b.price || 0) - Number(a.price || 0);
-      if (sortBy === 'rating') return (b.rating ?? 4.8) - (a.rating ?? 4.8);
+      if (sortBy === 'rating') return (Number(b.rating) || 0) - (Number(a.rating) || 0);
       if (sortBy === 'newest') {
         return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       }

@@ -4,6 +4,8 @@ import { OfferService } from '@/backend/services/offer.service';
 import { CATEGORIES } from '@/features/categories/constants/category.constants';
 import { prisma } from '@/lib/prisma';
 
+const safeCache = typeof cache === 'function' ? cache : (fn: any) => fn;
+
 function sanitizeProduct(p: any) {
   if (!p) return null;
   return {
@@ -77,7 +79,7 @@ function sanitizeOffer(o: any) {
   };
 }
 
-export const getMarketplaceHomeData = cache(async () => {
+export const getMarketplaceHomeData = safeCache(async () => {
   try {
     const [
       featuredShops,
@@ -165,12 +167,13 @@ export const getMarketplaceHomeData = cache(async () => {
         })
         .catch(() => []),
 
-      // 4. New Arrivals Products
+      // 4. New Arrivals Products (Only from Approved Active Shops)
       prisma.product
         .findMany({
           where: {
             status: 'active',
             deletedAt: null,
+            shop: { status: 'APPROVED', deletedAt: null },
           },
           take: 12,
           orderBy: { createdAt: 'desc' },
@@ -189,12 +192,13 @@ export const getMarketplaceHomeData = cache(async () => {
         })
         .catch(() => []),
 
-      // 5. Best Sellers Products
+      // 5. Best Sellers Products (Only from Approved Active Shops)
       prisma.product
         .findMany({
           where: {
             status: 'active',
             deletedAt: null,
+            shop: { status: 'APPROVED', deletedAt: null },
           },
           take: 12,
           orderBy: { price: 'desc' },

@@ -104,26 +104,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let dbProducts: Array<{ slug: string; updatedAt: Date }> = [];
 
   try {
-    // Query active database categories with at least 1 public product
+    // Query active database categories with at least 1 public product (directly or via child subcategories)
+    const publicProductCondition = {
+      status: 'active',
+      deletedAt: null,
+      shop: {
+        status: 'APPROVED' as const,
+        deletedAt: null,
+      },
+    };
+
     dbCategories = await prisma.category.findMany({
       where: {
         deletedAt: null,
         status: 'active',
-        products: {
-          some: {
-            status: 'active',
-            deletedAt: null,
-            OR: [
-              { shopId: null },
-              {
-                shop: {
-                  status: 'APPROVED',
-                  deletedAt: null,
+        OR: [
+          {
+            products: {
+              some: publicProductCondition,
+            },
+          },
+          {
+            children: {
+              some: {
+                deletedAt: null,
+                status: 'active',
+                products: {
+                  some: publicProductCondition,
                 },
               },
-            ],
+            },
           },
-        },
+        ],
       },
       select: { slug: true, updatedAt: true },
     });
