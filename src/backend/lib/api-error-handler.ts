@@ -27,7 +27,11 @@ export function handleApiError(
   console.error(`❌ [${context}]:`, err);
 
   const status = options?.status || 500;
-  const userMessage = options?.userMessage || USER_FRIENDLY_SERVER_ERROR;
+  const userMessage =
+    options?.userMessage ||
+    (options?.isAdmin
+      ? `Operation issue in ${context}. Please retry.`
+      : USER_FRIENDLY_SERVER_ERROR);
 
   const responseBody: Record<string, any> = {
     success: false,

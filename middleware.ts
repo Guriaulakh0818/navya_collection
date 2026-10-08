@@ -104,8 +104,22 @@ export default async function middleware(req: NextRequest) {
     currentHost === 'seller.navyacollection.store' || currentHost.startsWith('seller.');
 
   // 5. PRODUCTION SUBDOMAIN CANONICAL REDIRECTIONS:
-  // If accessing /admin or /seller from the main customer domain, redirect to respective subdomains
-  if (process.env.NODE_ENV === 'production' && !isAdminSubdomain && !isSellerSubdomain) {
+  // Only redirect from canonical primary domain (navyacollection.store).
+  // Exclude Vercel preview domains (*.vercel.app) and local development to prevent network errors / cross-origin breakage.
+  const isVercelOrLocal =
+    currentHost.endsWith('.vercel.app') ||
+    currentHost.includes('localhost') ||
+    currentHost.includes('127.0.0.1');
+  const isCanonicalCustomerDomain =
+    currentHost === 'navyacollection.store' || currentHost === 'www.navyacollection.store';
+
+  if (
+    process.env.NODE_ENV === 'production' &&
+    isCanonicalCustomerDomain &&
+    !isAdminSubdomain &&
+    !isSellerSubdomain &&
+    !isVercelOrLocal
+  ) {
     if (pathname === '/admin' || pathname.startsWith('/admin/')) {
       const targetUrl = new URL(pathname, 'https://admin.navyacollection.store');
       req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));

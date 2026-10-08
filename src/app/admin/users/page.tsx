@@ -46,8 +46,8 @@ export default function AdminUsersPage() {
         if (roleFilter !== 'ALL') url.searchParams.set('role', roleFilter);
 
         const res = await fetch(url.toString());
-        const json = await res.json();
-        if (json.success && json.data) {
+        const json = await res.json().catch(() => null);
+        if (res.ok && json?.success && json?.data) {
           setUsers(json.data.users || []);
           setStats(
             json.data.stats || { totalUsers: 0, customerCount: 0, sellerCount: 0, adminCount: 0 },

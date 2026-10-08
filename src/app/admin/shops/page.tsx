@@ -52,8 +52,8 @@ export default function AdminShopsPage() {
         if (statusFilter !== 'ALL') url.searchParams.set('status', statusFilter);
 
         const res = await fetch(url.toString());
-        const json = await res.json();
-        if (json.success && json.data) {
+        const json = await res.json().catch(() => null);
+        if (res.ok && json?.success && json?.data) {
           setShops(json.data.shops || []);
           setStats(
             json.data.stats || {

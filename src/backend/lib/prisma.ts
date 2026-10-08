@@ -11,4 +11,6 @@ const globalForPrisma = globalThis as unknown as {
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+// Persist Prisma singleton globally across warm lambda containers and dev HMR
+// to strictly prevent PostgreSQL connection pool exhaustion and memory leaks.
+globalForPrisma.prisma = prisma;

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 
 type Toast = {
   id: string;
@@ -18,16 +18,27 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const toast = (message: string, variant: Toast['variant'] = 'info') => {
+  const toast = useCallback((message: string, variant: Toast['variant'] = 'info') => {
+    if (!message) return;
     const id = `${Date.now()}-${Math.random()}`;
-    setToasts((prev) => [...prev, { id, message, variant }]);
+
+    setToasts((prev) => {
+      // Prevent duplicate toast spam if the same message is already visible
+      if (prev.some((t) => t.message === message)) {
+        return prev;
+      }
+      return [...prev, { id, message, variant }];
+    });
+
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3000);
-  };
+    }, 4000);
+  }, []);
+
+  const contextValue = useMemo(() => ({ toasts, toast }), [toasts, toast]);
 
   return (
-    <ToastContext.Provider value={{ toasts, toast }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       <div className="fixed inset-x-0 bottom-6 z-[9999] flex flex-col items-center gap-2.5 pointer-events-none px-4">
         {toasts.map((t) => (

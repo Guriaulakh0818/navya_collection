@@ -91,17 +91,18 @@ export default function AdminProductsPage() {
       if (search) url.searchParams.set('q', search);
 
       const res = await fetch(url.toString());
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
-      if (data.success) {
+      if (res.ok && data?.success) {
         setProducts(data.data || []);
         if (data.pagination) setPagination(data.pagination);
         if (data.counts) setCounts(data.counts);
       } else {
-        toast(data.message || 'Failed to fetch products.', 'error');
+        toast(data?.message || 'Failed to fetch products.', 'error');
       }
     } catch (err: any) {
       console.error('Failed to fetch admin products:', err);
+      toast('Network connection error while fetching products.', 'error');
     } finally {
       setIsLoading(false);
     }

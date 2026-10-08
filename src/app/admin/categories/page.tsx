@@ -79,11 +79,11 @@ export default function AdminCategoriesPage() {
       if (search) url.searchParams.set('q', search);
 
       const res = await fetch(url.toString());
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
-      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+      if (res.ok && data?.success && Array.isArray(data.data) && data.data.length > 0) {
         setCategories(data.data);
-      } else if (!data.success) {
+      } else if (data && !data.success) {
         toast(data.message || 'Failed to fetch categories.', 'error');
       }
     } catch (err: any) {
@@ -91,7 +91,7 @@ export default function AdminCategoriesPage() {
     } finally {
       setIsFetching(false);
     }
-  }, [search, toast]);
+  }, [search]);
 
   useEffect(() => {
     fetchCategories();

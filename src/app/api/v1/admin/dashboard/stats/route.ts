@@ -15,28 +15,45 @@ export async function GET() {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 1. Fetch live platform counts defensively
-    const [
-      ordersCount,
-      shopsCount,
-      sellersCount,
-      productsCount,
-      customersCount,
-      sellersList,
-      productsList,
-      ordersList,
-      shopsList,
-      ordersAgg,
-      vendorOrdersAgg,
-    ] = await Promise.all([
-      prisma.order.count().catch(() => 0),
-      prisma.shop.count({ where: { status: 'APPROVED' } }).catch(() => 0),
-      prisma.shop
-        .count({ where: { status: { in: ['PENDING_VERIFICATION', 'UNDER_REVIEW'] } } })
-        .catch(() => 0),
-      prisma.product.count({ where: { status: 'draft' } }).catch(() => 0),
-      prisma.user.count({ where: { role: { in: ['USER', 'CUSTOMER'] } } }).catch(() => 0),
+    // 1. Fetch live metrics and platform aggregates (Batch 1: Metrics)
+    const [ordersAgg, shopStatusGroups, vendorOrdersAgg, productsCount, customersCount] =
+      await Promise.all([
+        prisma.order
+          .aggregate({
+            _count: { id: true },
+            _sum: { totalAmount: true },
+          })
+          .catch((err) => {
+            console.error('Failed to aggregate orders:', err);
+            return { _count: { id: 0 }, _sum: { totalAmount: 0 } };
+          }),
 
+        prisma.shop
+          .groupBy({
+            by: ['status'],
+            _count: { _all: true },
+          })
+          .catch((err) => {
+            console.error('Failed to group shops by status:', err);
+            return [];
+          }),
+
+        prisma.vendorOrder
+          .aggregate({
+            _sum: { commissionAmount: true, vendorPayoutAmount: true },
+          })
+          .catch((err) => {
+            console.error('Failed to aggregate vendor orders:', err);
+            return { _sum: { commissionAmount: 0, vendorPayoutAmount: 0 } };
+          }),
+
+        prisma.product.count({ where: { status: 'draft' } }).catch(() => 0),
+
+        prisma.user.count({ where: { role: { in: ['USER', 'CUSTOMER'] } } }).catch(() => 0),
+      ]);
+
+    // 2. Fetch recent feeds (Batch 2: Feed listings)
+    const [sellersList, productsList, ordersList, shopsList] = await Promise.all([
       // Pending seller onboarding applications
       prisma.shop
         .findMany({
@@ -93,25 +110,19 @@ export async function GET() {
           },
         })
         .catch(() => []),
-
-      // Revenue aggregate
-      prisma.order
-        .aggregate({
-          _sum: { totalAmount: true },
-        })
-        .catch(() => ({ _sum: { totalAmount: 0 } })),
-
-      // Vendor orders aggregate for authoritative commission and payout
-      prisma.vendorOrder
-        .aggregate({
-          _sum: { commissionAmount: true, vendorPayoutAmount: true },
-        })
-        .catch(() => ({ _sum: { commissionAmount: 0, vendorPayoutAmount: 0 } })),
     ]);
 
-    const totalOrdersCount = Number(ordersCount || 0);
-    const activeShopsCount = Number(shopsCount || 0);
-    const pendingSellersCount = Number(sellersCount || 0);
+    // Calculate shop status breakdown
+    const shopCountsMap: Record<string, number> = {};
+    for (const group of shopStatusGroups) {
+      shopCountsMap[group.status] = group._count?._all || 0;
+    }
+
+    const totalOrdersCount = Number(ordersAgg?._count?.id || 0);
+    const activeShopsCount = Number(shopCountsMap['APPROVED'] || 0);
+    const pendingSellersCount = Number(
+      (shopCountsMap['PENDING_VERIFICATION'] || 0) + (shopCountsMap['UNDER_REVIEW'] || 0),
+    );
     const pendingProductsCount = Number(productsCount || 0);
     const totalCustomersCount = Number(customersCount || 0);
     const pendingSellersList = sellersList || [];

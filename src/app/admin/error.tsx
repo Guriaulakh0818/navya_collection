@@ -50,7 +50,13 @@ export default function AdminError({
 
         <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
           <button
-            onClick={() => reset()}
+            onClick={() => {
+              if (error?.message?.toLowerCase().includes('network')) {
+                window.location.reload();
+              } else {
+                reset();
+              }
+            }}
             className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
