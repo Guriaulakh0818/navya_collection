@@ -91,7 +91,7 @@ export default function AdminCategoriesPage() {
     } finally {
       setIsFetching(false);
     }
-  }, [search]);
+  }, [search, toast]);
 
   useEffect(() => {
     fetchCategories();
