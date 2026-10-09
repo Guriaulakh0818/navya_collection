@@ -182,6 +182,71 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     return resolveSizeSystem(primaryCategoryId, formData.productType);
   }, [primaryCategoryId, formData.productType]);
 
+  // Derive initial department and subcategory from activeTemplate
+  const currentHierarchy = useMemo(() => {
+    for (const dept of CATEGORY_ENGINE_TAXONOMY) {
+      for (const sub of dept.subCategories) {
+        if (sub.productTypes.some((pt) => pt.id === activeTemplate.id)) {
+          return { deptId: dept.id, subId: sub.id };
+        }
+      }
+    }
+    return {
+      deptId: CATEGORY_ENGINE_TAXONOMY[0].id,
+      subId: CATEGORY_ENGINE_TAXONOMY[0].subCategories[0].id,
+    };
+  }, [activeTemplate.id]);
+
+  const [activeDeptId, setActiveDeptId] = useState<string>(currentHierarchy.deptId);
+  const [activeSubId, setActiveSubId] = useState<string>(currentHierarchy.subId);
+
+  useEffect(() => {
+    setActiveDeptId(currentHierarchy.deptId);
+    setActiveSubId(currentHierarchy.subId);
+  }, [currentHierarchy.deptId, currentHierarchy.subId]);
+
+  const currentDepartmentDef = useMemo(() => {
+    return (
+      CATEGORY_ENGINE_TAXONOMY.find((d) => d.id === activeDeptId) || CATEGORY_ENGINE_TAXONOMY[0]
+    );
+  }, [activeDeptId]);
+
+  const currentSubCategoryDef = useMemo(() => {
+    return (
+      currentDepartmentDef.subCategories.find((s) => s.id === activeSubId) ||
+      currentDepartmentDef.subCategories[0]
+    );
+  }, [currentDepartmentDef, activeSubId]);
+
+  const handleProductTypeChange = (newPtId: string) => {
+    const targetTemplate = resolveAttributeTemplate(undefined, newPtId);
+    const targetSizes = resolveSizeSystem(undefined, newPtId);
+
+    setFormData((prev) => ({
+      ...prev,
+      productType: newPtId,
+    }));
+
+    // Auto sync with main category & subcategories
+    const matchingCat = allFlattenedCategories.find(
+      (c: any) =>
+        c.id.toLowerCase() === `cat_${newPtId}` ||
+        c.id.toLowerCase().includes(newPtId.replace(/^(men_|women_|kids_)/, '')) ||
+        newPtId.includes(c.id.replace('cat_', '')),
+    );
+    if (matchingCat) {
+      setSelectedCategoryIds((prev) => Array.from(new Set([matchingCat.id, ...prev])));
+      setFormData((prev) => ({ ...prev, categoryId: matchingCat.id }));
+    }
+
+    // Refresh selected sizes to align with newly selected category's size system
+    setSelectedSizes((prev) => {
+      return prev.filter((sz) => targetSizes.includes(sz));
+    });
+
+    showToast(`Attribute Template loaded: ${targetTemplate.name}`, 'success');
+  };
+
   // Live Pricing Floors & Auto-calculated Discount %
   const pricingFloors = useMemo(() => {
     const mrp = Number(formData.compareAtPrice);
@@ -861,13 +926,122 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             />
           </div>
 
+          {/* DYNAMIC CATEGORY & GARMENT TYPE SELECTOR */}
+          <div className="md:col-span-2 bg-gradient-to-br from-amber-50/80 via-slate-50 to-white p-5 rounded-2xl border-2 border-amber-200/80 space-y-4 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/50 pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950">
+                    Category Engine
+                  </span>
+                  <h3 className="text-sm font-extrabold text-navy">
+                    Dynamic Garment & Category Selection
+                  </h3>
+                </div>
+                <p className="text-[11px] text-slate-600 mt-0.5">
+                  Choose the garment to automatically open its tailored attributes in Section 2 and configure its size system.
+                </p>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-xl border border-amber-300 text-xs font-bold text-navy shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Active Template: <strong className="text-amber-800">{activeTemplate.name}</strong></span>
+              </div>
+            </div>
+
+            {/* 1. Department Selection */}
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                Step 1: Department
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {CATEGORY_ENGINE_TAXONOMY.map((dept) => {
+                  const isDeptActive = activeDeptId === dept.id;
+                  const icon = dept.name === 'Men' ? '👨' : dept.name === 'Women' ? '👩' : '👶';
+                  return (
+                    <button
+                      key={dept.id}
+                      type="button"
+                      onClick={() => {
+                        setActiveDeptId(dept.id);
+                        if (dept.subCategories.length > 0) {
+                          setActiveSubId(dept.subCategories[0].id);
+                        }
+                      }}
+                      className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+                        isDeptActive
+                          ? 'bg-navy text-white shadow-xs ring-2 ring-navy/20'
+                          : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                      }`}
+                    >
+                      <span>{icon}</span>
+                      <span>{dept.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 2. Subcategory / Section Selection */}
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                Step 2: Category / Section
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {currentDepartmentDef?.subCategories.map((sub) => {
+                  const isSubActive = activeSubId === sub.id;
+                  return (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => setActiveSubId(sub.id)}
+                      className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                        isSubActive
+                          ? 'bg-amber-500 text-slate-950 shadow-xs font-black ring-2 ring-amber-500/20'
+                          : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                      }`}
+                    >
+                      {sub.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3. Garment / Product Type Pills */}
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
+                Step 3: Specific Garment / Product Type (Loads Attributes & Size System)
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {currentSubCategoryDef?.productTypes.map((pt) => {
+                  const isPtActive = (formData.productType || activeTemplate.id) === pt.id;
+                  return (
+                    <button
+                      key={pt.id}
+                      type="button"
+                      onClick={() => handleProductTypeChange(pt.id)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        isPtActive
+                          ? 'bg-emerald-600 text-white shadow-xs ring-2 ring-emerald-600/20 font-black'
+                          : 'bg-white text-slate-800 hover:bg-slate-100 border border-slate-300'
+                      }`}
+                    >
+                      {isPtActive && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                      <span>{pt.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           <div>
             <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Product Type / Specific Category
+              Product Type / Specific Category (Quick Search Dropdown)
             </label>
             <select
               value={formData.productType || activeTemplate.id}
-              onChange={(e) => setFormData({ ...formData, productType: e.target.value })}
+              onChange={(e) => handleProductTypeChange(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-bold focus:border-navy focus:bg-white focus:outline-none transition-all cursor-pointer"
             >
               {CATEGORY_ENGINE_TAXONOMY.map((dept) => (
