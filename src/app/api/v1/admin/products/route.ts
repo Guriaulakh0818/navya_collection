@@ -40,12 +40,42 @@ export async function GET(request: NextRequest) {
     const categoryFilter = searchParams.get('categoryId') || searchParams.get('category') || 'ALL';
 
     if (categoryFilter !== 'ALL') {
-      whereCondition.OR = [
-        { categoryId: categoryFilter },
-        { category: { id: categoryFilter } },
-        { category: { slug: categoryFilter } },
-        { category: { parentId: categoryFilter } },
-      ];
+      // Hierarchically resolve category (including all descendant subcategories & leaf items)
+      const targetCat = await prisma.category.findFirst({
+        where: {
+          OR: [{ id: categoryFilter }, { slug: categoryFilter.toLowerCase() }],
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
+
+      if (targetCat) {
+        const matchingIds = new Set<string>([targetCat.id]);
+
+        // Level 2 children
+        const level2 = await prisma.category.findMany({
+          where: { parentId: targetCat.id, deletedAt: null },
+          select: { id: true },
+        });
+        const level2Ids = level2.map((c) => c.id);
+        level2Ids.forEach((id) => matchingIds.add(id));
+
+        // Level 3 children
+        if (level2Ids.length > 0) {
+          const level3 = await prisma.category.findMany({
+            where: { parentId: { in: level2Ids }, deletedAt: null },
+            select: { id: true },
+          });
+          level3.forEach((c) => matchingIds.add(c.id));
+        }
+
+        whereCondition.categoryId = { in: Array.from(matchingIds) };
+      } else {
+        whereCondition.OR = [
+          { categoryId: categoryFilter },
+          { category: { slug: categoryFilter } },
+        ];
+      }
     }
 
     if (query) {

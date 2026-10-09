@@ -7,37 +7,68 @@ import { usePathname } from 'next/navigation';
 
 const megaCategoriesData = [
   {
-    title: 'Women Ethnic',
-    href: '/category/sarees',
+    title: 'In The Spotlight',
+    href: '/category/spotlight',
     items: [
-      { name: 'Sarees', href: '/category/sarees' },
-      { name: 'Lehenga Choli', href: '/category/lehengas' },
-      { name: 'Anarkalis & Suits', href: '/category/anarkalis-suits' },
-      { name: 'Kurtis & Tunics', href: '/category/kurtis-tunics' },
-      { name: 'Dupattas & Stoles', href: '/category/dupattas-stoles' },
-      { name: 'Banarasi Sarees', href: '/category/banarasi-sarees' },
-      { name: 'Bridal Lehengas', href: '/category/bridal-lehengas' },
+      { name: 'Festivals of India', href: '/category/festivals-of-india' },
+      { name: 'New Season Drops', href: '/category/new-season' },
+      { name: 'Trending Now', href: '/category/trending' },
+      { name: 'Best Sellers', href: '/category/best-sellers' },
+      { name: 'Top-Rated Styles', href: '/category/top-rated' },
+      { name: 'Budget Finds (Under ₹999)', href: '/category/budget-finds' },
+      { name: 'Korean Store', href: '/category/korean-store' },
+      { name: 'Sports Store', href: '/category/sports-store' },
     ],
   },
   {
-    title: 'Men Couture',
-    href: '/category/gents-mens-couture',
+    title: 'Men',
+    href: '/category/men',
     items: [
-      { name: 'Gents & Mens Couture', href: '/category/gents-mens-couture' },
-      { name: 'Designer Kurta Pajamas', href: '/category/designer-kurta-pajamas' },
-      { name: 'Partywear Lehengas', href: '/category/partywear-lehengas' },
-      { name: 'Silk Anarkali Sets', href: '/category/silk-anarkali-sets' },
+      { name: 'Shirts', href: '/category/men-shirts' },
+      { name: 'T-Shirts & Polos', href: '/category/men-t-shirts' },
+      { name: 'Jeans & Denims', href: '/category/men-jeans' },
+      { name: 'Trousers & Chinos', href: '/category/men-chinos' },
+      { name: 'Kurtas & Sets', href: '/category/men-kurta-sets' },
+      { name: 'Blazers & Suits', href: '/category/men-blazers' },
+      { name: 'Track Pants & Active', href: '/category/men-track-pants' },
+      { name: 'Watches & Accessories', href: '/category/men-watches' },
     ],
   },
   {
-    title: 'Fusion & Boutiques',
-    href: '/category/indo-western-fusion',
+    title: 'Women',
+    href: '/category/women',
     items: [
-      { name: 'Indo-Western & Fusion', href: '/category/indo-western-fusion' },
-      { name: 'Kanjeevaram Silks', href: '/category/kanjeevaram-silk-sarees' },
-      { name: 'Chanderi Sarees', href: '/category/chanderi-sarees' },
-      { name: 'Phulkari Dupattas', href: '/category/phulkari-dupattas' },
-      { name: 'All Boutiques', href: '/shops' },
+      { name: 'Sarees', href: '/category/women-sarees' },
+      { name: 'Lehenga Choli', href: '/category/women-lehengas' },
+      { name: 'Kurta Sets & Suits', href: '/category/women-kurta-sets' },
+      { name: 'Kurtas & Tunics', href: '/category/women-kurtas' },
+      { name: 'Western Dresses', href: '/category/women-dresses' },
+      { name: 'Tops & Tees', href: '/category/women-tops-tees' },
+      { name: 'Handbags & Clutches', href: '/category/women-bags' },
+      { name: 'Winter Outerwear', href: '/category/women-jackets' },
+    ],
+  },
+  {
+    title: 'Kids',
+    href: '/category/kids',
+    items: [
+      { name: 'Baby Newborn & Sets', href: '/category/baby-fashion' },
+      { name: 'Boys Clothing', href: '/category/boys-fashion' },
+      { name: 'Girls Clothing', href: '/category/girls-fashion' },
+      { name: 'Teen Trends', href: '/category/teens-fashion' },
+      { name: 'Kids Ethnic Wear', href: '/category/kids-ethnic-wear' },
+      { name: 'Kids Essentials', href: '/category/kids-essentials' },
+      { name: 'All Kids Fashion', href: '/category/all-kids-fashion' },
+    ],
+  },
+  {
+    title: 'Shops',
+    href: '/shops',
+    items: [
+      { name: 'All Partner Boutiques', href: '/shops' },
+      { name: 'Trending Shops', href: '/category/trending-shops' },
+      { name: 'Top-Rated Boutiques', href: '/category/top-rated-shops' },
+      { name: 'New Boutiques', href: '/category/new-shops' },
     ],
   },
 ];
@@ -80,7 +111,7 @@ export function HeaderNavigation() {
         </Link>
 
         {activeMenu === 'categories' && (
-          <div className="absolute top-full left-0 w-[640px] bg-white rounded-2xl shadow-dropdown border border-slate-100 p-6 grid grid-cols-3 gap-6 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute top-full -left-12 xl:left-0 w-[880px] bg-white rounded-2xl shadow-dropdown border border-slate-100 p-6 grid grid-cols-5 gap-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             {megaCategoriesData.map((categoryGroup) => (
               <div key={categoryGroup.title}>
                 <Link

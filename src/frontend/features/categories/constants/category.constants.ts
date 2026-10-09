@@ -1,3 +1,5 @@
+import { CATEGORY_TAXONOMY, getFlattenedCategoryOptions } from '@/config/categories.config';
+
 import type { Category } from '../types/category.types';
 import { MAIN_CATEGORY_GROUPS } from './category-explorer.constants';
 
@@ -13,195 +15,180 @@ export const CATEGORY_ACCENTS = [
 ] as const;
 
 export const CATEGORIES: Category[] = [
-  // Master Parent Categories
+  // 1. IN THE SPOTLIGHT
   {
-    id: 'sarees',
+    id: 'group_spotlight',
+    name: 'In The Spotlight',
+    slug: 'spotlight',
+    description: 'Handpicked seasonal drops, festive highlights, top-rated trends & budget finds.',
+    image: '/images/categories/category-spotlight.jpg',
+    banner: '/images/categories/category-spotlight.jpg',
+    productCount: 12,
+    accent: CATEGORY_ACCENTS[1],
+    subCategories: [
+      { id: 'spot_new_season', name: 'New Season', slug: 'new-season' },
+      { id: 'spot_festivals_india', name: 'Festivals of India', slug: 'festivals-of-india' },
+      { id: 'spot_korean_store', name: 'Korean Store', slug: 'korean-store' },
+      { id: 'spot_best_sellers', name: 'Best Sellers', slug: 'best-sellers' },
+      { id: 'spot_budget_finds', name: 'Budget Finds', slug: 'budget-finds' },
+      { id: 'spot_trending_now', name: 'Trending Now', slug: 'trending' },
+    ],
+  },
+
+  // 2. MEN
+  {
+    id: 'group_men',
+    name: 'Men',
+    slug: 'men',
+    description:
+      'Designer shirts, t-shirts, jeans, trousers, silk kurta sets, suits & accessories.',
+    image: '/images/categories/category-men.jpg',
+    banner: '/images/categories/category-men.jpg',
+    productCount: 15,
+    accent: CATEGORY_ACCENTS[0],
+    subCategories: [
+      { id: 'cat_men_shirts', name: 'Shirts', slug: 'men-shirts' },
+      { id: 'cat_men_tshirts', name: 'T-Shirts', slug: 'men-t-shirts' },
+      { id: 'cat_men_jeans', name: 'Jeans / Denims', slug: 'men-jeans' },
+      { id: 'cat_men_chinos', name: 'Chinos', slug: 'men-chinos' },
+      { id: 'cat_men_kurta_sets', name: 'Kurta Sets', slug: 'men-kurta-sets' },
+      { id: 'cat_men_blazers', name: 'Blazers', slug: 'men-blazers' },
+      { id: 'cat_men_trackpants', name: 'Track Pants', slug: 'men-track-pants' },
+    ],
+  },
+
+  // 3. WOMEN
+  {
+    id: 'group_women',
+    name: 'Women',
+    slug: 'women',
+    description: 'Handcrafted luxury sarees, bridal lehengas, kurtas, western wear & accessories.',
+    image: '/images/categories/category-women.jpg',
+    banner: '/images/categories/category-women.jpg',
+    productCount: 15,
+    accent: CATEGORY_ACCENTS[3],
+    subCategories: [
+      { id: 'cat_women_sarees', name: 'Sarees', slug: 'women-sarees' },
+      { id: 'cat_women_lehengas', name: 'Lehenga Choli', slug: 'women-lehengas' },
+      { id: 'cat_women_kurta_sets', name: 'Kurta Sets', slug: 'women-kurta-sets' },
+      { id: 'cat_women_kurtas', name: 'Kurtas', slug: 'women-kurtas' },
+      { id: 'cat_women_dresses', name: 'Dresses', slug: 'women-dresses' },
+      { id: 'cat_women_tops_tees', name: 'Tops & Tees', slug: 'women-tops-tees' },
+      { id: 'cat_women_bags', name: 'Bags', slug: 'women-bags' },
+    ],
+  },
+
+  // 4. KIDS
+  {
+    id: 'group_kids',
+    name: 'Kids',
+    slug: 'kids',
+    description: 'Fashion & essentials for baby, boys, girls and teens.',
+    image: '/images/categories/category-kids.jpg',
+    banner: '/images/categories/category-kids.jpg',
+    productCount: 5,
+    accent: CATEGORY_ACCENTS[4],
+    subCategories: [
+      { id: 'cat_kids_baby', name: 'Baby', slug: 'baby-fashion' },
+      { id: 'cat_kids_boys', name: 'Boys', slug: 'boys-fashion' },
+      { id: 'cat_kids_girls', name: 'Girls', slug: 'girls-fashion' },
+      { id: 'cat_kids_teens', name: 'Teens', slug: 'teens-fashion' },
+      { id: 'cat_kids_ethnic_wear', name: 'Ethnic Wear', slug: 'kids-ethnic-wear' },
+      { id: 'cat_kids_essentials', name: 'Kids Essentials', slug: 'kids-essentials' },
+    ],
+  },
+
+  // 5. NAVYA COLLECTION SHOPS
+  {
+    id: 'group_shops',
+    name: 'Navya Collection Shops',
+    slug: 'shops',
+    description: 'Explore verified partner designer boutiques and independent regional shops.',
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600',
+    banner: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200',
+    productCount: 4,
+    accent: CATEGORY_ACCENTS[2],
+    subCategories: [
+      { id: 'cat_shops_all', name: 'All Shops', slug: 'all-shops' },
+      { id: 'cat_shops_new', name: 'New Shops', slug: 'new-shops' },
+      { id: 'cat_shops_trending', name: 'Trending Shops', slug: 'trending-shops' },
+      { id: 'cat_shops_top_rated', name: 'Top-Rated Shops', slug: 'top-rated-shops' },
+    ],
+  },
+
+  // Highlighted Core Categories
+  {
+    id: 'cat_women_sarees',
     name: 'Sarees',
-    slug: 'sarees',
+    slug: 'women-sarees',
     description: 'Handcrafted luxury ethnic silk, chiffon, georgette and organza sarees.',
     image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
     banner: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200',
-    productCount: 3,
+    productCount: 4,
     accent: CATEGORY_ACCENTS[0],
-    subCategories: [
-      {
-        id: 'banarasi-sarees',
-        name: 'Banarasi Sarees',
-        slug: 'banarasi-sarees',
-        image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
-      },
-      {
-        id: 'kanjeevaram-silk-sarees',
-        name: 'Kanjeevaram Silk Sarees',
-        slug: 'kanjeevaram-silk-sarees',
-        image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600',
-      },
-      {
-        id: 'chanderi-sarees',
-        name: 'Chanderi Sarees',
-        slug: 'chanderi-sarees',
-        image: 'https://images.unsplash.com/photo-1610030469668-98e550d6193c?w=600',
-      },
-    ],
   },
   {
-    id: 'anarkalis-suits',
-    name: 'Anarkalis & Suits',
-    slug: 'anarkalis-suits',
-    description: 'Elegant designer suits, floor-length anarkalis, and festive churidar sets.',
-    image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
-    banner: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200',
-    productCount: 2,
-    accent: CATEGORY_ACCENTS[3],
-    subCategories: [
-      {
-        id: 'silk-anarkali-sets',
-        name: 'Silk Anarkali Sets',
-        slug: 'silk-anarkali-sets',
-        image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
-      },
-    ],
-  },
-  {
-    id: 'lehengas',
-    name: 'Lehengas',
-    slug: 'lehengas',
+    id: 'cat_women_lehengas',
+    name: 'Lehenga Choli',
+    slug: 'women-lehengas',
     description: 'Exquisite bridal and festive lehenga cholis with rich embroidery.',
     image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600',
     banner: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1200',
     productCount: 3,
     accent: CATEGORY_ACCENTS[1],
-    subCategories: [
-      {
-        id: 'bridal-lehengas',
-        name: 'Bridal Lehengas',
-        slug: 'bridal-lehengas',
-        image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600',
-      },
-      {
-        id: 'partywear-lehengas',
-        name: 'Partywear Lehengas',
-        slug: 'partywear-lehengas',
-        image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
-      },
-    ],
   },
   {
-    id: 'kurtis-tunics',
-    name: 'Kurtis & Tunics',
-    slug: 'kurtis-tunics',
-    description: 'Contemporary daily wear and festive designer kurtis.',
-    image: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?w=600',
-    banner: 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?w=1200',
-    productCount: 2,
-    accent: CATEGORY_ACCENTS[5],
-  },
-  {
-    id: 'indo-western-fusion',
-    name: 'Indo-Western & Fusion',
-    slug: 'indo-western-fusion',
-    description: 'Modern silhouettes blended with traditional Indian craftsmanship.',
+    id: 'cat_women_kurta_sets',
+    name: 'Kurta Sets',
+    slug: 'women-kurta-sets',
+    description: 'Festive designer kurta sets, anarkalis, and shararas.',
     image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
     banner: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=1200',
-    productCount: 5,
-    accent: CATEGORY_ACCENTS[6],
+    productCount: 4,
+    accent: CATEGORY_ACCENTS[3],
   },
   {
-    id: 'gents-mens-couture',
-    name: 'Gents & Mens Couture',
-    slug: 'gents-mens-couture',
-    description: 'Handcrafted designer sherwanis, kurta pajamas, and shirts for men.',
-    image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600',
-    banner: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1200',
-    productCount: 17,
+    id: 'cat_men_shirts',
+    name: 'Shirts',
+    slug: 'men-shirts',
+    description: 'Sharp casual and formal shirts crafted from premium cotton fabrics.',
+    image: '/images/categories/men-shirts.jpg',
+    banner: '/images/categories/men-shirts.jpg',
+    productCount: 8,
     accent: CATEGORY_ACCENTS[0],
-    subCategories: [
-      {
-        id: 'designer-kurta-pajamas',
-        name: 'Designer Kurta Pajamas',
-        slug: 'designer-kurta-pajamas',
-        image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600',
-      },
-    ],
-  },
-  {
-    id: 'dupattas-stoles',
-    name: 'Dupattas & Stoles',
-    slug: 'dupattas-stoles',
-    description: 'Heavy embroidered Banarasi, Phulkari, and Silk designer dupattas.',
-    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
-    banner: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1200',
-    productCount: 1,
-    accent: CATEGORY_ACCENTS[4],
-    subCategories: [
-      {
-        id: 'phulkari-dupattas',
-        name: 'Phulkari Dupattas',
-        slug: 'phulkari-dupattas',
-        image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
-      },
-    ],
   },
 ];
 
 export function findCategoryBySlug(slug: string): Category {
   const normalizedSlug = (slug || '').toLowerCase().trim();
 
-  // Aliases mapping for common variations back to authentic Master categories
-  const aliases: Record<string, string> = {
-    // Legacy main mappings mapped to Master
-    'women-sarees': 'sarees',
-    'women-lehengas': 'lehengas',
-    'women-kurtas': 'kurtis-tunics',
-    'women-kurta-sets': 'anarkalis-suits',
-    'salwar-suits': 'anarkalis-suits',
-    suits: 'anarkalis-suits',
-    anarkalis: 'anarkalis-suits',
-    'women-dresses': 'indo-western-fusion',
-    'women-western': 'indo-western-fusion',
-    women: 'sarees',
-    'women-clothing': 'sarees',
-    'women-wear': 'sarees',
-
-    // Men mappings mapped to Master
-    men: 'gents-mens-couture',
-    'men-clothing': 'gents-mens-couture',
-    gents: 'gents-mens-couture',
-    'gents-wear': 'gents-mens-couture',
-    'men-kurtas': 'designer-kurta-pajamas',
-    'men-shirts': 'gents-mens-couture',
-    'men-t-shirts': 'gents-mens-couture',
-    'men-jeans': 'gents-mens-couture',
-    'men-trousers': 'gents-mens-couture',
-    'men-suits': 'gents-mens-couture',
-    'men-new-arrivals': 'gents-mens-couture',
-    shirts: 'gents-mens-couture',
-    't-shirts': 'gents-mens-couture',
-    jeans: 'gents-mens-couture',
-
-    // Kids mappings mapped to Master
-    kids: 'indo-western-fusion',
-    'kids-wear': 'indo-western-fusion',
-    'kids-fashion': 'indo-western-fusion',
-    'boys-fashion': 'indo-western-fusion',
-    'girls-fashion': 'indo-western-fusion',
-    'baby-fashion': 'indo-western-fusion',
-    'baby-essentials': 'indo-western-fusion',
-    'kids-new-arrivals': 'indo-western-fusion',
-
-    // Collections
-    spotlight: 'sarees',
-    'in-the-spotlight': 'sarees',
-    'best-sellers': 'sarees',
-    'top-rated': 'sarees',
-    trending: 'sarees',
-    'new-season': 'sarees',
-    'new-arrivals': 'sarees',
-    'under-499': 'sarees',
-    'under-999': 'sarees',
+  // Legacy mappings redirecting old names to canonical slugs
+  const legacyAliases: Record<string, string> = {
+    sarees: 'women-sarees',
+    'banarasi-sarees': 'women-sarees',
+    'kanjeevaram-silk-sarees': 'women-sarees',
+    'chanderi-sarees': 'women-sarees',
+    lehengas: 'women-lehengas',
+    'bridal-lehengas': 'women-lehengas',
+    'partywear-lehengas': 'women-lehengas',
+    kurtis: 'women-kurtas',
+    'kurtis-tunics': 'women-kurtas',
+    'anarkalis-suits': 'women-kurta-sets',
+    'silk-anarkali-sets': 'women-kurta-sets',
+    'salwar-suits': 'women-kurta-sets',
+    suits: 'women-kurta-sets',
+    dresses: 'women-dresses',
+    'phulkari-dupattas': 'women-scarves-stoles',
+    'dupattas-stoles': 'women-scarves-stoles',
+    'gents-mens-couture': 'men',
+    'designer-kurta-pajamas': 'men-kurta-sets',
+    'indo-western-fusion': 'women-indian-wear',
+    shirts: 'men-shirts',
+    't-shirts': 'men-t-shirts',
+    jeans: 'men-jeans',
   };
 
-  const targetSlug = aliases[normalizedSlug] || normalizedSlug;
+  const targetSlug = legacyAliases[normalizedSlug] || normalizedSlug;
 
   // 1. Check in static CATEGORIES list first
   const existing = CATEGORIES.find(
@@ -245,7 +232,7 @@ export function findCategoryBySlug(slug: string): Category {
     };
   }
 
-  // 3. Check if matches any subcategory item across all main groups
+  // 3. Check if matches any subcategory item across all main groups in MAIN_CATEGORY_GROUPS
   for (const group of MAIN_CATEGORY_GROUPS) {
     for (const section of group.subSections) {
       const matchedItem = section.items.find(
@@ -275,6 +262,25 @@ export function findCategoryBySlug(slug: string): Category {
         };
       }
     }
+  }
+
+  // 4. Check against full Canonical Taxonomy (CATEGORY_TAXONOMY)
+  const flattened = getFlattenedCategoryOptions();
+  const matchedFlat = flattened.find(
+    (it) => it.slug === targetSlug || it.id === targetSlug || it.slug === normalizedSlug,
+  );
+
+  if (matchedFlat) {
+    return {
+      id: matchedFlat.id,
+      name: matchedFlat.name,
+      slug: matchedFlat.slug,
+      description: `Explore ${matchedFlat.breadcrumb} collection at Navya Collection.`,
+      image: '/images/categories/category-spotlight.jpg',
+      banner: '/images/categories/category-spotlight.jpg',
+      parentName: matchedFlat.mainGroupName,
+      accent: 'from-navy to-[#234b8f]',
+    };
   }
 
   if (existing) return existing;
