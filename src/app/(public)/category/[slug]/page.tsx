@@ -39,7 +39,302 @@ const CATEGORY_ALIAS_MAP: Record<string, string> = {
   shirts: 'men-shirts',
   't-shirts': 'men-t-shirts',
   jeans: 'men-jeans',
+  chinos: 'men-chinos',
+  'track-pants': 'men-track-pants',
+  blazers: 'men-blazers',
+  watches: 'men-watches',
+  'boys-clothing': 'boys-fashion',
+  'girls-clothing': 'girls-fashion',
+  'teen-trends': 'teens-fashion',
+  'women-handbags': 'women-bags',
+  handbags: 'women-bags',
+  clutches: 'women-bags',
+  'women-winter-outerwear': 'women-jackets',
 };
+
+async function getDescendantCategoryIds(prisma: any, rootCategoryId: string): Promise<string[]> {
+  const matchingIds = new Set<string>([rootCategoryId]);
+
+  const level2 = await prisma.category.findMany({
+    where: { parentId: rootCategoryId, deletedAt: null },
+    select: { id: true },
+  });
+  const level2Ids = level2.map((c: any) => c.id);
+  level2Ids.forEach((id: string) => matchingIds.add(id));
+
+  if (level2Ids.length > 0) {
+    const level3 = await prisma.category.findMany({
+      where: { parentId: { in: level2Ids }, deletedAt: null },
+      select: { id: true },
+    });
+    const level3Ids = level3.map((c: any) => c.id);
+    level3Ids.forEach((id: string) => matchingIds.add(id));
+
+    if (level3Ids.length > 0) {
+      const level4 = await prisma.category.findMany({
+        where: { parentId: { in: level3Ids }, deletedAt: null },
+        select: { id: true },
+      });
+      level4.forEach((c: any) => matchingIds.add(c.id));
+    }
+  }
+
+  return Array.from(matchingIds);
+}
+
+async function buildCategoryConditions(
+  prisma: any,
+  cleanSlug: string,
+  category: any,
+): Promise<{ orConditions: any[]; andConditions: any[] }> {
+  const isMen =
+    cleanSlug === 'men' ||
+    cleanSlug.startsWith('men-') ||
+    cleanSlug === 'all-men-clothing' ||
+    cleanSlug === 'men-clothing' ||
+    category?.id === 'group_men' ||
+    category?.parentId === 'group_men';
+
+  const isWomen =
+    cleanSlug === 'women' ||
+    cleanSlug.startsWith('women-') ||
+    cleanSlug === 'all-women-clothing' ||
+    cleanSlug === 'women-clothing' ||
+    category?.id === 'group_women' ||
+    category?.parentId === 'group_women';
+
+  const isKids =
+    cleanSlug === 'kids' ||
+    cleanSlug.startsWith('kids-') ||
+    cleanSlug.startsWith('baby-') ||
+    cleanSlug.startsWith('boys-') ||
+    cleanSlug.startsWith('girls-') ||
+    cleanSlug.startsWith('teen') ||
+    cleanSlug === 'all-kids-fashion' ||
+    category?.id === 'group_kids' ||
+    category?.parentId === 'group_kids';
+
+  const matchingIds = new Set<string>();
+  if (category?.id) {
+    const descendants = await getDescendantCategoryIds(prisma, category.id);
+    descendants.forEach((id) => matchingIds.add(id));
+  }
+
+  // Cross-category intelligent mappings for seamless catalog browsing
+  if (cleanSlug === 'all-kids-fashion' || cleanSlug === 'kids') {
+    const kidsDescendants = await getDescendantCategoryIds(prisma, 'group_kids');
+    kidsDescendants.forEach((id) => matchingIds.add(id));
+  }
+  if (cleanSlug === 'all-men-clothing' || cleanSlug === 'men-clothing') {
+    const menDescendants = await getDescendantCategoryIds(prisma, 'group_men');
+    menDescendants.forEach((id) => matchingIds.add(id));
+  }
+  if (cleanSlug === 'all-women-clothing' || cleanSlug === 'women-clothing') {
+    const womenDescendants = await getDescendantCategoryIds(prisma, 'group_women');
+    womenDescendants.forEach((id) => matchingIds.add(id));
+  }
+  if (cleanSlug === 'kids-ethnic-wear') {
+    matchingIds.add('cat_boys_ethnic');
+    matchingIds.add('cat_girls_ethnic');
+    matchingIds.add('cat_kids_ethnic_wear');
+  }
+  if (cleanSlug === 'women-kurtas' || cleanSlug === 'kurtis' || cleanSlug === 'kurtis-tunics') {
+    matchingIds.add('cat_women_kurtas');
+    matchingIds.add('cat_women_kurta_sets');
+  }
+  if (cleanSlug === 'women-bags' || cleanSlug === 'handbags') {
+    matchingIds.add('cat_women_bags');
+    matchingIds.add('cat_women_handbags');
+    matchingIds.add('cat_women_clutches');
+    matchingIds.add('cat_women_sling_bags');
+    matchingIds.add('cat_women_tote_bags');
+  }
+
+  const orConditions: any[] = [];
+  const andConditions: any[] = [];
+
+  if (matchingIds.size > 0) {
+    orConditions.push({ categoryId: { in: Array.from(matchingIds) } });
+  }
+
+  // Include direct slug & category relations as fallback
+  if (category?.slug) {
+    orConditions.push({ category: { slug: category.slug } });
+  }
+  if (cleanSlug && cleanSlug !== category?.slug) {
+    orConditions.push({ category: { slug: cleanSlug } });
+  }
+
+  // Dynamic Price Deals & Curations Matching (Only for curated hubs)
+  if (cleanSlug.includes('budget-finds') || cleanSlug.includes('under-999')) {
+    orConditions.push({ price: { lte: 999 } });
+  } else if (cleanSlug.includes('under-499')) {
+    orConditions.push({ price: { lte: 499 } });
+  }
+  if (cleanSlug.includes('50-off') || cleanSlug.includes('50-percent-off')) {
+    orConditions.push({ compareAtPrice: { gt: 0 } });
+  }
+
+  // Curations & Special Spotlight Pages
+  const isFestivals =
+    cleanSlug.includes('festivals-of-india') ||
+    cleanSlug.includes('festive') ||
+    cleanSlug.includes('wedding');
+
+  const isTrendyStreet =
+    cleanSlug.includes('trendy-street') ||
+    cleanSlug.includes('gen-z-fashion') ||
+    cleanSlug.includes('streetwear');
+
+  const isKoreanStore =
+    cleanSlug.includes('korean-store') ||
+    cleanSlug.includes('aesthetic') ||
+    cleanSlug.includes('minimal');
+
+  const isSportsStore =
+    cleanSlug.includes('sports-store') ||
+    cleanSlug.includes('activewear') ||
+    cleanSlug.includes('athleisure');
+
+  const isGeneralSpotlight =
+    cleanSlug.includes('trending') ||
+    cleanSlug.includes('best-sellers') ||
+    cleanSlug.includes('top-rated') ||
+    cleanSlug.includes('featured') ||
+    cleanSlug.includes('spotlight') ||
+    cleanSlug.includes('new-season') ||
+    cleanSlug.includes('new-arrivals') ||
+    cleanSlug.includes('new-on-navya') ||
+    cleanSlug.includes('shop-your-vibe') ||
+    cleanSlug.includes('new-listings') ||
+    cleanSlug === 'new';
+
+  if (isFestivals) {
+    orConditions.push(
+      { metaKeywords: { contains: 'spot_festivals_india', mode: 'insensitive' as const } },
+      { name: { contains: 'saree', mode: 'insensitive' as const } },
+      { name: { contains: 'lehenga', mode: 'insensitive' as const } },
+      { name: { contains: 'kurta', mode: 'insensitive' as const } },
+      { name: { contains: 'kurti', mode: 'insensitive' as const } },
+      { name: { contains: 'suit', mode: 'insensitive' as const } },
+      { name: { contains: 'sherwani', mode: 'insensitive' as const } },
+      { name: { contains: 'jewellery', mode: 'insensitive' as const } },
+      { name: { contains: 'kundan', mode: 'insensitive' as const } },
+    );
+  } else if (isTrendyStreet) {
+    orConditions.push(
+      { metaKeywords: { contains: 'spot_trendy_street', mode: 'insensitive' as const } },
+      { metaKeywords: { contains: 'spot_genz_fashion', mode: 'insensitive' as const } },
+      { name: { contains: 't-shirt', mode: 'insensitive' as const } },
+      { name: { contains: 'tshirt', mode: 'insensitive' as const } },
+      { name: { contains: 'cargo', mode: 'insensitive' as const } },
+      { name: { contains: 'graphic', mode: 'insensitive' as const } },
+      { name: { contains: 'oversized', mode: 'insensitive' as const } },
+      { name: { contains: 'hoodie', mode: 'insensitive' as const } },
+      { name: { contains: 'denim', mode: 'insensitive' as const } },
+      { name: { contains: 'jeans', mode: 'insensitive' as const } },
+    );
+  } else if (isKoreanStore) {
+    orConditions.push(
+      { metaKeywords: { contains: 'spot_korean_store', mode: 'insensitive' as const } },
+      { name: { contains: 'shirt', mode: 'insensitive' as const } },
+      { name: { contains: 'coord', mode: 'insensitive' as const } },
+      { name: { contains: 'dress', mode: 'insensitive' as const } },
+      { name: { contains: 'top', mode: 'insensitive' as const } },
+      { name: { contains: 'oversized', mode: 'insensitive' as const } },
+    );
+  } else if (isSportsStore) {
+    orConditions.push(
+      { metaKeywords: { contains: 'spot_sports_store', mode: 'insensitive' as const } },
+      { name: { contains: 'polo', mode: 'insensitive' as const } },
+      { name: { contains: 'track', mode: 'insensitive' as const } },
+      { name: { contains: 'jogger', mode: 'insensitive' as const } },
+      { name: { contains: 'hoodie', mode: 'insensitive' as const } },
+      { name: { contains: 't-shirt', mode: 'insensitive' as const } },
+    );
+  } else if (isGeneralSpotlight && !isMen && !isWomen && !isKids) {
+    orConditions.push({ isNewArrival: true });
+    orConditions.push({ isFeatured: true });
+    orConditions.push({ status: 'active' });
+  }
+
+  // Strict Department Isolation Constraints
+  if (isMen) {
+    andConditions.push({
+      category: {
+        NOT: {
+          OR: [
+            { parentId: 'group_women' },
+            { parent: { slug: 'women' } },
+            { slug: { startsWith: 'women-' } },
+            { parentId: 'group_kids' },
+            { parent: { slug: 'kids' } },
+            { slug: { startsWith: 'kids-' } },
+            { slug: { startsWith: 'boys-' } },
+            { slug: { startsWith: 'girls-' } },
+            { slug: { startsWith: 'baby-' } },
+          ],
+        },
+      },
+    });
+    andConditions.push({
+      OR: [
+        { gender: null },
+        { gender: { equals: 'men', mode: 'insensitive' as const } },
+        { gender: { equals: 'unisex', mode: 'insensitive' as const } },
+      ],
+    });
+  } else if (isWomen) {
+    andConditions.push({
+      category: {
+        NOT: {
+          OR: [
+            { parentId: 'group_men' },
+            { parent: { slug: 'men' } },
+            { slug: { startsWith: 'men-' } },
+            { parentId: 'group_kids' },
+            { parent: { slug: 'kids' } },
+            { slug: { startsWith: 'kids-' } },
+            { slug: { startsWith: 'boys-' } },
+            { slug: { startsWith: 'girls-' } },
+            { slug: { startsWith: 'baby-' } },
+          ],
+        },
+      },
+    });
+    andConditions.push({
+      OR: [
+        { gender: null },
+        { gender: { equals: 'women', mode: 'insensitive' as const } },
+        { gender: { equals: 'unisex', mode: 'insensitive' as const } },
+      ],
+    });
+  } else if (isKids) {
+    andConditions.push({
+      category: {
+        NOT: {
+          OR: [
+            { parentId: 'group_men' },
+            { parent: { slug: 'men' } },
+            { slug: { startsWith: 'men-' } },
+            { parentId: 'group_women' },
+            { parent: { slug: 'women' } },
+            { slug: { startsWith: 'women-' } },
+          ],
+        },
+      },
+    });
+    andConditions.push({
+      OR: [
+        { gender: null },
+        { gender: { equals: 'kids', mode: 'insensitive' as const } },
+        { gender: { equals: 'unisex', mode: 'insensitive' as const } },
+      ],
+    });
+  }
+
+  return { orConditions, andConditions };
+}
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -85,16 +380,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         };
       }
 
-      // Count genuinely public active products belonging to this category
+      // Count genuinely public active products belonging to this category hierarchy
+      const { orConditions, andConditions } = await buildCategoryConditions(
+        prisma,
+        cleanSlug,
+        dbCategory,
+      );
+
       publicProductCount = await prisma.product.count({
         where: {
           status: 'active',
           deletedAt: null,
-          OR: [
-            { categoryId: dbCategory.id },
-            { category: { slug: dbCategory.slug } },
-            { category: { parentId: dbCategory.id } },
-          ],
+          ...(orConditions.length > 0 ? { OR: orConditions } : {}),
           AND: [
             {
               OR: [
@@ -107,6 +404,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
                 },
               ],
             },
+            ...andConditions,
           ],
         },
       });
@@ -258,235 +556,12 @@ export default async function CategoryPage({ params }: Props) {
   try {
     const { prisma } = await import('@/lib/prisma');
 
-    // Determine department filters if applicable
-    const isMen =
-      cleanSlug === 'men' ||
-      cleanSlug.startsWith('men-') ||
-      category.id === 'group_men' ||
-      category.parentId === 'group_men';
-    const isWomen =
-      cleanSlug === 'women' ||
-      cleanSlug.startsWith('women-') ||
-      category.id === 'group_women' ||
-      category.parentId === 'group_women';
-    const isKids =
-      cleanSlug === 'kids' ||
-      cleanSlug.startsWith('kids-') ||
-      cleanSlug.startsWith('baby-') ||
-      cleanSlug.startsWith('boys-') ||
-      cleanSlug.startsWith('girls-') ||
-      category.id === 'group_kids' ||
-      category.parentId === 'group_kids';
-
-    // Build targeted OR conditions strictly scoped to department/category
-    let orConditions: any[] = [];
-    const andConditions: any[] = [];
-
-    if (cleanSlug === 'men') {
-      orConditions = [
-        { categoryId: category.id },
-        { category: { slug: 'men' } },
-        { category: { parentId: category.id } },
-        { category: { parent: { slug: 'men' } } },
-        { category: { slug: { startsWith: 'men-' } } },
-      ];
-    } else if (cleanSlug === 'women') {
-      orConditions = [
-        { categoryId: category.id },
-        { category: { slug: 'women' } },
-        { category: { parentId: category.id } },
-        { category: { parent: { slug: 'women' } } },
-        { category: { slug: { startsWith: 'women-' } } },
-      ];
-    } else if (cleanSlug === 'kids') {
-      orConditions = [
-        { categoryId: category.id },
-        { category: { slug: 'kids' } },
-        { category: { parentId: category.id } },
-        { category: { parent: { slug: 'kids' } } },
-        { category: { slug: { startsWith: 'kids-' } } },
-        { category: { slug: { startsWith: 'boys-' } } },
-        { category: { slug: { startsWith: 'girls-' } } },
-        { category: { slug: { startsWith: 'baby-' } } },
-      ];
-    } else {
-      // Specific subcategory or curated category
-      orConditions = [
-        { categoryId: category.id },
-        { category: { slug: category.slug } },
-        { category: { slug: cleanSlug } },
-        { category: { parentId: category.id } },
-      ];
-    }
-
-    // Dynamic Price Deals & Curations Matching (Only for curated hubs)
-    if (cleanSlug.includes('under-499') || cleanSlug.includes('budget-finds')) {
-      orConditions.push({ price: { lte: 499 } });
-    }
-    if (cleanSlug.includes('under-999')) {
-      orConditions.push({ price: { lte: 999 } });
-    }
-    if (cleanSlug.includes('50-off') || cleanSlug.includes('50-percent-off')) {
-      orConditions.push({ compareAtPrice: { gt: 0 } });
-    }
-
-    // Curations & Special Spotlight Pages
-    const isFestivals =
-      cleanSlug.includes('festivals-of-india') ||
-      cleanSlug.includes('festive') ||
-      cleanSlug.includes('wedding');
-
-    const isTrendyStreet =
-      cleanSlug.includes('trendy-street') ||
-      cleanSlug.includes('gen-z-fashion') ||
-      cleanSlug.includes('streetwear');
-
-    const isKoreanStore =
-      cleanSlug.includes('korean-store') ||
-      cleanSlug.includes('aesthetic') ||
-      cleanSlug.includes('minimal');
-
-    const isSportsStore =
-      cleanSlug.includes('sports-store') ||
-      cleanSlug.includes('activewear') ||
-      cleanSlug.includes('athleisure');
-
-    const isGeneralSpotlight =
-      cleanSlug.includes('trending') ||
-      cleanSlug.includes('best-sellers') ||
-      cleanSlug.includes('top-rated') ||
-      cleanSlug.includes('featured') ||
-      cleanSlug.includes('spotlight') ||
-      cleanSlug.includes('new-season') ||
-      cleanSlug.includes('new-arrivals') ||
-      cleanSlug.includes('new-on-navya') ||
-      cleanSlug.includes('shop-your-vibe') ||
-      cleanSlug.includes('new-listings') ||
-      cleanSlug === 'new';
-
-    if (isFestivals) {
-      orConditions.push(
-        { metaKeywords: { contains: 'spot_festivals_india', mode: 'insensitive' as const } },
-        { name: { contains: 'saree', mode: 'insensitive' as const } },
-        { name: { contains: 'lehenga', mode: 'insensitive' as const } },
-        { name: { contains: 'kurta', mode: 'insensitive' as const } },
-        { name: { contains: 'kurti', mode: 'insensitive' as const } },
-        { name: { contains: 'suit', mode: 'insensitive' as const } },
-        { name: { contains: 'sherwani', mode: 'insensitive' as const } },
-        { name: { contains: 'jewellery', mode: 'insensitive' as const } },
-        { name: { contains: 'kundan', mode: 'insensitive' as const } },
-      );
-    } else if (isTrendyStreet) {
-      orConditions.push(
-        { metaKeywords: { contains: 'spot_trendy_street', mode: 'insensitive' as const } },
-        { metaKeywords: { contains: 'spot_genz_fashion', mode: 'insensitive' as const } },
-        { name: { contains: 't-shirt', mode: 'insensitive' as const } },
-        { name: { contains: 'tshirt', mode: 'insensitive' as const } },
-        { name: { contains: 'cargo', mode: 'insensitive' as const } },
-        { name: { contains: 'graphic', mode: 'insensitive' as const } },
-        { name: { contains: 'oversized', mode: 'insensitive' as const } },
-        { name: { contains: 'hoodie', mode: 'insensitive' as const } },
-        { name: { contains: 'denim', mode: 'insensitive' as const } },
-        { name: { contains: 'jeans', mode: 'insensitive' as const } },
-      );
-    } else if (isKoreanStore) {
-      orConditions.push(
-        { metaKeywords: { contains: 'spot_korean_store', mode: 'insensitive' as const } },
-        { name: { contains: 'shirt', mode: 'insensitive' as const } },
-        { name: { contains: 'coord', mode: 'insensitive' as const } },
-        { name: { contains: 'dress', mode: 'insensitive' as const } },
-        { name: { contains: 'top', mode: 'insensitive' as const } },
-        { name: { contains: 'oversized', mode: 'insensitive' as const } },
-      );
-    } else if (isSportsStore) {
-      orConditions.push(
-        { metaKeywords: { contains: 'spot_sports_store', mode: 'insensitive' as const } },
-        { name: { contains: 'polo', mode: 'insensitive' as const } },
-        { name: { contains: 'track', mode: 'insensitive' as const } },
-        { name: { contains: 'jogger', mode: 'insensitive' as const } },
-        { name: { contains: 'hoodie', mode: 'insensitive' as const } },
-        { name: { contains: 't-shirt', mode: 'insensitive' as const } },
-      );
-    } else if (isGeneralSpotlight && !isMen && !isWomen && !isKids) {
-      orConditions.push({ isNewArrival: true });
-      orConditions.push({ isFeatured: true });
-      orConditions.push({ status: 'active' });
-    }
-
-    // Strict Department Isolation Constraints
-    if (isMen) {
-      andConditions.push({
-        category: {
-          NOT: {
-            OR: [
-              { parentId: 'group_women' },
-              { parent: { slug: 'women' } },
-              { slug: { startsWith: 'women-' } },
-              { parentId: 'group_kids' },
-              { parent: { slug: 'kids' } },
-              { slug: { startsWith: 'kids-' } },
-              { slug: { startsWith: 'boys-' } },
-              { slug: { startsWith: 'girls-' } },
-              { slug: { startsWith: 'baby-' } },
-            ],
-          },
-        },
-      });
-      andConditions.push({
-        OR: [
-          { gender: null },
-          { gender: { equals: 'men', mode: 'insensitive' as const } },
-          { gender: { equals: 'unisex', mode: 'insensitive' as const } },
-        ],
-      });
-    } else if (isWomen) {
-      andConditions.push({
-        category: {
-          NOT: {
-            OR: [
-              { parentId: 'group_men' },
-              { parent: { slug: 'men' } },
-              { slug: { startsWith: 'men-' } },
-              { parentId: 'group_kids' },
-              { parent: { slug: 'kids' } },
-              { slug: { startsWith: 'kids-' } },
-              { slug: { startsWith: 'boys-' } },
-              { slug: { startsWith: 'girls-' } },
-              { slug: { startsWith: 'baby-' } },
-            ],
-          },
-        },
-      });
-      andConditions.push({
-        OR: [
-          { gender: null },
-          { gender: { equals: 'women', mode: 'insensitive' as const } },
-          { gender: { equals: 'unisex', mode: 'insensitive' as const } },
-        ],
-      });
-    } else if (isKids) {
-      andConditions.push({
-        category: {
-          NOT: {
-            OR: [
-              { parentId: 'group_men' },
-              { parent: { slug: 'men' } },
-              { slug: { startsWith: 'men-' } },
-              { parentId: 'group_women' },
-              { parent: { slug: 'women' } },
-              { slug: { startsWith: 'women-' } },
-            ],
-          },
-        },
-      });
-      andConditions.push({
-        OR: [
-          { gender: null },
-          { gender: { equals: 'kids', mode: 'insensitive' as const } },
-          { gender: { equals: 'unisex', mode: 'insensitive' as const } },
-        ],
-      });
-    }
+    // Build targeted conditions with full hierarchical descendant resolution
+    const { orConditions, andConditions } = await buildCategoryConditions(
+      prisma,
+      cleanSlug,
+      category,
+    );
 
     // Specific category keyword extraction with strict distinctions
     const categoryLower = category.name.toLowerCase();
@@ -520,7 +595,7 @@ export default async function CategoryPage({ params }: Props) {
           status: 'APPROVED',
           deletedAt: null,
         },
-        OR: orConditions,
+        ...(orConditions.length > 0 ? { OR: orConditions } : {}),
         ...(andConditions.length > 0 ? { AND: andConditions } : {}),
       },
       include: {

@@ -52,8 +52,15 @@ export function MarketplaceCatalogContent() {
     const q = searchParams.get('q') || searchParams.get('search') || '';
     const cat = searchParams.get('category') || 'all';
     const view = searchParams.get('view') || searchParams.get('tab');
+    const maxP = searchParams.get('maxPrice') || '';
+    const minP = searchParams.get('minPrice') || '';
+    const sort = searchParams.get('sort') || '';
+
     if (q) setSearchQuery(q);
     if (cat !== 'all') setSelectedCategory(cat);
+    if (maxP) setMaxPrice(maxP);
+    if (minP) setMinPrice(minP);
+    if (sort) setSortBy(sort === 'rating' ? 'popular' : sort);
     if (view === 'shops' || view === 'shops-grid' || view === 'shops_grid') {
       setActiveView('shops');
     } else if (view === 'products') {
@@ -105,10 +112,112 @@ export function MarketplaceCatalogContent() {
       (prod.description && prod.description.toLowerCase().includes(q)) ||
       (prod.shop?.name && prod.shop.name.toLowerCase().includes(q));
 
+    const catSlug = prod.category?.slug || '';
+    const parentCatSlug = prod.category?.parent?.slug || '';
+    const grandParentCatSlug = prod.category?.parent?.parent?.slug || '';
+    const parentId = prod.category?.parentId || '';
+    const grandParentId = prod.category?.parent?.parentId || '';
+
     const matchesCategory =
       selectedCategory === 'all' ||
-      prod.category?.slug === selectedCategory ||
-      prod.categoryId === selectedCategory;
+      catSlug === selectedCategory ||
+      prod.categoryId === selectedCategory ||
+      parentCatSlug === selectedCategory ||
+      parentId === selectedCategory ||
+      grandParentCatSlug === selectedCategory ||
+      grandParentId === selectedCategory ||
+      (selectedCategory === 'men' &&
+        (prod.gender?.toLowerCase() === 'men' ||
+          catSlug.startsWith('men-') ||
+          parentCatSlug === 'men' ||
+          parentId === 'group_men')) ||
+      (selectedCategory === 'women' &&
+        (prod.gender?.toLowerCase() === 'women' ||
+          catSlug.startsWith('women-') ||
+          parentCatSlug === 'women' ||
+          parentId === 'group_women')) ||
+      (selectedCategory === 'kids' &&
+        (prod.gender?.toLowerCase() === 'kids' ||
+          catSlug.startsWith('kids-') ||
+          catSlug.startsWith('baby-') ||
+          catSlug.startsWith('boys-') ||
+          catSlug.startsWith('girls-') ||
+          parentCatSlug === 'kids' ||
+          parentId === 'group_kids')) ||
+      ((selectedCategory === 'men-kurtas' || selectedCategory === 'men-kurta-sets') &&
+        (catSlug.includes('kurta') || prod.name?.toLowerCase().includes('kurta'))) ||
+      ((selectedCategory === 'women-kurtas' || selectedCategory === 'women-kurta-sets') &&
+        (catSlug.includes('kurt') || prod.name?.toLowerCase().includes('kurt'))) ||
+      (selectedCategory === 'activewear' &&
+        (catSlug.includes('active') ||
+          catSlug.includes('track') ||
+          prod.name?.toLowerCase().includes('track')));
+
+    // Support URL search parameter filters (gender, occasion, style, filter)
+    const genderParam = (searchParams.get('gender') || '').toLowerCase();
+    const occasionParam = (searchParams.get('occasion') || '').toLowerCase();
+    const styleParam = (searchParams.get('style') || '').toLowerCase();
+    const filterParam = (searchParams.get('filter') || '').toLowerCase();
+
+    let matchesGender = true;
+    if (genderParam === 'men') {
+      matchesGender =
+        prod.gender?.toLowerCase() === 'men' ||
+        prod.gender?.toLowerCase() === 'unisex' ||
+        catSlug.startsWith('men-') ||
+        parentCatSlug === 'men' ||
+        parentId === 'group_men';
+    } else if (genderParam === 'women') {
+      matchesGender =
+        prod.gender?.toLowerCase() === 'women' ||
+        prod.gender?.toLowerCase() === 'unisex' ||
+        catSlug.startsWith('women-') ||
+        parentCatSlug === 'women' ||
+        parentId === 'group_women';
+    } else if (genderParam === 'kids') {
+      matchesGender =
+        prod.gender?.toLowerCase() === 'kids' ||
+        catSlug.startsWith('kids-') ||
+        catSlug.startsWith('baby-') ||
+        catSlug.startsWith('boys-') ||
+        catSlug.startsWith('girls-') ||
+        parentId === 'group_kids';
+    }
+
+    let matchesCurated = true;
+    if (occasionParam === 'festive' || occasionParam === 'wedding') {
+      const pName = prod.name.toLowerCase();
+      matchesCurated =
+        pName.includes('saree') ||
+        pName.includes('lehenga') ||
+        pName.includes('kurta') ||
+        pName.includes('kurti') ||
+        pName.includes('suit') ||
+        pName.includes('sherwani') ||
+        catSlug.includes('ethnic') ||
+        catSlug.includes('saree') ||
+        catSlug.includes('lehenga');
+    } else if (styleParam === 'streetwear' || styleParam === 'gen-z') {
+      const pName = prod.name.toLowerCase();
+      matchesCurated =
+        pName.includes('t-shirt') ||
+        pName.includes('oversized') ||
+        pName.includes('jeans') ||
+        pName.includes('cargo') ||
+        pName.includes('hoodie') ||
+        pName.includes('track') ||
+        catSlug.includes('t-shirt') ||
+        catSlug.includes('jeans');
+    } else if (styleParam === 'korean') {
+      const pName = prod.name.toLowerCase();
+      matchesCurated =
+        pName.includes('shirt') ||
+        pName.includes('dress') ||
+        pName.includes('top') ||
+        pName.includes('denim');
+    } else if (filterParam === 'best_seller') {
+      matchesCurated = (prod.rating || 0) >= 4.0 || prod.isFeatured || (prod.reviewCount || 0) > 0;
+    }
 
     const matchesShop =
       selectedShop === 'all' || prod.shopId === selectedShop || prod.shop?.slug === selectedShop;
@@ -122,6 +231,8 @@ export function MarketplaceCatalogContent() {
     return (
       matchesSearch &&
       matchesCategory &&
+      matchesGender &&
+      matchesCurated &&
       matchesShop &&
       matchesCity &&
       matchesMinPrice &&

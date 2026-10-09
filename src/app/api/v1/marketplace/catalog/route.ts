@@ -55,17 +55,41 @@ export async function GET() {
             shop: {
               select: { id: true, name: true, slug: true, city: true, verificationBadge: true },
             },
-            category: { select: { id: true, name: true, slug: true } },
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                parentId: true,
+                parent: {
+                  select: {
+                    id: true,
+                    name: true,
+                    slug: true,
+                    parentId: true,
+                    parent: {
+                      select: {
+                        id: true,
+                        name: true,
+                        slug: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         }),
 
-        // 3. Fetch ALL Categories
+        // 3. Fetch ALL Active Categories
         prisma.category.findMany({
+          where: { deletedAt: null, status: 'active' },
           orderBy: { name: 'asc' },
           select: {
             id: true,
             name: true,
             slug: true,
+            parentId: true,
           },
         }),
       ]);

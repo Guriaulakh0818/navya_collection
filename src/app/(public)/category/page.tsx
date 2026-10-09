@@ -52,9 +52,66 @@ export default async function CategoriesPage({
       orderBy: { displayOrder: 'asc' },
     });
 
+    const catMap = new Map<
+      string,
+      { id: string; slug: string; parentId: string | null; count: number }
+    >();
     for (const cat of dbCategories) {
-      dbCategoryCounts[cat.slug] = cat._count?.products ?? 0;
+      catMap.set(cat.id, {
+        id: cat.id,
+        slug: cat.slug,
+        parentId: cat.parentId,
+        count: cat._count?.products ?? 0,
+      });
     }
+
+    // Propagate child counts up to parents and grandparents
+    const aggregatedCounts: Record<string, number> = {};
+    for (const [, cat] of catMap.entries()) {
+      aggregatedCounts[cat.slug] = (aggregatedCounts[cat.slug] || 0) + cat.count;
+
+      let currParentId = cat.parentId;
+      while (currParentId && catMap.has(currParentId)) {
+        const parent = catMap.get(currParentId)!;
+        aggregatedCounts[parent.slug] = (aggregatedCounts[parent.slug] || 0) + cat.count;
+        currParentId = parent.parentId;
+      }
+    }
+
+    // Also populate spotlights & umbrella slugs
+    const totalApproved = Object.values(catMap).reduce((sum, c) => sum + c.count, 0);
+    aggregatedCounts['spotlight'] = totalApproved;
+    aggregatedCounts['new-season'] = totalApproved;
+    aggregatedCounts['trending'] = totalApproved;
+    aggregatedCounts['best-sellers'] = totalApproved;
+    aggregatedCounts['top-rated'] = totalApproved;
+
+    // Women kurta sets count to women-kurtas
+    if (aggregatedCounts['women-kurta-sets']) {
+      aggregatedCounts['women-kurtas'] =
+        (aggregatedCounts['women-kurtas'] || 0) + aggregatedCounts['women-kurta-sets'];
+    }
+    // Boys ethnic count to kids-ethnic-wear
+    if (aggregatedCounts['boys-ethnic-wear']) {
+      aggregatedCounts['kids-ethnic-wear'] =
+        (aggregatedCounts['kids-ethnic-wear'] || 0) + aggregatedCounts['boys-ethnic-wear'];
+    }
+    // All kids fashion gets kids total
+    if (aggregatedCounts['kids']) {
+      aggregatedCounts['all-kids-fashion'] = aggregatedCounts['kids'];
+    }
+    // All men clothing gets men total
+    if (aggregatedCounts['men']) {
+      aggregatedCounts['all-men-clothing'] = aggregatedCounts['men'];
+      aggregatedCounts['men-clothing'] = aggregatedCounts['men'];
+    }
+    // All women clothing gets women total
+    if (aggregatedCounts['women']) {
+      aggregatedCounts['all-women-clothing'] = aggregatedCounts['women'];
+      aggregatedCounts['women-clothing'] = aggregatedCounts['women'];
+    }
+
+    Object.assign(dbCategoryCounts, aggregatedCounts);
 
     if (dbCategories.length > 0) {
       structuredCategories = dbCategories.map((c) => ({
