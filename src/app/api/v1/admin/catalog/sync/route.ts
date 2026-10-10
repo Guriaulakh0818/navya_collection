@@ -30,6 +30,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 0. Auto-migrate missing columns in production Supabase DB if needed
+    try {
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedShipping" BOOLEAN DEFAULT false;',
+      );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedThreshold" NUMERIC(10, 2);',
+      );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerfundingshipping" BOOLEAN DEFAULT false;',
+      );
+    } catch (migErr) {
+      console.warn('DB schema migration check:', migErr);
+    }
+
     let usersSynced = 0;
     let shopsSynced = 0;
     let productsSynced = 0;
@@ -40,6 +55,7 @@ export async function POST(request: NextRequest) {
     for (const u of catalogSeed.users) {
       const existingUser = await prisma.user.findFirst({
         where: { OR: [{ id: u.id }, { email: u.email }] },
+        select: { id: true, email: true },
       });
 
       if (existingUser) {
@@ -67,10 +83,11 @@ export async function POST(request: NextRequest) {
       usersSynced++;
     }
 
-    // 2. Resilient Upsert Shops (Using only standard schema columns)
+    // 2. Resilient Upsert Shops (Using safe standard schema columns)
     for (const s of catalogSeed.shops) {
       const existingShop = await prisma.shop.findFirst({
         where: { OR: [{ id: s.id }, { slug: s.slug }] },
+        select: { id: true, slug: true },
       });
 
       const shopData = {
@@ -121,6 +138,7 @@ export async function POST(request: NextRequest) {
     for (const p of catalogSeed.products) {
       const existingProd = await prisma.product.findFirst({
         where: { OR: [{ id: p.id }, { slug: p.slug }, { sku: p.sku }] },
+        select: { id: true, slug: true, sku: true },
       });
 
       const prodData = {
@@ -185,6 +203,7 @@ export async function POST(request: NextRequest) {
         for (const img of p.images) {
           const existingImg = await prisma.productImage.findFirst({
             where: { OR: [{ id: img.id }, { imageUrl: img.imageUrl, productId: activeProdId }] },
+            select: { id: true },
           });
 
           if (existingImg) {
@@ -225,6 +244,7 @@ export async function POST(request: NextRequest) {
 
           const existingVariant = await prisma.productVariant.findFirst({
             where: { OR: [{ id: v.id }, { sku: v.sku }] },
+            select: { id: true, sku: true },
           });
 
           if (existingVariant) {
