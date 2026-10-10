@@ -61,7 +61,7 @@ export default async function middleware(req: NextRequest) {
 
   // 1. Extract Hostname, Protocol and Detect Subdomains
   const rawHost =
-    req.nextUrl.hostname || req.headers.get('host') || req.headers.get('x-forwarded-host') || '';
+    req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.hostname || '';
   const currentHost = rawHost.split(',')[0].split(':')[0].trim().toLowerCase();
   const proto = (
     req.headers.get('x-forwarded-proto') ||
@@ -112,6 +112,17 @@ export default async function middleware(req: NextRequest) {
     currentHost.includes('127.0.0.1');
   const isCanonicalCustomerDomain =
     currentHost === 'navyacollection.store' || currentHost === 'www.navyacollection.store';
+
+  // Universal redirect for legacy or email /sellers links to /admin/sellers
+  if (pathname === '/sellers' || pathname.startsWith('/sellers/')) {
+    const adminPath = `/admin${pathname}`;
+    const targetUrl =
+      process.env.NODE_ENV === 'production' && !isVercelOrLocal
+        ? new URL(adminPath, 'https://admin.navyacollection.store')
+        : new URL(adminPath, req.url);
+    req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+    return NextResponse.redirect(targetUrl, 307);
+  }
 
   if (
     process.env.NODE_ENV === 'production' &&
@@ -480,8 +491,15 @@ export default async function middleware(req: NextRequest) {
     if (effectivePathname !== '/admin/login') {
       if (!isAuthenticated) {
         const loginUrl = new URL('/admin/login', req.url);
-        if (pathname !== '/' && pathname !== '/admin/dashboard' && pathname !== '/dashboard') {
-          loginUrl.searchParams.set('redirectUrl', pathname);
+        const targetRedirect = effectivePathname.startsWith('/admin')
+          ? effectivePathname
+          : `/admin${effectivePathname}`;
+        if (
+          targetRedirect !== '/admin' &&
+          targetRedirect !== '/admin/dashboard' &&
+          targetRedirect !== '/admin/login'
+        ) {
+          loginUrl.searchParams.set('redirectUrl', targetRedirect);
         }
         return NextResponse.redirect(loginUrl);
       }

@@ -18,16 +18,15 @@ interface AdminSellerReviewPageProps {
 }
 
 export default async function AdminSellerReviewPage({ params }: AdminSellerReviewPageProps) {
+  const { id: shopId } = await params;
   const admin = await getAdminUser();
 
   if (
     !admin ||
     !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes((admin.role || '').toUpperCase())
   ) {
-    redirect('/admin/login');
+    redirect(`/admin/login?redirectUrl=${encodeURIComponent(`/admin/sellers/${shopId}`)}`);
   }
-
-  const { id: shopId } = await params;
 
   let shop = null;
   try {

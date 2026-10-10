@@ -74,7 +74,7 @@ export class NotificationService {
    */
   static async notifyAdminNewSellerRegistration(options: AdminSellerRegistrationEmailOptions) {
     const adminBaseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.navyacollection.store';
-    const reviewLink = `${adminBaseUrl.replace(/\/$/, '')}/sellers/${options.shopId}`;
+    const reviewLink = `${adminBaseUrl.replace(/\/$/, '')}/admin/sellers/${options.shopId}`;
 
     // 1. Create in-app notifications for Admin & Owner users
     try {

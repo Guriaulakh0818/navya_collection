@@ -21,8 +21,19 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const rawRedirect =
-    searchParams.get('redirect') || searchParams.get('redirectUrl') || '/admin/dashboard';
+  const rawRedirectParam = searchParams.get('redirect') || searchParams.get('redirectUrl');
+  let rawRedirect = rawRedirectParam || '/admin/dashboard';
+  try {
+    if (rawRedirectParam) {
+      rawRedirect = decodeURIComponent(rawRedirectParam);
+    }
+  } catch {
+    // keep as is
+  }
+
+  if (rawRedirect.startsWith('/sellers')) {
+    rawRedirect = `/admin${rawRedirect}`;
+  }
 
   const redirectUrl = rawRedirect.startsWith('/admin')
     ? rawRedirect

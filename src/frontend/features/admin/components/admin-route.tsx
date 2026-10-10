@@ -77,7 +77,15 @@ export function AdminRoute({ children, fallback }: AdminRouteProps) {
       if (isMounted) {
         setAuthorized(false);
         setIsChecking(false);
-        router.push('/admin/login');
+        const currentPath =
+          typeof window !== 'undefined'
+            ? window.location.pathname + window.location.search
+            : '/admin/dashboard';
+        const redirectParam =
+          currentPath && currentPath !== '/admin/login' && currentPath !== '/admin'
+            ? `?redirectUrl=${encodeURIComponent(currentPath)}`
+            : '';
+        router.push(`/admin/login${redirectParam}`);
       }
     }
 
