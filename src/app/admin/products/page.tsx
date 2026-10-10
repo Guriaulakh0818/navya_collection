@@ -328,14 +328,30 @@ export default function AdminProductsPage() {
   const handleSyncCatalog = async () => {
     setIsSyncingCatalog(true);
     try {
-      const res = await fetch('/api/v1/admin/catalog/sync', { method: 'POST' });
-      const data = await res.json().catch(() => null);
-      if (res.ok && data?.success) {
-        toast(data.message || 'Shops and products synced to live DB!', 'success');
-        fetchProducts();
-      } else {
-        toast(data?.message || 'Failed to sync catalog.', 'error');
+      let offset = 0;
+      const limit = 10;
+      let hasMore = true;
+      let totalSynced = 0;
+
+      while (hasMore) {
+        const res = await fetch(`/api/v1/admin/catalog/sync?offset=${offset}&limit=${limit}`, {
+          method: 'POST',
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.success) {
+          toast(data?.message || 'Failed to sync catalog batch.', 'error');
+          break;
+        }
+        totalSynced += data.stats?.productsSynced || 0;
+        hasMore = Boolean(data.hasMore);
+        offset = data.nextOffset !== null && data.nextOffset !== undefined ? data.nextOffset : offset + limit;
+        if (hasMore) {
+          toast(`Synced batch... Continuing remaining products...`, 'info');
+        }
       }
+
+      toast(`All real shops and catalog products pushed to live DB! Total: ${totalSynced}`, 'success');
+      fetchProducts();
     } catch (err: any) {
       toast(err.message || 'Failed to sync catalog.', 'error');
     } finally {

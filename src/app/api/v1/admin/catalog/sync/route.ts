@@ -39,35 +39,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 0. Auto-migrate missing columns in production Supabase DB if needed
-    const runSqlSafe = async (sql: string) => {
-      try {
-        await prisma.$executeRawUnsafe(sql);
-      } catch (err: any) {
-        console.warn(`[SQL Migration Warning] ${sql}:`, err.message);
-      }
-    };
+    const { searchParams } = new URL(request.url);
+    const offsetParam = searchParams.get('offset');
+    const limitParam = searchParams.get('limit');
+    const offset = offsetParam ? Math.max(0, parseInt(offsetParam, 10)) : 0;
+    const limit = limitParam ? Math.max(1, parseInt(limitParam, 10)) : 10;
 
-    await runSqlSafe('ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedShipping" BOOLEAN DEFAULT false;');
-    await runSqlSafe('ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedThreshold" NUMERIC(10, 2);');
-    await runSqlSafe('ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerfundingshipping" BOOLEAN DEFAULT false;');
-    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnPolicyType" VARCHAR(255) DEFAULT \'RETURN_AND_REPLACEMENT\';');
-    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnAllowed" BOOLEAN DEFAULT true;');
-    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnWindowDays" INTEGER DEFAULT 3;');
-    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementAllowed" BOOLEAN DEFAULT true;');
-    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementWindowDays" INTEGER DEFAULT 7;');
-    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingMode" VARCHAR(255) DEFAULT \'STANDARD\';');
-    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingRate" NUMERIC(10, 2);');
-    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "taxRate" NUMERIC(5, 2) DEFAULT 0;');
-    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "hsnCode" VARCHAR(255);');
-    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT;');
-    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "attributes" JSONB;');
-    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "availableStock" INTEGER DEFAULT 0;');
-    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "reservedStock" INTEGER DEFAULT 0;');
-    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "soldStock" INTEGER DEFAULT 0;');
-    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "minimumStockLevel" INTEGER DEFAULT 5;');
-    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "maximumStockLevel" INTEGER;');
-    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "stockStatus" VARCHAR(50) DEFAULT \'IN_STOCK\';');
+    // 0. Quick idempotent schema column ensure (only on offset 0)
+    if (offset === 0) {
+      try {
+        await prisma.$executeRawUnsafe(`
+          ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedShipping" BOOLEAN DEFAULT false;
+          ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedThreshold" NUMERIC(10, 2);
+          ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerfundingshipping" BOOLEAN DEFAULT false;
+          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnPolicyType" VARCHAR(255) DEFAULT 'RETURN_AND_REPLACEMENT';
+          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnAllowed" BOOLEAN DEFAULT true;
+          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnWindowDays" INTEGER DEFAULT 3;
+          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementAllowed" BOOLEAN DEFAULT true;
+          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementWindowDays" INTEGER DEFAULT 7;
+          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingMode" VARCHAR(255) DEFAULT 'STANDARD';
+          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingRate" NUMERIC(10, 2);
+          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "taxRate" NUMERIC(5, 2) DEFAULT 0;
+          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "hsnCode" VARCHAR(255);
+          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT;
+          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "attributes" JSONB;
+          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "availableStock" INTEGER DEFAULT 0;
+          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "reservedStock" INTEGER DEFAULT 0;
+          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "soldStock" INTEGER DEFAULT 0;
+          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "minimumStockLevel" INTEGER DEFAULT 5;
+          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "maximumStockLevel" INTEGER;
+          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "stockStatus" VARCHAR(50) DEFAULT 'IN_STOCK';
+        `);
+      } catch (err: any) {
+        console.warn('[SQL Migration Warning]:', err.message);
+      }
+    }
 
     let usersSynced = 0;
     let shopsSynced = 0;
@@ -76,41 +82,49 @@ export async function POST(request: NextRequest) {
     let variantsSynced = 0;
 
     const emailToUserIdMap = new Map<string, string>();
+    const shopIdMap = new Map<string, string>();
 
-    // 1. Resilient Upsert Users (Shop Owners)
-    for (const u of catalogSeed.users) {
-      const existingUser = await prisma.user.findFirst({
-        where: { OR: [{ id: u.id }, { email: u.email }] },
-        select: { id: true, email: true },
-      });
+    // 1. Resilient Upsert Users (Shop Owners) - only on offset 0
+    if (offset === 0) {
+      for (const u of catalogSeed.users) {
+        const existingUser = await prisma.user.findFirst({
+          where: { OR: [{ id: u.id }, { email: u.email }] },
+          select: { id: true, email: true },
+        });
 
-      let resolvedUserId = u.id;
-      if (existingUser) {
-        resolvedUserId = existingUser.id;
-        await prisma.user.update({
-          where: { id: existingUser.id },
-          data: {
-            name: u.name,
-            role: (u.role as any) || 'SELLER',
-            approvalStatus: 'APPROVED',
-          },
-        });
-      } else {
-        const created = await prisma.user.create({
-          data: {
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            mobile: u.mobile,
-            role: (u.role as any) || 'SELLER',
-            password: u.password,
-            approvalStatus: 'APPROVED',
-          },
-        });
-        resolvedUserId = created.id;
+        let resolvedUserId = u.id;
+        if (existingUser) {
+          resolvedUserId = existingUser.id;
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: {
+              name: u.name,
+              role: (u.role as any) || 'SELLER',
+              approvalStatus: 'APPROVED',
+            },
+          });
+        } else {
+          const created = await prisma.user.create({
+            data: {
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              mobile: u.mobile,
+              role: (u.role as any) || 'SELLER',
+              password: u.password,
+              approvalStatus: 'APPROVED',
+            },
+          });
+          resolvedUserId = created.id;
+        }
+        emailToUserIdMap.set(u.email, resolvedUserId);
+        usersSynced++;
       }
-      emailToUserIdMap.set(u.email, resolvedUserId);
-      usersSynced++;
+    } else {
+      const allUsers = await prisma.user.findMany({ select: { id: true, email: true } });
+      for (const u of allUsers) {
+        if (u.email) emailToUserIdMap.set(u.email, u.id);
+      }
     }
 
     // Fallback owner (Gurvinder Singh or first user)
@@ -118,73 +132,118 @@ export async function POST(request: NextRequest) {
       emailToUserIdMap.get('gurvindersingh0218@gmail.com') ||
       Array.from(emailToUserIdMap.values())[0];
 
-    const shopIdMap = new Map<string, string>();
-
-    // 2. Resilient Upsert Shops (Using safe standard schema columns and resolved ownerId)
-    for (const s of catalogSeed.shops) {
-      const existingShop = await prisma.shop.findFirst({
-        where: { OR: [{ id: s.id }, { slug: s.slug }] },
-        select: { id: true, slug: true },
-      });
-
-      const ownerEmail = SHOP_OWNER_EMAIL_MAP[s.id] || s.email;
-      const ownerId = emailToUserIdMap.get(ownerEmail) || fallbackOwnerId;
-
-      const shopData = {
-        name: s.name,
-        slug: s.slug,
-        shopCode: s.shopCode,
-        logo: s.logo,
-        banner: s.banner,
-        description: s.description,
-        phone: s.phone,
-        email: s.email,
-        gstin: s.gstin,
-        panNumber: s.panNumber,
-        city: s.city,
-        state: s.state,
-        pincode: s.pincode,
-        fullAddress: s.fullAddress,
-        returnPolicy: s.returnPolicy,
-        shippingPolicy: s.shippingPolicy,
-        verificationBadge: (s.verificationBadge as any) || 'VERIFIED_SELLER',
-        rating: s.rating,
-        reviewCount: s.reviewCount,
-        commissionRate: s.commissionRate,
-        subscriptionTier: (s.subscriptionTier as any) || 'GROWTH',
-        isSubscriptionActive: s.isSubscriptionActive ?? true,
-        status: 'APPROVED' as any,
-        ownerId,
-        deletedAt: null,
-      };
-
-      let activeShopId = s.id;
-      if (existingShop) {
-        activeShopId = existingShop.id;
-        await prisma.shop.update({
-          where: { id: existingShop.id },
-          data: shopData,
+    // 2. Resilient Upsert Shops - only on offset 0
+    if (offset === 0) {
+      for (const s of catalogSeed.shops) {
+        const existingShop = await prisma.shop.findFirst({
+          where: { OR: [{ id: s.id }, { slug: s.slug }] },
+          select: { id: true, slug: true },
         });
-      } else {
-        const created = await prisma.shop.create({
-          data: {
-            id: s.id,
-            ...shopData,
-          },
-        });
-        activeShopId = created.id;
+
+        const ownerEmail = SHOP_OWNER_EMAIL_MAP[s.id] || s.email;
+        const ownerId = emailToUserIdMap.get(ownerEmail) || fallbackOwnerId;
+
+        const shopData = {
+          name: s.name,
+          slug: s.slug,
+          shopCode: s.shopCode,
+          logo: s.logo,
+          banner: s.banner,
+          description: s.description,
+          phone: s.phone,
+          email: s.email,
+          gstin: s.gstin,
+          panNumber: s.panNumber,
+          city: s.city,
+          state: s.state,
+          pincode: s.pincode,
+          fullAddress: s.fullAddress,
+          returnPolicy: s.returnPolicy,
+          shippingPolicy: s.shippingPolicy,
+          verificationBadge: (s.verificationBadge as any) || 'VERIFIED_SELLER',
+          rating: s.rating,
+          reviewCount: s.reviewCount,
+          commissionRate: s.commissionRate,
+          subscriptionTier: (s.subscriptionTier as any) || 'GROWTH',
+          isSubscriptionActive: s.isSubscriptionActive ?? true,
+          status: 'APPROVED' as any,
+          ownerId,
+          deletedAt: null,
+        };
+
+        let activeShopId = s.id;
+        if (existingShop) {
+          activeShopId = existingShop.id;
+          await prisma.shop.update({
+            where: { id: existingShop.id },
+            data: shopData,
+          });
+        } else {
+          const created = await prisma.shop.create({
+            data: {
+              id: s.id,
+              ...shopData,
+            },
+          });
+          activeShopId = created.id;
+        }
+        shopIdMap.set(s.id, activeShopId);
+        shopIdMap.set(s.slug, activeShopId);
+        shopsSynced++;
       }
-      shopIdMap.set(s.id, activeShopId);
-      shopIdMap.set(s.slug, activeShopId);
-      shopsSynced++;
     }
 
-    // 3. Resilient Upsert Products, Images & Variants
-    for (const p of catalogSeed.products) {
-      const existingProd = await prisma.product.findFirst({
-        where: { OR: [{ id: p.id }, { slug: p.slug }, { sku: p.sku }] },
-        select: { id: true, slug: true, sku: true },
-      });
+    // Always fill shopIdMap from DB so products can resolve shop
+    const allDbShops = await prisma.shop.findMany({ select: { id: true, slug: true } });
+    for (const s of allDbShops) {
+      shopIdMap.set(s.id, s.id);
+      shopIdMap.set(s.slug, s.id);
+    }
+
+    // 3. Batch Products Slice
+    const totalSeedProducts = catalogSeed.products.length;
+    const productsToSync = catalogSeed.products.slice(offset, offset + limit);
+
+    // Preload existing products for fast memory check
+    const existingProducts = await prisma.product.findMany({
+      select: { id: true, slug: true, sku: true },
+    });
+    const prodById = new Map<string, string>();
+    const prodBySlug = new Map<string, string>();
+    const prodBySku = new Map<string, string>();
+    for (const p of existingProducts) {
+      prodById.set(p.id, p.id);
+      if (p.slug) prodBySlug.set(p.slug, p.id);
+      if (p.sku) prodBySku.set(p.sku, p.id);
+    }
+
+    // Preload images
+    const existingImages = await prisma.productImage.findMany({
+      select: { id: true, imageUrl: true, productId: true },
+    });
+    const imgById = new Set<string>();
+    const imgByUrlAndProd = new Set<string>();
+    for (const img of existingImages) {
+      imgById.add(img.id);
+      imgByUrlAndProd.add(`${img.productId}_${img.imageUrl}`);
+    }
+
+    // Preload variants
+    const existingVariants = await prisma.productVariant.findMany({
+      select: { id: true, sku: true },
+    });
+    const varById = new Map<string, string>();
+    const varBySku = new Map<string, string>();
+    for (const v of existingVariants) {
+      varById.set(v.id, v.id);
+      if (v.sku) varBySku.set(v.sku, v.id);
+    }
+
+    for (const p of productsToSync) {
+      const existingId =
+        prodById.get(p.id) ||
+        (p.slug ? prodBySlug.get(p.slug) : undefined) ||
+        (p.sku ? prodBySku.get(p.sku) : undefined);
 
       const assignedShopId = p.shopId ? shopIdMap.get(p.shopId) || p.shopId : null;
 
@@ -259,16 +318,16 @@ export async function POST(request: NextRequest) {
       };
 
       let activeProdId = p.id;
-      if (existingProd) {
-        activeProdId = existingProd.id;
+      if (existingId) {
+        activeProdId = existingId;
         try {
           await prisma.product.update({
-            where: { id: existingProd.id },
+            where: { id: existingId },
             data: prodData,
           });
         } catch {
           await prisma.product.update({
-            where: { id: existingProd.id },
+            where: { id: existingId },
             data: coreProdData,
           });
         }
@@ -290,20 +349,19 @@ export async function POST(request: NextRequest) {
           });
           activeProdId = created.id;
         }
+        prodById.set(activeProdId, activeProdId);
       }
       productsSynced++;
 
       // Images
       if (p.images && p.images.length > 0) {
         for (const img of p.images) {
-          const existingImg = await prisma.productImage.findFirst({
-            where: { OR: [{ id: img.id }, { imageUrl: img.imageUrl, productId: activeProdId }] },
-            select: { id: true },
-          });
+          const isExisting =
+            imgById.has(img.id) || imgByUrlAndProd.has(`${activeProdId}_${img.imageUrl}`);
 
-          if (existingImg) {
-            await prisma.productImage.update({
-              where: { id: existingImg.id },
+          if (isExisting) {
+            await prisma.productImage.updateMany({
+              where: { OR: [{ id: img.id }, { imageUrl: img.imageUrl, productId: activeProdId }] },
               data: {
                 imageUrl: img.imageUrl,
                 secureUrl: img.secureUrl,
@@ -324,12 +382,14 @@ export async function POST(request: NextRequest) {
                 isPrimary: img.isPrimary || false,
               },
             });
+            imgById.add(img.id);
+            imgByUrlAndProd.add(`${activeProdId}_${img.imageUrl}`);
           }
           imagesSynced++;
         }
       }
 
-      // Variants
+      // Variants with bulletproof raw SQL
       if (p.variants && p.variants.length > 0) {
         for (const v of p.variants) {
           const variantName =
@@ -337,41 +397,47 @@ export async function POST(request: NextRequest) {
             `${v.size || ''} ${v.color || ''}`.trim() ||
             'Standard Variant';
 
-          const existingVariant = await prisma.productVariant.findFirst({
-            where: { OR: [{ id: v.id }, { sku: v.sku }] },
-            select: { id: true, sku: true },
-          });
+          const existingVarId = varById.get(v.id) || (v.sku ? varBySku.get(v.sku) : undefined);
 
-          if (existingVariant) {
-            await prisma.productVariant.update({
-              where: { id: existingVariant.id },
-              data: {
-                name: variantName,
-                price: v.price,
-                stock: v.stock,
-                status: (v.status as any) || 'active',
-                deletedAt: null,
-              },
-              select: { id: true },
-            });
-          } else {
-            await prisma.productVariant.create({
-              data: {
-                id: v.id,
-                productId: activeProdId,
-                name: variantName,
-                sku: v.sku,
-                size: v.size,
-                color: v.color,
-                price: v.price,
-                compareAtPrice: v.compareAtPrice,
-                stock: v.stock,
-                status: (v.status as any) || 'active',
-              },
-              select: { id: true },
-            });
+          try {
+            if (existingVarId) {
+              await prisma.$executeRawUnsafe(
+                `
+                UPDATE "product_variants"
+                SET "name" = $1, "price" = $2, "compareAtPrice" = $3, "stock" = $4, "status" = $5, "updatedAt" = NOW()
+                WHERE "id" = $6
+              `,
+                variantName,
+                Number(v.price),
+                v.compareAtPrice ? Number(v.compareAtPrice) : null,
+                Number(v.stock),
+                (v.status as any) || 'active',
+                existingVarId,
+              );
+            } else {
+              await prisma.$executeRawUnsafe(
+                `
+                INSERT INTO "product_variants" ("id", "productId", "name", "sku", "size", "color", "price", "compareAtPrice", "stock", "status", "createdAt", "updatedAt")
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
+              `,
+                v.id,
+                activeProdId,
+                variantName,
+                v.sku,
+                v.size || null,
+                v.color || null,
+                Number(v.price),
+                v.compareAtPrice ? Number(v.compareAtPrice) : null,
+                Number(v.stock),
+                (v.status as any) || 'active',
+              );
+              varById.set(v.id, v.id);
+              if (v.sku) varBySku.set(v.sku, v.id);
+            }
+            variantsSynced++;
+          } catch (vErr: any) {
+            console.warn(`[CatalogSync] Variant warning for ${v.sku}:`, vErr.message);
           }
-          variantsSynced++;
         }
       }
     }
@@ -379,9 +445,15 @@ export async function POST(request: NextRequest) {
     const totalDbProducts = await prisma.product.count({ where: { deletedAt: null } });
     const totalDbShops = await prisma.shop.count({ where: { status: 'APPROVED' } });
 
+    const hasMore = offset + limit < totalSeedProducts;
+    const nextOffset = hasMore ? offset + limit : null;
+
     return NextResponse.json({
       success: true,
-      message: `Production catalog synced successfully! Synced ${productsSynced} products and ${shopsSynced} approved shops.`,
+      message: `Synced ${productsSynced} products in batch [${offset}-${offset + productsToSync.length} of ${totalSeedProducts}].`,
+      hasMore,
+      nextOffset,
+      totalSeedProducts,
       stats: {
         usersSynced,
         shopsSynced,
@@ -393,7 +465,14 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('❌ POST Admin Catalog Sync Error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    console.error('Catalog Sync Error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message || 'Internal server error during catalog sync',
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      },
+      { status: 500 },
+    );
   }
 }
