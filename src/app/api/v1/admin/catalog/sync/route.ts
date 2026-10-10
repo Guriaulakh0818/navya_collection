@@ -10,6 +10,15 @@ export const maxDuration = 60;
 const INTERNAL_SYNC_SECRET =
   process.env.INTERNAL_SYNC_SECRET || 'navya_prod_sync_taxonomy_secret_2026';
 
+const SHOP_OWNER_EMAIL_MAP: Record<string, string> = {
+  cmui9v6ob0004cuzeht6sh5em: 'gurvindersingh0218@gmail.com',
+  cmui9v6p40007cuzej7y3y64h: 'ramesh.saniyafashions@gmail.com',
+  cmui9v6ph000acuze1jh353ys: 'vikram.stylezone@gmail.com',
+  cmui9v6pu000dcuze4thu2khl: 'jaspreet.fashions@gmail.com',
+  cmui9v6q6000gcuzegpycq8cm: 'barkat.fashion@gmail.com',
+  cmtpt93ff000fzqz23tqclwmv: 'admin@navyacollection.store',
+};
+
 // POST /api/v1/admin/catalog/sync - Bulk Synchronize Approved Shops & Real Products into Prisma DB
 export async function POST(request: NextRequest) {
   try {
@@ -51,6 +60,8 @@ export async function POST(request: NextRequest) {
     let imagesSynced = 0;
     let variantsSynced = 0;
 
+    const emailToUserIdMap = new Map<string, string>();
+
     // 1. Resilient Upsert Users (Shop Owners)
     for (const u of catalogSeed.users) {
       const existingUser = await prisma.user.findFirst({
@@ -58,7 +69,9 @@ export async function POST(request: NextRequest) {
         select: { id: true, email: true },
       });
 
+      let resolvedUserId = u.id;
       if (existingUser) {
+        resolvedUserId = existingUser.id;
         await prisma.user.update({
           where: { id: existingUser.id },
           data: {
@@ -68,7 +81,7 @@ export async function POST(request: NextRequest) {
           },
         });
       } else {
-        await prisma.user.create({
+        const created = await prisma.user.create({
           data: {
             id: u.id,
             name: u.name,
@@ -79,16 +92,28 @@ export async function POST(request: NextRequest) {
             approvalStatus: 'APPROVED',
           },
         });
+        resolvedUserId = created.id;
       }
+      emailToUserIdMap.set(u.email, resolvedUserId);
       usersSynced++;
     }
 
-    // 2. Resilient Upsert Shops (Using safe standard schema columns)
+    // Fallback owner (Gurvinder Singh or first user)
+    const fallbackOwnerId =
+      emailToUserIdMap.get('gurvindersingh0218@gmail.com') ||
+      Array.from(emailToUserIdMap.values())[0];
+
+    const shopIdMap = new Map<string, string>();
+
+    // 2. Resilient Upsert Shops (Using safe standard schema columns and resolved ownerId)
     for (const s of catalogSeed.shops) {
       const existingShop = await prisma.shop.findFirst({
         where: { OR: [{ id: s.id }, { slug: s.slug }] },
         select: { id: true, slug: true },
       });
+
+      const ownerEmail = SHOP_OWNER_EMAIL_MAP[s.id] || s.email;
+      const ownerId = emailToUserIdMap.get(ownerEmail) || fallbackOwnerId;
 
       const shopData = {
         name: s.name,
@@ -114,23 +139,28 @@ export async function POST(request: NextRequest) {
         subscriptionTier: (s.subscriptionTier as any) || 'GROWTH',
         isSubscriptionActive: s.isSubscriptionActive ?? true,
         status: 'APPROVED' as any,
-        ownerId: s.ownerId,
+        ownerId,
         deletedAt: null,
       };
 
+      let activeShopId = s.id;
       if (existingShop) {
+        activeShopId = existingShop.id;
         await prisma.shop.update({
           where: { id: existingShop.id },
           data: shopData,
         });
       } else {
-        await prisma.shop.create({
+        const created = await prisma.shop.create({
           data: {
             id: s.id,
             ...shopData,
           },
         });
+        activeShopId = created.id;
       }
+      shopIdMap.set(s.id, activeShopId);
+      shopIdMap.set(s.slug, activeShopId);
       shopsSynced++;
     }
 
@@ -140,6 +170,8 @@ export async function POST(request: NextRequest) {
         where: { OR: [{ id: p.id }, { slug: p.slug }, { sku: p.sku }] },
         select: { id: true, slug: true, sku: true },
       });
+
+      const assignedShopId = p.shopId ? shopIdMap.get(p.shopId) || p.shopId : null;
 
       const prodData = {
         name: p.name,
@@ -159,7 +191,7 @@ export async function POST(request: NextRequest) {
         isFeatured: p.isFeatured || false,
         isNewArrival: p.isNewArrival || false,
         categoryId: p.categoryId,
-        shopId: p.shopId,
+        shopId: assignedShopId,
         rating: p.rating || 0,
         reviewCount: p.reviewCount || 0,
         metaTitle: p.metaTitle,
