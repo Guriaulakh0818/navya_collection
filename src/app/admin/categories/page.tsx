@@ -69,8 +69,46 @@ export default function AdminCategoriesPage() {
   const [description, setDescription] = useState('');
   const [parentId, setParentId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSyncingTaxonomy, setIsSyncingTaxonomy] = useState(false);
+  const [isSyncingCatalog, setIsSyncingCatalog] = useState(false);
 
   const { toast } = useToast();
+
+  const handleSyncTaxonomy = async () => {
+    setIsSyncingTaxonomy(true);
+    try {
+      const res = await fetch('/api/v1/admin/categories/sync', { method: 'POST' });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success) {
+        toast(data.message || 'All 218 categories synced to live DB!', 'success');
+        fetchCategories();
+      } else {
+        toast(data?.message || 'Failed to sync categories.', 'error');
+      }
+    } catch (err: any) {
+      toast(err.message || 'Failed to sync categories.', 'error');
+    } finally {
+      setIsSyncingTaxonomy(false);
+    }
+  };
+
+  const handleSyncCatalog = async () => {
+    setIsSyncingCatalog(true);
+    try {
+      const res = await fetch('/api/v1/admin/catalog/sync', { method: 'POST' });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success) {
+        toast(data.message || 'Shops and products synced to live DB!', 'success');
+        fetchCategories();
+      } else {
+        toast(data?.message || 'Failed to sync catalog.', 'error');
+      }
+    } catch (err: any) {
+      toast(err.message || 'Failed to sync catalog.', 'error');
+    } finally {
+      setIsSyncingCatalog(false);
+    }
+  };
 
   const fetchCategories = useCallback(async () => {
     setIsFetching(true);
@@ -199,15 +237,35 @@ export default function AdminCategoriesPage() {
         </div>
 
         {!isSupervisor && (
-          <Button
-            className="rounded-xl bg-orange hover:bg-orange-600 text-white text-xs font-extrabold px-5 py-2.5 gap-2 cursor-pointer shadow-md self-start sm:self-auto"
-            onClick={() => {
-              setParentId('');
-              setIsAdding(true);
-            }}
-          >
-            <Plus className="h-4 w-4 text-white" /> Add New Category
-          </Button>
+          <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+            <Button
+              className="rounded-xl bg-gold/90 hover:bg-gold text-navy text-xs font-extrabold px-4 py-2.5 gap-2 cursor-pointer shadow-md disabled:opacity-50"
+              onClick={handleSyncTaxonomy}
+              disabled={isSyncingTaxonomy}
+            >
+              <RefreshCw className={`h-4 w-4 text-navy ${isSyncingTaxonomy ? 'animate-spin' : ''}`} />
+              {isSyncingTaxonomy ? 'Syncing 218 Categories...' : 'Sync Category Taxonomy (218)'}
+            </Button>
+
+            <Button
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-4 py-2.5 gap-2 cursor-pointer shadow-md disabled:opacity-50"
+              onClick={handleSyncCatalog}
+              disabled={isSyncingCatalog}
+            >
+              <RefreshCw className={`h-4 w-4 text-white ${isSyncingCatalog ? 'animate-spin' : ''}`} />
+              {isSyncingCatalog ? 'Pushing Catalog...' : 'Push Shops & Products to DB'}
+            </Button>
+
+            <Button
+              className="rounded-xl bg-orange hover:bg-orange-600 text-white text-xs font-extrabold px-5 py-2.5 gap-2 cursor-pointer shadow-md"
+              onClick={() => {
+                setParentId('');
+                setIsAdding(true);
+              }}
+            >
+              <Plus className="h-4 w-4 text-white" /> Add New Category
+            </Button>
+          </div>
         )}
       </div>
 

@@ -7,6 +7,7 @@ import {
   Eye,
   FolderTree,
   Plus,
+  RefreshCw,
   Search,
   ShoppingBag,
   Sparkles,
@@ -73,6 +74,7 @@ export default function AdminProductsPage() {
   const [newProductCatSearch, setNewProductCatSearch] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSyncingCatalog, setIsSyncingCatalog] = useState(false);
 
   const flattenedCategories = getFlattenedCategoryOptions();
 
@@ -323,6 +325,24 @@ export default function AdminProductsPage() {
     toast(`⚡ Auto-assigned ${res.categoryIds.length} categories!`, 'success');
   };
 
+  const handleSyncCatalog = async () => {
+    setIsSyncingCatalog(true);
+    try {
+      const res = await fetch('/api/v1/admin/catalog/sync', { method: 'POST' });
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success) {
+        toast(data.message || 'Shops and products synced to live DB!', 'success');
+        fetchProducts();
+      } else {
+        toast(data?.message || 'Failed to sync catalog.', 'error');
+      }
+    } catch (err: any) {
+      toast(err.message || 'Failed to sync catalog.', 'error');
+    } finally {
+      setIsSyncingCatalog(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Read-Only Banner for Supervisor */}
@@ -351,6 +371,18 @@ export default function AdminProductsPage() {
         </div>
         {!isSupervisor && (
           <div className="flex items-center gap-2.5 flex-wrap">
+            <Button
+              variant="outline"
+              disabled={isSyncingCatalog}
+              className="rounded-full border-emerald-500/80 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-800 text-xs font-extrabold gap-1.5 cursor-pointer shadow-2xs"
+              onClick={handleSyncCatalog}
+              title="Push approved shops & genuine boutique products into the live database"
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 text-emerald-600 ${isSyncingCatalog ? 'animate-spin' : ''}`}
+              />
+              {isSyncingCatalog ? 'Pushing Catalog...' : '📦 Push Real Products to DB'}
+            </Button>
             <Button
               variant="outline"
               disabled={isAutoCategorizing}

@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  ArrowRight,
   ArrowUpDown,
   Check,
   ChevronDown,
@@ -590,6 +591,106 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
     { id: 'size', label: 'Size', count: selectedSizes.length },
     { id: 'occasion', label: 'Occasion', count: selectedOccasions.length },
   ];
+
+  if (initialProducts.length === 0) {
+    return (
+      <div className="space-y-8 max-w-5xl mx-auto py-6">
+        {/* Luxury Boutique Hero Card */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-navy via-[#1e3a6c] to-[#0f2142] text-white rounded-3xl p-8 sm:p-12 shadow-xl border border-white/10 text-center space-y-6">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-gold text-xs font-black uppercase tracking-widest shadow-xs">
+            <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+            <span>Curated Boutique Collection</span>
+          </div>
+
+          <div className="max-w-2xl mx-auto space-y-3">
+            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-heading">
+              {category.name} Arrivals Landing Soon
+            </h2>
+            <p className="text-sm sm:text-base text-slate-200/90 leading-relaxed font-medium">
+              Verified boutique designers and regional textile artisans are currently preparing handcrafted, exclusive season releases for <strong className="text-gold font-bold">{category.name}</strong>.
+            </p>
+          </div>
+
+          {/* Quick Department Navigation Links */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/category/women-sarees"
+              className="px-5 py-2.5 rounded-full bg-white text-navy font-extrabold text-xs shadow-md hover:bg-slate-100 transition-all hover:scale-105"
+            >
+              Explore Festive Sarees
+            </Link>
+            <Link
+              href="/category/women-lehengas"
+              className="px-5 py-2.5 rounded-full bg-white/15 text-white border border-white/30 font-bold text-xs hover:bg-white/25 transition-all"
+            >
+              Explore Designer Lehengas
+            </Link>
+            <Link
+              href="/category/men-shirts"
+              className="px-5 py-2.5 rounded-full bg-white/15 text-white border border-white/30 font-bold text-xs hover:bg-white/25 transition-all"
+            >
+              Explore Men&apos;s Shirts
+            </Link>
+            <Link
+              href="/category"
+              className="px-5 py-2.5 rounded-full bg-gold text-navy font-extrabold text-xs shadow-md hover:bg-amber-400 transition-all"
+            >
+              Browse All Categories
+            </Link>
+          </div>
+        </div>
+
+        {/* Seller Onboarding Card for this Category */}
+        <div className="bg-gradient-to-r from-amber-500/10 via-orange/10 to-amber-500/10 border border-amber-300/80 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+          <div className="space-y-2 text-center md:text-left">
+            <span className="text-[11px] font-black uppercase tracking-wider text-[#F15A25] bg-[#F15A25]/10 px-3 py-1 rounded-full">
+              Boutique Merchants Wanted
+            </span>
+            <h3 className="text-lg sm:text-xl font-extrabold text-navy font-heading">
+              Are you a boutique seller or designer in {category.name}?
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-xl">
+              Partner with Navya Collection to showcase your collections to thousands of fashion shoppers across India. Enjoy 0% listing fee, pan-India express courier pickup, and guaranteed weekly payouts.
+            </p>
+          </div>
+          <Link
+            href="/seller/register"
+            className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#F15A25] hover:bg-[#d94817] text-white text-xs font-black rounded-2xl shadow-lg shrink-0 transition-all hover:scale-105"
+          >
+            <span>Register as a Seller</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* Trust Guarantees */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+            <span className="text-xl">✨</span>
+            <p className="text-xs font-bold text-navy">100% Authentic</p>
+            <p className="text-[11px] text-slate-500">Verified boutique fabrics</p>
+          </div>
+          <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+            <span className="text-xl">🚚</span>
+            <p className="text-xs font-bold text-navy">Fast Delivery</p>
+            <p className="text-[11px] text-slate-500">Insured express transit</p>
+          </div>
+          <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+            <span className="text-xl">🔄</span>
+            <p className="text-xs font-bold text-navy">Easy Returns</p>
+            <p className="text-[11px] text-slate-500">7-day replacement support</p>
+          </div>
+          <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-1">
+            <span className="text-xl">💬</span>
+            <p className="text-xs font-bold text-navy">WhatsApp Support</p>
+            <p className="text-[11px] text-slate-500">Dedicated styling assistance</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
