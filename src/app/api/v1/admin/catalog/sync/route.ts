@@ -45,36 +45,6 @@ export async function POST(request: NextRequest) {
     const offset = offsetParam ? Math.max(0, parseInt(offsetParam, 10)) : 0;
     const limit = limitParam ? Math.max(1, parseInt(limitParam, 10)) : 10;
 
-    // 0. Quick idempotent schema column ensure (only on offset 0)
-    if (offset === 0) {
-      try {
-        await prisma.$executeRawUnsafe(`
-          ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedShipping" BOOLEAN DEFAULT false;
-          ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedThreshold" NUMERIC(10, 2);
-          ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerfundingshipping" BOOLEAN DEFAULT false;
-          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnPolicyType" VARCHAR(255) DEFAULT 'RETURN_AND_REPLACEMENT';
-          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnAllowed" BOOLEAN DEFAULT true;
-          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnWindowDays" INTEGER DEFAULT 3;
-          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementAllowed" BOOLEAN DEFAULT true;
-          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementWindowDays" INTEGER DEFAULT 7;
-          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingMode" VARCHAR(255) DEFAULT 'STANDARD';
-          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingRate" NUMERIC(10, 2);
-          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "taxRate" NUMERIC(5, 2) DEFAULT 0;
-          ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "hsnCode" VARCHAR(255);
-          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT;
-          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "attributes" JSONB;
-          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "availableStock" INTEGER DEFAULT 0;
-          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "reservedStock" INTEGER DEFAULT 0;
-          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "soldStock" INTEGER DEFAULT 0;
-          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "minimumStockLevel" INTEGER DEFAULT 5;
-          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "maximumStockLevel" INTEGER;
-          ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "stockStatus" VARCHAR(50) DEFAULT 'IN_STOCK';
-        `);
-      } catch (err: any) {
-        console.warn('[SQL Migration Warning]:', err.message);
-      }
-    }
-
     let usersSynced = 0;
     let shopsSynced = 0;
     let productsSynced = 0;
@@ -87,38 +57,42 @@ export async function POST(request: NextRequest) {
     // 1. Resilient Upsert Users (Shop Owners) - only on offset 0
     if (offset === 0) {
       for (const u of catalogSeed.users) {
-        const existingUser = await prisma.user.findFirst({
-          where: { OR: [{ id: u.id }, { email: u.email }] },
-          select: { id: true, email: true },
-        });
+        try {
+          const existingUser = await prisma.user.findFirst({
+            where: { OR: [{ id: u.id }, { email: u.email }] },
+            select: { id: true, email: true },
+          });
 
-        let resolvedUserId = u.id;
-        if (existingUser) {
-          resolvedUserId = existingUser.id;
-          await prisma.user.update({
-            where: { id: existingUser.id },
-            data: {
-              name: u.name,
-              role: (u.role as any) || 'SELLER',
-              approvalStatus: 'APPROVED',
-            },
-          });
-        } else {
-          const created = await prisma.user.create({
-            data: {
-              id: u.id,
-              name: u.name,
-              email: u.email,
-              mobile: u.mobile,
-              role: (u.role as any) || 'SELLER',
-              password: u.password,
-              approvalStatus: 'APPROVED',
-            },
-          });
-          resolvedUserId = created.id;
+          let resolvedUserId = u.id;
+          if (existingUser) {
+            resolvedUserId = existingUser.id;
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: {
+                name: u.name,
+                role: (u.role as any) || 'SELLER',
+                approvalStatus: 'APPROVED',
+              },
+            });
+          } else {
+            const created = await prisma.user.create({
+              data: {
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                mobile: u.mobile,
+                role: (u.role as any) || 'SELLER',
+                password: u.password,
+                approvalStatus: 'APPROVED',
+              },
+            });
+            resolvedUserId = created.id;
+          }
+          emailToUserIdMap.set(u.email, resolvedUserId);
+          usersSynced++;
+        } catch (uErr: any) {
+          console.warn(`[User Sync] Warning for ${u.email}:`, uErr.message);
         }
-        emailToUserIdMap.set(u.email, resolvedUserId);
-        usersSynced++;
       }
     } else {
       const allUsers = await prisma.user.findMany({ select: { id: true, email: true } });
@@ -135,70 +109,95 @@ export async function POST(request: NextRequest) {
     // 2. Resilient Upsert Shops - only on offset 0
     if (offset === 0) {
       for (const s of catalogSeed.shops) {
-        const existingShop = await prisma.shop.findFirst({
-          where: { OR: [{ id: s.id }, { slug: s.slug }] },
-          select: { id: true, slug: true },
-        });
-
-        const ownerEmail = SHOP_OWNER_EMAIL_MAP[s.id] || s.email;
-        const ownerId = emailToUserIdMap.get(ownerEmail) || fallbackOwnerId;
-
-        const shopData = {
-          name: s.name,
-          slug: s.slug,
-          shopCode: s.shopCode,
-          logo: s.logo,
-          banner: s.banner,
-          description: s.description,
-          phone: s.phone,
-          email: s.email,
-          gstin: s.gstin,
-          panNumber: s.panNumber,
-          city: s.city,
-          state: s.state,
-          pincode: s.pincode,
-          fullAddress: s.fullAddress,
-          returnPolicy: s.returnPolicy,
-          shippingPolicy: s.shippingPolicy,
-          verificationBadge: (s.verificationBadge as any) || 'VERIFIED_SELLER',
-          rating: s.rating,
-          reviewCount: s.reviewCount,
-          commissionRate: s.commissionRate,
-          subscriptionTier: (s.subscriptionTier as any) || 'GROWTH',
-          isSubscriptionActive: s.isSubscriptionActive ?? true,
-          status: 'APPROVED' as any,
-          ownerId,
-          deletedAt: null,
-        };
-
-        let activeShopId = s.id;
-        if (existingShop) {
-          activeShopId = existingShop.id;
-          await prisma.shop.update({
-            where: { id: existingShop.id },
-            data: shopData,
+        try {
+          const existingShop = await prisma.shop.findFirst({
+            where: { OR: [{ id: s.id }, { slug: s.slug }] },
+            select: { id: true, slug: true },
           });
-        } else {
-          const created = await prisma.shop.create({
-            data: {
-              id: s.id,
-              ...shopData,
-            },
-          });
-          activeShopId = created.id;
+
+          const ownerEmail = SHOP_OWNER_EMAIL_MAP[s.id] || s.email;
+          const ownerId = emailToUserIdMap.get(ownerEmail) || fallbackOwnerId;
+
+          const shopData = {
+            name: s.name,
+            slug: s.slug,
+            shopCode: s.shopCode,
+            logo: s.logo,
+            banner: s.banner,
+            description: s.description,
+            phone: s.phone,
+            email: s.email,
+            gstin: s.gstin,
+            panNumber: s.panNumber,
+            city: s.city,
+            state: s.state,
+            pincode: s.pincode,
+            fullAddress: s.fullAddress,
+            returnPolicy: s.returnPolicy,
+            shippingPolicy: s.shippingPolicy,
+            verificationBadge: (s.verificationBadge as any) || 'VERIFIED_SELLER',
+            rating: s.rating,
+            reviewCount: s.reviewCount,
+            commissionRate: s.commissionRate,
+            subscriptionTier: (s.subscriptionTier as any) || 'GROWTH',
+            isSubscriptionActive: s.isSubscriptionActive ?? true,
+            status: 'APPROVED' as any,
+            ownerId,
+            deletedAt: null,
+          };
+
+          let activeShopId = s.id;
+          if (existingShop) {
+            activeShopId = existingShop.id;
+            await prisma.shop.update({
+              where: { id: existingShop.id },
+              data: shopData,
+            });
+          } else {
+            const created = await prisma.shop.create({
+              data: {
+                id: s.id,
+                ...shopData,
+              },
+            });
+            activeShopId = created.id;
+          }
+          shopIdMap.set(s.id, activeShopId);
+          shopIdMap.set(s.slug, activeShopId);
+          shopsSynced++;
+        } catch (sErr: any) {
+          console.warn(`[Shop Sync] Warning for ${s.slug}:`, sErr.message);
         }
-        shopIdMap.set(s.id, activeShopId);
-        shopIdMap.set(s.slug, activeShopId);
-        shopsSynced++;
       }
     }
 
     // Always fill shopIdMap from DB so products can resolve shop
-    const allDbShops = await prisma.shop.findMany({ select: { id: true, slug: true } });
+    const allDbShops = await prisma.shop.findMany({ select: { id: true, slug: true, name: true } });
     for (const s of allDbShops) {
       shopIdMap.set(s.id, s.id);
       shopIdMap.set(s.slug, s.id);
+      shopIdMap.set(s.name.toLowerCase().trim(), s.id);
     }
+
+    // Cross-link catalogSeed shop IDs to DB shops by matching slug or name
+    for (const seedShop of catalogSeed.shops) {
+      const matchedDbShop = allDbShops.find(
+        (ds) =>
+          ds.id === seedShop.id ||
+          ds.slug === seedShop.slug ||
+          ds.name.toLowerCase().trim() === seedShop.name.toLowerCase().trim(),
+      );
+      if (matchedDbShop) {
+        shopIdMap.set(seedShop.id, matchedDbShop.id);
+        shopIdMap.set(seedShop.slug, matchedDbShop.id);
+      }
+    }
+
+    // Default fallback shop if none match
+    const fallbackShop =
+      allDbShops.find((s) => s.slug === 'navya-collection') ||
+      allDbShops.find((s) => s.name.toLowerCase().includes('navya')) ||
+      allDbShops[0];
 
     // 3. Batch Products Slice
     const totalSeedProducts = catalogSeed.products.length;
@@ -245,7 +244,10 @@ export async function POST(request: NextRequest) {
         (p.slug ? prodBySlug.get(p.slug) : undefined) ||
         (p.sku ? prodBySku.get(p.sku) : undefined);
 
-      const assignedShopId = p.shopId ? shopIdMap.get(p.shopId) || p.shopId : null;
+      let assignedShopId = p.shopId ? shopIdMap.get(p.shopId) : null;
+      if (!assignedShopId && fallbackShop) {
+        assignedShopId = fallbackShop.id;
+      }
 
       const prodData = {
         name: p.name,
@@ -359,33 +361,37 @@ export async function POST(request: NextRequest) {
           const isExisting =
             imgById.has(img.id) || imgByUrlAndProd.has(`${activeProdId}_${img.imageUrl}`);
 
-          if (isExisting) {
-            await prisma.productImage.updateMany({
-              where: { OR: [{ id: img.id }, { imageUrl: img.imageUrl, productId: activeProdId }] },
-              data: {
-                imageUrl: img.imageUrl,
-                secureUrl: img.secureUrl,
-                isPrimary: img.isPrimary || false,
-                deletedAt: null,
-              },
-            });
-          } else {
-            await prisma.productImage.create({
-              data: {
-                id: img.id,
-                productId: activeProdId,
-                imageUrl: img.imageUrl,
-                secureUrl: img.secureUrl,
-                cloudinaryPublicId: img.cloudinaryPublicId,
-                altText: img.altText,
-                sortOrder: img.sortOrder || 0,
-                isPrimary: img.isPrimary || false,
-              },
-            });
-            imgById.add(img.id);
-            imgByUrlAndProd.add(`${activeProdId}_${img.imageUrl}`);
+          try {
+            if (isExisting) {
+              await prisma.productImage.updateMany({
+                where: { OR: [{ id: img.id }, { imageUrl: img.imageUrl, productId: activeProdId }] },
+                data: {
+                  imageUrl: img.imageUrl,
+                  secureUrl: img.secureUrl,
+                  isPrimary: img.isPrimary || false,
+                  deletedAt: null,
+                },
+              });
+            } else {
+              await prisma.productImage.create({
+                data: {
+                  id: img.id,
+                  productId: activeProdId,
+                  imageUrl: img.imageUrl,
+                  secureUrl: img.secureUrl,
+                  cloudinaryPublicId: img.cloudinaryPublicId,
+                  altText: img.altText,
+                  sortOrder: img.sortOrder || 0,
+                  isPrimary: img.isPrimary || false,
+                },
+              });
+              imgById.add(img.id);
+              imgByUrlAndProd.add(`${activeProdId}_${img.imageUrl}`);
+            }
+            imagesSynced++;
+          } catch (imgErr: any) {
+            console.warn(`[Image Sync] Warning for ${img.imageUrl}:`, imgErr.message);
           }
-          imagesSynced++;
         }
       }
 
