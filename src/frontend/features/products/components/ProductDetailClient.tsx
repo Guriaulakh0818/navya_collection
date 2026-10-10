@@ -64,15 +64,68 @@ function getCleanVariantLabel(v: any, productName?: string): { main: string; sub
   return { main: name || 'Option' };
 }
 
+const COLOR_HEX_MAP: Record<string, string> = {
+  Red: '#ef4444',
+  Blue: '#3b82f6',
+  Black: '#1e293b',
+  White: '#f8fafc',
+  Green: '#22c55e',
+  Yellow: '#eab308',
+  Pink: '#ec4899',
+  Maroon: '#881337',
+  Gold: '#d97706',
+  Purple: '#a855f7',
+  'Navy Blue': '#1e3a8a',
+  Beige: '#d4b996',
+  Grey: '#64748b',
+  Orange: '#f97316',
+  Brown: '#78350f',
+  Multicolor: '#6366f1',
+};
+
 export function ProductDetailClient({ product, relatedProducts = [] }: ProductDetailClientProps) {
   const addItem = useCartStore((s) => s.addItem);
   const { toggleItem: toggleWishlist, isInWishlist } = useWishlistStore();
 
   const [selectedVariant, setSelectedVariant] = useState<string>(product?.variants?.[0]?.id || '');
+  const [selectedColorFilter, setSelectedColorFilter] = useState<string>('ALL');
   const [quantity, setQuantity] = useState(1);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+
+  // Extract all unique colors present across variants
+  const availableColors = useMemo(() => {
+    if (!product?.variants || product.variants.length <= 1) return [];
+    const colors: string[] = [];
+    product.variants.forEach((v: any) => {
+      const clr = (
+        v.color ||
+        v.colorName ||
+        (typeof v.attributes === 'object' && v.attributes !== null ? v.attributes?.color : '')
+      )?.trim();
+      if (clr && !colors.includes(clr)) {
+        colors.push(clr);
+      }
+    });
+    return colors;
+  }, [product?.variants]);
+
+  // Filtered variants based on selected color tab (or ALL)
+  const filteredVariants = useMemo(() => {
+    if (!product?.variants) return [];
+    if (selectedColorFilter === 'ALL' || availableColors.length <= 1) {
+      return product.variants;
+    }
+    return product.variants.filter((v: any) => {
+      const clr = (
+        v.color ||
+        v.colorName ||
+        (typeof v.attributes === 'object' && v.attributes !== null ? v.attributes?.color : '')
+      )?.trim();
+      return clr === selectedColorFilter;
+    });
+  }, [product?.variants, selectedColorFilter, availableColors]);
 
   // Review Form state
   const [newRating, setNewRating] = useState(5);
@@ -350,14 +403,17 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
 
           {/* Color & Size Variant Selector */}
           {product.variants && product.variants.length > 1 && (
-            <div className="space-y-3 pt-3 border-t border-slate-100">
+            <div className="space-y-2.5 pt-3 border-t border-slate-100">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
                     Select Variant:
                   </h3>
-                  <span className="text-xs font-bold text-amber-950 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-300 shadow-2xs">
+                  <span className="text-xs font-bold text-navy bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-300 shadow-2xs">
                     {getCleanVariantLabel(activeVariant, product.name).main}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-400">
+                    ({product.variants.length} available)
                   </span>
                 </div>
                 <button
@@ -369,74 +425,153 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 </button>
               </div>
 
-              <div className="flex flex-wrap gap-2 sm:gap-2.5">
-                {product.variants.map((v: any, idx: number) => {
-                  const { main: variantLabel } = getCleanVariantLabel(v, product.name);
-                  const variantStock = v.stock !== undefined && v.stock !== null ? v.stock : 10;
-                  const isOut = variantStock <= 0;
-                  const isSelected = selectedVariant === v.id;
-                  const variantImg =
-                    v.imageUrl ||
-                    v.image ||
-                    (typeof v.attributes === 'object' && v.attributes !== null
-                      ? v.attributes.imageUrl
-                      : null);
+              {/* Quick Color Filter Tabs (if product has multiple colors) */}
+              {availableColors.length > 1 && (
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none]">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mr-1 shrink-0">
+                    Color:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedColorFilter('ALL')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                      selectedColorFilter === 'ALL'
+                        ? 'bg-navy text-white shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    All ({product.variants.length})
+                  </button>
+                  {availableColors.map((clr) => {
+                    const count = product.variants.filter((v: any) => {
+                      const c = (
+                        v.color ||
+                        v.colorName ||
+                        (typeof v.attributes === 'object' && v.attributes !== null
+                          ? v.attributes?.color
+                          : '')
+                      )?.trim();
+                      return c === clr;
+                    }).length;
+                    const hex = COLOR_HEX_MAP[clr] || '#94a3b8';
+                    const isTabActive = selectedColorFilter === clr;
 
-                  return (
-                    <button
-                      key={v.id || idx}
-                      type="button"
-                      onClick={() => setSelectedVariant(v.id)}
-                      disabled={isOut}
-                      className={`group flex items-center gap-2 sm:gap-2.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl border transition-all text-left cursor-pointer active:scale-95 ${
-                        isSelected
-                          ? 'border-navy bg-navy text-white shadow-sm ring-2 ring-navy/20'
-                          : 'border-slate-200 bg-white text-slate-800 hover:border-amber-500 hover:bg-amber-50/40'
-                      } ${isOut ? 'opacity-40 cursor-not-allowed line-through' : ''}`}
-                    >
-                      {variantImg ? (
-                        <div
-                          className={`relative w-8 h-9 rounded-lg overflow-hidden border shrink-0 bg-slate-50 ${
-                            isSelected
-                              ? 'border-amber-400 ring-1 ring-amber-400'
-                              : 'border-slate-200'
-                          }`}
-                        >
-                          <img
-                            src={variantImg}
-                            alt={variantLabel}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : null}
-                      <span className="font-extrabold text-xs sm:text-sm tracking-tight whitespace-nowrap">
-                        {variantLabel}
-                      </span>
-                      {v.price && Number(v.price) !== Number(product.price) && (
-                        <span
-                          className={`text-xs font-semibold font-mono ${
-                            isSelected ? 'text-amber-300' : 'text-slate-500'
-                          }`}
-                        >
-                          ₹{Number(v.price).toLocaleString('en-IN')}
-                        </span>
-                      )}
-                      <span
-                        className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${
-                          isSelected
-                            ? 'bg-amber-400 text-slate-950 font-black'
-                            : isOut
-                              ? 'bg-rose-100 text-rose-700'
-                              : variantStock <= 3
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-emerald-100 text-emerald-800'
+                    return (
+                      <button
+                        key={clr}
+                        type="button"
+                        onClick={() => setSelectedColorFilter(clr)}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                          isTabActive
+                            ? 'bg-navy text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                       >
-                        {isOut ? 'Sold Out' : `${variantStock} left`}
-                      </span>
-                    </button>
-                  );
-                })}
+                        <span
+                          className="w-2 h-2 rounded-full border border-black/10 shrink-0"
+                          style={{ backgroundColor: hex }}
+                        />
+                        <span>{clr}</span>
+                        <span
+                          className={`text-[10px] ${
+                            isTabActive ? 'text-amber-300' : 'text-slate-400'
+                          }`}
+                        >
+                          ({count})
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Scrollable Variant Tray */}
+              <div className="space-y-1">
+                <div className="max-h-56 sm:max-h-64 overflow-y-auto overscroll-contain pr-1.5 rounded-2xl p-1 bg-slate-50/50 border border-slate-100 [scrollbar-width:thin] scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300 scrollbar-track-transparent">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {filteredVariants.map((v: any, idx: number) => {
+                      const { main: variantLabel } = getCleanVariantLabel(v, product.name);
+                      const variantStock = v.stock !== undefined && v.stock !== null ? v.stock : 10;
+                      const isOut = variantStock <= 0;
+                      const isSelected = selectedVariant === v.id;
+                      const variantImg =
+                        v.imageUrl ||
+                        v.image ||
+                        (typeof v.attributes === 'object' && v.attributes !== null
+                          ? v.attributes.imageUrl
+                          : null);
+
+                      return (
+                        <button
+                          key={v.id || idx}
+                          type="button"
+                          onClick={() => setSelectedVariant(v.id)}
+                          disabled={isOut}
+                          className={`group flex items-center justify-between gap-2 px-3 py-2 rounded-xl border transition-all text-left cursor-pointer active:scale-98 ${
+                            isSelected
+                              ? 'border-navy bg-navy text-white shadow-sm ring-2 ring-navy/20'
+                              : 'border-slate-200 bg-white text-slate-800 hover:border-amber-400 hover:bg-amber-50/30'
+                          } ${isOut ? 'opacity-40 cursor-not-allowed line-through bg-slate-50' : ''}`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            {variantImg ? (
+                              <div
+                                className={`relative w-8 h-9 rounded-lg overflow-hidden border shrink-0 bg-slate-50 ${
+                                  isSelected
+                                    ? 'border-amber-400 ring-1 ring-amber-400'
+                                    : 'border-slate-200'
+                                }`}
+                              >
+                                <img
+                                  src={variantImg}
+                                  alt={variantLabel}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : null}
+                            <span className="font-extrabold text-xs tracking-tight truncate">
+                              {variantLabel}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {v.price && Number(v.price) !== Number(product.price) && (
+                              <span
+                                className={`text-[11px] font-semibold font-mono ${
+                                  isSelected ? 'text-amber-300' : 'text-slate-500'
+                                }`}
+                              >
+                                ₹{Number(v.price).toLocaleString('en-IN')}
+                              </span>
+                            )}
+                            <span
+                              className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${
+                                isSelected
+                                  ? 'bg-amber-400 text-slate-950 font-black'
+                                  : isOut
+                                    ? 'bg-rose-100 text-rose-700'
+                                    : variantStock <= 3
+                                      ? 'bg-amber-100 text-amber-800'
+                                      : 'bg-emerald-100 text-emerald-800'
+                              }`}
+                            >
+                              {isOut ? 'Sold Out' : `${variantStock} left`}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {filteredVariants.length > 6 && (
+                  <div className="flex items-center justify-between pt-0.5 px-1 text-[11px] text-slate-400 font-medium">
+                    <span>Showing {filteredVariants.length} options</span>
+                    <span className="text-amber-700 font-bold">
+                      ↕ Scroll for more
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
