@@ -5,6 +5,7 @@ import { catalogSeed } from '@/config/production-catalog-seed';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 const INTERNAL_SYNC_SECRET =
   process.env.INTERNAL_SYNC_SECRET || 'navya_prod_sync_taxonomy_secret_2026';

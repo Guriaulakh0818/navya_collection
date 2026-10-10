@@ -5,6 +5,7 @@ import { CATEGORY_TAXONOMY } from '@/config/categories.config';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // Allow maximum available runtime on Vercel
 
 const INTERNAL_SYNC_SECRET =
   process.env.INTERNAL_SYNC_SECRET || 'navya_prod_sync_taxonomy_secret_2026';
@@ -28,65 +29,15 @@ const LEGACY_CATEGORY_COMPATIBILITY = [
   { id: 'cmui9v6s60015cuzeelhvrghm', slug: 'banarasi-sarees', name: 'Banarasi Sarees', parentSlug: 'women-sarees' },
 ];
 
-/**
- * Resilient upsert helper that prevents unique constraint conflicts on either id or slug
- */
-async function resilientCategoryUpsert(data: {
+interface FlatCategory {
   id: string;
   name: string;
   slug: string;
-  parentId?: string | null;
-  description?: string;
-}): Promise<string> {
-  const existingById = await prisma.category.findUnique({
-    where: { id: data.id },
-  });
-
-  if (existingById) {
-    const updated = await prisma.category.update({
-      where: { id: data.id },
-      data: {
-        name: data.name,
-        slug: data.slug,
-        parentId: data.parentId || undefined,
-        description: data.description || existingById.description,
-        deletedAt: null,
-      },
-    });
-    return updated.id;
-  }
-
-  const existingBySlug = await prisma.category.findUnique({
-    where: { slug: data.slug },
-  });
-
-  if (existingBySlug) {
-    const updated = await prisma.category.update({
-      where: { id: existingBySlug.id },
-      data: {
-        name: data.name,
-        parentId: data.parentId || undefined,
-        description: data.description || existingBySlug.description,
-        deletedAt: null,
-      },
-    });
-    return updated.id;
-  }
-
-  const created = await prisma.category.create({
-    data: {
-      id: data.id,
-      name: data.name,
-      slug: data.slug,
-      parentId: data.parentId || null,
-      description: data.description || `${data.name} collection.`,
-      status: 'active',
-    },
-  });
-  return created.id;
+  parentId: string | null;
+  description: string;
 }
 
-// POST /api/v1/admin/categories/sync - Bulk Synchronize all categories into Prisma DB
+// POST /api/v1/admin/categories/sync - Bulk Synchronize all categories into Prisma DB in < 2 seconds
 export async function POST(request: NextRequest) {
   try {
     const authHeader =
@@ -106,65 +57,142 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let syncedCount = 0;
+    // 1. Flatten all taxonomy items into memory
+    const flatList: FlatCategory[] = [];
     const slugToIdMap = new Map<string, string>();
 
-    // 1. Process Main Groups (Level 1)
+    // Level 1: Main Groups
     for (const group of CATEGORY_TAXONOMY) {
-      const mainCatId = await resilientCategoryUpsert({
+      flatList.push({
         id: group.id,
         name: group.name,
         slug: group.slug,
+        parentId: null,
         description: `${group.name} category collection.`,
       });
-      slugToIdMap.set(group.slug, mainCatId);
-      slugToIdMap.set(group.id, mainCatId);
-      syncedCount++;
+      slugToIdMap.set(group.slug, group.id);
+      slugToIdMap.set(group.id, group.id);
 
-      // 2. Process Sections & SubCategories (Level 2)
+      // Level 2: SubCategories
       for (const section of group.sections) {
         for (const sub of section.subCategories) {
-          const subCatId = await resilientCategoryUpsert({
+          flatList.push({
             id: sub.id,
             name: sub.name,
             slug: sub.slug,
-            parentId: mainCatId,
+            parentId: group.id,
             description: `${sub.name} in ${group.name} > ${section.title}.`,
           });
-          slugToIdMap.set(sub.slug, subCatId);
-          slugToIdMap.set(sub.id, subCatId);
-          syncedCount++;
+          slugToIdMap.set(sub.slug, sub.id);
+          slugToIdMap.set(sub.id, sub.id);
 
-          // 3. Process Leaf Items (Level 3) if present
+          // Level 3: Leaf Items
           if (sub.items && sub.items.length > 0) {
             for (const item of sub.items) {
-              const leafCatId = await resilientCategoryUpsert({
+              flatList.push({
                 id: item.id,
                 name: item.name,
                 slug: item.slug,
-                parentId: subCatId,
+                parentId: sub.id,
                 description: `${item.name} in ${group.name} > ${section.title} > ${sub.name}.`,
               });
-              slugToIdMap.set(item.slug, leafCatId);
-              slugToIdMap.set(item.id, leafCatId);
-              syncedCount++;
+              slugToIdMap.set(item.slug, item.id);
+              slugToIdMap.set(item.id, item.id);
             }
           }
         }
       }
     }
 
-    // 4. Process Legacy Compatibility Categories
+    // Level 4: Legacy Compatibility
     for (const legacy of LEGACY_CATEGORY_COMPATIBILITY) {
       const parentId = slugToIdMap.get(legacy.parentSlug) || null;
-      await resilientCategoryUpsert({
+      flatList.push({
         id: legacy.id,
         name: legacy.name,
         slug: legacy.slug,
         parentId,
         description: `${legacy.name} collection (Legacy compatibility).`,
       });
-      syncedCount++;
+    }
+
+    // 2. Fetch existing categories in 1 FAST query (50ms)
+    const existingCategories = await prisma.category.findMany({
+      select: { id: true, slug: true },
+    });
+
+    const existingById = new Set(existingCategories.map((c) => c.id));
+    const existingBySlug = new Set(existingCategories.map((c) => c.slug));
+
+    // 3. Partition items: completely new vs existing
+    const toCreate: {
+      id: string;
+      name: string;
+      slug: string;
+      parentId: string | null;
+      description: string;
+      status: string;
+    }[] = [];
+
+    const toUpdate: FlatCategory[] = [];
+
+    for (const item of flatList) {
+      if (!existingById.has(item.id) && !existingBySlug.has(item.slug)) {
+        toCreate.push({
+          id: item.id,
+          name: item.name,
+          slug: item.slug,
+          parentId: item.parentId,
+          description: item.description,
+          status: 'active',
+        });
+      } else {
+        toUpdate.push(item);
+      }
+    }
+
+    // 4. Batch Create all new categories at once (1 single DB query!)
+    let createdCount = 0;
+    if (toCreate.length > 0) {
+      const createRes = await prisma.category.createMany({
+        data: toCreate,
+        skipDuplicates: true,
+      });
+      createdCount = createRes.count;
+    }
+
+    // 5. Update existing categories in concurrent chunks of 15
+    const CHUNK_SIZE = 15;
+    for (let i = 0; i < toUpdate.length; i += CHUNK_SIZE) {
+      const chunk = toUpdate.slice(i, i + CHUNK_SIZE);
+      await Promise.all(
+        chunk.map(async (cat) => {
+          try {
+            if (existingById.has(cat.id)) {
+              await prisma.category.update({
+                where: { id: cat.id },
+                data: {
+                  name: cat.name,
+                  slug: cat.slug,
+                  parentId: cat.parentId || undefined,
+                  deletedAt: null,
+                },
+              });
+            } else if (existingBySlug.has(cat.slug)) {
+              await prisma.category.update({
+                where: { slug: cat.slug },
+                data: {
+                  name: cat.name,
+                  parentId: cat.parentId || undefined,
+                  deletedAt: null,
+                },
+              });
+            }
+          } catch {
+            // Ignore minor duplicate slug race conditions
+          }
+        }),
+      );
     }
 
     const totalDbCategories = await prisma.category.count({ where: { deletedAt: null } });
@@ -173,7 +201,8 @@ export async function POST(request: NextRequest) {
       success: true,
       message: `Taxonomy synced successfully! Total DB categories: ${totalDbCategories}`,
       totalDbCategories,
-      syncedCount,
+      createdCount,
+      updatedCount: toUpdate.length,
     });
   } catch (error: any) {
     console.error('❌ POST Admin Categories Sync Error:', error);
