@@ -556,6 +556,10 @@ export function SellerRegistrationWizard() {
         password,
         mobile: rawMobile,
       },
+      shopDetails: {
+        ...prev.shopDetails,
+        phone: prev.shopDetails.phone || rawMobile,
+      },
     }));
 
     return true;
@@ -1043,22 +1047,52 @@ export function SellerRegistrationWizard() {
               <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
                 Mobile Number (+91) *
               </label>
-              <input
-                type="text"
-                maxLength={10}
-                placeholder="9876543210"
-                value={formData.basicInfo.mobile}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    basicInfo: {
-                      ...prev.basicInfo,
-                      mobile: e.target.value.replace(/\D/g, '').slice(0, 10),
-                    },
-                  }))
-                }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
-              />
+              <div className="relative flex items-center">
+                <span className="absolute left-3.5 text-xs font-extrabold text-slate-500 select-none bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                  +91
+                </span>
+                <input
+                  id="seller-mobile-input"
+                  name="sellerMobile"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  placeholder="Enter 10-digit number"
+                  value={formData.basicInfo.mobile}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/\D/g, '');
+                    if (val.length === 12 && val.startsWith('91')) {
+                      val = val.slice(2);
+                    }
+                    setFormData((prev) => ({
+                      ...prev,
+                      basicInfo: {
+                        ...prev.basicInfo,
+                        mobile: val.slice(0, 10),
+                      },
+                    }));
+                  }}
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-16 pr-10 py-3 text-navy font-bold focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                />
+                {formData.basicInfo.mobile && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        basicInfo: { ...prev.basicInfo, mobile: '' },
+                      }))
+                    }
+                    className="absolute right-3.5 w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
+                    title="Clear number"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1 font-medium">
+                Enter your 10-digit mobile number. You can type, paste, or clear anytime.
+              </p>
             </div>
 
             <div>
@@ -1174,22 +1208,49 @@ export function SellerRegistrationWizard() {
               <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2">
                 Business Contact Phone *
               </label>
-              <input
-                type="text"
-                maxLength={10}
-                placeholder="9876543210"
-                value={formData.shopDetails.phone}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    shopDetails: {
-                      ...prev.shopDetails,
-                      phone: e.target.value.replace(/\D/g, '').slice(0, 10),
-                    },
-                  }))
-                }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
-              />
+              <div className="relative flex items-center">
+                <span className="absolute left-3.5 text-xs font-extrabold text-slate-500 select-none bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                  +91
+                </span>
+                <input
+                  id="shop-phone-input"
+                  name="shopPhone"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  placeholder="Enter 10-digit number"
+                  value={formData.shopDetails.phone}
+                  onChange={(e) => {
+                    let val = e.target.value.replace(/\D/g, '');
+                    if (val.length === 12 && val.startsWith('91')) {
+                      val = val.slice(2);
+                    }
+                    setFormData((prev) => ({
+                      ...prev,
+                      shopDetails: {
+                        ...prev.shopDetails,
+                        phone: val.slice(0, 10),
+                      },
+                    }));
+                  }}
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-16 pr-10 py-3 text-navy font-bold focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                />
+                {formData.shopDetails.phone && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        shopDetails: { ...prev.shopDetails, phone: '' },
+                      }))
+                    }
+                    className="absolute right-3.5 w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
+                    title="Clear phone"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
