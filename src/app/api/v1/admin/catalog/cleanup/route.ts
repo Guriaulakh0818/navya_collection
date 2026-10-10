@@ -62,13 +62,26 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Activate ONLY the 2 authorized shops (NAVYA COLLECTION & Sk collection)
+    // and ensure permanent 'Style That Speaks' banner for all shops
     const activatedShops = await prisma.shop.updateMany({
       where: {
         slug: { in: ALLOWED_LIVE_SHOP_SLUGS },
       },
       data: {
         status: 'APPROVED',
+        banner: '/images/default-shop-banner.png',
         deletedAt: null,
+      },
+    });
+
+    // Ensure NAVYA COLLECTION profile logo is set to '/images/navya-logo.png'
+    await prisma.shop.updateMany({
+      where: {
+        slug: 'navya-collection',
+      },
+      data: {
+        logo: '/images/navya-logo.png',
+        banner: '/images/default-shop-banner.png',
       },
     });
 

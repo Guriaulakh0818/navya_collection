@@ -92,23 +92,17 @@ export function ShopProfileStorefront({
         </div>
       </div>
 
-      {/* 2. STORE COVER BANNER */}
+      {/* 2. STORE COVER BANNER - Permanent "Style That Speaks" Banner */}
       <div className="relative w-full h-48 sm:h-64 lg:h-80 bg-slate-100 border-b border-slate-200 overflow-hidden select-none">
-        {shop.banner ? (
-          <Image
-            src={shop.banner}
-            alt={shop.name}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover select-none overflow-hidden"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-r from-amber-500/10 via-orange/10 to-amber-500/10 flex items-center justify-center">
-            <Store className="w-16 h-16 text-amber-600/30" />
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+        <Image
+          src="/images/default-shop-banner.png"
+          alt="Style That Speaks - Navya Collection"
+          fill
+          priority
+          sizes="100vw"
+          className="w-full h-full object-cover select-none overflow-hidden"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent" />
       </div>
 
       {/* 3. STORE PROFILE HEADER OVERLAY */}
@@ -116,18 +110,14 @@ export function ShopProfileStorefront({
         <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-md backdrop-blur-xl space-y-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-amber-50 border-2 border-amber-300 overflow-hidden shrink-0 flex items-center justify-center shadow-md select-none">
-                {shop.logo ? (
-                  <Image
-                    src={shop.logo}
-                    alt={shop.name}
-                    width={96}
-                    height={96}
-                    className="w-full h-full object-cover select-none overflow-hidden"
-                  />
-                ) : (
-                  <Building2 className="w-10 h-10 text-amber-600" />
-                )}
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white border-2 border-amber-300 overflow-hidden shrink-0 flex items-center justify-center shadow-md select-none">
+                <Image
+                  src={shop.slug === 'navya-collection' ? '/images/navya-logo.png' : (shop.logo || '/images/navya-logo.png')}
+                  alt={shop.name}
+                  width={96}
+                  height={96}
+                  className="w-full h-full object-contain p-1 select-none overflow-hidden"
+                />
               </div>
 
               <div>
@@ -170,24 +160,11 @@ export function ShopProfileStorefront({
               </div>
             </div>
 
-            {/* Quick Contact Badge */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-              {shop.phone && (
-                <a
-                  href={`tel:${shop.phone}`}
-                  className="px-4 py-2.5 bg-navy hover:bg-navy/90 text-white font-extrabold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
-                >
-                  <Phone className="w-4 h-4 text-amber-400" /> Call Boutique
-                </a>
-              )}
-              {shop.email && (
-                <a
-                  href={`mailto:${shop.email}`}
-                  className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
-                >
-                  <Mail className="w-4 h-4" /> Inquiry Email
-                </a>
-              )}
+            {/* Marketplace Buyer Protection Badge (Replacing Direct Call/Email) */}
+            <div className="flex items-center gap-2">
+              <span className="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5 shadow-2xs">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" /> 100% Protected Boutique
+              </span>
             </div>
           </div>
 
@@ -423,14 +400,15 @@ export function ShopProfileStorefront({
               </div>
 
               <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3">
-                <h3 className="font-extrabold text-slate-900 text-sm">Merchant Direct Support</h3>
-                <div className="space-y-2 text-slate-600 font-medium">
-                  <div>
-                    Primary Phone: <strong className="text-slate-900">{shop.phone || 'N/A'}</strong>
-                  </div>
-                  <div>
-                    Support Email: <strong className="text-slate-900">{shop.email || 'N/A'}</strong>
-                  </div>
+                <h3 className="font-extrabold text-slate-900 text-sm">Customer Protection &amp; Care</h3>
+                <p className="text-slate-600 leading-relaxed font-medium">
+                  All orders, payments, shipments, and return requests are safely managed by Navya Collection customer care for 100% buyer protection.
+                </p>
+                <div className="pt-2 text-slate-700 font-bold flex items-center gap-2">
+                  <span>Platform Support:</span>
+                  <a href="mailto:support@navyacollection.store" className="text-navy hover:text-orange transition-colors">
+                    support@navyacollection.store
+                  </a>
                 </div>
               </div>
             </div>
