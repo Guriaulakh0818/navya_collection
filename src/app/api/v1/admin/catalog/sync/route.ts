@@ -50,6 +50,33 @@ export async function POST(request: NextRequest) {
       await prisma.$executeRawUnsafe(
         'ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerfundingshipping" BOOLEAN DEFAULT false;',
       );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnPolicyType" VARCHAR(255) DEFAULT \'RETURN_AND_REPLACEMENT\';',
+      );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnAllowed" BOOLEAN DEFAULT true;',
+      );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnWindowDays" INTEGER DEFAULT 3;',
+      );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementAllowed" BOOLEAN DEFAULT true;',
+      );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementWindowDays" INTEGER DEFAULT 7;',
+      );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingMode" VARCHAR(255) DEFAULT \'STANDARD\';',
+      );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingRate" NUMERIC(10, 2);',
+      );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "taxRate" NUMERIC(5, 2) DEFAULT 0;',
+      );
+      await prisma.$executeRawUnsafe(
+        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "hsnCode" VARCHAR(255);',
+      );
     } catch (migErr) {
       console.warn('DB schema migration check:', migErr);
     }
