@@ -68,6 +68,25 @@ const COMMON_COLORS = [
   'Multicolor',
 ];
 
+const COLOR_HEX_MAP: Record<string, string> = {
+  Red: '#ef4444',
+  Blue: '#3b82f6',
+  Black: '#1e293b',
+  White: '#f8fafc',
+  Green: '#22c55e',
+  Yellow: '#eab308',
+  Pink: '#ec4899',
+  Maroon: '#881337',
+  Gold: '#d97706',
+  Purple: '#a855f7',
+  'Navy Blue': '#1e3a8a',
+  Beige: '#d4b996',
+  Grey: '#64748b',
+  Orange: '#f97316',
+  Brown: '#78350f',
+  Multicolor: '#6366f1',
+};
+
 type VariantMode = 'NONE' | 'SIZE_ONLY' | 'COLOR_ONLY' | 'SIZE_AND_COLOR';
 
 export function SellerProductForm({ productId, initialData }: ProductFormProps) {
@@ -658,6 +677,143 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       variants: newVariants,
       stock: totalStock > 0 ? totalStock : prev.stock,
     }));
+  };
+
+  // Toggle specific color availability within a size (User's Core Requirement)
+  const handleToggleColorForSize = (size: string, color: string) => {
+    const exists = formData.variants.some((v: any) => v.size === size && v.color === color);
+    if (exists) {
+      const updated = formData.variants.filter(
+        (v: any) => !(v.size === size && v.color === color),
+      );
+      const totalStock = updated.reduce(
+        (sum: number, v: any) => sum + Number(v.stock || 0),
+        0,
+      );
+      setFormData((prev) => ({
+        ...prev,
+        variants: updated,
+        stock: totalStock > 0 ? totalStock : prev.stock,
+      }));
+    } else {
+      const colorExisting = formData.variants.find((v: any) => v.color === color && v.imageUrl);
+      const newVariant = {
+        size,
+        color,
+        price: Number(formData.price) || 0,
+        stock: 10,
+        sku: '',
+        imageUrl: colorExisting?.imageUrl || '',
+      };
+      const updated = [...formData.variants, newVariant];
+      const totalStock = updated.reduce(
+        (sum: number, v: any) => sum + Number(v.stock || 0),
+        0,
+      );
+      setFormData((prev) => ({
+        ...prev,
+        variants: updated,
+        stock: totalStock,
+      }));
+    }
+  };
+
+  const handleApplyAllColorsToAllSizes = () => {
+    if (selectedColors.length === 0 || selectedSizes.length === 0) {
+      showToast('Please select at least 1 size and 1 color first.', 'error');
+      return;
+    }
+    const newVariants: any[] = [];
+    selectedSizes.forEach((sz) => {
+      selectedColors.forEach((clr) => {
+        const existing = formData.variants.find((v: any) => v.size === sz && v.color === clr);
+        const colorExisting = formData.variants.find((v: any) => v.color === clr && v.imageUrl);
+        newVariants.push({
+          size: sz,
+          color: clr,
+          price: existing?.price ?? Number(formData.price) ?? 0,
+          stock: existing?.stock ?? 10,
+          sku: existing?.sku || '',
+          imageUrl: existing?.imageUrl || colorExisting?.imageUrl || '',
+        });
+      });
+    });
+    const totalStock = newVariants.reduce(
+      (sum: number, v: any) => sum + Number(v.stock || 0),
+      0,
+    );
+    setFormData((prev) => ({
+      ...prev,
+      variants: newVariants,
+      stock: totalStock,
+    }));
+    showToast('Applied all selected colors across all sizes!', 'success');
+  };
+
+  const handleApplyBasePriceToAllVariants = () => {
+    const base = Number(formData.price) || 0;
+    if (base <= 0) {
+      showToast('Please enter a valid Selling Price in Section 4 first.', 'error');
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      variants: prev.variants.map((v: any) => ({ ...v, price: base })),
+    }));
+    showToast(`Updated all variant prices to ₹${base}!`, 'success');
+  };
+
+  const handleUploadColorPhoto = async (color: string, file: File) => {
+    try {
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      const res = await fetch('/api/v1/upload?folder=seller_products', {
+        method: 'POST',
+        body: uploadData,
+      });
+      const data = await res.json();
+      const uploadedUrl =
+        data.data?.[0]?.secureUrl ||
+        data.data?.[0]?.url ||
+        data.data?.secureUrl ||
+        data.data?.url ||
+        data.data?.secure_url;
+
+      if (data.success && uploadedUrl) {
+        setFormData((prev) => {
+          const updatedVariants = prev.variants.map((v: any) =>
+            v.color === color ? { ...v, imageUrl: uploadedUrl } : v,
+          );
+          const hasInGallery = prev.images.some(
+            (img: any) => (img.imageUrl || img.url) === uploadedUrl,
+          );
+          const updatedImages = hasInGallery
+            ? prev.images
+            : [...prev.images, { imageUrl: uploadedUrl, isPrimary: prev.images.length === 0 }];
+
+          return {
+            ...prev,
+            variants: updatedVariants,
+            images: updatedImages,
+          };
+        });
+        showToast(`Photo for ${color} uploaded and linked to all its sizes!`, 'success');
+      } else {
+        showToast(data.message || 'Server error: please try again after sometime', 'error');
+      }
+    } catch {
+      showToast('Server error: please try again after sometime', 'error');
+    }
+  };
+
+  const handleAssignGalleryImageToColor = (color: string, imageUrl: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      variants: prev.variants.map((v: any) =>
+        v.color === color ? { ...v, imageUrl } : v,
+      ),
+    }));
+    showToast(`Assigned gallery photo to all ${color} variants!`, 'success');
   };
 
   const handleToggleColor = (color: string) => {
@@ -1866,276 +2022,775 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
         {variantMode !== 'NONE' && (
           <div className="space-y-6 pt-2">
-            {/* 1. Color Picker (for Color & Matrix modes) */}
-            {(variantMode === 'COLOR_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
-              <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <label className="block font-bold text-navy uppercase tracking-wider text-xs">
-                  Step 1: Select Available Colors
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {COMMON_COLORS.map((clr) => {
-                    const isSelected = selectedColors.includes(clr);
-                    return (
-                      <button
-                        key={clr}
-                        type="button"
-                        onClick={() => handleToggleColor(clr)}
-                        className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-navy text-white shadow-xs ring-2 ring-navy/20'
-                            : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        {clr} {isSelected ? '✓' : '+'}
-                      </button>
-                    );
-                  })}
-                </div>
+            {/* =========================================================================
+                MODE A: COLOR + SIZE MATRIX (SIZE-FIRST WITH INLINE COLOR OPTIONS)
+               ========================================================================= */}
+            {variantMode === 'SIZE_AND_COLOR' && (
+              <>
+                {/* Step 1: Select Available Sizes */}
+                <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <label className="block font-bold text-navy uppercase tracking-wider text-xs">
+                      Step 1: Select Available Sizes ({SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name})
+                    </label>
+                    <span className="text-[11px] text-amber-800 font-bold">
+                      System: {activeTemplate.sizeSystemId}
+                    </span>
+                  </div>
 
-                <div className="flex items-center gap-2 pt-2">
-                  <input
-                    type="text"
-                    placeholder="Add custom color (e.g. Rust Orange, Teal Green)"
-                    value={customColorInput}
-                    onChange={(e) => setCustomColorInput(e.target.value)}
-                    onKeyDown={(e) =>
-                      e.key === 'Enter' && (e.preventDefault(), handleAddCustomColor())
-                    }
-                    className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-medium focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCustomColor}
-                    className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl cursor-pointer"
-                  >
-                    Add Color
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* 2. Category Dynamic Size Picker */}
-            {(variantMode === 'SIZE_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
-              <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <div className="flex items-center justify-between">
-                  <label className="block font-bold text-navy uppercase tracking-wider text-xs">
-                    Step 2: Select Available Sizes (
-                    {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name})
-                  </label>
-                  <span className="text-[11px] text-amber-800 font-bold">
-                    System: {activeTemplate.sizeSystemId}
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {activeSizeOptions.map((sz) => {
-                    const isSelected = selectedSizes.includes(sz);
-                    return (
-                      <button
-                        key={sz}
-                        type="button"
-                        onClick={() => handleToggleSize(sz)}
-                        className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-amber-500 text-slate-950 shadow-xs ring-2 ring-amber-500/20 font-black'
-                            : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        {sz} {isSelected ? '✓' : '+'}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="flex items-center gap-2 pt-2">
-                  <input
-                    type="text"
-                    placeholder="Custom size (e.g. Free Size, Plus 46)"
-                    value={customSizeInput}
-                    onChange={(e) => setCustomSizeInput(e.target.value)}
-                    onKeyDown={(e) =>
-                      e.key === 'Enter' && (e.preventDefault(), handleAddCustomSize())
-                    }
-                    className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-medium focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddCustomSize}
-                    className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl cursor-pointer"
-                  >
-                    Add Size
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* 3. Generated Variant Matrix Table */}
-            {formData.variants.length > 0 && (
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead className="bg-slate-100 text-slate-700 font-extrabold uppercase tracking-wider text-[10px]">
-                    <tr>
-                      <th className="p-3">Color Photo</th>
-                      {(variantMode === 'COLOR_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
-                        <th className="p-3">Color</th>
-                      )}
-                      {(variantMode === 'SIZE_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
-                        <th className="p-3">Size</th>
-                      )}
-                      <th className="p-3">Price (₹)</th>
-                      <th className="p-3">Stock Units</th>
-                      <th className="p-3">Auto SKU</th>
-                      <th className="p-3 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
-                    {formData.variants.map((v: any, idx: number) => {
-                      const isUploadingThis = variantUploadingIndex === idx;
-
+                  <div className="flex flex-wrap gap-2">
+                    {activeSizeOptions.map((sz) => {
+                      const isSelected = selectedSizes.includes(sz);
                       return (
-                        <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="p-3">
-                            <div className="flex items-center gap-2">
-                              {v.imageUrl ? (
-                                <div className="relative w-12 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 shrink-0">
-                                  <img
-                                    src={v.imageUrl}
-                                    alt="Variant"
-                                    className="w-full h-full object-cover"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="w-12 h-14 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                                  <ImageIcon className="w-5 h-5 opacity-40" />
-                                </div>
-                              )}
-
-                              <div className="flex flex-col gap-1">
-                                <label className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-100 text-navy border border-slate-200 rounded-lg text-[10px] font-bold cursor-pointer transition-colors shadow-2xs">
-                                  {isUploadingThis ? (
-                                    <span>Uploading...</span>
-                                  ) : (
-                                    <>
-                                      <Upload className="w-3 h-3 text-amber-600" />
-                                      <span>{v.imageUrl ? 'Change' : 'Upload'}</span>
-                                    </>
-                                  )}
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    disabled={isUploadingThis}
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) handleVariantImageUpload(idx, file);
-                                    }}
-                                    className="hidden"
-                                  />
-                                </label>
-
-                                {formData.images.length > 0 && !v.imageUrl && (
-                                  <select
-                                    defaultValue=""
-                                    onChange={(e) => {
-                                      if (e.target.value) {
-                                        handleAssignGalleryImageToVariant(idx, e.target.value);
-                                        e.target.value = '';
-                                      }
-                                    }}
-                                    className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1 py-0.5 max-w-[90px] outline-none cursor-pointer"
-                                  >
-                                    <option value="" disabled>
-                                      From Gallery ▾
-                                    </option>
-                                    {formData.images.map((img: any, iIdx: number) => (
-                                      <option key={iIdx} value={img.imageUrl}>
-                                        Photo {iIdx + 1} {img.isPrimary ? '(Main)' : ''}
-                                      </option>
-                                    ))}
-                                  </select>
-                                )}
-
-                                {v.color && v.imageUrl && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleApplyImageToAllColorVariants(v.color, v.imageUrl)
-                                    }
-                                    className="text-[9px] font-bold text-amber-700 hover:text-amber-900 underline text-left cursor-pointer"
-                                  >
-                                    Apply to all {v.color}
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-
-                          {(variantMode === 'COLOR_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
-                            <td className="p-3 font-bold text-navy">{v.color || '-'}</td>
-                          )}
-                          {(variantMode === 'SIZE_ONLY' || variantMode === 'SIZE_AND_COLOR') && (
-                            <td className="p-3 font-bold text-slate-800">{v.size || '-'}</td>
-                          )}
-                          <td className="p-3">
-                            <input
-                              type="number"
-                              min={1}
-                              value={v.price}
-                              onChange={(e) => {
-                                const val = parseFloat(e.target.value) || 0;
-                                setFormData((prev) => ({
-                                  ...prev,
-                                  variants: prev.variants.map((varItem: any, i: number) =>
-                                    i === idx ? { ...varItem, price: val } : varItem,
-                                  ),
-                                }));
-                              }}
-                              className="w-24 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-navy font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
-                            />
-                          </td>
-                          <td className="p-3">
-                            <input
-                              type="number"
-                              min={0}
-                              value={v.stock}
-                              onChange={(e) => {
-                                const val = parseInt(e.target.value, 10) || 0;
-                                setFormData((prev) => {
-                                  const newVariants = prev.variants.map(
-                                    (varItem: any, i: number) =>
-                                      i === idx ? { ...varItem, stock: val } : varItem,
-                                  );
-                                  const total = newVariants.reduce(
-                                    (sum: number, item: any) => sum + Number(item.stock || 0),
-                                    0,
-                                  );
-                                  return {
-                                    ...prev,
-                                    variants: newVariants,
-                                    stock: total,
-                                  };
-                                });
-                              }}
-                              className="w-20 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
-                            />
-                          </td>
-                          <td className="p-3 font-mono text-[11px] text-slate-500 uppercase">
-                            {v.sku ||
-                              `NVC-${(v.color || 'CLR').substring(0, 3).toUpperCase()}-${v.size || 'V'}`}
-                          </td>
-                          <td className="p-3 text-right">
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveVariantRow(idx)}
-                              className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </td>
-                        </tr>
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => handleToggleSize(sz)}
+                          className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-amber-500 text-slate-950 shadow-xs ring-2 ring-amber-500/20 font-black'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {sz} {isSelected ? '✓' : '+'}
+                        </button>
                       );
                     })}
-                  </tbody>
-                </table>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <input
+                      type="text"
+                      placeholder="Custom size (e.g. Free Size, Plus 46)"
+                      value={customSizeInput}
+                      onChange={(e) => setCustomSizeInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === 'Enter' && (e.preventDefault(), handleAddCustomSize())
+                      }
+                      className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-medium focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustomSize}
+                      className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl cursor-pointer"
+                    >
+                      Add Size
+                    </button>
+                  </div>
+                </div>
+
+                {/* Step 2: Select Product Colors & Shared Color Photos */}
+                <div className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <div>
+                    <label className="block font-bold text-navy uppercase tracking-wider text-xs">
+                      Step 2: Select Product Colors
+                    </label>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Select all colors this product is made in. You can choose which colors are available for each size below.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {COMMON_COLORS.map((clr) => {
+                      const isSelected = selectedColors.includes(clr);
+                      const hex = COLOR_HEX_MAP[clr] || '#94a3b8';
+                      return (
+                        <button
+                          key={clr}
+                          type="button"
+                          onClick={() => handleToggleColor(clr)}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-navy text-white shadow-xs ring-2 ring-navy/20'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0"
+                            style={{ backgroundColor: hex }}
+                          />
+                          {clr} {isSelected ? '✓' : '+'}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="text"
+                      placeholder="Add custom color (e.g. Rust Orange, Teal Green)"
+                      value={customColorInput}
+                      onChange={(e) => setCustomColorInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === 'Enter' && (e.preventDefault(), handleAddCustomColor())
+                      }
+                      className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-medium focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustomColor}
+                      className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl cursor-pointer"
+                    >
+                      Add Color
+                    </button>
+                  </div>
+
+                  {/* Shared Color Photos Cards */}
+                  {selectedColors.length > 0 && (
+                    <div className="pt-3 border-t border-slate-200/80">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block font-bold text-navy text-[11px] uppercase tracking-wider">
+                          Color Photos (Uploaded once per color — shared across all sizes)
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          Auto-links to all sizes with this color
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        {selectedColors.map((clr) => {
+                          const firstWithImg = formData.variants.find(
+                            (v: any) => v.color === clr && v.imageUrl,
+                          );
+                          const colorImgUrl = firstWithImg?.imageUrl || '';
+                          const hex = COLOR_HEX_MAP[clr] || '#94a3b8';
+
+                          return (
+                            <div
+                              key={clr}
+                              className="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-3 shadow-2xs"
+                            >
+                              <div className="relative w-12 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 shrink-0 flex items-center justify-center">
+                                {colorImgUrl ? (
+                                  <img
+                                    src={colorImgUrl}
+                                    alt={clr}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <ImageIcon className="w-5 h-5 text-slate-300" />
+                                )}
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  <span
+                                    className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0"
+                                    style={{ backgroundColor: hex }}
+                                  />
+                                  <span className="font-bold text-xs text-navy truncate">
+                                    {clr}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-1.5">
+                                  <label className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-navy border border-slate-200 rounded text-[10px] font-bold cursor-pointer transition-colors">
+                                    <Upload className="w-2.5 h-2.5 text-amber-600" />
+                                    <span>{colorImgUrl ? 'Change' : 'Upload'}</span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleUploadColorPhoto(clr, file);
+                                      }}
+                                      className="hidden"
+                                    />
+                                  </label>
+
+                                  {formData.images.length > 0 && !colorImgUrl && (
+                                    <select
+                                      defaultValue=""
+                                      onChange={(e) => {
+                                        if (e.target.value) {
+                                          handleAssignGalleryImageToColor(clr, e.target.value);
+                                          e.target.value = '';
+                                        }
+                                      }}
+                                      className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1 py-0.5 outline-none cursor-pointer"
+                                    >
+                                      <option value="" disabled>
+                                        Gallery ▾
+                                      </option>
+                                      {formData.images.map((img: any, iIdx: number) => (
+                                        <option key={iIdx} value={img.imageUrl}>
+                                          Photo {iIdx + 1}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 3: Size-wise Color & Stock Allocation (User's Core Requirement) */}
+                {selectedSizes.length > 0 && (
+                  <div className="space-y-4 pt-1">
+                    {/* Quick Actions Bar */}
+                    <div className="flex flex-wrap items-center justify-between gap-2.5 bg-amber-500/10 border border-amber-500/20 p-3 rounded-2xl">
+                      <div className="flex items-center gap-1.5 text-amber-900 font-bold text-xs">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Quick Actions for All Sizes:</span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleApplyAllColorsToAllSizes}
+                          className="px-2.5 py-1 bg-white hover:bg-slate-50 text-navy border border-slate-200 rounded-lg text-xs font-bold cursor-pointer shadow-2xs"
+                        >
+                          ✓ Select All Colors in All Sizes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleApplyBasePriceToAllVariants}
+                          className="px-2.5 py-1 bg-white hover:bg-slate-50 text-navy border border-slate-200 rounded-lg text-xs font-bold cursor-pointer shadow-2xs"
+                        >
+                          ₹ Copy Base Price (₹{formData.price || 0})
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Grouped by Size Cards */}
+                    <div className="space-y-3.5">
+                      {selectedSizes.map((sz) => {
+                        const sizeVariants = formData.variants.filter((v: any) => v.size === sz);
+                        const sizeStock = sizeVariants.reduce(
+                          (sum: number, v: any) => sum + Number(v.stock || 0),
+                          0,
+                        );
+
+                        return (
+                          <div
+                            key={sz}
+                            className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-3 hover:border-slate-300 transition-all"
+                          >
+                            {/* Size Header */}
+                            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                              <div className="flex items-center gap-2.5">
+                                <span className="inline-flex items-center justify-center bg-navy text-amber-400 font-black text-xs px-3 py-1 rounded-xl shadow-2xs">
+                                  Size: {sz}
+                                </span>
+                                <span className="text-xs text-slate-500 font-semibold">
+                                  {sizeVariants.length} color{sizeVariants.length !== 1 ? 's' : ''} available
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                  Total Size Stock: <strong className="text-navy">{sizeStock}</strong>
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleSize(sz)}
+                                  className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                  title={`Remove Size ${sz}`}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Available Colors in this Size (Inline Options) */}
+                            <div>
+                              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                                Available Colors in Size {sz}:
+                              </label>
+                              <div className="flex flex-wrap gap-1.5">
+                                {selectedColors.map((clr) => {
+                                  const isColorInSize = sizeVariants.some(
+                                    (v: any) => v.color === clr,
+                                  );
+                                  const hex = COLOR_HEX_MAP[clr] || '#94a3b8';
+
+                                  return (
+                                    <button
+                                      key={clr}
+                                      type="button"
+                                      onClick={() => handleToggleColorForSize(sz, clr)}
+                                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-xs transition-all cursor-pointer ${
+                                        isColorInSize
+                                          ? 'bg-amber-500 text-slate-950 font-black ring-1 ring-amber-500 shadow-2xs'
+                                          : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
+                                      }`}
+                                    >
+                                      <span
+                                        className="w-2 h-2 rounded-full border border-black/10 shrink-0"
+                                        style={{ backgroundColor: hex }}
+                                      />
+                                      {clr} {isColorInSize ? '✓' : '+'}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Enabled Colors Compact Table */}
+                            {sizeVariants.length > 0 ? (
+                              <div className="pt-1 overflow-x-auto">
+                                <table className="w-full text-left text-xs border-collapse">
+                                  <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                                    <tr>
+                                      <th className="py-2 px-3">Color</th>
+                                      <th className="py-2 px-3">Price (₹)</th>
+                                      <th className="py-2 px-3">Stock Units</th>
+                                      <th className="py-2 px-3">SKU</th>
+                                      <th className="py-2 px-3 text-right">Remove</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100">
+                                    {sizeVariants.map((v: any) => {
+                                      const globalIndex = formData.variants.findIndex(
+                                        (orig: any) =>
+                                          orig.size === v.size && orig.color === v.color,
+                                      );
+                                      const hex = COLOR_HEX_MAP[v.color] || '#94a3b8';
+
+                                      return (
+                                        <tr key={v.color} className="hover:bg-slate-50/50">
+                                          <td className="py-2 px-3 font-bold text-navy">
+                                            <div className="flex items-center gap-1.5">
+                                              <span
+                                                className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0"
+                                                style={{ backgroundColor: hex }}
+                                              />
+                                              {v.color}
+                                            </div>
+                                          </td>
+                                          <td className="py-2 px-3">
+                                            <input
+                                              type="number"
+                                              min={1}
+                                              value={v.price}
+                                              onChange={(e) => {
+                                                const val = parseFloat(e.target.value) || 0;
+                                                setFormData((prev) => ({
+                                                  ...prev,
+                                                  variants: prev.variants.map(
+                                                    (varItem: any, i: number) =>
+                                                      i === globalIndex
+                                                        ? { ...varItem, price: val }
+                                                        : varItem,
+                                                  ),
+                                                }));
+                                              }}
+                                              className="w-24 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-navy font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
+                                            />
+                                          </td>
+                                          <td className="py-2 px-3">
+                                            <input
+                                              type="number"
+                                              min={0}
+                                              value={v.stock}
+                                              onChange={(e) => {
+                                                const val = parseInt(e.target.value, 10) || 0;
+                                                setFormData((prev) => {
+                                                  const newVariants = prev.variants.map(
+                                                    (varItem: any, i: number) =>
+                                                      i === globalIndex
+                                                        ? { ...varItem, stock: val }
+                                                        : varItem,
+                                                  );
+                                                  const total = newVariants.reduce(
+                                                    (sum: number, item: any) =>
+                                                      sum + Number(item.stock || 0),
+                                                    0,
+                                                  );
+                                                  return {
+                                                    ...prev,
+                                                    variants: newVariants,
+                                                    stock: total,
+                                                  };
+                                                });
+                                              }}
+                                              className="w-20 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-900 font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
+                                            />
+                                          </td>
+                                          <td className="py-2 px-3 font-mono text-[11px] text-slate-500 uppercase">
+                                            {v.sku ||
+                                              `NVC-${(v.color || 'CLR').substring(0, 3).toUpperCase()}-${v.size || 'V'}`}
+                                          </td>
+                                          <td className="py-2 px-3 text-right">
+                                            <button
+                                              type="button"
+                                              onClick={() => handleToggleColorForSize(sz, v.color)}
+                                              className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors cursor-pointer"
+                                              title="Remove color from this size"
+                                            >
+                                              <X className="w-3.5 h-3.5" />
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            ) : (
+                              <div className="bg-slate-50 p-2.5 rounded-xl text-center text-xs text-slate-400 font-medium border border-dashed border-slate-200">
+                                No colors enabled for Size {sz}. Click any color chip above to add it.
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* =========================================================================
+                MODE B: SIZE ONLY VARIANTS
+               ========================================================================= */}
+            {variantMode === 'SIZE_ONLY' && (
+              <div className="space-y-4">
+                <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <label className="block font-bold text-navy uppercase tracking-wider text-xs">
+                      Select Available Sizes ({SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name})
+                    </label>
+                    <span className="text-[11px] text-amber-800 font-bold">
+                      System: {activeTemplate.sizeSystemId}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {activeSizeOptions.map((sz) => {
+                      const isSelected = selectedSizes.includes(sz);
+                      return (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => handleToggleSize(sz)}
+                          className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-amber-500 text-slate-950 shadow-xs ring-2 ring-amber-500/20 font-black'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {sz} {isSelected ? '✓' : '+'}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <input
+                      type="text"
+                      placeholder="Custom size (e.g. Free Size, Plus 46)"
+                      value={customSizeInput}
+                      onChange={(e) => setCustomSizeInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === 'Enter' && (e.preventDefault(), handleAddCustomSize())
+                      }
+                      className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-medium focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustomSize}
+                      className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl cursor-pointer"
+                    >
+                      Add Size
+                    </button>
+                  </div>
+                </div>
+
+                {formData.variants.length > 0 && (
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead className="bg-slate-100 text-slate-700 font-extrabold uppercase tracking-wider text-[10px]">
+                        <tr>
+                          <th className="p-3">Size</th>
+                          <th className="p-3">Price (₹)</th>
+                          <th className="p-3">Stock Units</th>
+                          <th className="p-3">Auto SKU</th>
+                          <th className="p-3 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 bg-white">
+                        {formData.variants.map((v: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                            <td className="p-3 font-bold text-slate-800">{v.size}</td>
+                            <td className="p-3">
+                              <input
+                                type="number"
+                                min={1}
+                                value={v.price}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    variants: prev.variants.map((varItem: any, i: number) =>
+                                      i === idx ? { ...varItem, price: val } : varItem,
+                                    ),
+                                  }));
+                                }}
+                                className="w-24 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-navy font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
+                              />
+                            </td>
+                            <td className="p-3">
+                              <input
+                                type="number"
+                                min={0}
+                                value={v.stock}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value, 10) || 0;
+                                  setFormData((prev) => {
+                                    const newVariants = prev.variants.map(
+                                      (varItem: any, i: number) =>
+                                        i === idx ? { ...varItem, stock: val } : varItem,
+                                    );
+                                    const total = newVariants.reduce(
+                                      (sum: number, item: any) => sum + Number(item.stock || 0),
+                                      0,
+                                    );
+                                    return {
+                                      ...prev,
+                                      variants: newVariants,
+                                      stock: total,
+                                    };
+                                  });
+                                }}
+                                className="w-20 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
+                              />
+                            </td>
+                            <td className="p-3 font-mono text-[11px] text-slate-500 uppercase">
+                              {v.sku || `NVC-SZ-${v.size || 'V'}`}
+                            </td>
+                            <td className="p-3 text-right">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveVariantRow(idx)}
+                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* =========================================================================
+                MODE C: COLOR ONLY VARIANTS
+               ========================================================================= */}
+            {variantMode === 'COLOR_ONLY' && (
+              <div className="space-y-4">
+                <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <label className="block font-bold text-navy uppercase tracking-wider text-xs">
+                    Select Available Colors
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {COMMON_COLORS.map((clr) => {
+                      const isSelected = selectedColors.includes(clr);
+                      const hex = COLOR_HEX_MAP[clr] || '#94a3b8';
+                      return (
+                        <button
+                          key={clr}
+                          type="button"
+                          onClick={() => handleToggleColor(clr)}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-navy text-white shadow-xs ring-2 ring-navy/20'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0"
+                            style={{ backgroundColor: hex }}
+                          />
+                          {clr} {isSelected ? '✓' : '+'}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <input
+                      type="text"
+                      placeholder="Add custom color (e.g. Rust Orange, Teal Green)"
+                      value={customColorInput}
+                      onChange={(e) => setCustomColorInput(e.target.value)}
+                      onKeyDown={(e) =>
+                        e.key === 'Enter' && (e.preventDefault(), handleAddCustomColor())
+                      }
+                      className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-medium focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustomColor}
+                      className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl cursor-pointer"
+                    >
+                      Add Color
+                    </button>
+                  </div>
+                </div>
+
+                {formData.variants.length > 0 && (
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead className="bg-slate-100 text-slate-700 font-extrabold uppercase tracking-wider text-[10px]">
+                        <tr>
+                          <th className="p-3">Color Photo</th>
+                          <th className="p-3">Color</th>
+                          <th className="p-3">Price (₹)</th>
+                          <th className="p-3">Stock Units</th>
+                          <th className="p-3">Auto SKU</th>
+                          <th className="p-3 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 bg-white">
+                        {formData.variants.map((v: any, idx: number) => {
+                          const isUploadingThis = variantUploadingIndex === idx;
+                          const hex = COLOR_HEX_MAP[v.color] || '#94a3b8';
+
+                          return (
+                            <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                              <td className="p-3">
+                                <div className="flex items-center gap-2">
+                                  {v.imageUrl ? (
+                                    <div className="relative w-12 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 shrink-0">
+                                      <img
+                                        src={v.imageUrl}
+                                        alt="Variant"
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="w-12 h-14 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                                      <ImageIcon className="w-5 h-5 opacity-40" />
+                                    </div>
+                                  )}
+
+                                  <div className="flex flex-col gap-1">
+                                    <label className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-100 text-navy border border-slate-200 rounded-lg text-[10px] font-bold cursor-pointer transition-colors shadow-2xs">
+                                      {isUploadingThis ? (
+                                        <span>Uploading...</span>
+                                      ) : (
+                                        <>
+                                          <Upload className="w-3 h-3 text-amber-600" />
+                                          <span>{v.imageUrl ? 'Change' : 'Upload'}</span>
+                                        </>
+                                      )}
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        disabled={isUploadingThis}
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) handleVariantImageUpload(idx, file);
+                                        }}
+                                        className="hidden"
+                                      />
+                                    </label>
+
+                                    {formData.images.length > 0 && !v.imageUrl && (
+                                      <select
+                                        defaultValue=""
+                                        onChange={(e) => {
+                                          if (e.target.value) {
+                                            handleAssignGalleryImageToVariant(idx, e.target.value);
+                                            e.target.value = '';
+                                          }
+                                        }}
+                                        className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1 py-0.5 max-w-[90px] outline-none cursor-pointer"
+                                      >
+                                        <option value="" disabled>
+                                          From Gallery ▾
+                                        </option>
+                                        {formData.images.map((img: any, iIdx: number) => (
+                                          <option key={iIdx} value={img.imageUrl}>
+                                            Photo {iIdx + 1}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+
+                              <td className="p-3 font-bold text-navy">
+                                <div className="flex items-center gap-1.5">
+                                  <span
+                                    className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0"
+                                    style={{ backgroundColor: hex }}
+                                  />
+                                  {v.color || '-'}
+                                </div>
+                              </td>
+                              <td className="p-3">
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={v.price}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value) || 0;
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      variants: prev.variants.map((varItem: any, i: number) =>
+                                        i === idx ? { ...varItem, price: val } : varItem,
+                                      ),
+                                    }));
+                                  }}
+                                  className="w-24 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-navy font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
+                                />
+                              </td>
+                              <td className="p-3">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={v.stock}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10) || 0;
+                                    setFormData((prev) => {
+                                      const newVariants = prev.variants.map(
+                                        (varItem: any, i: number) =>
+                                          i === idx ? { ...varItem, stock: val } : varItem,
+                                      );
+                                      const total = newVariants.reduce(
+                                        (sum: number, item: any) => sum + Number(item.stock || 0),
+                                        0,
+                                      );
+                                      return {
+                                        ...prev,
+                                        variants: newVariants,
+                                        stock: total,
+                                      };
+                                    });
+                                  }}
+                                  className="w-20 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono font-bold focus:border-navy focus:bg-white focus:outline-none"
+                                />
+                              </td>
+                              <td className="p-3 font-mono text-[11px] text-slate-500 uppercase">
+                                {v.sku ||
+                                  `NVC-${(v.color || 'CLR').substring(0, 3).toUpperCase()}-V`}
+                              </td>
+                              <td className="p-3 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveVariantRow(idx)}
+                                  className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </div>
