@@ -37,7 +37,7 @@ interface FlatCategory {
   description: string;
 }
 
-// POST /api/v1/admin/categories/sync - Bulk Synchronize all categories into Prisma DB in < 2 seconds
+// POST /api/v1/admin/categories/sync - Hierarchically synchronized categories in 3 safe passes
 export async function POST(request: NextRequest) {
   try {
     const authHeader =
@@ -57,13 +57,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1. Flatten all taxonomy items into memory
-    const flatList: FlatCategory[] = [];
+    // 1. Fetch all existing categories once
+    const existingCategories = await prisma.category.findMany({
+      select: { id: true, slug: true },
+    });
+    const existingById = new Set(existingCategories.map((c) => c.id));
+    const existingBySlug = new Set(existingCategories.map((c) => c.slug));
+
+    // Helper to safely upsert a single category
+    const syncItem = async (item: FlatCategory) => {
+      try {
+        if (existingById.has(item.id)) {
+          await prisma.category.update({
+            where: { id: item.id },
+            data: {
+              name: item.name,
+              slug: item.slug,
+              parentId: item.parentId || undefined,
+              deletedAt: null,
+            },
+          });
+        } else if (existingBySlug.has(item.slug)) {
+          await prisma.category.update({
+            where: { slug: item.slug },
+            data: {
+              name: item.name,
+              parentId: item.parentId || undefined,
+              deletedAt: null,
+            },
+          });
+        } else {
+          await prisma.category.create({
+            data: {
+              id: item.id,
+              name: item.name,
+              slug: item.slug,
+              parentId: item.parentId || null,
+              description: item.description,
+              status: 'active',
+            },
+          });
+          existingById.add(item.id);
+          existingBySlug.add(item.slug);
+        }
+      } catch (err: any) {
+        console.warn(`Category sync warning for ${item.slug}:`, err.message);
+      }
+    };
+
+    // PASS 1: Main Groups (Level 1 - parentId: null)
+    const level1: FlatCategory[] = [];
     const slugToIdMap = new Map<string, string>();
 
-    // Level 1: Main Groups
     for (const group of CATEGORY_TAXONOMY) {
-      flatList.push({
+      level1.push({
         id: group.id,
         name: group.name,
         slug: group.slug,
@@ -72,11 +119,15 @@ export async function POST(request: NextRequest) {
       });
       slugToIdMap.set(group.slug, group.id);
       slugToIdMap.set(group.id, group.id);
+    }
+    await Promise.all(level1.map(syncItem));
 
-      // Level 2: SubCategories
+    // PASS 2: SubCategories (Level 2 - parentId: mainGroup.id)
+    const level2: FlatCategory[] = [];
+    for (const group of CATEGORY_TAXONOMY) {
       for (const section of group.sections) {
         for (const sub of section.subCategories) {
-          flatList.push({
+          level2.push({
             id: sub.id,
             name: sub.name,
             slug: sub.slug,
@@ -85,11 +136,22 @@ export async function POST(request: NextRequest) {
           });
           slugToIdMap.set(sub.slug, sub.id);
           slugToIdMap.set(sub.id, sub.id);
+        }
+      }
+    }
+    // Run Level 2 in concurrent chunks of 15
+    for (let i = 0; i < level2.length; i += 15) {
+      await Promise.all(level2.slice(i, i + 15).map(syncItem));
+    }
 
-          // Level 3: Leaf Items
+    // PASS 3: Leaf Items (Level 3 - parentId: subCategory.id)
+    const level3: FlatCategory[] = [];
+    for (const group of CATEGORY_TAXONOMY) {
+      for (const section of group.sections) {
+        for (const sub of section.subCategories) {
           if (sub.items && sub.items.length > 0) {
             for (const item of sub.items) {
-              flatList.push({
+              level3.push({
                 id: item.id,
                 name: item.name,
                 slug: item.slug,
@@ -103,11 +165,15 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+    for (let i = 0; i < level3.length; i += 15) {
+      await Promise.all(level3.slice(i, i + 15).map(syncItem));
+    }
 
-    // Level 4: Legacy Compatibility
+    // PASS 4: Legacy Compatibility
+    const level4: FlatCategory[] = [];
     for (const legacy of LEGACY_CATEGORY_COMPATIBILITY) {
       const parentId = slugToIdMap.get(legacy.parentSlug) || null;
-      flatList.push({
+      level4.push({
         id: legacy.id,
         name: legacy.name,
         slug: legacy.slug,
@@ -115,85 +181,7 @@ export async function POST(request: NextRequest) {
         description: `${legacy.name} collection (Legacy compatibility).`,
       });
     }
-
-    // 2. Fetch existing categories in 1 FAST query (50ms)
-    const existingCategories = await prisma.category.findMany({
-      select: { id: true, slug: true },
-    });
-
-    const existingById = new Set(existingCategories.map((c) => c.id));
-    const existingBySlug = new Set(existingCategories.map((c) => c.slug));
-
-    // 3. Partition items: completely new vs existing
-    const toCreate: {
-      id: string;
-      name: string;
-      slug: string;
-      parentId: string | null;
-      description: string;
-      status: string;
-    }[] = [];
-
-    const toUpdate: FlatCategory[] = [];
-
-    for (const item of flatList) {
-      if (!existingById.has(item.id) && !existingBySlug.has(item.slug)) {
-        toCreate.push({
-          id: item.id,
-          name: item.name,
-          slug: item.slug,
-          parentId: item.parentId,
-          description: item.description,
-          status: 'active',
-        });
-      } else {
-        toUpdate.push(item);
-      }
-    }
-
-    // 4. Batch Create all new categories at once (1 single DB query!)
-    let createdCount = 0;
-    if (toCreate.length > 0) {
-      const createRes = await prisma.category.createMany({
-        data: toCreate,
-        skipDuplicates: true,
-      });
-      createdCount = createRes.count;
-    }
-
-    // 5. Update existing categories in concurrent chunks of 15
-    const CHUNK_SIZE = 15;
-    for (let i = 0; i < toUpdate.length; i += CHUNK_SIZE) {
-      const chunk = toUpdate.slice(i, i + CHUNK_SIZE);
-      await Promise.all(
-        chunk.map(async (cat) => {
-          try {
-            if (existingById.has(cat.id)) {
-              await prisma.category.update({
-                where: { id: cat.id },
-                data: {
-                  name: cat.name,
-                  slug: cat.slug,
-                  parentId: cat.parentId || undefined,
-                  deletedAt: null,
-                },
-              });
-            } else if (existingBySlug.has(cat.slug)) {
-              await prisma.category.update({
-                where: { slug: cat.slug },
-                data: {
-                  name: cat.name,
-                  parentId: cat.parentId || undefined,
-                  deletedAt: null,
-                },
-              });
-            }
-          } catch {
-            // Ignore minor duplicate slug race conditions
-          }
-        }),
-      );
-    }
+    await Promise.all(level4.map(syncItem));
 
     const totalDbCategories = await prisma.category.count({ where: { deletedAt: null } });
 
@@ -201,8 +189,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: `Taxonomy synced successfully! Total DB categories: ${totalDbCategories}`,
       totalDbCategories,
-      createdCount,
-      updatedCount: toUpdate.length,
+      level1Count: level1.length,
+      level2Count: level2.length,
+      level3Count: level3.length,
+      legacyCount: level4.length,
     });
   } catch (error: any) {
     console.error('❌ POST Admin Categories Sync Error:', error);
