@@ -68,249 +68,263 @@ export async function POST(req: Request) {
       uniqueSlug = `${baseSlug}-${counter++}`;
     }
 
-    // Atomic transaction to create or update User, SellerProfile, Shop, ShopAddress, SellerDocument & System Notification
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. Create or update User
-      let user;
-      if (existingUser) {
-        user = await tx.user.update({
-          where: { id: existingUser.id },
-          data: {
-            name: basicInfo.fullName,
-            email: basicInfo.email,
-            mobile: basicInfo.mobile,
-            ...(basicInfo.password ? { password: passwordHash } : {}),
-            role: Role.SELLER,
-            approvalStatus: 'PENDING_APPROVAL',
-          },
-        });
-      } else {
-        user = await tx.user.create({
-          data: {
-            name: basicInfo.fullName,
-            email: basicInfo.email,
-            mobile: basicInfo.mobile,
-            password: passwordHash,
-            role: Role.SELLER,
-            approvalStatus: 'PENDING_APPROVAL',
-            mustChangePassword: false,
-          },
-        });
-      }
+    // Check if user already has an existing shop to reuse shop code and avoid query delays
+    const existingShop = existingUser
+      ? await prisma.shop.findFirst({
+          where: { ownerId: existingUser.id },
+        })
+      : null;
 
-      // 2. Upsert SellerProfile safely
-      const sellerProfile = await tx.sellerProfile.upsert({
-        where: { userId: user.id },
-        update: {
-          businessName: shopDetails.shopName,
-          legalName: businessType.legalName,
-          gstin: businessType.gstin || null,
-          panNumber: businessType.pan,
-          city: address.city,
-          state: address.state,
-          pincode: address.pincode,
-          businessAddress: `${address.fullAddress}${address.landmark ? `, Near ${address.landmark}` : ''}`,
-          bankAccountHolder: bankDetails.accountHolderName,
-          bankAccountNumber: bankDetails.accountNumber,
-          bankIfscCode: bankDetails.ifscCode,
-          bankName: bankDetails.bankName,
-          commissionRate: 10.0,
-          subscriptionTier: SubscriptionTier.STARTER,
-        },
-        create: {
-          userId: user.id,
-          businessName: shopDetails.shopName,
-          legalName: businessType.legalName,
-          gstin: businessType.gstin || null,
-          panNumber: businessType.pan,
-          city: address.city,
-          state: address.state,
-          pincode: address.pincode,
-          businessAddress: `${address.fullAddress}${address.landmark ? `, Near ${address.landmark}` : ''}`,
-          bankAccountHolder: bankDetails.accountHolderName,
-          bankAccountNumber: bankDetails.accountNumber,
-          bankIfscCode: bankDetails.ifscCode,
-          bankName: bankDetails.bankName,
-          commissionRate: 10.0,
-          subscriptionTier: SubscriptionTier.STARTER,
-        },
-      });
+    let shopCode = existingShop?.shopCode;
+    if (!shopCode) {
+      shopCode = await generateShopCode(prisma);
+    }
 
-      // 3. Upsert Shop safely
-      const existingShop = await tx.shop.findFirst({
-        where: { ownerId: user.id },
-      });
-
-      let shop;
-      if (existingShop) {
-        let shopCode = existingShop.shopCode;
-        if (!shopCode) {
-          shopCode = await generateShopCode(tx);
+    // Atomic transaction with 30s timeout to create or update User, SellerProfile, Shop, ShopAddress, SellerDocument
+    const result = await prisma.$transaction(
+      async (tx) => {
+        // 1. Create or update User
+        let user;
+        if (existingUser) {
+          user = await tx.user.update({
+            where: { id: existingUser.id },
+            data: {
+              name: basicInfo.fullName,
+              email: basicInfo.email,
+              mobile: basicInfo.mobile,
+              ...(basicInfo.password ? { password: passwordHash } : {}),
+              role: Role.SELLER,
+              approvalStatus: 'PENDING_APPROVAL',
+            },
+          });
+        } else {
+          user = await tx.user.create({
+            data: {
+              name: basicInfo.fullName,
+              email: basicInfo.email,
+              mobile: basicInfo.mobile,
+              password: passwordHash,
+              role: Role.SELLER,
+              approvalStatus: 'PENDING_APPROVAL',
+              mustChangePassword: false,
+            },
+          });
         }
-        shop = await tx.shop.update({
-          where: { id: existingShop.id },
-          data: {
-            shopCode,
-            sellerProfileId: sellerProfile.id,
-            name: shopDetails.shopName,
-            description: shopDetails.description,
-            logo: shopDetails.logo || null,
-            banner: shopDetails.banner || null,
-            phone: shopDetails.phone,
-            email: shopDetails.email,
+
+        // 2. Upsert SellerProfile safely
+        const sellerProfile = await tx.sellerProfile.upsert({
+          where: { userId: user.id },
+          update: {
+            businessName: shopDetails.shopName,
+            legalName: businessType.legalName,
             gstin: businessType.gstin || null,
             panNumber: businessType.pan,
             city: address.city,
             state: address.state,
             pincode: address.pincode,
-            fullAddress: `${address.fullAddress}${address.landmark ? `, Near ${address.landmark}` : ''}`,
+            businessAddress: `${address.fullAddress}${address.landmark ? `, Near ${address.landmark}` : ''}`,
             bankAccountHolder: bankDetails.accountHolderName,
             bankAccountNumber: bankDetails.accountNumber,
             bankIfscCode: bankDetails.ifscCode,
             bankName: bankDetails.bankName,
-            status: ShopStatus.PENDING_VERIFICATION,
-          },
-        });
-      } else {
-        const shopCode = await generateShopCode(tx);
-        shop = await tx.shop.create({
-          data: {
-            shopCode,
-            ownerId: user.id,
-            sellerProfileId: sellerProfile.id,
-            name: shopDetails.shopName,
-            slug: uniqueSlug,
-            description: shopDetails.description,
-            logo: shopDetails.logo || null,
-            banner: shopDetails.banner || null,
-            phone: shopDetails.phone,
-            email: shopDetails.email,
-            gstin: businessType.gstin || null,
-            panNumber: businessType.pan,
-            city: address.city,
-            state: address.state,
-            pincode: address.pincode,
-            fullAddress: `${address.fullAddress}${address.landmark ? `, Near ${address.landmark}` : ''}`,
-            bankAccountHolder: bankDetails.accountHolderName,
-            bankAccountNumber: bankDetails.accountNumber,
-            bankIfscCode: bankDetails.ifscCode,
-            bankName: bankDetails.bankName,
-            status: ShopStatus.PENDING_VERIFICATION,
-            verificationBadge: VerificationBadge.NONE,
             commissionRate: 10.0,
             subscriptionTier: SubscriptionTier.STARTER,
-            rating: 0.0,
-            reviewCount: 0,
           },
-        });
-      }
-
-      // 4. Upsert ShopAddress & Primary PickupLocation
-      const existingShopAddress = await tx.shopAddress.findFirst({
-        where: { shopId: shop.id },
-      });
-
-      if (existingShopAddress) {
-        await tx.shopAddress.update({
-          where: { id: existingShopAddress.id },
-          data: {
-            addressLine1: address.fullAddress,
+          create: {
+            userId: user.id,
+            businessName: shopDetails.shopName,
+            legalName: businessType.legalName,
+            gstin: businessType.gstin || null,
+            panNumber: businessType.pan,
             city: address.city,
             state: address.state,
             pincode: address.pincode,
+            businessAddress: `${address.fullAddress}${address.landmark ? `, Near ${address.landmark}` : ''}`,
+            bankAccountHolder: bankDetails.accountHolderName,
+            bankAccountNumber: bankDetails.accountNumber,
+            bankIfscCode: bankDetails.ifscCode,
+            bankName: bankDetails.bankName,
+            commissionRate: 10.0,
+            subscriptionTier: SubscriptionTier.STARTER,
           },
         });
-      } else {
-        await tx.shopAddress.create({
-          data: {
-            shopId: shop.id,
-            title: 'Primary Pickup Warehouse',
-            addressLine1: address.fullAddress,
-            city: address.city,
-            state: address.state,
-            pincode: address.pincode,
-            isPrimary: true,
-          },
-        });
-      }
 
-      // 4b. Upsert Primary PickupLocation for Shiprocket
-      const existingPickup = await tx.pickupLocation.findFirst({
-        where: { shopId: shop.id },
-      });
-
-      if (existingPickup) {
-        await tx.pickupLocation.update({
-          where: { id: existingPickup.id },
-          data: {
-            name: `${shop.name} - Primary Hub`,
-            addressLine1: address.fullAddress,
-            city: address.city,
-            state: address.state,
-            pincode: address.pincode,
-            contactName: bankDetails.accountHolderName || shop.name,
-            contactPhone: shopDetails.phone,
-            contactEmail: shopDetails.email,
-          },
-        });
-      } else {
-        await tx.pickupLocation.create({
-          data: {
-            shopId: shop.id,
-            locationCode: `${shop.shopCode || shop.id}-PKP1`,
-            name: `${shop.name} - Primary Hub`,
-            addressLine1: address.fullAddress,
-            city: address.city,
-            state: address.state,
-            pincode: address.pincode,
-            country: 'India',
-            contactName: bankDetails.accountHolderName || shop.name,
-            contactPhone: shopDetails.phone,
-            contactEmail: shopDetails.email,
-            status: 'ACTIVE',
-            shiprocketPickupName: `${shop.shopCode || 'SHOP'}-PKP1`,
-            shiprocketStatus: 'PENDING',
-            isPrimary: true,
-          },
-        });
-      }
-
-      // 5. Create SellerDocuments if provided
-      if (documents && (documents.gstCertificate || documents.panCard || documents.shopPhoto)) {
-        if (documents.gstCertificate) {
-          await tx.sellerDocument.create({
+        // 3. Upsert Shop safely
+        let shop;
+        if (existingShop) {
+          shop = await tx.shop.update({
+            where: { id: existingShop.id },
             data: {
-              shopId: shop.id,
-              documentType: 'GST_CERTIFICATE',
-              fileUrl: documents.gstCertificate,
-              status: 'PENDING',
+              shopCode,
+              sellerProfileId: sellerProfile.id,
+              name: shopDetails.shopName,
+              description: shopDetails.description,
+              logo: shopDetails.logo || null,
+              banner: shopDetails.banner || null,
+              phone: shopDetails.phone,
+              email: shopDetails.email,
+              gstin: businessType.gstin || null,
+              panNumber: businessType.pan,
+              city: address.city,
+              state: address.state,
+              pincode: address.pincode,
+              fullAddress: `${address.fullAddress}${address.landmark ? `, Near ${address.landmark}` : ''}`,
+              bankAccountHolder: bankDetails.accountHolderName,
+              bankAccountNumber: bankDetails.accountNumber,
+              bankIfscCode: bankDetails.ifscCode,
+              bankName: bankDetails.bankName,
+              status: ShopStatus.PENDING_VERIFICATION,
+            },
+          });
+        } else {
+          shop = await tx.shop.create({
+            data: {
+              shopCode,
+              ownerId: user.id,
+              sellerProfileId: sellerProfile.id,
+              name: shopDetails.shopName,
+              slug: uniqueSlug,
+              description: shopDetails.description,
+              logo: shopDetails.logo || null,
+              banner: shopDetails.banner || null,
+              phone: shopDetails.phone,
+              email: shopDetails.email,
+              gstin: businessType.gstin || null,
+              panNumber: businessType.pan,
+              city: address.city,
+              state: address.state,
+              pincode: address.pincode,
+              fullAddress: `${address.fullAddress}${address.landmark ? `, Near ${address.landmark}` : ''}`,
+              bankAccountHolder: bankDetails.accountHolderName,
+              bankAccountNumber: bankDetails.accountNumber,
+              bankIfscCode: bankDetails.ifscCode,
+              bankName: bankDetails.bankName,
+              status: ShopStatus.PENDING_VERIFICATION,
+              verificationBadge: VerificationBadge.NONE,
+              commissionRate: 10.0,
+              subscriptionTier: SubscriptionTier.STARTER,
+              rating: 0.0,
+              reviewCount: 0,
             },
           });
         }
-        if (documents.panCard) {
-          await tx.sellerDocument.create({
-            data: {
-              shopId: shop.id,
-              documentType: 'PAN_CARD',
-              fileUrl: documents.panCard,
-              status: 'PENDING',
-            },
-          });
-        }
-        if (documents.shopPhoto) {
-          await tx.sellerDocument.create({
-            data: {
-              shopId: shop.id,
-              documentType: 'SHOP_PHOTO',
-              fileUrl: documents.shopPhoto,
-              status: 'PENDING',
-            },
-          });
-        }
-      }
 
-      return { user, shop, sellerProfile };
-    });
+        // 4. Upsert ShopAddress
+        const existingShopAddress = await tx.shopAddress.findFirst({
+          where: { shopId: shop.id },
+        });
+
+        if (existingShopAddress) {
+          await tx.shopAddress.update({
+            where: { id: existingShopAddress.id },
+            data: {
+              addressLine1: address.fullAddress,
+              city: address.city,
+              state: address.state,
+              pincode: address.pincode,
+            },
+          });
+        } else {
+          await tx.shopAddress.create({
+            data: {
+              shopId: shop.id,
+              title: 'Primary Pickup Warehouse',
+              addressLine1: address.fullAddress,
+              city: address.city,
+              state: address.state,
+              pincode: address.pincode,
+              isPrimary: true,
+            },
+          });
+        }
+
+        // 4b. Upsert Primary PickupLocation for Shiprocket
+        const existingPickup = await tx.pickupLocation.findFirst({
+          where: { shopId: shop.id },
+        });
+
+        if (existingPickup) {
+          await tx.pickupLocation.update({
+            where: { id: existingPickup.id },
+            data: {
+              name: `${shop.name} - Primary Hub`,
+              addressLine1: address.fullAddress,
+              city: address.city,
+              state: address.state,
+              pincode: address.pincode,
+              contactName: bankDetails.accountHolderName || shop.name,
+              contactPhone: shopDetails.phone,
+              contactEmail: shopDetails.email,
+            },
+          });
+        } else {
+          await tx.pickupLocation.create({
+            data: {
+              shopId: shop.id,
+              locationCode: `${shop.shopCode || shop.id}-PKP1`,
+              name: `${shop.name} - Primary Hub`,
+              addressLine1: address.fullAddress,
+              city: address.city,
+              state: address.state,
+              pincode: address.pincode,
+              country: 'India',
+              contactName: bankDetails.accountHolderName || shop.name,
+              contactPhone: shopDetails.phone,
+              contactEmail: shopDetails.email,
+              status: 'ACTIVE',
+              shiprocketPickupName: `${shop.shopCode || 'SHOP'}-PKP1`,
+              shiprocketStatus: 'PENDING',
+              isPrimary: true,
+            },
+          });
+        }
+
+        // 5. Create SellerDocuments if provided
+        if (documents && (documents.gstCertificate || documents.panCard || documents.shopPhoto)) {
+          if (existingShop) {
+            await tx.sellerDocument.deleteMany({
+              where: { shopId: shop.id },
+            });
+          }
+          if (documents.gstCertificate) {
+            await tx.sellerDocument.create({
+              data: {
+                shopId: shop.id,
+                documentType: 'GST_CERTIFICATE',
+                fileUrl: documents.gstCertificate,
+                status: 'PENDING',
+              },
+            });
+          }
+          if (documents.panCard) {
+            await tx.sellerDocument.create({
+              data: {
+                shopId: shop.id,
+                documentType: 'PAN_CARD',
+                fileUrl: documents.panCard,
+                status: 'PENDING',
+              },
+            });
+          }
+          if (documents.shopPhoto) {
+            await tx.sellerDocument.create({
+              data: {
+                shopId: shop.id,
+                documentType: 'SHOP_PHOTO',
+                fileUrl: documents.shopPhoto,
+                status: 'PENDING',
+              },
+            });
+          }
+        }
+
+        return { user, shop, sellerProfile };
+      },
+      {
+        maxWait: 15000,
+        timeout: 30000,
+      },
+    );
 
     // Trigger Admin Email Alert and Seller Initial Notification asynchronously
     try {
