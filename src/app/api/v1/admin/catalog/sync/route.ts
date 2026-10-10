@@ -40,46 +40,26 @@ export async function POST(request: NextRequest) {
     }
 
     // 0. Auto-migrate missing columns in production Supabase DB if needed
-    try {
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedShipping" BOOLEAN DEFAULT false;',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedThreshold" NUMERIC(10, 2);',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerfundingshipping" BOOLEAN DEFAULT false;',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnPolicyType" VARCHAR(255) DEFAULT \'RETURN_AND_REPLACEMENT\';',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnAllowed" BOOLEAN DEFAULT true;',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnWindowDays" INTEGER DEFAULT 3;',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementAllowed" BOOLEAN DEFAULT true;',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementWindowDays" INTEGER DEFAULT 7;',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingMode" VARCHAR(255) DEFAULT \'STANDARD\';',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingRate" NUMERIC(10, 2);',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "taxRate" NUMERIC(5, 2) DEFAULT 0;',
-      );
-      await prisma.$executeRawUnsafe(
-        'ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "hsnCode" VARCHAR(255);',
-      );
-    } catch (migErr) {
-      console.warn('DB schema migration check:', migErr);
-    }
+    const runSqlSafe = async (sql: string) => {
+      try {
+        await prisma.$executeRawUnsafe(sql);
+      } catch (err: any) {
+        console.warn(`[SQL Migration Warning] ${sql}:`, err.message);
+      }
+    };
+
+    await runSqlSafe('ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedShipping" BOOLEAN DEFAULT false;');
+    await runSqlSafe('ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerFundedThreshold" NUMERIC(10, 2);');
+    await runSqlSafe('ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "sellerfundingshipping" BOOLEAN DEFAULT false;');
+    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnPolicyType" VARCHAR(255) DEFAULT \'RETURN_AND_REPLACEMENT\';');
+    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnAllowed" BOOLEAN DEFAULT true;');
+    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "returnWindowDays" INTEGER DEFAULT 3;');
+    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementAllowed" BOOLEAN DEFAULT true;');
+    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "replacementWindowDays" INTEGER DEFAULT 7;');
+    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingMode" VARCHAR(255) DEFAULT \'STANDARD\';');
+    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingRate" NUMERIC(10, 2);');
+    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "taxRate" NUMERIC(5, 2) DEFAULT 0;');
+    await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "hsnCode" VARCHAR(255);');
 
     let usersSynced = 0;
     let shopsSynced = 0;
@@ -239,21 +219,69 @@ export async function POST(request: NextRequest) {
         deletedAt: null,
       };
 
+      const coreProdData = {
+        name: p.name,
+        slug: p.slug,
+        sku: p.sku,
+        brand: p.brand,
+        gender: p.gender,
+        ageGroup: p.ageGroup,
+        fabric: p.fabric,
+        description: p.description,
+        price: p.price,
+        compareAtPrice: p.compareAtPrice,
+        costPrice: p.costPrice,
+        stock: p.stock,
+        lowStockThreshold: p.lowStockThreshold || 5,
+        status: p.status || 'active',
+        isFeatured: p.isFeatured || false,
+        isNewArrival: p.isNewArrival || false,
+        categoryId: p.categoryId,
+        shopId: assignedShopId,
+        rating: p.rating || 0,
+        reviewCount: p.reviewCount || 0,
+        metaTitle: p.metaTitle,
+        metaDescription: p.metaDescription,
+        metaKeywords: p.metaKeywords,
+        canonicalUrl: p.canonicalUrl,
+        color: p.color,
+        fit: p.fit,
+        occasion: p.occasion,
+        deletedAt: null,
+      };
+
       let activeProdId = p.id;
       if (existingProd) {
         activeProdId = existingProd.id;
-        await prisma.product.update({
-          where: { id: existingProd.id },
-          data: prodData,
-        });
+        try {
+          await prisma.product.update({
+            where: { id: existingProd.id },
+            data: prodData,
+          });
+        } catch {
+          await prisma.product.update({
+            where: { id: existingProd.id },
+            data: coreProdData,
+          });
+        }
       } else {
-        const created = await prisma.product.create({
-          data: {
-            id: p.id,
-            ...prodData,
-          },
-        });
-        activeProdId = created.id;
+        try {
+          const created = await prisma.product.create({
+            data: {
+              id: p.id,
+              ...prodData,
+            },
+          });
+          activeProdId = created.id;
+        } catch {
+          const created = await prisma.product.create({
+            data: {
+              id: p.id,
+              ...coreProdData,
+            },
+          });
+          activeProdId = created.id;
+        }
       }
       productsSynced++;
 
