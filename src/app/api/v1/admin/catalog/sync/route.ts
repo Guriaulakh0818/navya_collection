@@ -60,6 +60,14 @@ export async function POST(request: NextRequest) {
     await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "specialShippingRate" NUMERIC(10, 2);');
     await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "taxRate" NUMERIC(5, 2) DEFAULT 0;');
     await runSqlSafe('ALTER TABLE "products" ADD COLUMN IF NOT EXISTS "hsnCode" VARCHAR(255);');
+    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "imageUrl" TEXT;');
+    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "attributes" JSONB;');
+    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "availableStock" INTEGER DEFAULT 0;');
+    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "reservedStock" INTEGER DEFAULT 0;');
+    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "soldStock" INTEGER DEFAULT 0;');
+    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "minimumStockLevel" INTEGER DEFAULT 5;');
+    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "maximumStockLevel" INTEGER;');
+    await runSqlSafe('ALTER TABLE "product_variants" ADD COLUMN IF NOT EXISTS "stockStatus" VARCHAR(50) DEFAULT \'IN_STOCK\';');
 
     let usersSynced = 0;
     let shopsSynced = 0;
@@ -344,6 +352,7 @@ export async function POST(request: NextRequest) {
                 status: (v.status as any) || 'active',
                 deletedAt: null,
               },
+              select: { id: true },
             });
           } else {
             await prisma.productVariant.create({
@@ -359,6 +368,7 @@ export async function POST(request: NextRequest) {
                 stock: v.stock,
                 status: (v.status as any) || 'active',
               },
+              select: { id: true },
             });
           }
           variantsSynced++;
