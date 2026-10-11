@@ -48,8 +48,14 @@ export default async function EditSellerProductPage({
     description: product.description || '',
     productType,
     price: Number(product.price),
-    compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : undefined,
-    costPrice: product.costPrice ? Number(product.costPrice) : undefined,
+    compareAtPrice:
+      product.compareAtPrice && Number(product.compareAtPrice) > 0
+        ? Number(product.compareAtPrice)
+        : undefined,
+    costPrice:
+      product.costPrice && Number(product.costPrice) > 0
+        ? Number(product.costPrice)
+        : undefined,
     taxGstRate: product.taxRate ? Number(product.taxRate) : 5,
     taxRate: product.taxRate ? Number(product.taxRate) : 5,
     hsnCode: product.hsnCode || '6204',

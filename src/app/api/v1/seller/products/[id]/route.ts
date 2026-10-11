@@ -126,8 +126,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       select: { id: true, role: true, email: true, mobile: true },
     });
 
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User session invalid. Please log in again.' },
+        { status: 401 },
+      );
+    }
+
     const isPlatformAdminOrOwner = Boolean(
-      user && ['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(String(user.role).toUpperCase()),
+      ['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(String(user.role).toUpperCase()),
     );
 
     const existingProduct = await prisma.product.findFirst({
@@ -365,7 +372,20 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       data: result,
     });
   } catch (error: any) {
-    return handleApiError(error, 'PUT Seller Product Error');
+    console.error('❌ PUT Seller Product Error:', error);
+    if (error?.code === 'P2002') {
+      const target = Array.isArray(error?.meta?.target) ? error.meta.target.join(', ') : 'field';
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Duplicate conflict: A product or variant with this ${target} already exists.`,
+        },
+        { status: 400 },
+      );
+    }
+    return handleApiError(error, 'PUT Seller Product Error', {
+      userMessage: error?.message || 'Server error: please try again after sometime',
+    });
   }
 }
 
