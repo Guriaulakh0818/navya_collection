@@ -6,7 +6,6 @@ import { redirect } from 'next/navigation';
 
 import { FeaturedBoutiquesSection } from '@/frontend/features/marketplace/components/FeaturedBoutiquesSection';
 import { FreshArrivalsSection } from '@/frontend/features/marketplace/components/FreshArrivalsSection';
-import { HomepageFaqSection } from '@/frontend/features/marketplace/components/HomepageFaqSection';
 import { HowNavyaWorksSection } from '@/frontend/features/marketplace/components/HowNavyaWorksSection';
 import { MarketplaceHero } from '@/frontend/features/marketplace/components/MarketplaceHero';
 import { SellerStorySection } from '@/frontend/features/marketplace/components/SellerStorySection';
@@ -182,9 +181,6 @@ export default async function MultiVendorMarketplaceHomePage() {
 
         {/* 10. BECOME A SELLER / LOCAL STORE STORY (Seller Value & Onboarding CTA) */}
         <SellerStorySection />
-
-        {/* 11. FREQUENTLY ASKED QUESTIONS (AEO Core Q&A Section) */}
-        <HomepageFaqSection />
       </div>
     </div>
   );
