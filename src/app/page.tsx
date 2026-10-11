@@ -173,14 +173,14 @@ export default async function MultiVendorMarketplaceHomePage() {
         {/* 7. SHOP BY BUDGET (Under ₹499, ₹999, ₹1499, Premium Picks) */}
         <ShopByBudgetSection />
 
-        {/* 8. HOW NAVYA WORKS (4-Step Marketplace Flow) */}
+        {/* 8. BECOME A SELLER / LOCAL STORE STORY (Seller Value & Onboarding CTA) */}
+        <SellerStorySection />
+
+        {/* 9. HOW NAVYA WORKS (4-Step Marketplace Flow) */}
         <HowNavyaWorksSection />
 
-        {/* 9. WHY SHOP ON NAVYA? (Customer Value Trust Cards) */}
+        {/* 10. WHY SHOP ON NAVYA? (Customer Value Trust Cards) */}
         <WhyShopNavyaSection />
-
-        {/* 10. BECOME A SELLER / LOCAL STORE STORY (Seller Value & Onboarding CTA) */}
-        <SellerStorySection />
       </div>
     </div>
   );
