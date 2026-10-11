@@ -5,8 +5,6 @@ import { usePathname } from 'next/navigation';
 
 const navItems = [
   { href: '/shop', label: 'Shop' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
 ];
 
 export function DesktopNav() {

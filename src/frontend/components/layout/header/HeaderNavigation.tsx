@@ -163,24 +163,6 @@ export function HeaderNavigation() {
       >
         Shop
       </Link>
-
-      <Link
-        href="/about"
-        className={`hidden xl:block text-xs xl:text-sm font-semibold transition-colors whitespace-nowrap ${
-          pathname === '/about' ? 'text-navy font-bold' : 'text-slate-700 hover:text-navy'
-        }`}
-      >
-        About
-      </Link>
-
-      <Link
-        href="/contact"
-        className={`hidden 2xl:block text-xs xl:text-sm font-semibold transition-colors whitespace-nowrap ${
-          pathname === '/contact' ? 'text-navy font-bold' : 'text-slate-700 hover:text-navy'
-        }`}
-      >
-        Contact
-      </Link>
     </nav>
   );
 }
