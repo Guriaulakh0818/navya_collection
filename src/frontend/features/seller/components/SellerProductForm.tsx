@@ -1041,9 +1041,16 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         categoryId: effectiveCategoryId,
         categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : [effectiveCategoryId],
         price: Number(formData.price),
-        compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
-        costPrice: formData.costPrice ? Number(formData.costPrice) : undefined,
+        compareAtPrice: formData.compareAtPrice && Number(formData.compareAtPrice) > 0 ? Number(formData.compareAtPrice) : undefined,
+        costPrice: formData.costPrice && Number(formData.costPrice) > 0 ? Number(formData.costPrice) : undefined,
         stock: Number(formData.stock),
+        variants: (formData.variants || []).map((v: any) => ({
+          ...v,
+          price: Number(v.price) || Number(formData.price),
+          compareAtPrice: v.compareAtPrice && Number(v.compareAtPrice) > 0 ? Number(v.compareAtPrice) : undefined,
+          costPrice: v.costPrice && Number(v.costPrice) > 0 ? Number(v.costPrice) : undefined,
+          stock: Number(v.stock) || 0,
+        })),
       };
 
       const res = await fetch(endpoint, {
@@ -1059,10 +1066,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           router.push('/seller/products');
         }, 1500);
       } else {
-        showToast(data.message || 'Server error: please try again after sometime', 'error');
+        const errorDetail =
+          data.errors && typeof data.errors === 'object'
+            ? Object.values(data.errors).flat().join(', ')
+            : data.message;
+        showToast(errorDetail || 'Server error: please try again after sometime', 'error');
       }
     } catch (err: any) {
-      showToast('Server error: please try again after sometime', 'error');
+      console.error('Error saving product:', err);
+      showToast(err.message || 'Server error: please try again after sometime', 'error');
     } finally {
       setIsSubmitting(false);
     }

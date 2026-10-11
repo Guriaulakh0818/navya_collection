@@ -332,30 +332,31 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return updatedProduct;
     });
 
-    // Dispatch Admin Notification & Email if product is pending approval
+    // Dispatch Admin Notification & Email asynchronously (non-blocking)
     if (result.status === 'pending_approval') {
-      try {
-        const category = await prisma.category.findUnique({
+      prisma.category
+        .findUnique({
           where: { id: validCategoryId },
           select: { name: true },
+        })
+        .then((category) => {
+          return NotificationService.notifyAdminNewProductSubmission({
+            productId: result.id,
+            productName: result.name,
+            sku: result.sku,
+            price: Number(result.price),
+            stock: Number(result.stock),
+            categoryName: category?.name,
+            shopName: shop.name,
+            sellerName: shop.owner?.name || shop.name,
+            sellerEmail: shop.owner?.email || shop.email || '',
+            sellerMobile: shop.owner?.mobile || shop.phone || '',
+            imageUrl: data.images?.[0]?.imageUrl,
+          });
+        })
+        .catch((notifErr) => {
+          console.warn('⚠️ Non-critical Admin Product Submission Alert Error:', notifErr);
         });
-
-        await NotificationService.notifyAdminNewProductSubmission({
-          productId: result.id,
-          productName: result.name,
-          sku: result.sku,
-          price: Number(result.price),
-          stock: Number(result.stock),
-          categoryName: category?.name,
-          shopName: shop.name,
-          sellerName: shop.owner?.name || shop.name,
-          sellerEmail: shop.owner?.email || shop.email || '',
-          sellerMobile: shop.owner?.mobile || shop.phone || '',
-          imageUrl: data.images?.[0]?.imageUrl,
-        });
-      } catch (notifErr) {
-        console.warn('⚠️ Non-critical Admin Product Submission Email Alert Error:', notifErr);
-      }
     }
 
     return NextResponse.json({

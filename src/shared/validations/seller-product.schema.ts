@@ -4,21 +4,21 @@ import { CommissionService } from '../../backend/services/commission.service';
 
 export const variantSchema = z
   .object({
-    id: z.string().optional(),
-    size: z.string().optional(),
-    color: z.string().optional(),
-    sku: z.string().optional(),
-    barcode: z.string().optional(),
+    id: z.string().optional().nullable(),
+    size: z.string().optional().nullable(),
+    color: z.string().optional().nullable(),
+    sku: z.string().optional().nullable(),
+    barcode: z.string().optional().nullable(),
     price: z.number().positive('Price must be greater than 0'),
-    compareAtPrice: z.number().positive('MRP must be greater than 0').optional(),
+    compareAtPrice: z.number().positive('MRP must be greater than 0').optional().nullable(),
     stock: z.number().int().nonnegative('Stock cannot be negative'),
-    weight: z.number().optional(),
+    weight: z.number().optional().nullable(),
     imageUrl: z.string().optional().nullable(),
     image: z.string().optional().nullable(),
     attributes: z.record(z.string(), z.any()).optional().nullable(),
   })
   .superRefine((data, ctx) => {
-    if (data.compareAtPrice !== undefined && data.compareAtPrice !== null) {
+    if (data.compareAtPrice && data.compareAtPrice > 0) {
       if (data.price > data.compareAtPrice) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -40,80 +40,80 @@ export const variantSchema = z
 
 export const imageSchema = z.object({
   imageUrl: z.string().url('Valid Image URL required'),
-  altText: z.string().optional(),
+  altText: z.string().optional().nullable(),
   isPrimary: z.boolean().default(false),
-  sortOrder: z.number().optional(),
+  sortOrder: z.number().optional().nullable(),
 });
 
 export const sellerProductSchema = z
   .object({
     name: z.string().min(3, 'Product name must be at least 3 characters'),
-    sku: z.string().optional(),
-    barcode: z.string().optional(),
-    brand: z.string().optional(),
+    sku: z.string().optional().nullable(),
+    barcode: z.string().optional().nullable(),
+    brand: z.string().optional().nullable(),
     description: z.string().min(10, 'Description must be at least 10 characters'),
     videoUrl: z.string().optional().nullable(),
-    productType: z.string().optional(),
+    productType: z.string().optional().nullable(),
 
     // Pricing & Taxation (BM-02)
     price: z.number().positive('Selling price must be greater than 0'),
-    compareAtPrice: z.number().positive('MRP must be greater than 0').optional(),
-    costPrice: z.number().optional(),
-    taxGstRate: z.number().optional(),
-    hsnCode: z.string().optional(),
+    compareAtPrice: z.number().positive('MRP must be greater than 0').optional().nullable(),
+    costPrice: z.number().optional().nullable(),
+    taxGstRate: z.number().optional().nullable(),
+    hsnCode: z.string().optional().nullable(),
 
     // Inventory
     stock: z.number().int().nonnegative('Stock cannot be negative').default(0),
-    lowStockThreshold: z.number().int().nonnegative().optional().default(5),
-    stockStatus: z.enum(['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK']).optional(),
+    lowStockThreshold: z.number().int().nonnegative().optional().nullable().default(5),
+    stockStatus: z.enum(['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK']).optional().nullable(),
 
     // Shipping & Packaging
-    weight: z.number().optional(), // in grams
-    packageLength: z.number().optional(), // in cm
-    packageWidth: z.number().optional(),
-    packageHeight: z.number().optional(),
-    countryOfOrigin: z.string().optional().default('India'),
-    manufacturerDetails: z.string().optional(),
+    weight: z.number().optional().nullable(), // in grams
+    packageLength: z.number().optional().nullable(), // in cm
+    packageWidth: z.number().optional().nullable(),
+    packageHeight: z.number().optional().nullable(),
+    countryOfOrigin: z.string().optional().nullable().default('India'),
+    manufacturerDetails: z.string().optional().nullable(),
 
     // Categories & Taxonomy
     categoryId: z.string().min(1, 'Category selection is required'),
-    categoryIds: z.array(z.string()).optional(),
+    categoryIds: z.array(z.string()).optional().nullable(),
 
     // Core Standard Attributes
-    gender: z.string().optional(),
-    fabric: z.string().optional(),
-    color: z.string().optional(),
-    fit: z.string().optional(),
-    occasion: z.string().optional(),
-    pattern: z.string().optional(),
-    sleeve: z.string().optional(),
-    neck: z.string().optional(),
+    gender: z.string().optional().nullable(),
+    fabric: z.string().optional().nullable(),
+    color: z.string().optional().nullable(),
+    fit: z.string().optional().nullable(),
+    occasion: z.string().optional().nullable(),
+    pattern: z.string().optional().nullable(),
+    sleeve: z.string().optional().nullable(),
+    neck: z.string().optional().nullable(),
 
     // Dynamic Key-Value Attributes Engine
-    attributes: z.record(z.string(), z.any()).optional(),
+    attributes: z.record(z.string(), z.any()).optional().nullable(),
 
     status: z.enum(['active', 'draft', 'pending_approval', 'archived']).default('active'),
     isFeatured: z.boolean().default(false),
     images: z.array(imageSchema).min(1, 'At least one product image is required'),
-    variants: z.array(variantSchema).optional(),
+    variants: z.array(variantSchema).optional().nullable(),
 
     // Return & Replacement Policy (Enforced Options: RETURN_AND_REPLACEMENT, REPLACEMENT_ONLY, NONE)
     returnPolicyType: z
       .enum(['RETURN_AND_REPLACEMENT', 'REPLACEMENT_ONLY', 'NONE'])
       .default('RETURN_AND_REPLACEMENT'),
-    returnAllowed: z.boolean().optional(),
-    returnWindowDays: z.number().int().optional(),
-    replacementAllowed: z.boolean().optional(),
-    replacementWindowDays: z.number().int().optional(),
+    returnAllowed: z.boolean().optional().nullable(),
+    returnWindowDays: z.number().int().optional().nullable(),
+    replacementAllowed: z.boolean().optional().nullable(),
+    replacementWindowDays: z.number().int().optional().nullable(),
 
     // SEO
-    metaTitle: z.string().optional(),
-    metaDescription: z.string().optional(),
-    metaKeywords: z.string().optional(),
-    focusKeyword: z.string().optional(),
+    metaTitle: z.string().optional().nullable(),
+    metaDescription: z.string().optional().nullable(),
+    metaKeywords: z.string().optional().nullable(),
+    focusKeyword: z.string().optional().nullable(),
   })
   .superRefine((data, ctx) => {
-    if (data.compareAtPrice !== undefined && data.compareAtPrice !== null) {
+    if (data.compareAtPrice && data.compareAtPrice > 0) {
       if (data.price > data.compareAtPrice) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
