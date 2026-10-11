@@ -23,9 +23,8 @@ export function MarketplaceHero() {
             Har Gali Ka Style, Ab India Ke{' '}
             <span className="text-orange">Har Shehar Tak.</span>
           </h1>
-          <p className="text-xs sm:text-sm md:text-base text-slate-600 font-medium leading-relaxed max-w-3xl">
-            Discover fashion from verified local boutiques and clothing stores — trendy,
-            affordable and uniquely Indian.
+          <p className="text-xs sm:text-sm md:text-base text-slate-600 font-medium leading-relaxed whitespace-normal md:whitespace-nowrap">
+            Discover fashion from verified local boutiques and clothing stores — trendy, affordable and uniquely Indian.
           </p>
         </div>
 
