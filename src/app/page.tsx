@@ -161,8 +161,8 @@ export default async function MultiVendorMarketplaceHomePage() {
         {/* 3. SHOP BY CATEGORY (Circular Grid with Hot Badges & Clean Canonical Links) */}
         <ShopByCategorySection />
 
-        {/* 4. FEATURED LOCAL BOUTIQUES (With Real Approved Shops) */}
-        <FeaturedBoutiquesSection shops={featuredShops} />
+        {/* 4. SHOP BY BUDGET (Under ₹499, ₹999, ₹1499, Premium Picks) */}
+        <ShopByBudgetSection />
 
         {/* 5. TRENDING MARKETPLACE ITEMS (Real Database Products) */}
         <TrendingProductsSection products={trendingProducts} />
@@ -170,8 +170,8 @@ export default async function MultiVendorMarketplaceHomePage() {
         {/* 6. FRESH ARRIVALS (Real Database New Listings) */}
         <FreshArrivalsSection products={newArrivals} />
 
-        {/* 7. SHOP BY BUDGET (Under ₹499, ₹999, ₹1499, Premium Picks) */}
-        <ShopByBudgetSection />
+        {/* 7. FEATURED LOCAL BOUTIQUES (With Real Approved Shops) */}
+        <FeaturedBoutiquesSection shops={featuredShops} />
 
         {/* 8. BECOME A SELLER / LOCAL STORE STORY (Seller Value & Onboarding CTA) */}
         <SellerStorySection />

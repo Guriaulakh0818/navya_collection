@@ -44,18 +44,18 @@ const BUDGET_CARDS = [
 
 export function ShopByBudgetSection() {
   return (
-    <section className="space-y-4 sm:space-y-5 my-8 sm:my-10">
+    <section className="space-y-3 sm:space-y-4 my-5 sm:my-7">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 text-orange">
-            <Wallet className="w-5 h-5" />
+          <div className="p-1.5 sm:p-2 rounded-xl bg-amber-50 text-orange">
+            <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-navy-900 tracking-tight">
+            <h2 className="text-base sm:text-lg font-black text-navy-900 tracking-tight">
               Find Your Style, Fit Your Budget
             </h2>
-            <p className="text-xs text-slate-500 font-medium">
+            <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
               Curated fashion tailored for every budget
             </p>
           </div>
@@ -70,37 +70,37 @@ export function ShopByBudgetSection() {
         </Link>
       </div>
 
-      {/* 4 Budget Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 4 Compact Budget Cards Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
         {BUDGET_CARDS.map((card) => (
           <Link
             key={card.title}
             href={card.href}
-            className={`group relative rounded-3xl border p-5 sm:p-6 bg-gradient-to-br ${card.accent} hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-4 active:scale-98`}
+            className={`group relative rounded-2xl border p-3.5 sm:p-4 bg-gradient-to-br ${card.accent} hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-2.5 active:scale-98`}
           >
-            <div className="space-y-2.5">
+            <div className="space-y-1.5 sm:space-y-2">
               <span
-                className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${card.badgeBg} shadow-2xs`}
+                className={`inline-block px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-wider border ${card.badgeBg} shadow-2xs`}
               >
                 {card.badge}
               </span>
 
-              <h3 className="text-2xl font-black text-navy-900 font-mono tracking-tight group-hover:text-orange transition-colors">
+              <h3 className="text-lg sm:text-xl font-black text-navy-900 font-mono tracking-tight group-hover:text-orange transition-colors">
                 {card.title}
               </h3>
 
               <div>
-                <h4 className="text-xs font-bold text-slate-800">{card.subtitle}</h4>
-                <p className="text-[11px] text-slate-500 font-medium mt-0.5 leading-relaxed">
+                <h4 className="text-[11px] sm:text-xs font-bold text-slate-800">{card.subtitle}</h4>
+                <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-0.5 line-clamp-1 leading-normal">
                   {card.description}
                 </p>
               </div>
             </div>
 
-            <div className="pt-2 flex items-center justify-between text-xs font-extrabold text-navy-900 group-hover:text-orange transition-colors border-t border-slate-200/60">
+            <div className="pt-2 flex items-center justify-between text-[11px] font-extrabold text-navy-900 group-hover:text-orange transition-colors border-t border-slate-200/60">
               <span>Browse Tier</span>
-              <div className="w-7 h-7 rounded-full bg-white border border-slate-200 group-hover:bg-orange group-hover:text-white group-hover:border-orange flex items-center justify-center transition-all shadow-2xs">
-                <ArrowRight className="w-3.5 h-3.5" />
+              <div className="w-6 h-6 rounded-full bg-white border border-slate-200 group-hover:bg-orange group-hover:text-white group-hover:border-orange flex items-center justify-center transition-all shadow-2xs">
+                <ArrowRight className="w-3 h-3" />
               </div>
             </div>
           </Link>
