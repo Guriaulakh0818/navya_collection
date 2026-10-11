@@ -91,6 +91,7 @@ type VariantMode = 'NONE' | 'SIZE_ONLY' | 'COLOR_ONLY' | 'SIZE_AND_COLOR';
 
 export function SellerProductForm({ productId, initialData }: ProductFormProps) {
   const router = useRouter();
+  const [isLoadingProduct, setIsLoadingProduct] = useState(Boolean(productId && !initialData));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadingQueue, setUploadingQueue] = useState<
     { id: string; file: File; previewUrl: string }[]
@@ -312,10 +313,100 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     fetchCategories();
   }, []);
 
-  // Fetch product data if editing an existing product
+  // Sync form state when initialData is provided (e.g. from Server Component)
   useEffect(() => {
-    if (!productId) return;
+    if (!initialData) return;
+    const loadedVariants = (initialData.variants || []).map((v: any) => ({
+      ...v,
+      imageUrl: v.imageUrl || (v.attributes as any)?.imageUrl || v.image || '',
+    }));
+
+    const inferredProductType =
+      initialData.productType ||
+      initialData.attributes?.productType ||
+      resolveAttributeTemplate(initialData.categoryId, undefined).id;
+
+    setFormData((prev) => ({
+      ...prev,
+      name: initialData.name || '',
+      brand: initialData.brand || '',
+      sku: initialData.sku || '',
+      barcode: initialData.barcode || '',
+      description: initialData.description || '',
+      videoUrl: initialData.videoUrl || '',
+      productType: inferredProductType,
+      price: Number(initialData.price || 0),
+      compareAtPrice: initialData.compareAtPrice ? Number(initialData.compareAtPrice) : 0,
+      costPrice: initialData.costPrice ? Number(initialData.costPrice) : 0,
+      taxGstRate: initialData.taxGstRate
+        ? Number(initialData.taxGstRate)
+        : initialData.taxRate
+        ? Number(initialData.taxRate)
+        : 5,
+      hsnCode: initialData.hsnCode || '6204',
+      stock: Number(initialData.stock || 0),
+      lowStockThreshold: Number(initialData.lowStockThreshold || 5),
+      weight: initialData.weight ? Number(initialData.weight) : 500,
+      packageLength: initialData.packageLength ? Number(initialData.packageLength) : 30,
+      packageWidth: initialData.packageWidth ? Number(initialData.packageWidth) : 25,
+      packageHeight: initialData.packageHeight ? Number(initialData.packageHeight) : 5,
+      countryOfOrigin: initialData.countryOfOrigin || 'India',
+      manufacturerDetails:
+        initialData.manufacturerDetails || 'Navya Collection Artisan Partner, India',
+      status: initialData.status || 'active',
+      returnPolicyType: initialData.returnPolicyType || 'RETURN_AND_REPLACEMENT',
+      categoryId: initialData.categoryId || '',
+      metaTitle: initialData.metaTitle || '',
+      metaDescription: initialData.metaDescription || '',
+      metaKeywords: initialData.metaKeywords || '',
+      focusKeyword: initialData.focusKeyword || '',
+      occasion: initialData.occasion || initialData.attributes?.occasion || '',
+      color: initialData.color || '',
+      fabric: initialData.fabric || initialData.attributes?.fabric || '',
+      fit: initialData.fit || initialData.attributes?.fit || '',
+      pattern: initialData.pattern || initialData.attributes?.pattern || '',
+      sleeve: initialData.sleeve || initialData.attributes?.sleeve || '',
+      neck: initialData.neck || initialData.attributes?.neck || '',
+      attributes: initialData.attributes || {},
+      images: initialData.images || [],
+      variants: loadedVariants,
+    }));
+
+    const catIds: string[] = [];
+    if (initialData.categoryId) catIds.push(initialData.categoryId);
+    if (initialData.category?.slug) catIds.push(initialData.category.slug);
+    if (initialData.metaKeywords) {
+      const parts = initialData.metaKeywords.split(',').map((s: string) => s.trim()).filter(Boolean);
+      parts.forEach((p: string) => {
+        if (!catIds.includes(p)) catIds.push(p);
+      });
+    }
+    if (catIds.length > 0) {
+      setSelectedCategoryIds(Array.from(new Set(catIds)));
+    }
+
+    if (loadedVariants.length > 0) {
+      const hasSize = loadedVariants.some((v: any) => v.size && v.size !== '');
+      const hasColor = loadedVariants.some((v: any) => v.color && v.color !== '');
+      if (hasSize && hasColor) setVariantMode('SIZE_AND_COLOR');
+      else if (hasSize) setVariantMode('SIZE_ONLY');
+      else if (hasColor) setVariantMode('COLOR_ONLY');
+
+      setSelectedColors(
+        Array.from(new Set(loadedVariants.map((v: any) => v.color).filter(Boolean))),
+      );
+      setSelectedSizes(
+        Array.from(new Set(loadedVariants.map((v: any) => v.size).filter(Boolean))),
+      );
+    }
+    setIsLoadingProduct(false);
+  }, [initialData]);
+
+  // Fetch product data if editing an existing product and initialData was not provided
+  useEffect(() => {
+    if (!productId || initialData) return;
     const fetchProductDetails = async () => {
+      setIsLoadingProduct(true);
       try {
         const res = await fetch(`/api/v1/seller/products/${productId}`);
         const data = await res.json();
@@ -326,6 +417,11 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             imageUrl: v.imageUrl || (v.attributes as any)?.imageUrl || v.image || '',
           }));
 
+          const inferredProductType =
+            prod.productType ||
+            prod.attributes?.productType ||
+            resolveAttributeTemplate(prod.categoryId, undefined).id;
+
           setFormData((prev) => ({
             ...prev,
             name: prod.name || '',
@@ -334,11 +430,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             barcode: prod.barcode || '',
             description: prod.description || '',
             videoUrl: prod.videoUrl || '',
-            productType: prod.productType || '',
+            productType: inferredProductType,
             price: Number(prod.price || 0),
             compareAtPrice: prod.compareAtPrice ? Number(prod.compareAtPrice) : 0,
             costPrice: prod.costPrice ? Number(prod.costPrice) : 0,
-            taxGstRate: prod.taxRate ? Number(prod.taxRate) : 5,
+            taxGstRate: prod.taxGstRate
+              ? Number(prod.taxGstRate)
+              : prod.taxRate
+              ? Number(prod.taxRate)
+              : 5,
             hsnCode: prod.hsnCode || '6204',
             stock: Number(prod.stock || 0),
             lowStockThreshold: Number(prod.lowStockThreshold || 5),
@@ -356,20 +456,29 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             metaDescription: prod.metaDescription || '',
             metaKeywords: prod.metaKeywords || '',
             focusKeyword: prod.focusKeyword || '',
-            occasion: prod.occasion || '',
+            occasion: prod.occasion || prod.attributes?.occasion || '',
             color: prod.color || '',
-            fabric: prod.fabric || '',
-            fit: prod.fit || '',
-            pattern: prod.pattern || '',
-            sleeve: prod.sleeve || '',
-            neck: prod.neck || '',
+            fabric: prod.fabric || prod.attributes?.fabric || '',
+            fit: prod.fit || prod.attributes?.fit || '',
+            pattern: prod.pattern || prod.attributes?.pattern || '',
+            sleeve: prod.sleeve || prod.attributes?.sleeve || '',
+            neck: prod.neck || prod.attributes?.neck || '',
             attributes: prod.attributes || {},
             images: prod.images || [],
             variants: loadedVariants,
           }));
 
-          if (prod.categoryId) {
-            setSelectedCategoryIds([prod.categoryId]);
+          const catIds: string[] = [];
+          if (prod.categoryId) catIds.push(prod.categoryId);
+          if (prod.category?.slug) catIds.push(prod.category.slug);
+          if (prod.metaKeywords) {
+            const parts = prod.metaKeywords.split(',').map((s: string) => s.trim()).filter(Boolean);
+            parts.forEach((p: string) => {
+              if (!catIds.includes(p)) catIds.push(p);
+            });
+          }
+          if (catIds.length > 0) {
+            setSelectedCategoryIds(Array.from(new Set(catIds)));
           }
 
           if (loadedVariants.length > 0) {
@@ -386,13 +495,18 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               Array.from(new Set(loadedVariants.map((v: any) => v.size).filter(Boolean))),
             );
           }
+        } else {
+          showToast(data.message || 'Could not load product details.', 'error');
         }
       } catch (err) {
         console.error('Failed to load product details:', err);
+        showToast('Failed to load product details.', 'error');
+      } finally {
+        setIsLoadingProduct(false);
       }
     };
     fetchProductDetails();
-  }, [productId]);
+  }, [productId, initialData]);
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ type, text });
@@ -973,6 +1087,18 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     return groups;
   }, [activeTemplate]);
 
+  if (isLoadingProduct) {
+    return (
+      <div className="min-h-[500px] flex flex-col items-center justify-center p-8 bg-white rounded-3xl border border-slate-200 shadow-xs max-w-6xl mx-auto my-8">
+        <div className="w-12 h-12 border-4 border-navy border-t-amber-500 rounded-full animate-spin mb-4" />
+        <h3 className="text-base font-bold text-slate-800">Loading Product Details...</h3>
+        <p className="text-xs text-slate-500 mt-1">
+          Retrieving product catalog information, variants matrix, and images...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <form
       onSubmit={(e) => handleSubmit(e, 'pending_approval')}
@@ -1019,7 +1145,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               <span>Saving...</span>
             ) : (
               <>
-                <Send className="w-4 h-4 text-amber-400" /> Submit for Approval
+                <Send className="w-4 h-4 text-amber-400" />{' '}
+                {productId ? 'Update Listing' : 'Submit for Approval'}
               </>
             )}
           </button>

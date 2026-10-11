@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { handleApiError } from '@/backend/lib/api-error-handler';
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
-import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
+import { ADMIN_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { generateVariantSku } from '@/backend/lib/sku-generator';
 import { NotificationService } from '@/backend/services/notification.service';
 import { prisma } from '@/lib/prisma';
@@ -20,7 +20,9 @@ function getJwtSecretKey(): Uint8Array {
 
 async function getAuthenticatedUser() {
   const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const token =
+    cookieStore.get(SESSION_COOKIE_NAME)?.value ||
+    cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, getJwtSecretKey());
@@ -39,34 +41,67 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const shop = await prisma.shop.findFirst({
-      where: { ownerId: userId, deletedAt: null },
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, email: true, mobile: true },
     });
 
-    if (!shop) {
-      return NextResponse.json(
-        { success: false, message: 'Seller shop not found' },
-        { status: 404 },
-      );
-    }
+    const isPlatformAdminOrOwner = Boolean(
+      user && ['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(String(user.role).toUpperCase()),
+    );
 
     const product = await prisma.product.findFirst({
-      where: { id, shopId: shop.id, deletedAt: null },
+      where: {
+        id,
+        deletedAt: null,
+        ...(isPlatformAdminOrOwner
+          ? {}
+          : {
+              OR: [
+                { shop: { ownerId: userId } },
+                ...(user?.email ? [{ shop: { email: user.email } }] : []),
+                ...(user?.mobile ? [{ shop: { phone: user.mobile } }] : []),
+              ],
+            }),
+      },
       include: {
         images: { orderBy: { sortOrder: 'asc' } },
-        variants: true,
+        variants: { orderBy: { createdAt: 'asc' } },
         category: true,
       },
     });
 
     if (!product) {
-      return NextResponse.json({ success: false, message: 'Product not found.' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: 'Product not found or unauthorized.' },
+        { status: 404 },
+      );
     }
+
+    const firstVariant = product.variants?.[0];
+    const variantAttrs = (firstVariant?.attributes as any) || {};
 
     const mappedProduct = {
       ...product,
+      price: Number(product.price),
+      compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : 0,
+      costPrice: product.costPrice ? Number(product.costPrice) : 0,
+      taxRate: product.taxRate ? Number(product.taxRate) : 5,
+      taxGstRate: product.taxRate ? Number(product.taxRate) : 5,
+      stock: Number(product.stock),
+      lowStockThreshold: Number(product.lowStockThreshold || 5),
+      productType: variantAttrs.productType || '',
+      attributes: variantAttrs,
+      pattern: variantAttrs.pattern || '',
+      sleeve: variantAttrs.sleeve || '',
+      neck: variantAttrs.neck || '',
+      weight: firstVariant?.weight || 500,
+      barcode: firstVariant?.barcode || '',
       variants: product.variants.map((v) => ({
         ...v,
+        price: Number(v.price),
+        compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : 0,
+        stock: Number(v.stock),
         imageUrl: v.imageUrl || (v.attributes as any)?.imageUrl || '',
       })),
     };
@@ -86,26 +121,51 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const shop = await prisma.shop.findFirst({
-      where: { ownerId: userId, deletedAt: null },
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, email: true, mobile: true },
+    });
+
+    const isPlatformAdminOrOwner = Boolean(
+      user && ['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(String(user.role).toUpperCase()),
+    );
+
+    const existingProduct = await prisma.product.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+        ...(isPlatformAdminOrOwner
+          ? {}
+          : {
+              OR: [
+                { shop: { ownerId: userId } },
+                ...(user?.email ? [{ shop: { email: user.email } }] : []),
+                ...(user?.mobile ? [{ shop: { phone: user.mobile } }] : []),
+              ],
+            }),
+      },
       include: {
-        owner: { select: { name: true, email: true, mobile: true } },
+        shop: {
+          include: {
+            owner: { select: { name: true, email: true, mobile: true } },
+          },
+        },
       },
     });
 
-    if (!shop) {
+    if (!existingProduct) {
       return NextResponse.json(
-        { success: false, message: 'Seller shop not found' },
+        { success: false, message: 'Product not found or unauthorized.' },
         { status: 404 },
       );
     }
 
-    const existingProduct = await prisma.product.findFirst({
-      where: { id, shopId: shop.id, deletedAt: null },
-    });
-
-    if (!existingProduct) {
-      return NextResponse.json({ success: false, message: 'Product not found.' }, { status: 404 });
+    const shop = existingProduct.shop;
+    if (!shop) {
+      return NextResponse.json(
+        { success: false, message: 'Associated seller shop not found.' },
+        { status: 404 },
+      );
     }
 
     const body = await request.json();
@@ -320,23 +380,33 @@ export async function DELETE(
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
-    const shop = await prisma.shop.findFirst({
-      where: { ownerId: userId, deletedAt: null },
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, email: true, mobile: true },
     });
 
-    if (!shop) {
-      return NextResponse.json(
-        { success: false, message: 'Seller shop not found' },
-        { status: 404 },
-      );
-    }
+    const isPlatformAdminOrOwner = Boolean(
+      user && ['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(String(user.role).toUpperCase()),
+    );
 
     const product = await prisma.product.findFirst({
-      where: { id, shopId: shop.id, deletedAt: null },
+      where: {
+        id,
+        deletedAt: null,
+        ...(isPlatformAdminOrOwner
+          ? {}
+          : {
+              OR: [
+                { shop: { ownerId: userId } },
+                ...(user?.email ? [{ shop: { email: user.email } }] : []),
+                ...(user?.mobile ? [{ shop: { phone: user.mobile } }] : []),
+              ],
+            }),
+      },
     });
 
     if (!product) {
-      return NextResponse.json({ success: false, message: 'Product not found.' }, { status: 404 });
+      return NextResponse.json({ success: false, message: 'Product not found or unauthorized.' }, { status: 404 });
     }
 
     await prisma.$transaction(async (tx) => {
