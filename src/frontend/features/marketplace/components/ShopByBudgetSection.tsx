@@ -1,13 +1,11 @@
 'use client';
 
-import { ArrowRight, Sparkles, Tag, Wallet } from 'lucide-react';
+import { ArrowRight, Wallet } from 'lucide-react';
 import Link from 'next/link';
 
 const BUDGET_CARDS = [
   {
     title: 'Under ₹499',
-    subtitle: 'Daily Basics & Essentials',
-    description: 'T-shirts, socks, accessories & casual wear',
     href: '/shop?maxPrice=499',
     badge: 'POCKET FRIENDLY',
     accent: 'from-amber-500/15 via-orange-500/10 to-transparent border-amber-300',
@@ -15,8 +13,6 @@ const BUDGET_CARDS = [
   },
   {
     title: 'Under ₹999',
-    subtitle: 'Everyday Trendy Fashion',
-    description: 'Casual shirts, jeans, kurtas & dresses',
     href: '/shop?maxPrice=999',
     badge: 'MOST POPULAR',
     accent: 'from-orange-500/15 via-amber-500/10 to-transparent border-orange-300',
@@ -24,8 +20,6 @@ const BUDGET_CARDS = [
   },
   {
     title: 'Under ₹1,499',
-    subtitle: 'Festive & Party Wear',
-    description: 'Kurta sets, jackets, blazers & footwear',
     href: '/shop?maxPrice=1499',
     badge: 'FESTIVE PICKS',
     accent: 'from-emerald-500/15 via-teal-500/10 to-transparent border-emerald-300',
@@ -33,8 +27,6 @@ const BUDGET_CARDS = [
   },
   {
     title: 'Premium Picks',
-    subtitle: 'Designer & Handcrafted',
-    description: 'Exclusive boutique couture & pure silks',
     href: '/shop?minPrice=1999',
     badge: 'BOUTIQUE LUXURY',
     accent: 'from-indigo-500/15 via-navy-900/10 to-transparent border-indigo-300',
@@ -44,7 +36,7 @@ const BUDGET_CARDS = [
 
 export function ShopByBudgetSection() {
   return (
-    <section className="space-y-3 sm:space-y-4 my-5 sm:my-7">
+    <section className="space-y-3 sm:space-y-4 my-4 sm:my-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
@@ -76,30 +68,23 @@ export function ShopByBudgetSection() {
           <Link
             key={card.title}
             href={card.href}
-            className={`group relative rounded-2xl border p-3.5 sm:p-4 bg-gradient-to-br ${card.accent} hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-2.5 active:scale-98`}
+            className={`group relative rounded-2xl border p-3 sm:p-3.5 bg-gradient-to-br ${card.accent} hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-2 active:scale-98`}
           >
-            <div className="space-y-1.5 sm:space-y-2">
+            <div className="space-y-1">
               <span
                 className={`inline-block px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black uppercase tracking-wider border ${card.badgeBg} shadow-2xs`}
               >
                 {card.badge}
               </span>
 
-              <h3 className="text-lg sm:text-xl font-black text-navy-900 font-mono tracking-tight group-hover:text-orange transition-colors">
+              <h3 className="text-base sm:text-lg lg:text-xl font-black text-navy-900 font-mono tracking-tight group-hover:text-orange transition-colors">
                 {card.title}
               </h3>
-
-              <div>
-                <h4 className="text-[11px] sm:text-xs font-bold text-slate-800">{card.subtitle}</h4>
-                <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium mt-0.5 line-clamp-1 leading-normal">
-                  {card.description}
-                </p>
-              </div>
             </div>
 
-            <div className="pt-2 flex items-center justify-between text-[11px] font-extrabold text-navy-900 group-hover:text-orange transition-colors border-t border-slate-200/60">
+            <div className="pt-1.5 flex items-center justify-between text-[11px] font-extrabold text-navy-900 group-hover:text-orange transition-colors border-t border-slate-200/60">
               <span>Browse Tier</span>
-              <div className="w-6 h-6 rounded-full bg-white border border-slate-200 group-hover:bg-orange group-hover:text-white group-hover:border-orange flex items-center justify-center transition-all shadow-2xs">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white border border-slate-200 group-hover:bg-orange group-hover:text-white group-hover:border-orange flex items-center justify-center transition-all shadow-2xs">
                 <ArrowRight className="w-3 h-3" />
               </div>
             </div>
