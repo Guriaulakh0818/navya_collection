@@ -310,25 +310,22 @@ export function CategoryExplorer({
                         }
                         className="group flex flex-col items-center text-center p-2 rounded-2xl bg-slate-50 hover:bg-slate-100/90 border border-slate-200/80 transition-all active:scale-95 shadow-2xs"
                       >
-                        <div
-                          className={`relative w-full aspect-square rounded-xl overflow-hidden mb-1.5 bg-gradient-to-br ${
-                            spot.gradient || 'from-[#183A73] to-[#255299]'
-                          }`}
-                        >
+                        <div className="relative w-full aspect-square rounded-xl overflow-hidden mb-1.5 bg-slate-100">
                           <Image
                             src={spot.image}
                             alt={spot.title}
                             fill
                             sizes="(max-width: 768px) 33vw, 150px"
-                            className="object-cover group-hover:scale-105 transition-transform duration-300 mix-blend-overlay opacity-85"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
                           />
-                          <div className="absolute inset-0 flex items-center justify-center p-1.5 text-center">
+                          {/* Neutral dark gradient overlay so white text is readable without color-tinting the photo */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/20 flex items-center justify-center p-1.5 text-center">
                             <span className="text-white text-[10px] sm:text-xs font-black drop-shadow-md leading-tight">
                               {spot.title}
                             </span>
                           </div>
                           {spot.badge && (
-                            <span className="absolute top-1 right-1 bg-amber-400 text-slate-950 text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase">
+                            <span className="absolute top-1.5 right-1.5 bg-amber-400 text-slate-950 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
                               {spot.badge}
                             </span>
                           )}
