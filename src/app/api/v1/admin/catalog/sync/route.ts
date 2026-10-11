@@ -10,15 +10,6 @@ export const maxDuration = 60;
 const INTERNAL_SYNC_SECRET =
   process.env.INTERNAL_SYNC_SECRET || 'navya_prod_sync_taxonomy_secret_2026';
 
-const SHOP_OWNER_EMAIL_MAP: Record<string, string> = {
-  cmui9v6ob0004cuzeht6sh5em: 'gurvindersingh0218@gmail.com',
-  cmui9v6p40007cuzej7y3y64h: 'ramesh.saniyafashions@gmail.com',
-  cmui9v6ph000acuze1jh353ys: 'vikram.stylezone@gmail.com',
-  cmui9v6pu000dcuze4thu2khl: 'jaspreet.fashions@gmail.com',
-  cmui9v6q6000gcuzegpycq8cm: 'barkat.fashion@gmail.com',
-  cmtpt93ff000fzqz23tqclwmv: 'admin@navyacollection.store',
-};
-
 // POST /api/v1/admin/catalog/sync - Bulk Synchronize Approved Shops & Real Products into Prisma DB
 export async function POST(request: NextRequest) {
   try {
@@ -112,11 +103,12 @@ export async function POST(request: NextRequest) {
         try {
           const existingShop = await prisma.shop.findFirst({
             where: { OR: [{ id: s.id }, { slug: s.slug }] },
-            select: { id: true, slug: true },
+            select: { id: true, slug: true, ownerId: true },
           });
 
-          const ownerEmail = SHOP_OWNER_EMAIL_MAP[s.id] || s.email;
-          const ownerId = emailToUserIdMap.get(ownerEmail) || fallbackOwnerId;
+          // Strictly preserve real existing shop ownerId in the database
+          const resolvedOwnerId =
+            existingShop?.ownerId || emailToUserIdMap.get(s.email) || fallbackOwnerId;
 
           const shopData = {
             name: s.name,
@@ -142,7 +134,6 @@ export async function POST(request: NextRequest) {
             subscriptionTier: (s.subscriptionTier as any) || 'GROWTH',
             isSubscriptionActive: s.isSubscriptionActive ?? true,
             status: 'APPROVED' as any,
-            ownerId,
             deletedAt: null,
           };
 
@@ -151,13 +142,18 @@ export async function POST(request: NextRequest) {
             activeShopId = existingShop.id;
             await prisma.shop.update({
               where: { id: existingShop.id },
-              data: shopData,
+              data: {
+                ...shopData,
+                // Only assign ownerId if existingShop didn't have one
+                ...(existingShop.ownerId ? {} : { ownerId: resolvedOwnerId }),
+              },
             });
           } else {
             const created = await prisma.shop.create({
               data: {
                 id: s.id,
                 ...shopData,
+                ownerId: resolvedOwnerId,
               },
             });
             activeShopId = created.id;

@@ -181,7 +181,11 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             <div>
               <span className="text-slate-500 block text-xs font-semibold">Store / Dukan Name</span>
               <span className="font-extrabold text-navy text-base">
-                {shop?.name || 'Your Fashion Store'}
+                {shop?.name ||
+                  statusData.sellerProfile?.legalName ||
+                  (statusData.email === 'navyacollection45@gmail.com'
+                    ? 'Navya Collection'
+                    : 'Partner Boutique Store')}
               </span>
             </div>
             <div>
