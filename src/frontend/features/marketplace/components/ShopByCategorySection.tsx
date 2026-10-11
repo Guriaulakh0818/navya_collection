@@ -16,15 +16,6 @@ interface CategoryItem {
 
 const CATEGORY_ITEMS: CategoryItem[] = [
   {
-    id: 'spotlight',
-    name: 'Spotlight',
-    image: '/images/categories/category-spotlight.jpg',
-    href: '/category/spotlight',
-    badge: 'TRENDING',
-    badgeBg: 'bg-rose-600',
-    isSpecial: true,
-  },
-  {
     id: 'women',
     name: 'Women',
     image: '/images/categories/category-women.jpg',
@@ -40,6 +31,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
     href: '/category/men',
     badge: 'STYLE',
     badgeBg: 'bg-blue-600',
+    isSpecial: true,
   },
   {
     id: 'kids',
@@ -50,16 +42,40 @@ const CATEGORY_ITEMS: CategoryItem[] = [
     badgeBg: 'bg-emerald-600',
   },
   {
-    id: 'sarees',
-    name: 'Sarees',
-    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
-    href: '/category/women-sarees',
+    id: 't-shirts',
+    name: 'T-Shirts',
+    image: '/images/categories/men-tshirts.jpg',
+    href: '/category/men-t-shirts',
+    badge: 'HOT',
+    badgeBg: 'bg-rose-600',
   },
   {
-    id: 'lehengas',
-    name: 'Lehengas',
-    image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600',
-    href: '/category/women-lehengas',
+    id: 'shirts',
+    name: 'Shirts',
+    image: '/images/categories/men-shirts.jpg',
+    href: '/category/men-shirts',
+  },
+  {
+    id: 'jeans',
+    name: 'Jeans',
+    image: '/images/categories/men-jeans.jpg',
+    href: '/category/men-jeans',
+    badge: 'BESTSELLER',
+    badgeBg: 'bg-indigo-600',
+  },
+  {
+    id: 'trousers',
+    name: 'Trousers',
+    image: '/images/categories/men-trousers.jpg',
+    href: '/category/men-trousers',
+  },
+  {
+    id: 'cargo-pants',
+    name: 'Cargo Pants',
+    image: '/images/categories/men-cargos.jpg',
+    href: '/category/men-cargo-pants',
+    badge: 'TRENDING',
+    badgeBg: 'bg-orange',
   },
   {
     id: 'kurta-sets',
@@ -68,19 +84,10 @@ const CATEGORY_ITEMS: CategoryItem[] = [
     href: '/category/women-kurta-sets',
   },
   {
-    id: 'men-shirts',
-    name: 'Men Shirts',
-    image: '/images/categories/men-shirts.jpg',
-    href: '/category/men-shirts',
-  },
-  {
-    id: 'shops',
-    name: 'Boutiques',
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600',
-    href: '/shops',
-    badge: 'VERIFIED',
-    badgeBg: 'bg-emerald-600',
-    isSpecial: true,
+    id: 'sarees',
+    name: 'Sarees',
+    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
+    href: '/category/women-sarees',
   },
 ];
 
@@ -113,16 +120,16 @@ export function ShopByCategorySection() {
       </div>
 
       {/* Circular Category Grid / Horizontal Scroll */}
-      <div className="flex items-center justify-start lg:justify-between gap-3 sm:gap-4 overflow-x-auto scrollbar-none pb-2 pt-1 -mx-3 px-3 sm:mx-0 sm:px-0">
+      <div className="flex items-center justify-start xl:justify-between gap-3 sm:gap-4 md:gap-5 overflow-x-auto scrollbar-none pb-2 pt-1 -mx-3 px-3 sm:mx-0 sm:px-0">
         {CATEGORY_ITEMS.map((item) => (
           <Link
             key={item.id}
             href={item.href}
-            className="group flex flex-col items-center text-center w-[76px] sm:w-[96px] md:w-[108px] shrink-0 transition-all duration-300 active:scale-95"
+            className="group flex flex-col items-center text-center w-[74px] sm:w-[88px] md:w-[98px] lg:w-[104px] shrink-0 transition-all duration-300 active:scale-95"
           >
             {/* Circular Avatar Container */}
             <div
-              className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full p-1 border-2 transition-all duration-300 flex items-center justify-center ${
+              className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22 rounded-full p-1 border-2 transition-all duration-300 flex items-center justify-center ${
                 item.isSpecial
                   ? 'border-amber-400 bg-amber-50/50 shadow-xs'
                   : 'border-slate-200/90 bg-white group-hover:border-orange group-hover:shadow-md'
@@ -133,15 +140,15 @@ export function ShopByCategorySection() {
                   src={item.image}
                   alt={item.name}
                   fill
-                  sizes="(max-width: 640px) 64px, 96px"
+                  sizes="(max-width: 640px) 64px, 88px"
                   className="object-cover object-center group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
 
-              {/* Special Badge (e.g. HOT on Trending, DEAL on Under ₹999) */}
+              {/* Special Badge (e.g. HOT, BESTSELLER, TRENDING) */}
               {item.badge && (
                 <span
-                  className={`absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-white text-[10px] font-extrabold uppercase tracking-wider shadow-xs ${
+                  className={`absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 sm:px-2 py-0.5 rounded-full text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-xs whitespace-nowrap ${
                     item.badgeBg || 'bg-rose-600'
                   }`}
                 >
