@@ -7,7 +7,6 @@ import {
   Heart,
   ShoppingBag,
   Sparkles,
-  Star,
   Zap,
 } from 'lucide-react';
 import { useRef } from 'react';
@@ -131,7 +130,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                 className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl overflow-hidden hover:border-orange/60 hover:shadow-lg transition-all duration-300 shadow-xs flex flex-col justify-between w-[200px] xs:w-[220px] sm:w-[240px] shrink-0 snap-start group"
               >
                 {/* Product Image Container with Badges */}
-                <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden select-none">
+                <div className="aspect-square bg-slate-100 relative overflow-hidden select-none">
                   <Link href={`/product/${p.slug}`} className="block w-full h-full">
                     <Image
                       src={imageSrc}
@@ -184,7 +183,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                       {p.shop?.name || 'Local Boutique'}
                     </p>
 
-                    {/* Price & Rating Row */}
+                    {/* Price Row */}
                     <div className="flex items-baseline gap-2 mt-2">
                       <span className="text-sm sm:text-base font-black text-navy-900 font-mono">
                         ₹{priceNum.toLocaleString('en-IN')}
@@ -192,22 +191,6 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                       {comparePriceNum && comparePriceNum > priceNum && (
                         <span className="text-xs text-slate-400 line-through font-mono">
                           ₹{comparePriceNum.toLocaleString('en-IN')}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-1 text-xs mt-1">
-                      {hasReviews ? (
-                        <>
-                          <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                          <span className="font-bold text-amber-600">{ratingNum}</span>
-                          <span className="text-slate-400 font-normal text-xs">
-                            ({reviewsCount})
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-[11px] text-slate-500 font-medium truncate">
-                          {p.category?.name || 'Verified Style'}
                         </span>
                       )}
                     </div>

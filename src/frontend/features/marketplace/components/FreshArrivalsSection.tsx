@@ -113,7 +113,7 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
               className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl overflow-hidden hover:border-orange/60 hover:shadow-lg transition-all duration-300 shadow-xs flex flex-col justify-between w-[180px] xs:w-[200px] sm:w-[220px] md:w-[240px] shrink-0 snap-start group"
             >
               {/* Product Image Container with NEW Badge */}
-              <div className="aspect-[4/5] bg-slate-100 relative overflow-hidden select-none">
+              <div className="aspect-square bg-slate-100 relative overflow-hidden select-none">
                 <Link href={`/product/${p.slug}`} className="block w-full h-full">
                   <Image
                     src={imageSrc}
