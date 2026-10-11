@@ -124,7 +124,7 @@ export async function PUT(req: Request) {
         name: data.name,
         slug: cleanSlug,
         logo: data.logo || null,
-        banner: data.banner || null,
+        banner: '/images/default-shop-banner.png',
         description: data.description || null,
         phone: data.phone,
         email: data.email,

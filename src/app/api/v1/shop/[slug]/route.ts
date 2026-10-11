@@ -145,7 +145,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       {
         success: true,
         data: {
-          shop,
+          shop: {
+            ...shop,
+            banner: '/images/default-shop-banner.png',
+            logo:
+              shop.slug === 'navya-collection' || shop.name?.toLowerCase().includes('navya')
+                ? '/images/navya-logo.png'
+                : shop.logo,
+          },
           products,
           categories: shopCategories,
           relatedProducts,

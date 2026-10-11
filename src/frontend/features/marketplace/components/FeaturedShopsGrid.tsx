@@ -29,7 +29,11 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
         }
 
         const productCount = shop._count?.products || 0;
-        const bannerUrl = shop.banner || '/images/default-shop-banner.png';
+        // Permanent luxury brand banner for all current and future boutique cards
+        const bannerUrl = '/images/default-shop-banner.png';
+        const isNavya =
+          shop.slug === 'navya-collection' || shop.name?.toLowerCase().includes('navya');
+        const shopLogo = isNavya ? '/images/navya-logo.png' : shop.logo;
 
         return (
           <Link
@@ -37,11 +41,11 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
             href={`/shop/${shop.slug}`}
             className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-amber-500/50 hover:shadow-xl transition-all shadow-xs flex flex-col justify-between w-[260px] xs:w-[285px] sm:w-[320px] shrink-0 snap-start"
           >
-            {/* Cover Banner */}
+            {/* Cover Banner - Permanently Style That Speaks */}
             <div className="h-28 sm:h-32 bg-slate-900 relative overflow-hidden select-none">
               <Image
                 src={bannerUrl}
-                alt={shop.name || 'Vendor Shop'}
+                alt="Style That Speaks - Navya Collection"
                 fill
                 priority={index < 2}
                 sizes="(max-width: 640px) 280px, 320px"
@@ -54,9 +58,9 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
             <div className="p-4 sm:p-5 -mt-8 relative z-10 space-y-3">
               <div className="flex items-end justify-between gap-2">
                 <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-500/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-md select-none">
-                  {shop.logo ? (
+                  {shopLogo ? (
                     <Image
-                      src={shop.logo}
+                      src={shopLogo}
                       alt={shop.name}
                       fill
                       sizes="56px"

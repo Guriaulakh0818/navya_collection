@@ -487,17 +487,21 @@ export function MarketplaceCatalogContent() {
                     products.filter((p) => p.shopId === shop.id).length ||
                     0;
 
+                  const isNavya =
+                    shop.slug === 'navya-collection' || shop.name?.toLowerCase().includes('navya');
+                  const shopLogo = isNavya ? '/images/navya-logo.png' : shop.logo;
+
                   return (
                     <Link
                       key={shop.id}
                       href={`/shop/${shop.slug}`}
                       className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-amber-500 hover:shadow-xl transition-all flex flex-col justify-between"
                     >
-                      {/* Cover Banner */}
+                      {/* Cover Banner - Permanently Style That Speaks */}
                       <div className="h-32 bg-slate-100 relative overflow-hidden">
                         <Image
-                          src={shop.banner || '/images/default-shop-banner.png'}
-                          alt={shop.name}
+                          src="/images/default-shop-banner.png"
+                          alt="Style That Speaks - Navya Collection"
                           fill
                           priority={index < 2}
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -510,9 +514,9 @@ export function MarketplaceCatalogContent() {
                       <div className="p-6 -mt-10 relative z-10 space-y-4">
                         <div className="flex items-end justify-between gap-3">
                           <div className="w-16 h-16 rounded-2xl bg-white border-2 border-amber-500/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-lg">
-                            {shop.logo ? (
+                            {shopLogo ? (
                               <Image
-                                src={shop.logo}
+                                src={shopLogo}
                                 alt={shop.name}
                                 fill
                                 sizes="64px"

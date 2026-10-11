@@ -107,22 +107,26 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
         >
           {shops.map((shop, index) => {
             const productCount = shop._count?.products || (shop.products?.length ?? 0);
-            const bannerUrl = shop.banner || '/images/default-shop-banner.png';
+            // Permanent luxury brand banner for all current and future boutique cards
+            const bannerUrl = '/images/default-shop-banner.png';
             const cityDisplay = shop.city || 'India';
             const hasReviews = Boolean(shop.rating && (shop.reviewCount ?? 0) > 0);
             const ratingDisplay = shop.rating ? Number(shop.rating).toFixed(1) : null;
             const reviewsCount = shop.reviewCount || 0;
+            const isNavya =
+              shop.slug === 'navya-collection' || shop.name?.toLowerCase().includes('navya');
+            const shopLogo = isNavya ? '/images/navya-logo.png' : shop.logo;
 
             return (
               <div
                 key={shop.id}
                 className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden hover:border-orange/60 hover:shadow-lg transition-all duration-300 shadow-xs flex flex-col justify-between w-[270px] sm:w-[290px] shrink-0 snap-start relative group"
               >
-                {/* Store Cover Image */}
+                {/* Store Cover Image - Permanently Style That Speaks */}
                 <div className="h-28 sm:h-32 bg-slate-900 relative overflow-hidden select-none">
                   <Image
                     src={bannerUrl}
-                    alt={shop.name}
+                    alt="Style That Speaks - Navya Collection"
                     fill
                     priority={index < 2}
                     sizes="290px"
@@ -136,9 +140,9 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                   <div>
                     <div className="flex items-end justify-between gap-2 mb-2.5">
                       <div className="w-13 h-13 rounded-2xl bg-white border-2 border-amber-500/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-md select-none">
-                        {shop.logo ? (
+                        {shopLogo ? (
                           <Image
-                            src={shop.logo}
+                            src={shopLogo}
                             alt={shop.name}
                             fill
                             sizes="52px"
