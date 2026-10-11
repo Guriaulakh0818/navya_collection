@@ -183,32 +183,6 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                         )}
                       </div>
                     </div>
-
-                    {/* Standardized 4-Slot Product Preview Gallery with Placeholders */}
-                    <div className="grid grid-cols-4 gap-1.5 pt-3 mt-3 border-t border-slate-100">
-                      {[0, 1, 2, 3].map((slotIdx) => {
-                        const prod = shop.products?.[slotIdx];
-                        const thumb = prod?.images?.[0]?.imageUrl;
-                        return (
-                          <div
-                            key={slotIdx}
-                            className="aspect-square rounded-lg overflow-hidden bg-slate-100 border border-slate-200 relative select-none flex items-center justify-center"
-                          >
-                            {thumb ? (
-                              <Image
-                                src={thumb}
-                                alt={prod?.name || 'Product'}
-                                fill
-                                sizes="60px"
-                                className="object-cover"
-                              />
-                            ) : (
-                              <Store className="w-4 h-4 text-slate-300" />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
                   </div>
 
                   {/* Explore Button */}
@@ -226,7 +200,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
 
         {/* Right Editorial Promo Card (Real Stores, Real People, Real Fashion) */}
         <div className="lg:col-span-4 xl:col-span-3">
-          <div className="relative h-full min-h-[320px] lg:min-h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-gradient-to-br from-amber-50 to-orange-50 p-6 flex flex-col justify-between">
+          <div className="relative h-full min-h-[250px] lg:min-h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-gradient-to-br from-amber-50 to-orange-50 p-6 flex flex-col justify-between">
             <Image
               src="/images/editorial/boutique_merchant_promo.jpg"
               alt="Real Stores Real People Real Fashion"
