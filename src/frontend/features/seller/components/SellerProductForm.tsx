@@ -94,16 +94,16 @@ type VariantMode = 'NONE' | 'SIZE_ONLY' | 'COLOR_ONLY' | 'SIZE_AND_COLOR';
  * Reduces 5MB-15MB DSLR / Phone camera photos to ~300KB-500KB WebP,
  * ensuring fast uploads and never exceeding Vercel's 4.5MB request limit.
  */
-async function compressImageFile(file: File, maxDim = 1600, quality = 0.82): Promise<File> {
+async function compressImageFile(file: File, maxDim = 1500, quality = 0.8): Promise<File> {
   if (typeof window === 'undefined' || !file || !file.type.startsWith('image/')) {
     return file;
   }
-  // If file is already small (under 800KB), no need to compress
-  if (file.size <= 800 * 1024) {
+  // If file is already small (under 750KB), no need to compress
+  if (file.size <= 750 * 1024) {
     return file;
   }
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
@@ -126,6 +126,14 @@ async function compressImageFile(file: File, maxDim = 1600, quality = 0.82): Pro
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         if (!ctx) {
+          if (file.size > 3.8 * 1024 * 1024) {
+            reject(
+              new Error(
+                `Photo "${file.name}" is too large and cannot be processed by browser canvas.`,
+              ),
+            );
+            return;
+          }
           resolve(file);
           return;
         }
@@ -134,6 +142,10 @@ async function compressImageFile(file: File, maxDim = 1600, quality = 0.82): Pro
         canvas.toBlob(
           (blob) => {
             if (!blob) {
+              if (file.size > 3.8 * 1024 * 1024) {
+                reject(new Error(`Photo "${file.name}" is too large to upload.`));
+                return;
+              }
               resolve(file);
               return;
             }
@@ -148,10 +160,22 @@ async function compressImageFile(file: File, maxDim = 1600, quality = 0.82): Pro
           quality,
         );
       };
-      img.onerror = () => resolve(file);
+      img.onerror = () => {
+        if (file.size > 3.8 * 1024 * 1024) {
+          reject(new Error(`Photo "${file.name}" exceeds allowed 4MB upload size.`));
+        } else {
+          resolve(file);
+        }
+      };
       img.src = e.target?.result as string;
     };
-    reader.onerror = () => resolve(file);
+    reader.onerror = () => {
+      if (file.size > 3.8 * 1024 * 1024) {
+        reject(new Error(`Photo "${file.name}" exceeds allowed 4MB upload size.`));
+      } else {
+        resolve(file);
+      }
+    };
     reader.readAsDataURL(file);
   });
 }
@@ -408,8 +432,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       taxGstRate: initialData.taxGstRate
         ? Number(initialData.taxGstRate)
         : initialData.taxRate
-        ? Number(initialData.taxRate)
-        : 5,
+          ? Number(initialData.taxRate)
+          : 5,
       hsnCode: initialData.hsnCode || '6204',
       stock: Number(initialData.stock || 0),
       lowStockThreshold: Number(initialData.lowStockThreshold || 5),
@@ -443,7 +467,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     if (initialData.categoryId) catIds.push(initialData.categoryId);
     if (initialData.category?.slug) catIds.push(initialData.category.slug);
     if (initialData.metaKeywords) {
-      const parts = initialData.metaKeywords.split(',').map((s: string) => s.trim()).filter(Boolean);
+      const parts = initialData.metaKeywords
+        .split(',')
+        .map((s: string) => s.trim())
+        .filter(Boolean);
       parts.forEach((p: string) => {
         if (!catIds.includes(p)) catIds.push(p);
       });
@@ -462,9 +489,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       setSelectedColors(
         Array.from(new Set(loadedVariants.map((v: any) => v.color).filter(Boolean))),
       );
-      setSelectedSizes(
-        Array.from(new Set(loadedVariants.map((v: any) => v.size).filter(Boolean))),
-      );
+      setSelectedSizes(Array.from(new Set(loadedVariants.map((v: any) => v.size).filter(Boolean))));
     }
     setIsLoadingProduct(false);
   }, [initialData]);
@@ -504,8 +529,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             taxGstRate: prod.taxGstRate
               ? Number(prod.taxGstRate)
               : prod.taxRate
-              ? Number(prod.taxRate)
-              : 5,
+                ? Number(prod.taxRate)
+                : 5,
             hsnCode: prod.hsnCode || '6204',
             stock: Number(prod.stock || 0),
             lowStockThreshold: Number(prod.lowStockThreshold || 5),
@@ -539,7 +564,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           if (prod.categoryId) catIds.push(prod.categoryId);
           if (prod.category?.slug) catIds.push(prod.category.slug);
           if (prod.metaKeywords) {
-            const parts = prod.metaKeywords.split(',').map((s: string) => s.trim()).filter(Boolean);
+            const parts = prod.metaKeywords
+              .split(',')
+              .map((s: string) => s.trim())
+              .filter(Boolean);
             parts.forEach((p: string) => {
               if (!catIds.includes(p)) catIds.push(p);
             });
@@ -665,7 +693,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             data = JSON.parse(rawText);
           } catch {
             if (res.status === 413 || rawText.toLowerCase().includes('request entity too large')) {
-              throw new Error(`Photo "${item.file.name}" exceeds the allowed upload size. Please select a smaller photo.`);
+              throw new Error(
+                `Photo "${item.file.name}" exceeds the allowed upload size. Please select a smaller photo.`,
+              );
             }
             throw new Error(rawText || `Upload failed with status ${res.status}`);
           }
@@ -884,13 +914,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   const handleToggleColorForSize = (size: string, color: string) => {
     const exists = formData.variants.some((v: any) => v.size === size && v.color === color);
     if (exists) {
-      const updated = formData.variants.filter(
-        (v: any) => !(v.size === size && v.color === color),
-      );
-      const totalStock = updated.reduce(
-        (sum: number, v: any) => sum + Number(v.stock || 0),
-        0,
-      );
+      const updated = formData.variants.filter((v: any) => !(v.size === size && v.color === color));
+      const totalStock = updated.reduce((sum: number, v: any) => sum + Number(v.stock || 0), 0);
       setFormData((prev) => ({
         ...prev,
         variants: updated,
@@ -907,10 +932,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         imageUrl: colorExisting?.imageUrl || '',
       };
       const updated = [...formData.variants, newVariant];
-      const totalStock = updated.reduce(
-        (sum: number, v: any) => sum + Number(v.stock || 0),
-        0,
-      );
+      const totalStock = updated.reduce((sum: number, v: any) => sum + Number(v.stock || 0), 0);
       setFormData((prev) => ({
         ...prev,
         variants: updated,
@@ -939,10 +961,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         });
       });
     });
-    const totalStock = newVariants.reduce(
-      (sum: number, v: any) => sum + Number(v.stock || 0),
-      0,
-    );
+    const totalStock = newVariants.reduce((sum: number, v: any) => sum + Number(v.stock || 0), 0);
     setFormData((prev) => ({
       ...prev,
       variants: newVariants,
@@ -1020,9 +1039,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   const handleAssignGalleryImageToColor = (color: string, imageUrl: string) => {
     setFormData((prev) => ({
       ...prev,
-      variants: prev.variants.map((v: any) =>
-        v.color === color ? { ...v, imageUrl } : v,
-      ),
+      variants: prev.variants.map((v: any) => (v.color === color ? { ...v, imageUrl } : v)),
     }));
     showToast(`Assigned gallery photo to all ${color} variants!`, 'success');
   };
@@ -1132,28 +1149,52 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         : '/api/v1/seller/products';
       const method = productId ? 'PUT' : 'POST';
 
+      // Sanitize payload to strip any accidental raw data URIs and validate JSON size
+      const sanitizedImages = (formData.images || [])
+        .map((img: any) => ({
+          ...img,
+          imageUrl: img.imageUrl?.startsWith('data:') ? '' : img.imageUrl,
+        }))
+        .filter((img: any) => Boolean(img.imageUrl));
+
       const payload = {
         ...formData,
+        images: sanitizedImages,
         status: explicitStatus || formData.status,
         categoryId: effectiveCategoryId,
         categoryIds: selectedCategoryIds.length > 0 ? selectedCategoryIds : [effectiveCategoryId],
         price: Number(formData.price),
-        compareAtPrice: formData.compareAtPrice && Number(formData.compareAtPrice) > 0 ? Number(formData.compareAtPrice) : undefined,
-        costPrice: formData.costPrice && Number(formData.costPrice) > 0 ? Number(formData.costPrice) : undefined,
+        compareAtPrice:
+          formData.compareAtPrice && Number(formData.compareAtPrice) > 0
+            ? Number(formData.compareAtPrice)
+            : undefined,
+        costPrice:
+          formData.costPrice && Number(formData.costPrice) > 0
+            ? Number(formData.costPrice)
+            : undefined,
         stock: Number(formData.stock),
         variants: (formData.variants || []).map((v: any) => ({
           ...v,
           price: Number(v.price) || Number(formData.price),
-          compareAtPrice: v.compareAtPrice && Number(v.compareAtPrice) > 0 ? Number(v.compareAtPrice) : undefined,
+          compareAtPrice:
+            v.compareAtPrice && Number(v.compareAtPrice) > 0 ? Number(v.compareAtPrice) : undefined,
           costPrice: v.costPrice && Number(v.costPrice) > 0 ? Number(v.costPrice) : undefined,
           stock: Number(v.stock) || 0,
+          imageUrl: v.imageUrl?.startsWith('data:') ? '' : v.imageUrl,
         })),
       };
+
+      const jsonString = JSON.stringify(payload);
+      if (jsonString.length > 3.8 * 1024 * 1024) {
+        throw new Error(
+          'Listing payload size exceeds allowed limit (4MB). Please reduce images or description length.',
+        );
+      }
 
       const res = await fetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: jsonString,
       });
 
       const rawText = await res.text();
@@ -1161,6 +1202,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       try {
         data = JSON.parse(rawText);
       } catch {
+        if (
+          res.status === 413 ||
+          rawText.toLowerCase().includes('payload_too_large') ||
+          rawText.toLowerCase().includes('entity too large')
+        ) {
+          throw new Error(
+            'Listing update failed: Upload payload exceeded size limit (max 4MB). Please ensure photos are under 4MB.',
+          );
+        }
         throw new Error(
           rawText?.slice(0, 150) || `Server returned error (${res.status}): Please try again.`,
         );
@@ -1340,12 +1390,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                   </h3>
                 </div>
                 <p className="text-[11px] text-slate-600 mt-0.5">
-                  Choose the garment to automatically open its tailored attributes in Section 2 and configure its size system.
+                  Choose the garment to automatically open its tailored attributes in Section 2 and
+                  configure its size system.
                 </p>
               </div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-xl border border-amber-300 text-xs font-bold text-navy shadow-2xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Active Template: <strong className="text-amber-800">{activeTemplate.name}</strong></span>
+                <span>
+                  Active Template: <strong className="text-amber-800">{activeTemplate.name}</strong>
+                </span>
               </div>
             </div>
 
@@ -2276,7 +2329,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                   <div className="flex items-center justify-between">
                     <label className="block font-bold text-navy uppercase tracking-wider text-xs">
-                      Step 1: Select Available Sizes ({SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name})
+                      Step 1: Select Available Sizes (
+                      {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name})
                     </label>
                     <span className="text-[11px] text-amber-800 font-bold">
                       System: {activeTemplate.sizeSystemId}
@@ -2331,7 +2385,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                       Step 2: Select Product Colors
                     </label>
                     <p className="text-[11px] text-slate-500 mt-0.5">
-                      Select all colors this product is made in. You can choose which colors are available for each size below.
+                      Select all colors this product is made in. You can choose which colors are
+                      available for each size below.
                     </p>
                   </div>
 
@@ -2522,13 +2577,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                   Size: {sz}
                                 </span>
                                 <span className="text-xs text-slate-500 font-semibold">
-                                  {sizeVariants.length} color{sizeVariants.length !== 1 ? 's' : ''} available
+                                  {sizeVariants.length} color{sizeVariants.length !== 1 ? 's' : ''}{' '}
+                                  available
                                 </span>
                               </div>
 
                               <div className="flex items-center gap-3">
                                 <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
-                                  Total Size Stock: <strong className="text-navy">{sizeStock}</strong>
+                                  Total Size Stock:{' '}
+                                  <strong className="text-navy">{sizeStock}</strong>
                                 </span>
                                 <button
                                   type="button"
@@ -2678,7 +2735,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                               </div>
                             ) : (
                               <div className="bg-slate-50 p-2.5 rounded-xl text-center text-xs text-slate-400 font-medium border border-dashed border-slate-200">
-                                No colors enabled for Size {sz}. Click any color chip above to add it.
+                                No colors enabled for Size {sz}. Click any color chip above to add
+                                it.
                               </div>
                             )}
                           </div>

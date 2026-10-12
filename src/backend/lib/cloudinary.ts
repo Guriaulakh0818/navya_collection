@@ -39,8 +39,8 @@ export const ALLOWED_VIDEO_TYPES = [
   'video/mpeg',
 ];
 
-export const MAX_FILE_SIZE_PRODUCT_BYTES = 5 * 1024 * 1024; // 5MB limit
-export const MAX_FILE_SIZE_BANNER_BYTES = 10 * 1024 * 1024; // 10MB limit
+export const MAX_FILE_SIZE_PRODUCT_BYTES = 4 * 1024 * 1024; // 4MB limit (fits safely within Vercel's 4.5MB gateway ceiling)
+export const MAX_FILE_SIZE_BANNER_BYTES = 4.2 * 1024 * 1024; // 4.2MB limit for serverless upload
 export const MAX_FILE_SIZE_VIDEO_BYTES = 50 * 1024 * 1024; // 50MB video limit (Section 9)
 
 export interface CloudinaryUploadOptions {
