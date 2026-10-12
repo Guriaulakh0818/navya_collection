@@ -45,7 +45,8 @@ export async function GET(request: NextRequest) {
     try {
       const decodedState = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
       if (decodedState?.redirect && typeof decodedState.redirect === 'string') {
-        redirectTarget = decodedState.redirect.startsWith('/') ? decodedState.redirect : '/';
+        const decoded = decodedState.redirect.startsWith('/') ? decodedState.redirect : '/';
+        redirectTarget = decoded.startsWith('/admin') ? '/' : decoded;
       }
     } catch {
       redirectTarget = '/';
@@ -187,8 +188,11 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    // Destination defaults to normal user storefront / requested destination
+    // Destination defaults to normal user storefront / requested destination (never admin)
     let destination = redirectTarget;
+    if (destination.startsWith('/admin')) {
+      destination = '/';
+    }
     if (destination === '/' && user.role === 'SELLER') {
       destination = '/seller/products';
     }

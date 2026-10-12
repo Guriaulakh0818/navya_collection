@@ -16,7 +16,10 @@ export async function GET(request: NextRequest) {
   }
 
   const { searchParams } = new URL(request.url);
-  const redirectTarget = searchParams.get('redirect') || '/';
+  let redirectTarget = searchParams.get('redirect') || '/';
+  if (redirectTarget.startsWith('/admin')) {
+    redirectTarget = '/';
+  }
 
   // Build the correct redirect_uri matching the request origin
   const host =

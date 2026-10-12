@@ -403,7 +403,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           </div>
 
           <a
-            href={`/api/v1/auth/google${redirectUrl && redirectUrl !== '/' ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`}
+            href="/api/v1/auth/google"
             className="w-full h-12 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50/80 text-slate-700 font-bold text-xs tracking-wider uppercase py-3 px-4 shadow-xs transition-all flex items-center justify-center gap-3 cursor-pointer active:scale-[0.98]"
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
