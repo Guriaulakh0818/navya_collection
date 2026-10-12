@@ -1,3 +1,7 @@
+/**
+ * Navya Collection - Google OAuth 2.0 Initiation Route
+ * Initiates the Google OAuth consent flow for store customers & boutique sellers.
+ */
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
