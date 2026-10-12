@@ -89,6 +89,73 @@ const COLOR_HEX_MAP: Record<string, string> = {
 
 type VariantMode = 'NONE' | 'SIZE_ONLY' | 'COLOR_ONLY' | 'SIZE_AND_COLOR';
 
+/**
+ * Automatically compresses an image file on the client before upload.
+ * Reduces 5MB-15MB DSLR / Phone camera photos to ~300KB-500KB WebP,
+ * ensuring fast uploads and never exceeding Vercel's 4.5MB request limit.
+ */
+async function compressImageFile(file: File, maxDim = 1600, quality = 0.82): Promise<File> {
+  if (typeof window === 'undefined' || !file || !file.type.startsWith('image/')) {
+    return file;
+  }
+  // If file is already small (under 800KB), no need to compress
+  if (file.size <= 800 * 1024) {
+    return file;
+  }
+
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(file);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+            const cleanName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+            const compressedFile = new File([blob], cleanName, {
+              type: 'image/webp',
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          },
+          'image/webp',
+          quality,
+        );
+      };
+      img.onerror = () => resolve(file);
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+}
+
 export function SellerProductForm({ productId, initialData }: ProductFormProps) {
   const router = useRouter();
   const [isLoadingProduct, setIsLoadingProduct] = useState(Boolean(productId && !initialData));
@@ -583,15 +650,25 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     await Promise.all(
       newQueueItems.map(async (item) => {
         try {
+          const fileToUpload = await compressImageFile(item.file);
           const uploadFormData = new FormData();
-          uploadFormData.append('file', item.file);
+          uploadFormData.append('file', fileToUpload);
 
           const res = await fetch('/api/v1/upload?folder=seller_products', {
             method: 'POST',
             body: uploadFormData,
           });
 
-          const data = await res.json();
+          const rawText = await res.text();
+          let data: any;
+          try {
+            data = JSON.parse(rawText);
+          } catch {
+            if (res.status === 413 || rawText.toLowerCase().includes('request entity too large')) {
+              throw new Error(`Photo "${item.file.name}" exceeds the allowed upload size. Please select a smaller photo.`);
+            }
+            throw new Error(rawText || `Upload failed with status ${res.status}`);
+          }
           if (!data.success || !data.data?.[0]?.secureUrl) {
             throw new Error(data.message || `Failed to upload ${item.file.name}`);
           }
@@ -651,13 +728,23 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     if (!file) return;
     setVariantUploadingIndex(index);
     try {
+      const fileToUpload = await compressImageFile(file);
       const uploadData = new FormData();
-      uploadData.append('file', file);
+      uploadData.append('file', fileToUpload);
       const res = await fetch('/api/v1/upload?folder=seller_products', {
         method: 'POST',
         body: uploadData,
       });
-      const data = await res.json();
+      const rawText = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        if (res.status === 413 || rawText.toLowerCase().includes('request entity too large')) {
+          throw new Error('Photo exceeds the allowed upload size. Please select a smaller photo.');
+        }
+        throw new Error(rawText || `Upload failed with status ${res.status}`);
+      }
       const uploadedUrl =
         data.data?.[0]?.secureUrl ||
         data.data?.[0]?.url ||
@@ -879,13 +966,23 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
   const handleUploadColorPhoto = async (color: string, file: File) => {
     try {
+      const fileToUpload = await compressImageFile(file);
       const uploadData = new FormData();
-      uploadData.append('file', file);
+      uploadData.append('file', fileToUpload);
       const res = await fetch('/api/v1/upload?folder=seller_products', {
         method: 'POST',
         body: uploadData,
       });
-      const data = await res.json();
+      const rawText = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        if (res.status === 413 || rawText.toLowerCase().includes('request entity too large')) {
+          throw new Error('Photo exceeds the allowed upload size. Please select a smaller photo.');
+        }
+        throw new Error(rawText || `Upload failed with status ${res.status}`);
+      }
       const uploadedUrl =
         data.data?.[0]?.secureUrl ||
         data.data?.[0]?.url ||
@@ -1059,12 +1156,21 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const rawText = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        throw new Error(
+          rawText?.slice(0, 150) || `Server returned error (${res.status}): Please try again.`,
+        );
+      }
+
       if (data.success) {
         showToast(data.message || 'Product saved successfully!', 'success');
         setTimeout(() => {
           router.push('/seller/products');
-        }, 1500);
+        }, 1200);
       } else {
         const errorDetail =
           data.errors && typeof data.errors === 'object'
@@ -2981,6 +3087,40 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:border-navy focus:bg-white focus:outline-none transition-all font-medium"
             />
           </div>
+        </div>
+      </div>
+
+      {/* BOTTOM ACTION BAR */}
+      <div className="sticky bottom-4 z-20 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-4 shadow-lg flex items-center justify-between gap-4">
+        <Link
+          href="/seller/products"
+          className="text-xs font-bold text-slate-500 hover:text-navy flex items-center gap-1.5 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Cancel & Back to Products
+        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={(e) => handleSubmit(e, 'draft')}
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" /> Save as Draft
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-6 py-2.5 bg-navy hover:bg-navy-hover text-white font-extrabold text-xs rounded-xl transition-all flex items-center gap-2 shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <span>Saving...</span>
+            ) : (
+              <>
+                <Send className="w-4 h-4 text-amber-400" />{' '}
+                {productId ? 'Update Listing' : 'Submit for Approval'}
+              </>
+            )}
+          </button>
         </div>
       </div>
     </form>
