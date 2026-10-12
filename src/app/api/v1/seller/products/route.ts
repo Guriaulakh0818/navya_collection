@@ -61,7 +61,13 @@ export async function GET(request: NextRequest) {
 
     if (!shop) {
       shop = await prisma.shop.findFirst({
-        where: { ownerId: userId, deletedAt: null },
+        where: {
+          deletedAt: null,
+          OR: [
+            { ownerId: userId },
+            ...(user?.email ? [{ email: user.email }] : []),
+          ],
+        },
       });
     }
 
@@ -178,7 +184,13 @@ export async function POST(request: NextRequest) {
     );
 
     let shop = await prisma.shop.findFirst({
-      where: { ownerId: userId, deletedAt: null },
+      where: {
+        deletedAt: null,
+        OR: [
+          { ownerId: userId },
+          ...(user?.email ? [{ email: user.email }] : []),
+        ],
+      },
       include: {
         owner: { select: { name: true, email: true, mobile: true } },
       },

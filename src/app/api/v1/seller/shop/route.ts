@@ -25,8 +25,6 @@ export async function PUT(req: Request) {
 
     const { payload } = await jwtVerify(token, getJwtSecretKey());
     const userId = payload.userId as string;
-    const userRole = String(payload.role || 'USER');
-
     if (!userId) {
       return NextResponse.json(
         { success: false, message: 'Invalid session token.' },
@@ -34,6 +32,19 @@ export async function PUT(req: Request) {
       );
     }
 
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid session token.' },
+        { status: 401 },
+      );
+    }
+
+    const userRole = String(user.role || payload.role || 'USER').toUpperCase();
     const validSellerRoles = ['SELLER', 'OWNER', 'ADMIN', 'SUPER_ADMIN'];
     if (!validSellerRoles.includes(userRole)) {
       return NextResponse.json(
