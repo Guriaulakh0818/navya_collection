@@ -187,14 +187,9 @@ export async function GET(request: NextRequest) {
       },
     );
 
-    // Dynamic destination based on role if default
+    // Destination defaults to normal user storefront / requested destination
     let destination = redirectTarget;
-    if (
-      destination === '/' &&
-      ['ADMIN', 'OWNER', 'SUPER_ADMIN'].includes(String(user.role).toUpperCase())
-    ) {
-      destination = '/admin';
-    } else if (destination === '/' && user.role === 'SELLER') {
+    if (destination === '/' && user.role === 'SELLER') {
       destination = '/seller/products';
     }
 
