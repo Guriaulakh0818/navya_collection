@@ -254,19 +254,9 @@ export async function uploadMediaToCloudinary(
     };
   } catch (error: any) {
     console.error('[CLOUDINARY_MEDIA_UPLOAD_ERROR]', error);
-    const mockPublicId = `${targetFolder}/${publicIdName || `media_${Date.now()}`}`;
-    const fallbackUrl = fileInput;
-
-    return {
-      publicId: mockPublicId,
-      url: fallbackUrl,
-      secureUrl: fallbackUrl,
-      width: 1280,
-      height: 720,
-      fileSize: 500000,
-      format: isVideo ? 'mp4' : 'jpg',
-      optimizedUrl: fallbackUrl,
-    };
+    throw new Error(
+      `Cloudinary upload failed: ${error?.message || error || 'Unknown Cloudinary error'}`,
+    );
   }
 }
 
@@ -314,19 +304,9 @@ export async function uploadImageToCloudinary(
     };
   } catch (error: any) {
     console.error('[CLOUDINARY_UPLOAD_ERROR]', error);
-    const mockPublicId = `${targetFolder}/${publicIdName || `img_${Date.now()}`}`;
-    const fallbackUrl = fileInput;
-
-    return {
-      publicId: mockPublicId,
-      url: fallbackUrl,
-      secureUrl: fallbackUrl,
-      width: 1200,
-      height: 1600,
-      fileSize: 245000,
-      format: 'jpg',
-      optimizedUrl: fallbackUrl,
-    };
+    throw new Error(
+      `Cloudinary image upload failed: ${error?.message || error || 'Unknown Cloudinary error'}`,
+    );
   }
 }
 

@@ -63,10 +63,7 @@ export async function GET(request: NextRequest) {
       shop = await prisma.shop.findFirst({
         where: {
           deletedAt: null,
-          OR: [
-            { ownerId: userId },
-            ...(user?.email ? [{ email: user.email }] : []),
-          ],
+          OR: [{ ownerId: userId }, ...(user?.email ? [{ email: user.email }] : [])],
         },
       });
     }
@@ -186,10 +183,7 @@ export async function POST(request: NextRequest) {
     let shop = await prisma.shop.findFirst({
       where: {
         deletedAt: null,
-        OR: [
-          { ownerId: userId },
-          ...(user?.email ? [{ email: user.email }] : []),
-        ],
+        OR: [{ ownerId: userId }, ...(user?.email ? [{ email: user.email }] : [])],
       },
       include: {
         owner: { select: { name: true, email: true, mobile: true } },
@@ -323,12 +317,13 @@ export async function POST(request: NextRequest) {
       }
 
       if (allImages.length > 0) {
+        const hasExplicitPrimary = allImages.some((img) => Boolean(img.isPrimary));
         await tx.productImage.createMany({
           data: allImages.map((img, index) => ({
             productId: product.id,
             imageUrl: img.imageUrl,
             altText: img.altText || data.name,
-            isPrimary: img.isPrimary || index === 0,
+            isPrimary: hasExplicitPrimary ? Boolean(img.isPrimary) : index === 0,
             sortOrder: img.sortOrder ?? index,
           })),
         });

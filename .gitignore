@@ -66,3 +66,4 @@ scratch/
 # storybook build outputs
 storybook-static/
 .vercel
+.env*

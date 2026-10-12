@@ -252,7 +252,13 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     sleeve: initialData?.sleeve || '',
     neck: initialData?.neck || '',
     attributes: initialData?.attributes || {},
-    images: initialData?.images || [],
+    images: (initialData?.images || []).map((img: any, idx: number) => ({
+      ...img,
+      imageUrl:
+        typeof img === 'string' ? img : (img.imageUrl || img.secureUrl || img.url || '').trim(),
+      isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
+      sortOrder: img.sortOrder ?? idx,
+    })),
     variants: (initialData?.variants || []).map((v: any) => ({
       ...v,
       imageUrl: v.attributes?.imageUrl || v.imageUrl || v.image || '',
@@ -459,7 +465,13 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       sleeve: initialData.sleeve || initialData.attributes?.sleeve || '',
       neck: initialData.neck || initialData.attributes?.neck || '',
       attributes: initialData.attributes || {},
-      images: initialData.images || [],
+      images: (initialData.images || []).map((img: any, idx: number) => ({
+        ...img,
+        imageUrl:
+          typeof img === 'string' ? img : (img.imageUrl || img.secureUrl || img.url || '').trim(),
+        isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
+        sortOrder: img.sortOrder ?? idx,
+      })),
       variants: loadedVariants,
     }));
 
@@ -556,7 +568,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             sleeve: prod.sleeve || prod.attributes?.sleeve || '',
             neck: prod.neck || prod.attributes?.neck || '',
             attributes: prod.attributes || {},
-            images: prod.images || [],
+            images: (prod.images || []).map((img: any, idx: number) => ({
+              ...img,
+              imageUrl:
+                typeof img === 'string'
+                  ? img
+                  : (img.imageUrl || img.secureUrl || img.url || '').trim(),
+              isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
+              sortOrder: img.sortOrder ?? idx,
+            })),
             variants: loadedVariants,
           }));
 
@@ -704,7 +724,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           }
 
           const uploadRes = data.data[0];
-          const secureUrl = uploadRes.secureUrl;
+          const secureUrl = uploadRes.secureUrl || uploadRes.url || '';
 
           setFormData((prev) => {
             const isFirstImage = prev.images.length === 0;
@@ -1149,13 +1169,108 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         : '/api/v1/seller/products';
       const method = productId ? 'PUT' : 'POST';
 
-      // Sanitize payload to strip any accidental raw data URIs and validate JSON size
-      const sanitizedImages = (formData.images || [])
-        .map((img: any) => ({
-          ...img,
-          imageUrl: img.imageUrl?.startsWith('data:') ? '' : img.imageUrl,
-        }))
+      // 1. Normalize images: support { imageUrl }, { url }, { secureUrl }, string URLs
+      const normalizedImages = (formData.images || [])
+        .map((img: any, idx: number) => {
+          const resolvedUrl =
+            typeof img === 'string' ? img : (img.imageUrl || img.secureUrl || img.url || '').trim();
+          return {
+            ...img,
+            imageUrl: resolvedUrl,
+            altText: img.altText || formData.name || 'Product Image',
+            isPrimary: Boolean(img.isPrimary),
+            sortOrder: img.sortOrder ?? idx,
+          };
+        })
         .filter((img: any) => Boolean(img.imageUrl));
+
+      if (normalizedImages.length === 0) {
+        showToast('Please upload at least 1 product image.', 'error');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 2. Ensure exactly one primary image is designated
+      if (!normalizedImages.some((img: any) => img.isPrimary)) {
+        normalizedImages[0].isPrimary = true;
+      }
+
+      // 3. If any image in the gallery is still a raw data/blob URI, upload it to Cloudinary before submission
+      for (let i = 0; i < normalizedImages.length; i++) {
+        const img = normalizedImages[i];
+        if (img.imageUrl.startsWith('data:') || img.imageUrl.startsWith('blob:')) {
+          try {
+            const uploadRes = await fetch('/api/v1/upload?folder=seller_products', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ images: [img.imageUrl] }),
+            });
+            const uploadData = await uploadRes.json();
+            if (
+              uploadData.success &&
+              uploadData.data?.[0]?.secureUrl &&
+              !uploadData.data[0].secureUrl.startsWith('data:')
+            ) {
+              img.imageUrl = uploadData.data[0].secureUrl;
+            } else {
+              throw new Error(
+                uploadData.message ||
+                  `Failed to upload photo #${i + 1} to cloud storage. Please remove and re-add this photo.`,
+              );
+            }
+          } catch (uploadErr: any) {
+            throw new Error(
+              uploadErr.message ||
+                `Failed to upload photo #${i + 1}. Please ensure photos are valid image files under 4MB.`,
+            );
+          }
+        }
+      }
+
+      // Clean images payload for Zod validation (must be valid URL, not empty, not raw base64)
+      const sanitizedImages = normalizedImages
+        .filter((img: any) => Boolean(img.imageUrl) && !img.imageUrl.startsWith('data:'))
+        .map((img: any, idx: number) => ({
+          imageUrl: img.imageUrl,
+          altText: img.altText || formData.name || 'Product Image',
+          isPrimary: Boolean(img.isPrimary),
+          sortOrder: img.sortOrder ?? idx,
+        }));
+
+      if (sanitizedImages.length === 0) {
+        showToast(
+          'At least one valid product image is required. Please upload photos before updating.',
+          'error',
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Keep state in sync with resolved Cloudinary URLs
+      setFormData((prev) => ({
+        ...prev,
+        images: sanitizedImages,
+      }));
+
+      // Normalize variants images
+      const normalizedVariants = (formData.variants || []).map((v: any) => {
+        let vImgUrl = typeof v.imageUrl === 'string' ? v.imageUrl : v.image || '';
+        if (vImgUrl.startsWith('data:')) {
+          const matched = sanitizedImages.find(
+            (si: any) => si.imageUrl && !si.imageUrl.startsWith('data:'),
+          );
+          vImgUrl = matched ? matched.imageUrl : '';
+        }
+        return {
+          ...v,
+          price: Number(v.price) || Number(formData.price),
+          compareAtPrice:
+            v.compareAtPrice && Number(v.compareAtPrice) > 0 ? Number(v.compareAtPrice) : undefined,
+          costPrice: v.costPrice && Number(v.costPrice) > 0 ? Number(v.costPrice) : undefined,
+          stock: Number(v.stock) || 0,
+          imageUrl: vImgUrl,
+        };
+      });
 
       const payload = {
         ...formData,
@@ -1173,15 +1288,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             ? Number(formData.costPrice)
             : undefined,
         stock: Number(formData.stock),
-        variants: (formData.variants || []).map((v: any) => ({
-          ...v,
-          price: Number(v.price) || Number(formData.price),
-          compareAtPrice:
-            v.compareAtPrice && Number(v.compareAtPrice) > 0 ? Number(v.compareAtPrice) : undefined,
-          costPrice: v.costPrice && Number(v.costPrice) > 0 ? Number(v.costPrice) : undefined,
-          stock: Number(v.stock) || 0,
-          imageUrl: v.imageUrl?.startsWith('data:') ? '' : v.imageUrl,
-        })),
+        variants: normalizedVariants,
       };
 
       const jsonString = JSON.stringify(payload);

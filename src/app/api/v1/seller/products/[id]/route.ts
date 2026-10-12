@@ -270,13 +270,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           });
         }
 
+        const hasExplicitPrimary = allImages.some((img) => Boolean(img.isPrimary));
         await tx.productImage.deleteMany({ where: { productId: id } });
         await tx.productImage.createMany({
           data: allImages.map((img, idx) => ({
             productId: id,
             imageUrl: img.imageUrl,
             altText: img.altText || data.name,
-            isPrimary: img.isPrimary || idx === 0,
+            isPrimary: hasExplicitPrimary ? Boolean(img.isPrimary) : idx === 0,
             sortOrder: img.sortOrder ?? idx,
           })),
         });
@@ -427,7 +428,10 @@ export async function DELETE(
     });
 
     if (!product) {
-      return NextResponse.json({ success: false, message: 'Product not found or unauthorized.' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: 'Product not found or unauthorized.' },
+        { status: 404 },
+      );
     }
 
     await prisma.$transaction(async (tx) => {
