@@ -72,7 +72,7 @@ interface CartStore extends CartCalculatedTotals {
     shopLogo?: string;
   }) => Promise<void>;
   updateQuantity: (itemIdOrProductId: string, quantity: number) => Promise<void>;
-  removeItem: (itemIdOrProductId: string) => Promise<void>;
+  removeItem: (itemIdOrProductId: string, variantId?: string | null) => Promise<void>;
   clearCart: () => Promise<void>;
   resetLocalCart: () => void;
   mergeGuestCart: () => Promise<void>;
@@ -155,17 +155,6 @@ export const useCartStore = create<CartStore>()(
 
       syncWithServer: (serverCart) => {
         if (!serverCart) return;
-
-        // Protect local cart state: If server returns 0 items while client has items, retain client items
-        const currentItems = get().items;
-        if ((!serverCart.items || serverCart.items.length === 0) && currentItems.length > 0) {
-          set({
-            isGuest: false,
-            isLoading: false,
-            error: null,
-          });
-          return;
-        }
 
         set({
           ...serverCart,
@@ -267,7 +256,30 @@ export const useCartStore = create<CartStore>()(
 
           const json = await res.json();
           if (res.ok && json.success && json.data) {
-            get().syncWithServer(json.data);
+            // Check if user removed this item while POST was in flight
+            const currentItems = get().items;
+            const stillInCart = currentItems.some(
+              (i) => i.productId === input.productId && (i.variantId || null) === cleanVariantId,
+            );
+            if (stillInCart) {
+              get().syncWithServer(json.data);
+            } else {
+              // User removed item while POST was in flight! Delete it on server now
+              const dbItem = json.data.items?.find(
+                (i: any) =>
+                  i.productId === input.productId && (i.variantId || null) === cleanVariantId,
+              );
+              if (dbItem?.id) {
+                fetch(`/api/v1/cart/items/${dbItem.id}`, { method: 'DELETE' })
+                  .then((r) => r.json())
+                  .then((delJson) => {
+                    if (delJson.success && delJson.data) {
+                      get().syncWithServer(delJson.data);
+                    }
+                  })
+                  .catch(() => {});
+              }
+            }
           }
         } catch {
           // Retain local optimistic state if server sync fails temporarily
@@ -315,27 +327,41 @@ export const useCartStore = create<CartStore>()(
         } catch {}
       },
 
-      removeItem: async (itemIdOrProductId) => {
+      removeItem: async (itemIdOrProductId, variantId) => {
         const state = get();
 
         // 1. Optimistic Local Removal
-        const updatedItems = state.items.filter(
-          (i) =>
-            !(i.id === itemIdOrProductId || (!i.variantId && i.productId === itemIdOrProductId)),
-        );
+        const updatedItems = state.items.filter((i) => {
+          if (i.id === itemIdOrProductId) return false;
+          if (
+            i.productId === itemIdOrProductId &&
+            (variantId === undefined || (i.variantId || null) === (variantId || null))
+          ) {
+            return false;
+          }
+          return true;
+        });
         const totals = calculateTotals(updatedItems);
         set({ ...totals, error: null });
 
         if (state.isGuest) return;
 
         // 2. Logged-in Server Sync
-        const targetItem = state.items.find(
-          (i) => i.id === itemIdOrProductId || (!i.variantId && i.productId === itemIdOrProductId),
-        );
+        const targetItem = state.items.find((i) => {
+          if (i.id === itemIdOrProductId) return true;
+          if (
+            i.productId === itemIdOrProductId &&
+            (variantId === undefined || (i.variantId || null) === (variantId || null))
+          ) {
+            return true;
+          }
+          return false;
+        });
         if (!targetItem) return;
 
         try {
-          const res = await fetch(`/api/v1/cart/items/${targetItem.id}`, {
+          const deleteId = targetItem.id.startsWith('item_') ? targetItem.productId : targetItem.id;
+          const res = await fetch(`/api/v1/cart/items/${deleteId}`, {
             method: 'DELETE',
           });
 

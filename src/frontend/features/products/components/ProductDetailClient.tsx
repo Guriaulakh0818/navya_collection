@@ -337,7 +337,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     e.stopPropagation();
     if (!currentCartItem) return;
     if (currentVariantQuantity <= 1) {
-      await removeItem(currentCartItem.id);
+      await removeItem(currentCartItem.id, activeVariant?.id || null);
     } else {
       await updateQuantity(currentCartItem.id, currentVariantQuantity - 1);
     }
@@ -738,21 +738,11 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 <button
                   type="button"
                   onClick={handleDecreaseVariantQty}
-                  className={`h-7 w-7 sm:h-8 sm:w-8 rounded-xl flex items-center justify-center transition-all active:scale-90 cursor-pointer ${
-                    currentVariantQuantity <= 1
-                      ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-2xs'
-                      : 'bg-navy-600 hover:bg-orange text-white'
-                  }`}
-                  aria-label={
-                    currentVariantQuantity <= 1 ? 'Remove from cart' : 'Decrease quantity'
-                  }
-                  title={currentVariantQuantity <= 1 ? 'Remove from cart' : 'Decrease quantity'}
+                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-xl bg-navy-600 hover:bg-orange text-white flex items-center justify-center transition-all active:scale-90 cursor-pointer"
+                  aria-label="Decrease quantity"
+                  title="Decrease quantity"
                 >
-                  {currentVariantQuantity <= 1 ? (
-                    <Trash2 className="w-3.5 h-3.5" />
-                  ) : (
-                    <Minus className="w-3.5 h-3.5 stroke-[3]" />
-                  )}
+                  <Minus className="w-3.5 h-3.5 stroke-[3]" />
                 </button>
 
                 <div className="flex flex-col items-center justify-center px-2 select-none">

@@ -333,16 +333,30 @@ export class CartService {
    */
   static async removeItem(userId: string, cartItemId: string): Promise<ServiceResponse> {
     try {
-      const cartItem = await CartRepository.findCartItemById(cartItemId);
+      const cart = await CartRepository.findOrCreateCartByUserId(userId);
+      let cartItem = await CartRepository.findCartItemById(cartItemId);
+
       if (!cartItem) {
+        // Fallback: check if cartItemId was a productId
+        const matched = cart.items.find(
+          (i: any) => i.id === cartItemId || i.productId === cartItemId,
+        );
+        if (matched) {
+          cartItem = matched as any;
+        }
+      }
+
+      if (!cartItem) {
+        // Item is already not in cart, return current cart gracefully
+        const calculated = this.calculateCartTotals(cart);
         return {
-          success: false,
-          message: 'Cart item not found.',
-          statusCode: 404,
+          success: true,
+          message: 'Item removed from cart.',
+          statusCode: 200,
+          data: calculated,
         };
       }
 
-      const cart = await CartRepository.findOrCreateCartByUserId(userId);
       if (cartItem.cartId !== cart.id) {
         return {
           success: false,
@@ -351,7 +365,7 @@ export class CartService {
         };
       }
 
-      await CartRepository.removeItem(cartItemId);
+      await CartRepository.removeItem(cartItem.id);
 
       const updatedCart = await CartRepository.findOrCreateCartByUserId(userId);
       const calculated = this.calculateCartTotals(updatedCart);
