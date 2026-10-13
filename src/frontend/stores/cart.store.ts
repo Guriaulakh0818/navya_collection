@@ -156,8 +156,26 @@ export const useCartStore = create<CartStore>()(
       syncWithServer: (serverCart) => {
         if (!serverCart) return;
 
+        const currentLocal = get().items;
+        // Keep any local items that aren't yet reflected in serverCart (e.g. concurrent in-flight additions)
+        const inFlightItems = currentLocal.filter(
+          (localItem) =>
+            !serverCart.items?.some(
+              (serverItem: any) =>
+                serverItem.productId === localItem.productId &&
+                (serverItem.variantId || null) === (localItem.variantId || null),
+            ),
+        );
+
+        const mergedItems = [...(serverCart.items || []), ...inFlightItems];
+        const totals = calculateTotals(mergedItems);
+
         set({
           ...serverCart,
+          items: mergedItems,
+          itemCount: mergedItems.reduce((acc, i) => acc + i.quantity, 0),
+          subtotal: totals.subtotal,
+          total: totals.total,
           isGuest: false,
           isLoading: false,
           error: null,
@@ -256,30 +274,7 @@ export const useCartStore = create<CartStore>()(
 
           const json = await res.json();
           if (res.ok && json.success && json.data) {
-            // Check if user removed this item while POST was in flight
-            const currentItems = get().items;
-            const stillInCart = currentItems.some(
-              (i) => i.productId === input.productId && (i.variantId || null) === cleanVariantId,
-            );
-            if (stillInCart) {
-              get().syncWithServer(json.data);
-            } else {
-              // User removed item while POST was in flight! Delete it on server now
-              const dbItem = json.data.items?.find(
-                (i: any) =>
-                  i.productId === input.productId && (i.variantId || null) === cleanVariantId,
-              );
-              if (dbItem?.id) {
-                fetch(`/api/v1/cart/items/${dbItem.id}`, { method: 'DELETE' })
-                  .then((r) => r.json())
-                  .then((delJson) => {
-                    if (delJson.success && delJson.data) {
-                      get().syncWithServer(delJson.data);
-                    }
-                  })
-                  .catch(() => {});
-              }
-            }
+            get().syncWithServer(json.data);
           }
         } catch {
           // Retain local optimistic state if server sync fails temporarily
@@ -406,16 +401,10 @@ export const useCartStore = create<CartStore>()(
 
       mergeGuestCart: async () => {
         const state = get();
+        const localItems = state.items;
 
-        // If already in logged-in mode, fetch current cart without re-merging
-        if (!state.isGuest) {
-          await get().fetchCart();
-          return;
-        }
-
-        const guestItems = state.items;
-
-        if (guestItems.length === 0) {
+        if (localItems.length === 0) {
+          set({ isGuest: false });
           await get().fetchCart();
           return;
         }
@@ -423,7 +412,7 @@ export const useCartStore = create<CartStore>()(
         set({ isLoading: true, error: null });
 
         try {
-          const payloadItems = guestItems.map((item) => ({
+          const payloadItems = localItems.map((item) => ({
             productId: item.productId,
             variantId: item.variantId || undefined,
             quantity: item.quantity,
@@ -442,10 +431,10 @@ export const useCartStore = create<CartStore>()(
           if (res.ok && json.success && json.data) {
             get().syncWithServer(json.data);
           } else {
-            set({ isLoading: false, error: json.message || 'Cart merge failed' });
+            set({ isGuest: false, isLoading: false, error: json.message || 'Cart merge failed' });
           }
         } catch (err: any) {
-          set({ isLoading: false, error: err.message || 'Network error during cart merge' });
+          set({ isGuest: false, isLoading: false, error: err.message || 'Network error during cart merge' });
         }
       },
     }),

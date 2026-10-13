@@ -81,7 +81,20 @@ export class CartRepository {
    */
   static async addOrUpdateItem(cartId: string, input: AddToCartInput) {
     const { productId, variantId, quantity } = input;
-    const cleanVariantId = variantId || null;
+    let cleanVariantId = variantId || null;
+
+    if (cleanVariantId) {
+      try {
+        const variant = await prisma.productVariant.findFirst({
+          where: { id: cleanVariantId, deletedAt: null },
+        });
+        if (!variant) {
+          cleanVariantId = null;
+        }
+      } catch {
+        cleanVariantId = null;
+      }
+    }
 
     // Check if item already exists in cart
     const existingItem = await prisma.cartItem.findFirst({
@@ -159,13 +172,8 @@ export class CartRepository {
     guestItems: { productId: string; variantId?: string | null; quantity: number }[],
   ) {
     return await prisma.$transaction(async (tx) => {
-      // Clear pre-existing old/seeded cart items to reflect user's current items
-      await tx.cartItem.deleteMany({
-        where: { cartId },
-      });
-
       for (const guestItem of guestItems) {
-        const cleanVariantId = guestItem.variantId || null;
+        let cleanVariantId = guestItem.variantId || null;
 
         // Verify Product & Variant validity and stock
         const product = await tx.product.findFirst({
@@ -175,7 +183,9 @@ export class CartRepository {
           },
         });
 
-        let availableStock = product?.stock || 50;
+        if (!product) continue;
+
+        let availableStock = product.stock || 50;
 
         if (cleanVariantId) {
           const variant = await tx.productVariant.findFirst({
@@ -185,12 +195,35 @@ export class CartRepository {
             },
           });
           if (variant) {
-            availableStock = variant.availableStock || 25;
+            availableStock =
+              variant.availableStock && variant.availableStock > 0
+                ? variant.availableStock
+                : (variant.stock && variant.stock > 0 ? variant.stock : product.stock || 25);
+          } else {
+            // If variant was deleted or re-created, don't crash foreign key constraint
+            cleanVariantId = null;
           }
         }
 
         const targetQty = Math.min(guestItem.quantity, availableStock);
-        if (product) {
+
+        // Check if item already exists in user's cart
+        const existing = await tx.cartItem.findFirst({
+          where: {
+            cartId,
+            productId: guestItem.productId,
+            variantId: cleanVariantId,
+          },
+        });
+
+        if (existing) {
+          await tx.cartItem.update({
+            where: { id: existing.id },
+            data: {
+              quantity: Math.min(existing.quantity + guestItem.quantity, availableStock),
+            },
+          });
+        } else {
           await tx.cartItem.create({
             data: {
               cartId,

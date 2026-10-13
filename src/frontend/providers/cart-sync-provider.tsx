@@ -28,10 +28,7 @@ export function CartSyncProvider({ children }: { children: React.ReactNode }) {
       if (!hasMergedRef.current) {
         hasMergedRef.current = true;
 
-        // Perform guest merge on login
-        cartStore.setGuestMode(false);
-        wishlistStore.setGuestMode(false);
-
+        // Perform guest merge on login (stores transition from guest to server mode cleanly)
         cartStore.mergeGuestCart();
         wishlistStore.mergeGuestWishlist();
       }
