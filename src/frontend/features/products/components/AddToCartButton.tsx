@@ -77,28 +77,28 @@ export function AddToCartButton({ product, className, disabled }: AddToCartButto
   if (cartItem && cartItem.quantity > 0) {
     return (
       <div
-        className={`w-full flex items-center justify-between rounded-full bg-navy text-white p-1 border border-navy-700 shadow-md ${className}`}
+        className={`w-full flex items-center justify-between rounded-xl bg-navy text-white px-1 py-0.5 border border-navy-700 shadow-sm h-8 sm:h-9 ${className || ''}`}
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={handleDecrease}
-          className="h-7 w-7 rounded-full bg-navy-600 hover:bg-orange text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0"
+          className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-navy-600 hover:bg-orange text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0"
           aria-label="Decrease quantity"
           title="Decrease quantity"
         >
-          <Minus className="h-3.5 w-3.5 stroke-[3]" />
+          <Minus className="h-3 w-3 stroke-[3]" />
         </button>
 
-        <span className="font-heading text-sm font-black text-white px-3 select-none tracking-wider">
+        <span className="font-heading text-xs sm:text-sm font-black text-white px-2 select-none tracking-wider">
           {cartItem.quantity}
         </span>
 
         <button
           onClick={handleIncrease}
-          className="h-7 w-7 rounded-full bg-orange hover:bg-orange-600 text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0 shadow-sm"
+          className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg bg-orange hover:bg-orange-600 text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0 shadow-xs"
           aria-label="Increase quantity"
         >
-          <Plus className="h-3.5 w-3.5 stroke-[3]" />
+          <Plus className="h-3 w-3 stroke-[3]" />
         </button>
       </div>
     );
@@ -107,7 +107,7 @@ export function AddToCartButton({ product, className, disabled }: AddToCartButto
   return (
     <button
       type="button"
-      className={`w-full rounded-full bg-orange hover:bg-orange-600 text-white font-bold text-xs py-2.5 px-4 shadow-md transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className || ''}`}
+      className={`w-full rounded-xl bg-orange hover:bg-orange-600 text-white font-bold text-[11px] sm:text-xs h-8 sm:h-9 py-1.5 px-3 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${className || ''}`}
       onClick={handleAddToCart}
       disabled={disabled}
     >

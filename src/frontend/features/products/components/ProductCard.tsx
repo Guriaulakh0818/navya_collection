@@ -46,11 +46,11 @@ export function ProductCard({ product }: ProductCardProps) {
   }, [product.variants]);
 
   return (
-    <div className="group relative rounded-2xl bg-brand-surface border border-brand-border shadow-card hover:shadow-premium transition-all duration-300 flex flex-col overflow-hidden">
+    <div className="group relative rounded-xl sm:rounded-2xl bg-brand-surface border border-brand-border shadow-card hover:shadow-premium transition-all duration-300 flex flex-col overflow-hidden">
       {/* Product Image Container */}
       <Link
         href={`/product/${product.slug}`}
-        className="relative aspect-[3/4] w-full overflow-hidden bg-brand-divider block cursor-pointer select-none"
+        className="relative aspect-[4/5] w-full overflow-hidden bg-brand-divider block cursor-pointer select-none"
       >
         {imageSrc ? (
           <Image
@@ -62,51 +62,59 @@ export function ProductCard({ product }: ProductCardProps) {
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-divider via-brand-background to-orange/10 flex items-center justify-center p-4">
-            <span className="font-heading text-xl font-bold text-navy/30 text-center uppercase tracking-wider">
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-divider via-brand-background to-orange/10 flex items-center justify-center p-3">
+            <span className="font-heading text-base sm:text-lg font-bold text-navy/30 text-center uppercase tracking-wider">
               {product.name}
             </span>
           </div>
         )}
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 pointer-events-none">
-          {discount ? <ProductBadge type="sale" text={`${discount}% OFF`} /> : null}
-          {product.isNewArrival ? <ProductBadge type="new" text="NEW" /> : null}
+        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 pointer-events-none">
+          {discount ? (
+            <ProductBadge
+              type="sale"
+              text={`${discount}% OFF`}
+              className="text-[9px] px-1.5 py-0.5 font-black tracking-tight"
+            />
+          ) : null}
+          {product.isNewArrival ? (
+            <ProductBadge
+              type="new"
+              text="NEW"
+              className="text-[9px] px-1.5 py-0.5 font-black tracking-tight"
+            />
+          ) : null}
         </div>
 
         {/* Wishlist Button */}
-        <div className="absolute top-3 right-3 z-20" onClick={(e) => e.stopPropagation()}>
-          <WishlistButton product={product} />
+        <div className="absolute top-2 right-2 z-20" onClick={(e) => e.stopPropagation()}>
+          <WishlistButton
+            product={product}
+            className="p-1 sm:p-1.5 bg-white/90 shadow-2xs hover:bg-white"
+          />
         </div>
       </Link>
 
       {/* Product Info */}
-      <div className="p-4 flex-1 flex flex-col justify-between space-y-3 bg-white">
+      <div className="p-2 sm:p-2.5 flex-1 flex flex-col justify-between space-y-1.5 bg-white">
         <div>
-          <div className="flex items-center justify-between text-[11px] font-extrabold uppercase tracking-wider text-slate-500 mb-1">
-            <span>{product.category?.name || 'Garments'}</span>
-            <span className="text-amber-700 font-semibold lowercase">
-              {product.shop?.name ? `by ${product.shop.name}` : 'Local Shop'}
-            </span>
-          </div>
-
           <Link href={`/product/${product.slug}`}>
-            <h3 className="font-extrabold text-navy text-sm sm:text-base group-hover:text-amber-600 transition-colors line-clamp-1">
+            <h3 className="font-bold text-navy text-xs sm:text-sm group-hover:text-amber-600 transition-colors line-clamp-1 leading-snug">
               {product.name}
             </h3>
           </Link>
 
           {/* Color Variation Thumbnails Preview */}
           {colorVariants.length > 1 && (
-            <div className="mt-2 flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar">
-              {colorVariants.slice(0, 5).map((cv, i) => (
+            <div className="mt-1 flex items-center gap-1 overflow-x-auto py-0.5 no-scrollbar">
+              {colorVariants.slice(0, 4).map((cv, i) => (
                 <button
                   key={i}
                   type="button"
                   onMouseEnter={() => cv.imageUrl && setHoveredImage(cv.imageUrl)}
                   onMouseLeave={() => setHoveredImage(null)}
-                  className={`w-5 h-6 rounded-md overflow-hidden border transition-transform hover:scale-110 shrink-0 ${
+                  className={`w-4 h-5 rounded-md overflow-hidden border transition-transform hover:scale-110 shrink-0 ${
                     hoveredImage === cv.imageUrl
                       ? 'border-amber-500 ring-1 ring-amber-500'
                       : 'border-slate-200'
@@ -122,27 +130,35 @@ export function ProductCard({ product }: ProductCardProps) {
                   )}
                 </button>
               ))}
-              {colorVariants.length > 5 && (
-                <span className="text-[10px] font-bold text-slate-400">
-                  +{colorVariants.length - 5}
+              {colorVariants.length > 4 && (
+                <span className="text-[9px] font-bold text-slate-400">
+                  +{colorVariants.length - 4}
                 </span>
               )}
             </div>
           )}
 
-          <div className="mt-2 flex items-center justify-between">
-            <ProductPrice price={product.price} compareAtPrice={product.compareAtPrice} />
+          <div className="mt-1 flex items-center justify-between">
+            <ProductPrice
+              price={product.price}
+              compareAtPrice={product.compareAtPrice}
+              className="flex items-baseline gap-1.5 text-xs sm:text-sm font-black"
+            />
           </div>
 
-          <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between">
-            <ProductRating rating={product.rating} reviewCount={product.reviewCount} />
+          <div className="mt-0.5 pt-1 border-t border-slate-100 flex items-center justify-between">
+            <ProductRating
+              rating={product.rating}
+              reviewCount={product.reviewCount}
+              className="flex items-center gap-1 text-[10px] text-slate-400 font-medium"
+            />
           </div>
         </div>
 
-        <div className="pt-2">
+        <div className="pt-1">
           <AddToCartButton
             product={product}
-            className="w-full rounded-xl text-xs font-extrabold py-2.5 shadow-xs"
+            className="w-full rounded-xl text-[11px] sm:text-xs font-bold py-1.5 sm:py-2 h-8 sm:h-9 shadow-xs"
           />
         </div>
       </div>
