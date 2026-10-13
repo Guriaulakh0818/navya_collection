@@ -847,12 +847,17 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       ...prev,
       variants: prev.variants.map((v: any, i: number) => {
         if (i === index) return { ...v, imageUrl };
-        if (targetColor && v.color === targetColor && !v.imageUrl) {
+        if (imageUrl && targetColor && v.color === targetColor && !v.imageUrl) {
           return { ...v, imageUrl };
         }
         return v;
       }),
     }));
+    if (imageUrl) {
+      showToast('Assigned gallery photo to variant!', 'success');
+    } else {
+      showToast('Removed photo from variant');
+    }
   };
 
   const handleApplyImageToAllColorVariants = (color: string, imageUrl: string) => {
@@ -1060,7 +1065,11 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       ...prev,
       variants: prev.variants.map((v: any) => (v.color === color ? { ...v, imageUrl } : v)),
     }));
-    showToast(`Assigned gallery photo to all ${color} variants!`, 'success');
+    if (imageUrl) {
+      showToast(`Assigned gallery photo to all ${color} variants!`, 'success');
+    } else {
+      showToast(`Removed photo from all ${color} variants`);
+    }
   };
 
   const handleToggleColor = (color: string) => {
@@ -2557,13 +2566,23 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                               key={clr}
                               className="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-3 shadow-2xs"
                             >
-                              <div className="relative w-12 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 shrink-0 flex items-center justify-center">
+                              <div className="relative w-12 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 shrink-0 flex items-center justify-center group">
                                 {colorImgUrl ? (
-                                  <img
-                                    src={colorImgUrl}
-                                    alt={clr}
-                                    className="w-full h-full object-cover"
-                                  />
+                                  <>
+                                    <img
+                                      src={colorImgUrl}
+                                      alt={clr}
+                                      className="w-full h-full object-cover"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAssignGalleryImageToColor(clr, '')}
+                                      className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-[10px] font-bold shadow-xs cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+                                      title="Remove photo"
+                                    >
+                                      ×
+                                    </button>
+                                  </>
                                 ) : (
                                   <ImageIcon className="w-5 h-5 text-slate-300" />
                                 )}
@@ -2595,16 +2614,20 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                     />
                                   </label>
 
-                                  {formData.images.length > 0 && !colorImgUrl && (
+                                  {formData.images.length > 0 && (
                                     <select
                                       defaultValue=""
                                       onChange={(e) => {
-                                        if (e.target.value) {
-                                          handleAssignGalleryImageToColor(clr, e.target.value);
-                                          e.target.value = '';
+                                        const val = e.target.value;
+                                        if (val === '__CLEAR__') {
+                                          handleAssignGalleryImageToColor(clr, '');
+                                        } else if (val) {
+                                          handleAssignGalleryImageToColor(clr, val);
                                         }
+                                        e.target.value = '';
                                       }}
-                                      className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1 py-0.5 outline-none cursor-pointer"
+                                      className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1.5 py-0.5 outline-none cursor-pointer"
+                                      title="Select from product gallery"
                                     >
                                       <option value="" disabled>
                                         Gallery ▾
@@ -2614,6 +2637,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                           Photo {iIdx + 1}
                                         </option>
                                       ))}
+                                      {colorImgUrl && (
+                                        <option
+                                          value="__CLEAR__"
+                                          className="text-rose-600 font-semibold"
+                                        >
+                                          ✕ Remove Photo
+                                        </option>
+                                      )}
                                     </select>
                                   )}
                                 </div>
@@ -3066,6 +3097,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                         alt="Variant"
                                         className="w-full h-full object-cover"
                                       />
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAssignGalleryImageToVariant(idx, '')}
+                                        className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-[10px] font-bold shadow-xs cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+                                        title="Remove photo"
+                                      >
+                                        ×
+                                      </button>
                                     </div>
                                   ) : (
                                     <div className="w-12 h-14 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
@@ -3095,16 +3134,20 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                       />
                                     </label>
 
-                                    {formData.images.length > 0 && !v.imageUrl && (
+                                    {formData.images.length > 0 && (
                                       <select
                                         defaultValue=""
                                         onChange={(e) => {
-                                          if (e.target.value) {
-                                            handleAssignGalleryImageToVariant(idx, e.target.value);
-                                            e.target.value = '';
+                                          const val = e.target.value;
+                                          if (val === '__CLEAR__') {
+                                            handleAssignGalleryImageToVariant(idx, '');
+                                          } else if (val) {
+                                            handleAssignGalleryImageToVariant(idx, val);
                                           }
+                                          e.target.value = '';
                                         }}
-                                        className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1 py-0.5 max-w-[90px] outline-none cursor-pointer"
+                                        className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1.5 py-0.5 max-w-[95px] outline-none cursor-pointer"
+                                        title="Select from product gallery"
                                       >
                                         <option value="" disabled>
                                           From Gallery ▾
@@ -3114,6 +3157,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                             Photo {iIdx + 1}
                                           </option>
                                         ))}
+                                        {v.imageUrl && (
+                                          <option
+                                            value="__CLEAR__"
+                                            className="text-rose-600 font-semibold"
+                                          >
+                                            ✕ Remove Photo
+                                          </option>
+                                        )}
                                       </select>
                                     )}
                                   </div>
