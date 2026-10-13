@@ -13,7 +13,6 @@ import {
   Percent,
   Plus,
   RotateCcw,
-  Save,
   Send,
   ShieldCheck,
   ShoppingBag,
@@ -1404,17 +1403,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={(e) => handleSubmit(e, 'draft')}
-            className="flex-1 sm:flex-none px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs active:scale-95"
-          >
-            <Save className="w-4 h-4" /> Save as Draft
-          </button>
-          <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-1 sm:flex-none px-6 py-2.5 bg-navy hover:bg-navy-hover text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95"
+            className="w-full sm:w-auto px-6 py-2.5 bg-navy hover:bg-navy-hover text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
           >
             {isSubmitting ? (
               <span>Saving...</span>
@@ -3264,14 +3255,6 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           <ArrowLeft className="w-4 h-4" /> Cancel & Back to Products
         </Link>
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={(e) => handleSubmit(e, 'draft')}
-            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50"
-          >
-            <Save className="w-4 h-4" /> Save as Draft
-          </button>
           <button
             type="submit"
             disabled={isSubmitting}
