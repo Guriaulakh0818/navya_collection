@@ -86,7 +86,7 @@ export function ProductImageGallery({
   };
 
   return (
-    <div className="space-y-4 select-none">
+    <div className="space-y-2 sm:space-y-3 select-none">
       {/* Primary Display Image with Touch Swipe & Arrow Controls */}
       <div
         onTouchStart={onTouchStart}
@@ -94,7 +94,7 @@ export function ProductImageGallery({
         onTouchEnd={onTouchEnd}
         className={
           className ||
-          'relative aspect-[3/4] w-full overflow-hidden rounded-3xl bg-slate-100 border border-slate-200 shadow-sm group touch-pan-y'
+          'relative aspect-[3/4] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-100 border border-slate-200 shadow-sm group touch-pan-y'
         }
       >
         <Image
@@ -111,11 +111,11 @@ export function ProductImageGallery({
           <button
             type="button"
             onClick={handlePrev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-navy shadow-md transition-all hover:bg-white hover:scale-110 active:scale-95 cursor-pointer z-10"
+            className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 sm:p-2.5 text-navy shadow-md transition-all hover:bg-white hover:scale-110 active:scale-95 cursor-pointer z-10"
             aria-label="Previous product image"
             title="Previous image"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         )}
 
@@ -124,17 +124,17 @@ export function ProductImageGallery({
           <button
             type="button"
             onClick={handleNext}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2.5 text-navy shadow-md transition-all hover:bg-white hover:scale-110 active:scale-95 cursor-pointer z-10"
+            className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 sm:p-2.5 text-navy shadow-md transition-all hover:bg-white hover:scale-110 active:scale-95 cursor-pointer z-10"
             aria-label="Next product image"
             title="Next image"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         )}
 
         {/* Image Counter Badge */}
         {images.length > 1 && (
-          <div className="absolute bottom-4 right-4 rounded-full bg-navy/80 backdrop-blur-xs px-3 py-1 text-[11px] font-extrabold text-white shadow-xs z-10 tracking-wider">
+          <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 rounded-full bg-navy/80 backdrop-blur-xs px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-extrabold text-white shadow-xs z-10 tracking-wider">
             {activeIdx + 1} / {images.length}
           </div>
         )}
@@ -145,7 +145,7 @@ export function ProductImageGallery({
         <div className="relative">
           <div
             ref={thumbnailRef}
-            className="flex items-center gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth"
+            className="flex items-center gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scroll-smooth"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {images.map((img, idx) => (
@@ -153,7 +153,7 @@ export function ProductImageGallery({
                 key={img.id || idx}
                 type="button"
                 onClick={() => setActiveIdx(idx)}
-                className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 transition-all cursor-pointer snap-start ${
+                className={`relative h-14 w-14 sm:h-18 sm:w-18 shrink-0 overflow-hidden rounded-xl sm:rounded-2xl border-2 transition-all cursor-pointer snap-start ${
                   activeIdx === idx
                     ? 'border-navy shadow-md scale-95 ring-2 ring-navy/30 opacity-100'
                     : 'border-slate-200 opacity-70 hover:opacity-100'
