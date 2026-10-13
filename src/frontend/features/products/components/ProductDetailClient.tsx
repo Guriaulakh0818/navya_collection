@@ -106,7 +106,6 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   const [selectedVariant, setSelectedVariant] = useState<string>(product?.variants?.[0]?.id || '');
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
 
   // Helper to extract variant color safely
   const getVColor = (v: any) =>
@@ -285,8 +284,6 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   const currentVariantQuantity = currentCartItem?.quantity || 0;
 
   const handleAddToCart = async () => {
-    setIsAdding(true);
-
     const { main: variantLabel } = getCleanVariantLabel(activeVariant, product.name);
     const hasAttributes = Boolean(
       activeColor ||
@@ -320,7 +317,6 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       shopSlug: product.shop?.slug || 'shop',
       shopLogo: product.shop?.logo,
     });
-    setTimeout(() => setIsAdding(false), 500);
   };
 
   const handleIncreaseVariantQty = async (e: React.MouseEvent) => {
@@ -770,21 +766,10 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 type="button"
                 onClick={handleAddToCart}
                 disabled={stockStatus.label === 'Out of Stock'}
-                className={`flex-1 min-w-0 h-[46px] xs:h-[48px] px-2 xs:px-3 sm:px-6 rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-98 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${
-                  isAdding ? 'bg-emerald-600 text-white' : 'bg-orange hover:bg-amber-600 text-white'
-                }`}
+                className="flex-1 min-w-0 h-[46px] xs:h-[48px] px-2 xs:px-3 sm:px-6 rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-98 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed bg-orange hover:bg-amber-600 text-white"
               >
-                {isAdding ? (
-                  <>
-                    <Check className="w-4 h-4 shrink-0" />
-                    <span className="truncate">Added!</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingBag className="w-4 h-4 shrink-0" />
-                    <span className="truncate">Add to Cart</span>
-                  </>
-                )}
+                <ShoppingBag className="w-4 h-4 shrink-0" />
+                <span className="truncate">Add to Cart</span>
               </button>
             )}
 
