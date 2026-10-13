@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
               images: { orderBy: { sortOrder: 'asc' } },
               variants: true,
               category: { select: { id: true, name: true, slug: true } },
+              brandRef: { select: { id: true, name: true, slug: true } },
               shop: {
                 select: {
                   id: true,
@@ -61,6 +62,9 @@ export async function GET(request: NextRequest) {
                   slug: true,
                   phone: true,
                   email: true,
+                  city: true,
+                  state: true,
+                  verificationBadge: true,
                   owner: {
                     select: { id: true, name: true, email: true, mobile: true },
                   },
@@ -79,11 +83,17 @@ export async function GET(request: NextRequest) {
                   images: { orderBy: { sortOrder: 'asc' } },
                   variants: true,
                   category: { select: { id: true, name: true, slug: true } },
+                  brandRef: { select: { id: true, name: true, slug: true } },
                   shop: {
                     select: {
                       id: true,
                       name: true,
                       slug: true,
+                      phone: true,
+                      email: true,
+                      city: true,
+                      state: true,
+                      verificationBadge: true,
                     },
                   },
                 },
