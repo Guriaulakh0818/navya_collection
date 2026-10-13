@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { generateProductJsonLdSchemas, generateProductMetadata, JsonLd } from '@/features/seo';
 import { ProductDetailClient } from '@/frontend/features/products/components/ProductDetailClient';
 import { ProductService } from '@/frontend/features/products/services/product.service';
+import { prisma } from '@/lib/prisma';
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -149,6 +150,141 @@ async function getFormattedProduct(slug: string) {
   return null;
 }
 
+async function getRelatedProducts(
+  productId: string,
+  categoryId?: string | null,
+  shopId?: string | null,
+) {
+  try {
+    const whereConditions: any = {
+      id: { not: productId },
+      deletedAt: null,
+      status: 'active',
+    };
+
+    if (categoryId) {
+      whereConditions.categoryId = categoryId;
+    }
+
+    let prods = await prisma.product.findMany({
+      where: whereConditions,
+      take: 8,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        images: {
+          where: { deletedAt: null },
+          orderBy: { sortOrder: 'asc' },
+        },
+        variants: {
+          where: { deletedAt: null },
+        },
+        shop: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logo: true,
+            verificationBadge: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    // If fewer than 4 items from same category, fetch more products from other categories/shops
+    if (prods.length < 4) {
+      const existingIds = [productId, ...prods.map((p) => p.id)];
+      const fallbackProds = await prisma.product.findMany({
+        where: {
+          id: { notIn: existingIds },
+          deletedAt: null,
+          status: 'active',
+        },
+        take: 8 - prods.length,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          images: {
+            where: { deletedAt: null },
+            orderBy: { sortOrder: 'asc' },
+          },
+          variants: {
+            where: { deletedAt: null },
+          },
+          shop: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logo: true,
+              verificationBadge: true,
+            },
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+      });
+      prods = [...prods, ...fallbackProds];
+    }
+
+    return prods.map((p) => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      sku: p.sku,
+      price: Number(p.price || 0),
+      compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+      rating: p.rating ? Number(p.rating) : null,
+      reviewCount: p.reviewCount ? Number(p.reviewCount) : 0,
+      stock: p.stock ?? 0,
+      images: (p.images || []).map((img: any) => ({
+        id: img.id,
+        imageUrl: img.imageUrl,
+        url: img.imageUrl,
+        alt: img.altText || p.name,
+        isPrimary: Boolean(img.isPrimary),
+      })),
+      variants: (p.variants || []).map((v: any) => ({
+        id: v.id,
+        color: v.color || (v.attributes as any)?.color || null,
+        size: v.size || (v.attributes as any)?.size || null,
+        price: Number(v.price ?? p.price ?? 0),
+        compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : null,
+        imageUrl: v.imageUrl || (v.attributes as any)?.imageUrl || null,
+      })),
+      shop: p.shop
+        ? {
+            id: p.shop.id,
+            name: p.shop.name,
+            slug: p.shop.slug,
+            logo: p.shop.logo,
+            verificationBadge: p.shop.verificationBadge || 'NONE',
+          }
+        : null,
+      category: p.category
+        ? {
+            id: p.category.id,
+            name: p.category.name,
+            slug: p.category.slug,
+          }
+        : null,
+    }));
+  } catch (error) {
+    console.error('Error fetching related products:', error);
+    return [];
+  }
+}
+
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
   const product = await getFormattedProduct(slug);
@@ -174,13 +310,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
+  const relatedProducts = await getRelatedProducts(
+    product.id,
+    product.category?.id,
+    product.shop?.id,
+  );
+
   const jsonLdSchemas = generateProductJsonLdSchemas(product);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16 pt-4 font-sans">
       <JsonLd data={jsonLdSchemas} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ProductDetailClient key={product.id} product={product} />
+        <ProductDetailClient key={product.id} product={product} relatedProducts={relatedProducts} />
       </div>
     </div>
   );

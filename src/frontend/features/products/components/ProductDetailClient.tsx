@@ -4,6 +4,7 @@
 import {
   Building2,
   Check,
+  ChevronRight,
   Heart,
   HelpCircle,
   Layers,
@@ -13,19 +14,24 @@ import {
   RotateCcw,
   Share2,
   ShieldCheck,
+  ShoppingBag,
   Sparkles,
   Star,
   Tag,
+  Trash2,
   Truck,
+  Zap,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Drawer } from '@/components/ui/drawer';
 import { HorizontalCarousel } from '@/frontend/components/ui/HorizontalCarousel';
 import { useCartStore, useWishlistStore } from '@/stores';
 
+import { ProductCard } from './ProductCard';
 import { ProductImageGallery } from './ProductImageGallery';
 import { ProductRating } from './ProductRating';
 
@@ -86,10 +92,18 @@ const COLOR_HEX_MAP: Record<string, string> = {
 
 export function ProductDetailClient({ product, relatedProducts = [] }: ProductDetailClientProps) {
   const addItem = useCartStore((s) => s.addItem);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const cartItems = useCartStore((s) => s.items);
   const { toggleItem: toggleWishlist, isInWishlist } = useWishlistStore();
+  const router = useRouter();
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [selectedVariant, setSelectedVariant] = useState<string>(product?.variants?.[0]?.id || '');
-  const [quantity, setQuantity] = useState(1);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -255,6 +269,21 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
       : null;
 
+  // Find cart item for the currently selected variant (or base product if no variants)
+  const currentCartItem = useMemo(() => {
+    if (!mounted) return undefined;
+    const currentVariantId = activeVariant?.id || null;
+    return cartItems.find((item) => {
+      if (item.productId !== product.id) return false;
+      if (currentVariantId) {
+        return item.variantId === currentVariantId;
+      }
+      return !item.variantId;
+    });
+  }, [cartItems, product.id, activeVariant?.id, mounted]);
+
+  const currentVariantQuantity = currentCartItem?.quantity || 0;
+
   const handleAddToCart = async () => {
     setIsAdding(true);
 
@@ -282,7 +311,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       sku: activeVariant?.sku || product.sku,
       price: price,
       compareAtPrice: compareAtPrice,
-      quantity: quantity,
+      quantity: 1,
       availableStock: activeVariant?.stock ?? product.stock ?? 99,
       image:
         activeVariantImageUrl || product.images?.[0]?.url || product.images?.[0]?.imageUrl || '',
@@ -291,7 +320,35 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       shopSlug: product.shop?.slug || 'shop',
       shopLogo: product.shop?.logo,
     });
-    setTimeout(() => setIsAdding(false), 600);
+    setTimeout(() => setIsAdding(false), 500);
+  };
+
+  const handleIncreaseVariantQty = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!currentCartItem) return;
+    const maxStock = activeVariant?.stock ?? product.stock ?? 99;
+    if (currentVariantQuantity >= maxStock) return;
+    await updateQuantity(currentCartItem.id, currentVariantQuantity + 1);
+  };
+
+  const handleDecreaseVariantQty = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!currentCartItem) return;
+    if (currentVariantQuantity <= 1) {
+      await removeItem(currentCartItem.id);
+    } else {
+      await updateQuantity(currentCartItem.id, currentVariantQuantity - 1);
+    }
+  };
+
+  const handleBuyNow = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!currentCartItem) {
+      await handleAddToCart();
+    }
+    router.push('/checkout');
   };
 
   const handleShare = () => {
@@ -435,74 +492,78 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
 
         {/* Right Column: Product Info & Purchase Form */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Header & Badges */}
-          <div className="space-y-3 border-b border-slate-100 pb-5">
-            <div className="flex flex-wrap items-center gap-2">
+          {/* Header & Badges with Title & Price Side-by-Side (Mobile Space Optimization) */}
+          <div className="space-y-2.5 border-b border-slate-100 pb-4">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               {product.brand && (
-                <span className="px-3 py-1 bg-amber-500/10 text-amber-900 font-extrabold text-[11px] uppercase tracking-wider rounded-full border border-amber-500/20">
+                <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-amber-500/10 text-amber-900 font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wider rounded-full border border-amber-500/20">
                   {product.brand}
                 </span>
               )}
               {product.category?.name && (
-                <span className="px-3 py-1 bg-navy/5 text-navy font-extrabold text-[11px] uppercase tracking-wider rounded-full border border-navy/10">
+                <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-navy/5 text-navy font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wider rounded-full border border-navy/10">
                   {product.category.name}
                 </span>
               )}
               {discountPercent && (
-                <span className="px-3 py-1 bg-amber-500 text-slate-950 font-black text-[11px] uppercase tracking-wider rounded-full shadow-xs">
+                <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-amber-500 text-slate-950 font-black text-[10px] sm:text-[11px] uppercase tracking-wider rounded-full shadow-2xs">
                   {discountPercent}% OFF
                 </span>
               )}
               <span
-                className={`px-3 py-1 text-white font-extrabold text-[11px] uppercase tracking-wider rounded-full ${stockStatus.color}`}
+                className={`px-2.5 py-0.5 sm:px-3 sm:py-1 text-white font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wider rounded-full ${stockStatus.color}`}
               >
                 {stockStatus.label}
               </span>
             </div>
 
-            <h1 className="font-extrabold text-navy text-2xl sm:text-3xl tracking-tight leading-tight">
-              {product.name}
-            </h1>
+            {/* Product Name & Price Side-by-Side */}
+            <div className="flex items-start justify-between gap-3 pt-0.5">
+              <div className="space-y-1.5 min-w-0 flex-1">
+                <h1 className="font-extrabold text-navy text-xl sm:text-2xl md:text-3xl tracking-tight leading-tight">
+                  {product.name}
+                </h1>
 
-            {reviewsList.length > 0 && product.rating ? (
-              <div className="flex items-center gap-1.5 text-xs text-amber-600 font-bold">
-                <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                <span>{Number(product.rating).toFixed(1)}</span>
-                <span className="text-slate-500 font-normal">
-                  ({reviewsList.length} verified {reviewsList.length === 1 ? 'rating' : 'ratings'})
-                </span>
+                {/* Rating & Boutique Pills in 1 compact line */}
+                <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                  {product.shop && (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 font-bold shadow-2xs">
+                      <Building2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      <span>
+                        Boutique: <strong className="text-navy">{product.shop.name}</strong>
+                      </span>
+                    </div>
+                  )}
+
+                  {reviewsList.length > 0 && product.rating ? (
+                    <div className="inline-flex items-center gap-1 text-xs text-amber-600 font-bold bg-amber-50/60 border border-amber-200/60 px-2 py-0.5 rounded-lg">
+                      <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                      <span>{Number(product.rating).toFixed(1)}</span>
+                      <span className="text-slate-400 font-normal">({reviewsList.length})</span>
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            ) : null}
 
-            {/* Merchant Shop Card Pill */}
-            {product.shop && (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 font-extrabold shadow-xs mt-1">
-                <Building2 className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>
-                  Boutique: <strong className="text-navy">{product.shop.name}</strong>
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Pricing Box */}
-          <div className="space-y-1">
-            <div className="flex items-baseline gap-3">
-              <span className="text-2xl sm:text-3xl font-extrabold text-navy font-mono">
-                ₹{Number(price).toLocaleString('en-IN')}
-              </span>
-              {compareAtPrice && compareAtPrice > price && (
-                <>
-                  <span className="text-sm sm:text-base text-slate-400 line-through font-mono">
-                    ₹{Number(compareAtPrice).toLocaleString('en-IN')}
+              {/* Price on right side (Compact & prominent) */}
+              <div className="text-right shrink-0 flex flex-col items-end pl-2">
+                <div className="flex items-baseline gap-1.5 sm:gap-2">
+                  <span className="text-2xl sm:text-3xl font-extrabold text-navy font-mono">
+                    ₹{Number(price).toLocaleString('en-IN')}
                   </span>
-                  <span className="text-xs font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                  {compareAtPrice && compareAtPrice > price && (
+                    <span className="text-xs sm:text-sm text-slate-400 line-through font-mono">
+                      ₹{Number(compareAtPrice).toLocaleString('en-IN')}
+                    </span>
+                  )}
+                </div>
+                {compareAtPrice && compareAtPrice > price && (
+                  <span className="text-[10px] sm:text-xs font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full mt-0.5">
                     Save ₹{(compareAtPrice - price).toLocaleString('en-IN')}
                   </span>
-                </>
-              )}
+                )}
+              </div>
             </div>
-            <p className="text-[11px] text-slate-500">Inclusive of all taxes & free shipping</p>
           </div>
 
           {/* Color & Size Variant Selection (Amazon / Myntra / Flipkart 1-line style) */}
@@ -670,68 +731,93 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
             {product.description}
           </p>
 
-          {/* Quantity Selector */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
-              Quantity
-            </h3>
-            <div className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-1.5">
-              <button
-                type="button"
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-100 font-bold active:scale-95 transition-all cursor-pointer"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="w-8 text-center font-mono font-extrabold text-sm text-navy">
-                {quantity}
-              </span>
-              <button
-                type="button"
-                onClick={() => setQuantity(quantity + 1)}
-                className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-100 font-bold active:scale-95 transition-all cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
+          {/* Action Buttons: Dynamic Add to Cart / Quantity Controller & Buy Now */}
+          <div className="pt-2 flex flex-row items-center gap-1.5 xs:gap-2 sm:gap-3 w-full flex-nowrap">
+            {currentVariantQuantity > 0 ? (
+              <div className="flex-1 min-w-0 h-[46px] xs:h-[48px] rounded-2xl bg-navy text-white flex items-center justify-between px-2 sm:px-3 shadow-md shrink-0 border border-navy-700">
+                <button
+                  type="button"
+                  onClick={handleDecreaseVariantQty}
+                  className={`h-7 w-7 sm:h-8 sm:w-8 rounded-xl flex items-center justify-center transition-all active:scale-90 cursor-pointer ${
+                    currentVariantQuantity <= 1
+                      ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-2xs'
+                      : 'bg-navy-600 hover:bg-orange text-white'
+                  }`}
+                  aria-label={
+                    currentVariantQuantity <= 1 ? 'Remove from cart' : 'Decrease quantity'
+                  }
+                  title={currentVariantQuantity <= 1 ? 'Remove from cart' : 'Decrease quantity'}
+                >
+                  {currentVariantQuantity <= 1 ? (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  ) : (
+                    <Minus className="w-3.5 h-3.5 stroke-[3]" />
+                  )}
+                </button>
 
-          {/* Action Buttons: Add to Cart & Buy Now */}
-          <div className="pt-4 flex flex-row items-center gap-1.5 xs:gap-2 sm:gap-3 w-full flex-nowrap">
+                <div className="flex flex-col items-center justify-center px-2 select-none">
+                  <span className="font-mono text-base sm:text-lg font-black text-white leading-none">
+                    {currentVariantQuantity}
+                  </span>
+                  <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">
+                    in cart
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleIncreaseVariantQty}
+                  disabled={currentVariantQuantity >= (activeVariant?.stock ?? product.stock ?? 99)}
+                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-xl bg-orange hover:bg-orange-600 text-white flex items-center justify-center transition-all active:scale-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
+                  aria-label="Increase quantity"
+                  title="Increase quantity"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={stockStatus.label === 'Out of Stock'}
+                className={`flex-1 min-w-0 h-[46px] xs:h-[48px] px-2 xs:px-3 sm:px-6 rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-98 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${
+                  isAdding ? 'bg-emerald-600 text-white' : 'bg-orange hover:bg-amber-600 text-white'
+                }`}
+              >
+                {isAdding ? (
+                  <>
+                    <Check className="w-4 h-4 shrink-0" />
+                    <span className="truncate">Added!</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingBag className="w-4 h-4 shrink-0" />
+                    <span className="truncate">Add to Cart</span>
+                  </>
+                )}
+              </button>
+            )}
+
             <button
               type="button"
-              onClick={handleAddToCart}
-              className={`flex-1 min-w-0 py-3 xs:py-3.5 px-2 xs:px-3 sm:px-6 rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-1 sm:gap-2 cursor-pointer active:scale-98 shrink-0 ${
-                isAdding ? 'bg-emerald-600 text-white' : 'bg-orange hover:bg-amber-600 text-white'
-              }`}
+              onClick={handleBuyNow}
+              disabled={stockStatus.label === 'Out of Stock'}
+              className="flex-1 min-w-0 h-[46px] xs:h-[48px] px-2 xs:px-3 sm:px-6 bg-navy hover:bg-navy-hover text-white rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-1 sm:gap-2 cursor-pointer text-center active:scale-98 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {isAdding ? (
-                <>
-                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                  <span className="truncate">Added!</span>
-                </>
-              ) : (
-                <span className="truncate">Add to Cart</span>
-              )}
-            </button>
-
-            <Link
-              href="/checkout"
-              onClick={handleAddToCart}
-              className="flex-1 min-w-0 py-3 xs:py-3.5 px-2 xs:px-3 sm:px-6 bg-navy hover:bg-navy-hover text-white rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-1 sm:gap-2 cursor-pointer text-center active:scale-98 shrink-0"
-            >
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
               <span className="truncate">Buy Now</span>
-            </Link>
+            </button>
 
             <button
               type="button"
               onClick={() => toggleWishlist(product)}
-              className={`p-2.5 xs:p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer shrink-0 ${
+              className={`h-[46px] xs:h-[48px] w-[46px] xs:w-[48px] rounded-2xl border transition-all cursor-pointer flex items-center justify-center shrink-0 ${
                 isWishlisted
                   ? 'border-rose-300 bg-rose-50 text-rose-600'
                   : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
               }`}
               title="Add to Wishlist"
+              aria-label="Add to Wishlist"
             >
               <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isWishlisted ? 'fill-rose-600' : ''}`} />
             </button>
@@ -739,8 +825,9 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
             <button
               type="button"
               onClick={handleShare}
-              className="p-2.5 xs:p-3 sm:p-3.5 rounded-2xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shrink-0"
+              className="h-[46px] xs:h-[48px] w-[46px] xs:w-[48px] rounded-2xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-center shrink-0"
               title="Share Link"
+              aria-label="Share Link"
             >
               {copiedLink ? (
                 <Check className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
@@ -888,6 +975,41 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
           ))}
         </div>
       </section>
+
+      {/* Related Products / More to Explore (Amazon / Flipkart / Myntra style) */}
+      {relatedProducts && relatedProducts.length > 0 && (
+        <section className="space-y-6 pt-8 border-t border-slate-200">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange/10 border border-orange/20 rounded-full text-orange font-bold text-xs uppercase tracking-wider mb-2">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Handpicked Recommendations</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-navy tracking-tight">
+                Similar Products You May Like
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+                Popular styles and customer favorites in {product.category?.name || 'fashion'}
+              </p>
+            </div>
+            {product.category?.slug && (
+              <Link
+                href={`/category/${product.category.slug}`}
+                className="inline-flex items-center gap-1 text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors self-start sm:self-auto"
+              >
+                <span>View All In {product.category.name}</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            {relatedProducts.map((relProd: any) => (
+              <ProductCard key={relProd.id} product={relProd} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* DYNAMIC CATEGORY SIZE GUIDE DRAWER */}
       <Drawer
