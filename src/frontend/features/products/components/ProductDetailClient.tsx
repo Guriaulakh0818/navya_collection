@@ -885,7 +885,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
         {/* Add Review Form */}
         <form
           onSubmit={handleAddReview}
-          className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 sm:p-5 space-y-2.5 sm:space-y-3 shadow-xs"
+          className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 space-y-2.5 sm:space-y-3 shadow-xs"
         >
           <h3 className="font-extrabold text-navy text-xs sm:text-sm">Write a Customer Review</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-xs">
