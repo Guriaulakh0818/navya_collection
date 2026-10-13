@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import {
@@ -674,7 +675,7 @@ export function ProductInspectionModal({
                 <div className="space-y-4 animate-fade-in">
                   {/* Return & Replacement Policy */}
                   <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-                    <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider block flex items-center gap-1.5">
+                    <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
                       <RotateCcw className="w-3.5 h-3.5 text-amber-600" /> Return &amp; Replacement
                       Policy
                     </span>
@@ -725,7 +726,7 @@ export function ProductInspectionModal({
 
                   {/* Taxation & Compliance */}
                   <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-                    <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider block flex items-center gap-1.5">
+                    <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
                       <Percent className="w-3.5 h-3.5 text-amber-600" /> Tax &amp; HSN Compliance
                     </span>
                     <div className="grid grid-cols-2 gap-3 text-[11px]">
@@ -751,7 +752,7 @@ export function ProductInspectionModal({
 
                   {/* Shipping Configuration */}
                   <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-                    <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider block flex items-center gap-1.5">
+                    <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
                       <Truck className="w-3.5 h-3.5 text-amber-600" /> Shipping Configuration
                     </span>
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between text-[11px]">
@@ -793,7 +794,7 @@ export function ProductInspectionModal({
 
                   {/* Enterprise SEO Metadata */}
                   <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-                    <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider block flex items-center gap-1.5">
+                    <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Search Engine Optimization
                       (SEO)
                     </span>
