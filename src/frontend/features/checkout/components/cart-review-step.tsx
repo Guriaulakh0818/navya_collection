@@ -19,9 +19,9 @@ export function CartReviewStep() {
   const shipping = 99;
   const total = subtotal + (subtotal >= 999 ? 0 : shipping);
 
-  const handleQuantityChange = (productId: string, delta: number, current: number) => {
+  const handleQuantityChange = (itemId: string, delta: number, current: number) => {
     const newQty = Math.max(1, current + delta);
-    updateItemQuantity(productId, newQty);
+    updateItemQuantity(itemId, newQty);
   };
 
   return (
@@ -36,7 +36,7 @@ export function CartReviewStep() {
       <div className="space-y-3.5 sm:space-y-4">
         {items.map((item: CartItem) => (
           <div
-            key={item.productId}
+            key={item.id}
             className="flex flex-col gap-3 rounded-2xl border border-slate-200/90 p-3.5 sm:p-4 sm:flex-row sm:items-center sm:justify-between hover:border-slate-300 transition-all bg-slate-50/40"
           >
             <div className="flex items-center gap-3 min-w-0">
@@ -53,6 +53,22 @@ export function CartReviewStep() {
                 <p className="font-bold text-navy text-xs sm:text-sm md:text-base line-clamp-2 leading-tight">
                   {item.name}
                 </p>
+                {Boolean(
+                  (item as any).color || (item as any).size || (item as any).variantName,
+                ) && (
+                  <div className="flex flex-wrap items-center gap-1.5 text-[10.5px] text-slate-500 font-semibold mt-0.5">
+                    {(item as any).color && (
+                      <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
+                        Color: <strong>{(item as any).color}</strong>
+                      </span>
+                    )}
+                    {(item as any).size && (
+                      <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
+                        Size: <strong>{(item as any).size}</strong>
+                      </span>
+                    )}
+                  </div>
+                )}
                 <p className="text-xs font-semibold text-slate-500 mt-0.5">
                   {formatPrice(item.price)}
                 </p>
@@ -65,16 +81,14 @@ export function CartReviewStep() {
                   variant="outline"
                   size="icon"
                   className="h-6 w-6 sm:h-7 sm:w-7 rounded-full border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer"
-                  onClick={() => handleQuantityChange(item.productId, -1, item.quantity)}
+                  onClick={() => handleQuantityChange(item.id, -1, item.quantity)}
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
                 <Input
                   type="number"
                   value={item.quantity}
-                  onChange={(e) =>
-                    updateItemQuantity(item.productId, Math.max(1, Number(e.target.value)))
-                  }
+                  onChange={(e) => updateItemQuantity(item.id, Math.max(1, Number(e.target.value)))}
                   className="w-10 sm:w-12 h-6 sm:h-7 text-center text-xs font-bold border-none p-0 focus:ring-0"
                   min={1}
                 />
@@ -82,7 +96,7 @@ export function CartReviewStep() {
                   variant="outline"
                   size="icon"
                   className="h-6 w-6 sm:h-7 sm:w-7 rounded-full border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer"
-                  onClick={() => handleQuantityChange(item.productId, 1, item.quantity)}
+                  onClick={() => handleQuantityChange(item.id, 1, item.quantity)}
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
@@ -96,7 +110,7 @@ export function CartReviewStep() {
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 sm:h-8 sm:w-8 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                  onClick={() => removeItem(item.productId)}
+                  onClick={() => removeItem(item.id)}
                 >
                   <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>

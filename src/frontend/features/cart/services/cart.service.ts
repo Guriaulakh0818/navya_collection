@@ -31,11 +31,12 @@ export class CartService {
         return true;
       })
       .map((item: any) => {
-        const itemPrice = item.variant ? Number(item.variant.price) : Number(item.product.price);
-        const itemCompareAtPrice = item.variant
-          ? item.variant.compareAtPrice
-            ? Number(item.variant.compareAtPrice)
-            : itemPrice
+        const itemPrice =
+          item.variant?.price !== undefined && item.variant?.price !== null
+            ? Number(item.variant.price)
+            : Number(item.product.price);
+        const itemCompareAtPrice = item.variant?.compareAtPrice
+          ? Number(item.variant.compareAtPrice)
           : item.product.compareAtPrice
             ? Number(item.product.compareAtPrice)
             : itemPrice;
@@ -45,24 +46,45 @@ export class CartService {
         originalSubtotal += itemCompareAtPrice * item.quantity;
 
         const primaryImage =
+          item.variant?.imageUrl ||
           item.product.images?.find((img: any) => img.isPrimary)?.imageUrl ||
           item.product.images?.[0]?.imageUrl ||
           'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800';
 
-        const availableStock = item.variant ? item.variant.availableStock : item.product.stock;
+        const availableStock = item.variant
+          ? (item.variant.availableStock ?? item.variant.stock ?? 25)
+          : (item.product.stock ?? 50);
+
+        let variantNameFormatted = item.variant?.name || null;
+        if (variantNameFormatted && item.product.name) {
+          if (variantNameFormatted.toLowerCase().startsWith(item.product.name.toLowerCase())) {
+            variantNameFormatted =
+              variantNameFormatted
+                .slice(item.product.name.length)
+                .replace(/^[\s\-–—:]+/, '')
+                .trim() || variantNameFormatted;
+          }
+        }
+
+        const fullName = variantNameFormatted
+          ? `${item.product.name} - ${variantNameFormatted}`
+          : item.product.name;
 
         return {
           id: item.id,
           cartId: item.cartId,
           productId: item.productId,
           variantId: item.variantId,
-          name: item.variant ? `${item.product.name} (${item.variant.name})` : item.product.name,
+          name: fullName,
           productName: item.product.name,
           productSlug: item.product.slug,
-          variantName: item.variant?.name || null,
+          variantName: variantNameFormatted,
           size: item.variant?.size || null,
           color: item.variant?.color || null,
           shopId: item.product.shopId || null,
+          shopName: item.product.shop?.name || null,
+          shopSlug: item.product.shop?.slug || null,
+          shopLogo: item.product.shop?.logo || null,
           taxRate:
             item.product.taxRate !== undefined && item.product.taxRate !== null
               ? Number(item.product.taxRate)
@@ -176,7 +198,6 @@ export class CartService {
             where: {
               id: variantId,
               productId,
-              status: 'active',
               deletedAt: null,
             },
           });
@@ -191,7 +212,7 @@ export class CartService {
             statusCode: 404,
           };
         }
-        availableStock = variant.availableStock;
+        availableStock = variant.availableStock ?? variant.stock ?? 25;
       }
 
       // 3. Stock Check

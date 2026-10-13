@@ -55,6 +55,12 @@ interface CartStore extends CartCalculatedTotals {
     productId: string;
     variantId?: string | null;
     name: string;
+    productName?: string;
+    productSlug?: string;
+    variantName?: string | null;
+    size?: string | null;
+    color?: string | null;
+    sku?: string;
     price: number;
     compareAtPrice?: number | null;
     quantity?: number;
@@ -193,11 +199,11 @@ export const useCartStore = create<CartStore>()(
       addItem: async (input) => {
         const quantityToAdd = input.quantity || 1;
         const state = get();
+        const cleanVariantId = input.variantId || null;
 
         // 1. Immediate Local State Update (Optimistic update for guest & logged-in)
         const existingIndex = state.items.findIndex(
-          (i) =>
-            i.productId === input.productId && (i.variantId || null) === (input.variantId || null),
+          (i) => i.productId === input.productId && (i.variantId || null) === cleanVariantId,
         );
 
         let updatedItems: CartStoreItem[];
@@ -210,18 +216,31 @@ export const useCartStore = create<CartStore>()(
           updatedItems[existingIndex] = {
             ...existing,
             quantity: newQty,
+            price: Number(input.price),
+            compareAtPrice: input.compareAtPrice ?? existing.compareAtPrice,
+            image: input.image || existing.image,
           };
         } else {
           const newItem: CartStoreItem = {
-            id: `item_${Date.now()}_${Math.random()}`,
+            id: input.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
             productId: input.productId,
-            variantId: input.variantId || null,
+            variantId: cleanVariantId,
             name: input.name,
-            price: input.price,
+            productName: input.productName || input.name,
+            productSlug: input.productSlug,
+            variantName: input.variantName || null,
+            size: input.size || null,
+            color: input.color || null,
+            sku: input.sku,
+            price: Number(input.price),
             compareAtPrice: input.compareAtPrice,
             quantity: Math.min(quantityToAdd, input.availableStock || 99),
             availableStock: input.availableStock || 99,
             image: input.image,
+            shopId: input.shopId || 'independent-shop',
+            shopName: input.shopName || 'Independent Vendor',
+            shopSlug: input.shopSlug || 'shop',
+            shopLogo: input.shopLogo,
           };
           updatedItems = [...state.items, newItem];
         }
@@ -238,10 +257,10 @@ export const useCartStore = create<CartStore>()(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               productId: input.productId,
-              variantId: input.variantId || undefined,
+              variantId: cleanVariantId || undefined,
               quantity: quantityToAdd,
               name: input.name,
-              price: input.price,
+              price: Number(input.price),
               image: input.image,
             }),
           });
@@ -261,7 +280,7 @@ export const useCartStore = create<CartStore>()(
 
         // 1. Optimistic Local State Update so UI buttons respond instantly
         const updatedItems = state.items.map((i) => {
-          if (i.id === itemIdOrProductId || i.productId === itemIdOrProductId) {
+          if (i.id === itemIdOrProductId || (!i.variantId && i.productId === itemIdOrProductId)) {
             const maxStock = i.availableStock || 99;
             return { ...i, quantity: Math.min(newQuantity, maxStock) };
           }
@@ -275,7 +294,7 @@ export const useCartStore = create<CartStore>()(
 
         // 2. Logged-in Server Sync
         const targetItem = state.items.find(
-          (i) => i.id === itemIdOrProductId || i.productId === itemIdOrProductId,
+          (i) => i.id === itemIdOrProductId || (!i.variantId && i.productId === itemIdOrProductId),
         );
         if (!targetItem) return;
 
@@ -298,7 +317,8 @@ export const useCartStore = create<CartStore>()(
 
         // 1. Optimistic Local Removal
         const updatedItems = state.items.filter(
-          (i) => i.id !== itemIdOrProductId && i.productId !== itemIdOrProductId,
+          (i) =>
+            !(i.id === itemIdOrProductId || (!i.variantId && i.productId === itemIdOrProductId)),
         );
         const totals = calculateTotals(updatedItems);
         set({ ...totals, error: null });
@@ -307,7 +327,7 @@ export const useCartStore = create<CartStore>()(
 
         // 2. Logged-in Server Sync
         const targetItem = state.items.find(
-          (i) => i.id === itemIdOrProductId || i.productId === itemIdOrProductId,
+          (i) => i.id === itemIdOrProductId || (!i.variantId && i.productId === itemIdOrProductId),
         );
         if (!targetItem) return;
 

@@ -254,14 +254,20 @@ export const CheckoutProvider: React.FC<{
     }
   };
 
-  const updateItemQuantity = (productId: string, quantity: number) => {
+  const updateItemQuantity = (itemIdOrProductId: string, quantity: number) => {
     setItems((prev) =>
-      prev.map((item) => (item.productId === productId ? { ...item, quantity } : item)),
+      prev.map((item) =>
+        item.id === itemIdOrProductId || item.productId === itemIdOrProductId
+          ? { ...item, quantity }
+          : item,
+      ),
     );
   };
 
-  const removeItem = (productId: string) => {
-    setItems((prev) => prev.filter((item) => item.productId !== productId));
+  const removeItem = (itemIdOrProductId: string) => {
+    setItems((prev) =>
+      prev.filter((item) => item.id !== itemIdOrProductId && item.productId !== itemIdOrProductId),
+    );
   };
 
   return (

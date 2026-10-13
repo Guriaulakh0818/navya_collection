@@ -25,6 +25,14 @@ export class CartRepository {
                 slug: true,
               },
             },
+            shop: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                logo: true,
+              },
+            },
           },
         },
         variant: true,

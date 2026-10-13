@@ -170,10 +170,9 @@ export default function MultiVendorCartPage() {
                 {/* Shop Items List */}
                 <div className="p-3 sm:p-6 space-y-3.5 sm:space-y-4 divide-y divide-slate-100">
                   {group.items.map((item) => {
-                    const targetKey = item.id || item.productId;
                     return (
                       <div
-                        key={targetKey}
+                        key={item.id}
                         className="pt-3.5 first:pt-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
                       >
                         <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 w-full">
@@ -223,7 +222,7 @@ export default function MultiVendorCartPage() {
                           <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 border border-slate-200 rounded-xl p-1 shadow-xs">
                             <button
                               onClick={() =>
-                                updateQuantity(targetKey, Math.max(1, item.quantity - 1))
+                                updateQuantity(item.id, Math.max(1, item.quantity - 1))
                               }
                               className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                               aria-label="Decrease quantity"
@@ -234,7 +233,7 @@ export default function MultiVendorCartPage() {
                               {item.quantity}
                             </span>
                             <button
-                              onClick={() => updateQuantity(targetKey, item.quantity + 1)}
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
                               className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                               aria-label="Increase quantity"
                             >
@@ -243,7 +242,7 @@ export default function MultiVendorCartPage() {
                           </div>
 
                           <button
-                            onClick={() => removeItem(targetKey)}
+                            onClick={() => removeItem(item.id)}
                             className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
                             title="Remove item"
                           >

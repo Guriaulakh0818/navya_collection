@@ -93,7 +93,7 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
                 <div className="space-y-2">
                   {group.items.map((item) => (
                     <div
-                      key={item.id || item.productId}
+                      key={item.id}
                       className="flex gap-3 rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs"
                     >
                       <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-slate-100 border border-slate-100">
@@ -109,35 +109,42 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
                       <div className="flex-1 min-w-0 flex flex-col justify-between">
                         <div>
                           <h4 className="text-xs font-bold text-slate-900 truncate">{item.name}</h4>
-                          <p className="text-[11px] text-slate-500 font-semibold">
+                          {(item.color || item.size || item.variantName) && (
+                            <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-500 font-semibold mt-0.5">
+                              {item.color && (
+                                <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
+                                  Color: <strong>{item.color}</strong>
+                                </span>
+                              )}
+                              {item.size && (
+                                <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
+                                  Size: <strong>{item.size}</strong>
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <p className="text-[11px] text-slate-900 font-extrabold mt-0.5">
                             {formatPrice(item.price)}
                           </p>
                         </div>
 
                         <div className="flex items-center gap-2 mt-1">
                           <button
-                            onClick={() =>
-                              updateQuantity(
-                                item.id || item.productId,
-                                Math.max(1, item.quantity - 1),
-                              )
-                            }
+                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
                             className="h-5 w-5 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 cursor-pointer"
                           >
                             <Minus className="h-3 w-3" />
                           </button>
                           <span className="text-xs font-bold text-slate-800">{item.quantity}</span>
                           <button
-                            onClick={() =>
-                              updateQuantity(item.id || item.productId, item.quantity + 1)
-                            }
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             className="h-5 w-5 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 cursor-pointer"
                           >
                             <Plus className="h-3 w-3" />
                           </button>
 
                           <button
-                            onClick={() => removeItem(item.id || item.productId)}
+                            onClick={() => removeItem(item.id)}
                             className="ml-auto text-slate-400 hover:text-red-500 p-1"
                           >
                             <Trash2 className="h-3.5 w-3.5" />

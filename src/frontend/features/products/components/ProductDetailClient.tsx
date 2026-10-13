@@ -94,17 +94,29 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   const [copiedLink, setCopiedLink] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
+  // Helper to extract variant color safely
+  const getVColor = (v: any) =>
+    (
+      v?.color ||
+      v?.colorName ||
+      (typeof v?.attributes === 'object' && v?.attributes !== null ? v.attributes?.color : '')
+    )?.trim() || '';
+
+  // Helper to extract variant size safely
+  const getVSize = (v: any) =>
+    (
+      v?.size ||
+      v?.sizeName ||
+      (typeof v?.attributes === 'object' && v?.attributes !== null ? v.attributes?.size : '')
+    )?.trim() || '';
+
   // Extract all unique colors present across variants
   const availableColors = useMemo(() => {
     if (!product?.variants || product.variants.length <= 1) return [];
     const colors: string[] = [];
     product.variants.forEach((v: any) => {
-      const clr = (
-        v.color ||
-        v.colorName ||
-        (typeof v.attributes === 'object' && v.attributes !== null ? v.attributes?.color : '')
-      )?.trim();
-      if (clr && !colors.includes(clr)) {
+      const clr = getVColor(v);
+      if (clr && !colors.some((c) => c.toLowerCase() === clr.toLowerCase())) {
         colors.push(clr);
       }
     });
@@ -116,12 +128,8 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     if (!product?.variants || product.variants.length <= 1) return [];
     const sizes: string[] = [];
     product.variants.forEach((v: any) => {
-      const sz = (
-        v.size ||
-        v.sizeName ||
-        (typeof v.attributes === 'object' && v.attributes !== null ? v.attributes?.size : '')
-      )?.trim();
-      if (sz && !sizes.includes(sz)) {
+      const sz = getVSize(v);
+      if (sz && !sizes.some((s) => s.toLowerCase() === sz.toLowerCase())) {
         sizes.push(sz);
       }
     });
@@ -134,58 +142,53 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   const [newName, setNewName] = useState('');
   const [reviewsList, setReviewsList] = useState(product?.reviews || []);
 
-  const activeVariant = useMemo(
-    () => product?.variants?.find((v: any) => v.id === selectedVariant) || product?.variants?.[0],
-    [selectedVariant, product],
-  );
+  const activeVariant = useMemo(() => {
+    return (
+      product?.variants?.find((v: any) => v.id === selectedVariant) ||
+      product?.variants?.[0] ||
+      null
+    );
+  }, [selectedVariant, product]);
 
   const activeColor = useMemo(() => {
-    return (
-      (
-        activeVariant?.color ||
-        activeVariant?.colorName ||
-        (typeof activeVariant?.attributes === 'object' && activeVariant?.attributes !== null
-          ? activeVariant.attributes?.color
-          : '')
-      )?.trim() ||
-      (availableColors[0] ?? '')
-    );
+    const raw = getVColor(activeVariant);
+    return raw || availableColors[0] || '';
   }, [activeVariant, availableColors]);
 
   const activeSize = useMemo(() => {
-    return (
-      (
-        activeVariant?.size ||
-        activeVariant?.sizeName ||
-        (typeof activeVariant?.attributes === 'object' && activeVariant?.attributes !== null
-          ? activeVariant.attributes?.size
-          : '')
-      )?.trim() ||
-      (availableSizes[0] ?? '')
-    );
+    const raw = getVSize(activeVariant);
+    return raw || availableSizes[0] || '';
   }, [activeVariant, availableSizes]);
 
   const handleSelectColor = (clr: string) => {
+    const targetClr = clr.trim().toLowerCase();
+    const currentSize = activeSize.trim().toLowerCase();
+
+    // 1. Match same size with new color
     const matchSameSize = product?.variants?.find((v: any) => {
-      const c = (v.color || v.colorName || v.attributes?.color)?.trim();
-      const s = (v.size || v.sizeName || v.attributes?.size)?.trim();
-      return c === clr && s === activeSize;
+      const c = getVColor(v).toLowerCase();
+      const s = getVSize(v).toLowerCase();
+      return c === targetClr && s === currentSize;
     });
     if (matchSameSize) {
       setSelectedVariant(matchSameSize.id);
       return;
     }
+
+    // 2. Match in-stock variant with new color
     const matchInStock = product?.variants?.find((v: any) => {
-      const c = (v.color || v.colorName || v.attributes?.color)?.trim();
-      return c === clr && (v.stock ?? 1) > 0;
+      const c = getVColor(v).toLowerCase();
+      return c === targetClr && (v.stock ?? 1) > 0;
     });
     if (matchInStock) {
       setSelectedVariant(matchInStock.id);
       return;
     }
+
+    // 3. Fallback to any variant of that color
     const matchAny = product?.variants?.find((v: any) => {
-      const c = (v.color || v.colorName || v.attributes?.color)?.trim();
-      return c === clr;
+      const c = getVColor(v).toLowerCase();
+      return c === targetClr;
     });
     if (matchAny) {
       setSelectedVariant(matchAny.id);
@@ -193,18 +196,34 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   };
 
   const handleSelectSize = (sz: string) => {
+    const targetSz = sz.trim().toLowerCase();
+    const currentColor = activeColor.trim().toLowerCase();
+
+    // 1. Match same color with new size
     const matchSameColor = product?.variants?.find((v: any) => {
-      const c = (v.color || v.colorName || v.attributes?.color)?.trim();
-      const s = (v.size || v.sizeName || v.attributes?.size)?.trim();
-      return c === activeColor && s === sz;
+      const c = getVColor(v).toLowerCase();
+      const s = getVSize(v).toLowerCase();
+      return c === currentColor && s === targetSz;
     });
     if (matchSameColor) {
       setSelectedVariant(matchSameColor.id);
       return;
     }
+
+    // 2. Match in-stock variant with new size
+    const matchInStock = product?.variants?.find((v: any) => {
+      const s = getVSize(v).toLowerCase();
+      return s === targetSz && (v.stock ?? 1) > 0;
+    });
+    if (matchInStock) {
+      setSelectedVariant(matchInStock.id);
+      return;
+    }
+
+    // 3. Fallback to any variant of that size
     const matchAny = product?.variants?.find((v: any) => {
-      const s = (v.size || v.sizeName || v.attributes?.size)?.trim();
-      return s === sz;
+      const s = getVSize(v).toLowerCase();
+      return s === targetSz;
     });
     if (matchAny) {
       setSelectedVariant(matchAny.id);
@@ -226,7 +245,11 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   }, [activeVariant, product]);
 
   const price = Number(activeVariant?.price ?? product.price ?? 0);
-  const compareAtPrice = product.compareAtPrice ? Number(product.compareAtPrice) : null;
+  const compareAtPrice = activeVariant?.compareAtPrice
+    ? Number(activeVariant.compareAtPrice)
+    : product.compareAtPrice
+      ? Number(product.compareAtPrice)
+      : null;
   const discountPercent =
     compareAtPrice && compareAtPrice > price
       ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100)
@@ -234,18 +257,39 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
 
   const handleAddToCart = async () => {
     setIsAdding(true);
+
+    const { main: variantLabel } = getCleanVariantLabel(activeVariant, product.name);
+    const hasAttributes = Boolean(
+      activeColor ||
+      activeSize ||
+      (variantLabel && variantLabel !== 'Standard' && variantLabel !== 'Option'),
+    );
+
+    const variantTitle =
+      hasAttributes && variantLabel && variantLabel !== 'Standard' && variantLabel !== 'Option'
+        ? `${product.name} - ${variantLabel}`
+        : product.name;
+
     await addItem({
       productId: product.id,
-      name: product.name,
+      variantId: activeVariant?.id || null,
+      name: variantTitle,
+      productName: product.name,
+      productSlug: product.slug,
+      variantName: hasAttributes ? variantLabel || `${activeColor} ${activeSize}`.trim() : null,
+      size: activeSize || null,
+      color: activeColor || null,
+      sku: activeVariant?.sku || product.sku,
       price: price,
+      compareAtPrice: compareAtPrice,
       quantity: quantity,
+      availableStock: activeVariant?.stock ?? product.stock ?? 99,
       image:
         activeVariantImageUrl || product.images?.[0]?.url || product.images?.[0]?.imageUrl || '',
       shopId: product.shop?.id || product.shopId || 'independent-shop',
       shopName: product.shop?.name || 'Independent Boutique',
       shopSlug: product.shop?.slug || 'shop',
       shopLogo: product.shop?.logo,
-      variantId: activeVariant?.id,
     });
     setTimeout(() => setIsAdding(false), 600);
   };
@@ -480,16 +524,18 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                   </div>
                   <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none]">
                     {availableColors.map((clr) => {
-                      const isSelected = activeColor === clr;
+                      const isSelected =
+                        activeColor.trim().toLowerCase() === clr.trim().toLowerCase();
                       const hex = COLOR_HEX_MAP[clr] || '#94a3b8';
+                      const targetClr = clr.trim().toLowerCase();
                       const sampleVariant =
                         product.variants.find((v: any) => {
-                          const c = (v.color || v.colorName || v.attributes?.color)?.trim();
-                          return c === clr && v.imageUrl;
+                          const c = getVColor(v).toLowerCase();
+                          return c === targetClr && v.imageUrl;
                         }) ||
                         product.variants.find((v: any) => {
-                          const c = (v.color || v.colorName || v.attributes?.color)?.trim();
-                          return c === clr;
+                          const c = getVColor(v).toLowerCase();
+                          return c === targetClr;
                         });
                       const swatchImg = sampleVariant?.imageUrl;
 
@@ -553,17 +599,19 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                   </div>
                   <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none]">
                     {availableSizes.map((sz) => {
+                      const targetSz = sz.trim().toLowerCase();
+                      const currentColor = activeColor.trim().toLowerCase();
                       const match =
                         product.variants.find((v: any) => {
-                          const c = (v.color || v.colorName || v.attributes?.color)?.trim();
-                          const s = (v.size || v.sizeName || v.attributes?.size)?.trim();
-                          return c === activeColor && s === sz;
+                          const c = getVColor(v).toLowerCase();
+                          const s = getVSize(v).toLowerCase();
+                          return c === currentColor && s === targetSz;
                         }) ||
                         product.variants.find((v: any) => {
-                          const s = (v.size || v.sizeName || v.attributes?.size)?.trim();
-                          return s === sz;
+                          const s = getVSize(v).toLowerCase();
+                          return s === targetSz;
                         });
-                      const isSelected = activeSize === sz;
+                      const isSelected = activeSize.trim().toLowerCase() === targetSz;
                       const isOut = match ? (match.stock ?? 1) <= 0 : false;
 
                       return (

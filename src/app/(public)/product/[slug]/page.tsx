@@ -89,17 +89,44 @@ async function getFormattedProduct(slug: string) {
                   v.image ||
                   null;
 
+                const vColor =
+                  v.color ||
+                  v.colorName ||
+                  (typeof v.attributes === 'object' && v.attributes !== null
+                    ? (v.attributes as any).color
+                    : null);
+
+                const vSize =
+                  v.size ||
+                  v.sizeName ||
+                  (typeof v.attributes === 'object' && v.attributes !== null
+                    ? (v.attributes as any).size
+                    : null);
+
+                const vPrice =
+                  v.price !== undefined && v.price !== null
+                    ? Number(v.price)
+                    : Number(dbProd.price || 0);
+
+                const vCompareAtPrice =
+                  v.compareAtPrice !== undefined && v.compareAtPrice !== null
+                    ? Number(v.compareAtPrice)
+                    : dbProd.compareAtPrice
+                      ? Number(dbProd.compareAtPrice)
+                      : null;
+
                 return {
                   id: v.id,
                   sku: v.sku || `${dbProd.sku}-${v.id}`,
-                  name: v.name || v.color || v.size || 'Standard',
-                  color: v.color || v.colorName || null,
-                  price: Number(v.price !== undefined && v.price !== null ? v.price : dbProd.price),
+                  name: v.name || vColor || vSize || 'Standard',
+                  color: vColor,
+                  size: vSize,
+                  price: vPrice,
+                  compareAtPrice: vCompareAtPrice,
                   stock:
                     v.stock !== undefined && v.stock !== null
                       ? Number(v.stock)
                       : Number(dbProd.stock || 0),
-                  size: v.size || null,
                   imageUrl: variantImg,
                   image: variantImg,
                   attributes: v.attributes || null,
