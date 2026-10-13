@@ -90,9 +90,9 @@ export function Footer() {
         </div>
 
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10 pb-12">
-          {/* Brand Info */}
-          <div className="sm:col-span-2 lg:col-span-4 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 pb-8 sm:pb-12">
+          {/* Brand Info - Hidden on mobile, visible on sm+ */}
+          <div className="hidden sm:block sm:col-span-2 lg:col-span-4 space-y-4">
             <Link href="/" className="inline-flex items-center gap-3 group mb-2">
               <div className="relative w-10 h-10 rounded-full overflow-hidden border border-white/20 shadow-xs shrink-0 bg-white">
                 <Image
@@ -142,92 +142,98 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Categories */}
-          <div className="sm:col-span-1 lg:col-span-2">
-            <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-4">
-              Categories
-            </h4>
-            <ul className="space-y-2.5 text-xs text-white/80">
-              <li>
-                <Link href="/category/women" className="hover:text-orange transition-colors">
-                  Women&apos;s Collection
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/men" className="hover:text-orange transition-colors">
-                  Men&apos;s Collection
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/kids" className="hover:text-orange transition-colors">
-                  Kids&apos; Fashion &amp; Baby
-                </Link>
-              </li>
-              <li>
-                <Link href="/category" className="hover:text-orange transition-colors">
-                  All Categories
-                </Link>
-              </li>
-              <li>
-                <Link href="/shop" className="hover:text-orange transition-colors">
-                  Boutique Stores &amp; Artisans
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Categories & Policies - 1 line (2 columns side-by-side) on mobile */}
+          <div className="col-span-1 sm:col-span-2 lg:col-span-4 grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+            {/* Categories */}
+            <div>
+              <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-3 sm:mb-4">
+                Categories
+              </h4>
+              <ul className="space-y-2 sm:space-y-2.5 text-xs text-white/80">
+                <li>
+                  <Link href="/category/women" className="hover:text-orange transition-colors">
+                    Women&apos;s Collection
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/category/men" className="hover:text-orange transition-colors">
+                    Men&apos;s Collection
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/category/kids" className="hover:text-orange transition-colors">
+                    Kids&apos; Fashion &amp; Baby
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/category" className="hover:text-orange transition-colors">
+                    All Categories
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/shop" className="hover:text-orange transition-colors">
+                    Boutique Stores &amp; Artisans
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Company & Policies */}
-          <div className="sm:col-span-1 lg:col-span-2">
-            <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-4">
-              Company &amp; Policies
-            </h4>
-            <ul className="space-y-2.5 text-xs text-white/80">
-              <li>
-                <Link href="/about" className="hover:text-orange transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-orange transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/become-seller" className="hover:text-orange transition-colors">
-                  Sell on Navya (Boutiques)
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="hover:text-orange transition-colors">
-                  FAQ &amp; Help Center
-                </Link>
-              </li>
-              <li>
-                <Link href="/shipping-policy" className="hover:text-orange transition-colors">
-                  Shipping &amp; Delivery
-                </Link>
-              </li>
-              <li>
-                <Link href="/return-policy" className="hover:text-orange transition-colors">
-                  Return &amp; Refund Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy-policy" className="hover:text-orange transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms-and-conditions" className="hover:text-orange transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
-            </ul>
+            {/* Company & Policies */}
+            <div>
+              <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-3 sm:mb-4">
+                Company &amp; Policies
+              </h4>
+              <ul className="space-y-2 sm:space-y-2.5 text-xs text-white/80">
+                <li>
+                  <Link href="/about" className="hover:text-orange transition-colors">
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="hover:text-orange transition-colors">
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/become-seller" className="hover:text-orange transition-colors">
+                    Sell on Navya (Boutiques)
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/faq" className="hover:text-orange transition-colors">
+                    FAQ &amp; Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/shipping-policy" className="hover:text-orange transition-colors">
+                    Shipping &amp; Delivery
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/return-policy" className="hover:text-orange transition-colors">
+                    Return &amp; Refund Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy-policy" className="hover:text-orange transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms-and-conditions"
+                    className="hover:text-orange transition-colors"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
 
           {/* Newsletter */}
-          <div className="sm:col-span-2 lg:col-span-4">
-            <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-4">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-4">
+            <h4 className="font-heading text-sm font-bold text-white tracking-normal mb-3 sm:mb-4">
               Join Our VIP Club
             </h4>
             <p className="text-xs text-white/80 mb-3 leading-relaxed">
