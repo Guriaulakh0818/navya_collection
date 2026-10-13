@@ -221,13 +221,20 @@ export default function MultiVendorCartPage() {
                         <div className="flex items-center justify-between w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                           <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 border border-slate-200 rounded-xl p-1 shadow-xs">
                             <button
-                              onClick={() =>
-                                updateQuantity(item.id, Math.max(1, item.quantity - 1))
-                              }
-                              className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                              aria-label="Decrease quantity"
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              className={`h-6 w-6 sm:h-7 sm:w-7 rounded-lg border bg-white flex items-center justify-center transition-colors cursor-pointer ${
+                                item.quantity <= 1
+                                  ? 'border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300'
+                                  : 'border-slate-200 text-slate-700 hover:bg-slate-100'
+                              }`}
+                              aria-label={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
+                              title={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
                             >
-                              <Minus className="h-3 w-3" />
+                              {item.quantity <= 1 ? (
+                                <Trash2 className="h-3 w-3 text-rose-600" />
+                              ) : (
+                                <Minus className="h-3 w-3" />
+                              )}
                             </button>
                             <span className="w-6 sm:w-8 text-center text-xs font-black text-navy font-mono">
                               {item.quantity}

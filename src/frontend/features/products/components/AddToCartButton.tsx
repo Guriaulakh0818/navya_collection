@@ -1,6 +1,6 @@
 'use client';
 
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -82,10 +82,19 @@ export function AddToCartButton({ product, className, disabled }: AddToCartButto
       >
         <button
           onClick={handleDecrease}
-          className="h-7 w-7 rounded-full bg-navy-600 hover:bg-orange text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0"
-          aria-label="Decrease quantity"
+          className={`h-7 w-7 rounded-full flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0 ${
+            cartItem.quantity <= 1
+              ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-xs'
+              : 'bg-navy-600 hover:bg-orange text-white'
+          }`}
+          aria-label={cartItem.quantity <= 1 ? 'Remove from cart' : 'Decrease quantity'}
+          title={cartItem.quantity <= 1 ? 'Remove from cart' : 'Decrease quantity'}
         >
-          <Minus className="h-3.5 w-3.5 stroke-[3]" />
+          {cartItem.quantity <= 1 ? (
+            <Trash2 className="h-3.5 w-3.5" />
+          ) : (
+            <Minus className="h-3.5 w-3.5 stroke-[3]" />
+          )}
         </button>
 
         <span className="font-heading text-sm font-black text-white px-3 select-none tracking-wider">

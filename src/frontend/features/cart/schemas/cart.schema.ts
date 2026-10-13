@@ -18,7 +18,7 @@ export const updateCartItemSchema = z.object({
   quantity: z
     .number()
     .int('Quantity must be an integer.')
-    .min(1, 'Quantity must be at least 1.')
+    .min(0, 'Quantity cannot be negative.')
     .max(99, 'Quantity cannot exceed 99 units.'),
 });
 

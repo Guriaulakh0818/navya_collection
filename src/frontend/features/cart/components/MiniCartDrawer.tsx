@@ -130,10 +130,22 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
 
                         <div className="flex items-center gap-2 mt-1">
                           <button
-                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                            className="h-5 w-5 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 cursor-pointer"
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className={`h-5 w-5 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
+                              item.quantity <= 1
+                                ? 'border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300'
+                                : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+                            }`}
+                            title={item.quantity <= 1 ? 'Remove from cart' : 'Decrease quantity'}
+                            aria-label={
+                              item.quantity <= 1 ? 'Remove from cart' : 'Decrease quantity'
+                            }
                           >
-                            <Minus className="h-3 w-3" />
+                            {item.quantity <= 1 ? (
+                              <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                            ) : (
+                              <Minus className="h-3 w-3" />
+                            )}
                           </button>
                           <span className="text-xs font-bold text-slate-800">{item.quantity}</span>
                           <button

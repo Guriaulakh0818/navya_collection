@@ -255,6 +255,10 @@ export const CheckoutProvider: React.FC<{
   };
 
   const updateItemQuantity = (itemIdOrProductId: string, quantity: number) => {
+    if (quantity <= 0) {
+      removeItem(itemIdOrProductId);
+      return;
+    }
     setItems((prev) =>
       prev.map((item) =>
         item.id === itemIdOrProductId || item.productId === itemIdOrProductId

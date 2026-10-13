@@ -20,8 +20,12 @@ export function CartReviewStep() {
   const total = subtotal + (subtotal >= 999 ? 0 : shipping);
 
   const handleQuantityChange = (itemId: string, delta: number, current: number) => {
-    const newQty = Math.max(1, current + delta);
-    updateItemQuantity(itemId, newQty);
+    const newQty = current + delta;
+    if (newQty <= 0) {
+      removeItem(itemId);
+    } else {
+      updateItemQuantity(itemId, newQty);
+    }
   };
 
   return (
@@ -80,17 +84,33 @@ export function CartReviewStep() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-6 w-6 sm:h-7 sm:w-7 rounded-full border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer"
+                  className={`h-6 w-6 sm:h-7 sm:w-7 rounded-full border-slate-200 cursor-pointer ${
+                    item.quantity <= 1
+                      ? 'text-rose-600 hover:bg-rose-50 hover:border-rose-300'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
                   onClick={() => handleQuantityChange(item.id, -1, item.quantity)}
+                  title={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
                 >
-                  <Minus className="h-3 w-3" />
+                  {item.quantity <= 1 ? (
+                    <Trash2 className="h-3 w-3 text-rose-600" />
+                  ) : (
+                    <Minus className="h-3 w-3" />
+                  )}
                 </Button>
                 <Input
                   type="number"
                   value={item.quantity}
-                  onChange={(e) => updateItemQuantity(item.id, Math.max(1, Number(e.target.value)))}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val <= 0) {
+                      removeItem(item.id);
+                    } else {
+                      updateItemQuantity(item.id, val);
+                    }
+                  }}
                   className="w-10 sm:w-12 h-6 sm:h-7 text-center text-xs font-bold border-none p-0 focus:ring-0"
-                  min={1}
+                  min={0}
                 />
                 <Button
                   variant="outline"

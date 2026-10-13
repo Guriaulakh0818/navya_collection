@@ -275,7 +275,10 @@ export const useCartStore = create<CartStore>()(
       },
 
       updateQuantity: async (itemIdOrProductId, newQuantity) => {
-        if (newQuantity < 1) return;
+        if (newQuantity <= 0) {
+          await get().removeItem(itemIdOrProductId);
+          return;
+        }
         const state = get();
 
         // 1. Optimistic Local State Update so UI buttons respond instantly

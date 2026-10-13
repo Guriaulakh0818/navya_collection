@@ -271,6 +271,10 @@ export class CartService {
     input: UpdateCartItemInput,
   ): Promise<ServiceResponse> {
     try {
+      if (input.quantity <= 0) {
+        return await this.removeItem(userId, cartItemId);
+      }
+
       const cartItem = await CartRepository.findCartItemById(cartItemId);
       if (!cartItem) {
         return {
