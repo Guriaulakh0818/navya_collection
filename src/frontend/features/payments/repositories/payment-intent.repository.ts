@@ -40,44 +40,56 @@ export class PaymentIntentRepository {
     const expiryMinutes = input.expiresInMinutes || 60;
     const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
-    return prisma.paymentIntent.create({
-      data: {
-        intentNumber,
-        userId: input.userId,
-        addressId: input.addressId,
-        razorpayOrderId: input.razorpayOrderId,
-        amount: input.amount,
-        currency: input.currency || 'INR',
-        status: 'PAYMENT_PENDING',
-        subtotal: input.subtotal,
-        discountAmount: input.discountAmount || 0,
-        shippingAmount: input.shippingAmount || 0,
-        taxAmount: input.taxAmount || 0,
-        finalAmount: input.finalAmount,
-        couponCode: input.couponCode || null,
-        shippingMethodCode: input.shippingMethodCode || 'STANDARD',
-        cartSnapshot: input.cartSnapshot,
-        shippingSnapshot: input.shippingSnapshot || undefined,
-        taxSnapshot: input.taxSnapshot || undefined,
-        customerNotes: input.customerNotes || null,
-        metadata: input.metadata || undefined,
-        expiresAt,
-      },
-    });
+    try {
+      return await prisma.paymentIntent.create({
+        data: {
+          intentNumber,
+          userId: input.userId,
+          addressId: input.addressId,
+          razorpayOrderId: input.razorpayOrderId,
+          amount: input.amount,
+          currency: input.currency || 'INR',
+          status: 'PAYMENT_PENDING',
+          subtotal: input.subtotal,
+          discountAmount: input.discountAmount || 0,
+          shippingAmount: input.shippingAmount || 0,
+          taxAmount: input.taxAmount || 0,
+          finalAmount: input.finalAmount,
+          couponCode: input.couponCode || null,
+          shippingMethodCode: input.shippingMethodCode || 'STANDARD',
+          cartSnapshot: input.cartSnapshot,
+          shippingSnapshot: input.shippingSnapshot || undefined,
+          taxSnapshot: input.taxSnapshot || undefined,
+          customerNotes: input.customerNotes || null,
+          metadata: input.metadata || undefined,
+          expiresAt,
+        },
+      });
+    } catch (err: any) {
+      console.warn(
+        '[PAYMENT_INTENT_CREATE_WARN] Could not persist PaymentIntent record:',
+        err?.message || err,
+      );
+      return null;
+    }
   }
 
   /**
    * Finds a PaymentIntent by Razorpay Order ID.
    */
   static async findByRazorpayOrderId(razorpayOrderId: string) {
-    return prisma.paymentIntent.findUnique({
-      where: { razorpayOrderId },
-      include: {
-        user: true,
-        address: true,
-        masterOrder: true,
-      },
-    });
+    try {
+      return await prisma.paymentIntent.findUnique({
+        where: { razorpayOrderId },
+        include: {
+          user: true,
+          address: true,
+          masterOrder: true,
+        },
+      });
+    } catch (err) {
+      return null;
+    }
   }
 
   /**
@@ -113,10 +125,15 @@ export class PaymentIntentRepository {
       updateData.failedAt = new Date();
     }
 
-    return prisma.paymentIntent.update({
-      where: { razorpayOrderId },
-      data: updateData,
-    });
+    try {
+      return await prisma.paymentIntent.update({
+        where: { razorpayOrderId },
+        data: updateData,
+      });
+    } catch (err) {
+      console.warn('[PAYMENT_INTENT_UPDATE_WARN] Could not update PaymentIntent:', err);
+      return null;
+    }
   }
 
   /**

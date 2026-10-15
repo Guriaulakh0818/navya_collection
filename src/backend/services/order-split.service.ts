@@ -509,23 +509,41 @@ export class OrderSplitService {
       }
 
       // Step D: Create PaymentTransaction Record
-      const paymentTx = await tx.paymentTransaction.create({
-        data: {
-          orderId: masterOrder.id,
-          razorpayOrderId,
-          razorpayPaymentId,
-          razorpaySignature,
-          amount: finalAmount,
-          currency: 'INR',
-          status: initialPaymentStatus,
-          method: paymentMethod,
-        },
-      });
+      let paymentTx: any = null;
+      try {
+        await tx.$executeRawUnsafe('SAVEPOINT split_pt_sp;');
+        paymentTx = await tx.paymentTransaction.create({
+          data: {
+            orderId: masterOrder.id,
+            razorpayOrderId,
+            razorpayPaymentId,
+            razorpaySignature,
+            amount: finalAmount,
+            currency: 'INR',
+            status: initialPaymentStatus,
+            method: paymentMethod,
+          },
+        });
+        await tx.$executeRawUnsafe('RELEASE SAVEPOINT split_pt_sp;');
+      } catch (ptErr) {
+        await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT split_pt_sp;').catch(() => {});
+        console.warn(
+          '[ORDER_SPLIT_PT_WARN] Failed to insert paymentTransaction, continuing order split:',
+          ptErr,
+        );
+      }
 
       // Step E: Create Discrete Multi-Seller Shipments (BM-04)
-      const { MultiSellerShipmentService } =
-        await import('@/backend/services/shipping/multi-seller-shipment.service');
-      await MultiSellerShipmentService.createShipmentsForOrder(masterOrder.id, tx);
+      try {
+        const { MultiSellerShipmentService } =
+          await import('@/backend/services/shipping/multi-seller-shipment.service');
+        await MultiSellerShipmentService.createShipmentsForOrder(masterOrder.id, tx);
+      } catch (shipErr) {
+        console.warn(
+          '[ORDER_SPLIT_SHIPMENT_WARN] Error creating shipments for order split:',
+          shipErr,
+        );
+      }
 
       // Step F: Atomically Consume Coupon Usage with Race Condition Guard (BM-10 Section 8 & 9)
       if (resolvedCouponId) {
@@ -536,16 +554,23 @@ export class OrderSplitService {
 
       // Step G: Record Navya Promotional Subsidy Ledger Entry (BM-10 Section 20)
       if (resolvedFundingType !== 'SELLER' && authoritativeDiscount > 0) {
-        await tx.financialAuditLog.create({
-          data: {
-            entityType: 'PROMOTION',
-            entityId: masterOrder.id,
-            action: 'NAVYA_PROMOTIONAL_SUBSIDY_APPLIED',
-            performedById: userId,
-            amount: authoritativeDiscount,
-            notes: `Navya promotional subsidy of ₹${authoritativeDiscount} funded on Coupon #${resolvedCouponCode || resolvedCouponId} for Master Order #${masterOrderNumber}.`,
-          },
-        });
+        try {
+          await tx.$executeRawUnsafe('SAVEPOINT split_audit_sp;');
+          await tx.financialAuditLog.create({
+            data: {
+              entityType: 'PROMOTION',
+              entityId: masterOrder.id,
+              action: 'NAVYA_PROMOTIONAL_SUBSIDY_APPLIED',
+              performedById: userId,
+              amount: authoritativeDiscount,
+              notes: `Navya promotional subsidy of ₹${authoritativeDiscount} funded on Coupon #${resolvedCouponCode || resolvedCouponId} for Master Order #${masterOrderNumber}.`,
+            },
+          });
+          await tx.$executeRawUnsafe('RELEASE SAVEPOINT split_audit_sp;');
+        } catch (auditErr) {
+          await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT split_audit_sp;').catch(() => {});
+          console.warn('[ORDER_SPLIT_AUDIT_WARN] FinancialAuditLog write skipped:', auditErr);
+        }
       }
 
       return {

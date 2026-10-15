@@ -158,7 +158,7 @@ export class PaymentService {
           amount: rzpOrder.amount, // In paise
           currency: rzpOrder.currency || 'INR',
           keyId: config.keyId,
-          paymentIntentId: paymentIntent.id,
+          paymentIntentId: paymentIntent?.id || null,
           customer: preview.customer,
           preview,
         },

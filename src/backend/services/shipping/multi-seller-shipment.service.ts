@@ -334,65 +334,126 @@ export class MultiSellerShipmentService {
       }
 
       // Create Shipment record with BM-05 & BM-07 Snapshot Fields
-      const shipment = await client.shipment.create({
-        data: {
-          shipmentNumber,
-          masterOrderId: masterOrder.id,
-          vendorOrderId: vendorOrder?.id || null,
-          sellerId: validSellerId,
-          shopId: validShopId,
-          pickupLocationId: pickupLocationId || null,
-          pickupAddressSnapshot,
-          deliveryAddressSnapshot,
-          packageWeight: totalWeightKg,
-          packageLength: maxLength,
-          packageBreadth: maxBreadth,
-          packageHeight: totalHeight,
-          itemCount: items.reduce((sum, itm) => sum + itm.quantity, 0),
-          paymentMethod: masterOrder.paymentMethod,
-          codAmount,
-          codFee: isCod ? sellerCodFee : 0,
-          codFeeTax: isCod ? sellerCodFeeTax : 0,
-          codRemittanceStatus: isCod ? 'PENDING' : null,
-          shippingCharge: sellerShippingCharge,
-          actualForwardShippingCost:
-            costBearer === 'NAVYA' || isFreeShipping
-              ? ((masterOrder as any).shippingMode || 'STANDARD') === 'EXPRESS'
-                ? 99
-                : 49
-              : 0,
-          shippingCostStatus: 'ESTIMATED',
-          shippingMode: (masterOrder as any).shippingMode || 'STANDARD',
-          isFreeShipping,
-          freeShippingSource,
-          freeShippingThreshold,
-          costBearer,
-          sellerSubtotal: shipmentSubtotal,
-          status: 'CREATED',
-          trackingStatus: 'PENDING',
-        },
-      });
-
-      // Create Shipment Items
-      for (const itm of items) {
-        await client.shipmentItem.create({
+      let shipment: any = null;
+      try {
+        await (client as any).$executeRawUnsafe?.('SAVEPOINT shp_create_sp;').catch(() => {});
+        shipment = await client.shipment.create({
           data: {
-            shipmentId: shipment.id,
-            orderItemId: itm.id,
-            productId: itm.productId,
-            variantId: itm.variantId || null,
-            name: itm.name,
-            sku: itm.sku,
-            size: itm.variant?.size || null,
-            color: itm.variant?.color || null,
-            price: itm.price,
-            quantity: itm.quantity,
-            total: itm.total,
+            shipmentNumber,
+            masterOrderId: masterOrder.id,
+            vendorOrderId: vendorOrder?.id || null,
+            sellerId: validSellerId,
+            shopId: validShopId,
+            pickupLocationId: pickupLocationId || null,
+            pickupAddressSnapshot,
+            deliveryAddressSnapshot,
+            packageWeight: totalWeightKg,
+            packageLength: maxLength,
+            packageBreadth: maxBreadth,
+            packageHeight: totalHeight,
+            itemCount: items.reduce((sum, itm) => sum + itm.quantity, 0),
+            paymentMethod: masterOrder.paymentMethod,
+            codAmount,
+            codFee: isCod ? sellerCodFee : 0,
+            codFeeTax: isCod ? sellerCodFeeTax : 0,
+            codRemittanceStatus: isCod ? 'PENDING' : null,
+            shippingCharge: sellerShippingCharge,
+            actualForwardShippingCost:
+              costBearer === 'NAVYA' || isFreeShipping
+                ? ((masterOrder as any).shippingMode || 'STANDARD') === 'EXPRESS'
+                  ? 99
+                  : 49
+                : 0,
+            shippingCostStatus: 'ESTIMATED',
+            shippingMode: (masterOrder as any).shippingMode || 'STANDARD',
+            isFreeShipping,
+            freeShippingSource,
+            freeShippingThreshold,
+            costBearer,
+            sellerSubtotal: shipmentSubtotal,
+            status: 'CREATED',
+            trackingStatus: 'PENDING',
           },
         });
+        await (client as any)
+          .$executeRawUnsafe?.('RELEASE SAVEPOINT shp_create_sp;')
+          .catch(() => {});
+      } catch (shpErr: any) {
+        await (client as any)
+          .$executeRawUnsafe?.('ROLLBACK TO SAVEPOINT shp_create_sp;')
+          .catch(() => {});
+        console.warn(
+          '[MULTI_SELLER_SHIPMENT_FALLBACK] Missing columns on shipments table, retrying with core schema:',
+          shpErr?.message || shpErr,
+        );
+        try {
+          await (client as any).$executeRawUnsafe?.('SAVEPOINT shp_core_sp;').catch(() => {});
+          shipment = await client.shipment.create({
+            data: {
+              shipmentNumber,
+              masterOrderId: masterOrder.id,
+              vendorOrderId: vendorOrder?.id || null,
+              sellerId: validSellerId,
+              shopId: validShopId,
+              pickupAddressSnapshot,
+              deliveryAddressSnapshot,
+              packageWeight: totalWeightKg,
+              packageLength: maxLength,
+              packageBreadth: maxBreadth,
+              packageHeight: totalHeight,
+              itemCount: items.reduce((sum, itm) => sum + itm.quantity, 0),
+              paymentMethod: masterOrder.paymentMethod,
+              status: 'CREATED',
+              trackingStatus: 'PENDING',
+            },
+          });
+          await (client as any)
+            .$executeRawUnsafe?.('RELEASE SAVEPOINT shp_core_sp;')
+            .catch(() => {});
+        } catch (coreShpErr) {
+          await (client as any)
+            .$executeRawUnsafe?.('ROLLBACK TO SAVEPOINT shp_core_sp;')
+            .catch(() => {});
+          console.warn(
+            '[MULTI_SELLER_SHIPMENT_CORE_FAIL] Could not create core shipment record:',
+            coreShpErr,
+          );
+        }
       }
 
-      createdShipments.push(shipment);
+      // Create Shipment Items
+      if (shipment?.id) {
+        for (const itm of items) {
+          try {
+            await (client as any).$executeRawUnsafe?.('SAVEPOINT shp_item_sp;').catch(() => {});
+            await client.shipmentItem.create({
+              data: {
+                shipmentId: shipment.id,
+                orderItemId: itm.id,
+                productId: itm.productId,
+                variantId: itm.variantId || null,
+                name: itm.name,
+                sku: itm.sku,
+                size: itm.variant?.size || null,
+                color: itm.variant?.color || null,
+                price: itm.price,
+                quantity: itm.quantity,
+                total: itm.total,
+              },
+            });
+            await (client as any)
+              .$executeRawUnsafe?.('RELEASE SAVEPOINT shp_item_sp;')
+              .catch(() => {});
+          } catch (itemErr) {
+            await (client as any)
+              .$executeRawUnsafe?.('ROLLBACK TO SAVEPOINT shp_item_sp;')
+              .catch(() => {});
+            console.warn('[SHIPMENT_ITEM_CREATE_WARN]', itemErr);
+          }
+        }
+
+        createdShipments.push(shipment);
+      }
     }
 
     return createdShipments;

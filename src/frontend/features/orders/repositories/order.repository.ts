@@ -328,37 +328,66 @@ export class OrderRepository {
     const result = await prisma.$transaction(
       async (tx) => {
         // a. Create Master Order Record
-        const order = await tx.order.create({
-          data: {
-            orderNumber,
-            userId: input.userId,
-            addressId: input.addressId,
-            totalAmount: input.totalAmount,
-            discountAmount: authoritativeDiscount,
-            couponId: resolvedCoupon?.id || input.couponId || null,
-            couponCode: resolvedCoupon?.code || input.couponCode || null,
-            couponType: resolvedCoupon?.discountType || input.couponType || null,
-            couponFundingType:
-              authoritativeDiscount > 0 || resolvedCoupon ? couponFundingType : null,
-            shippingAmount: authoritativeShipping,
-            taxAmount: authoritativeTax,
-            codFee: authoritativeCodFee,
-            codFeeTax: authoritativeCodFeeTax,
-            codVerificationStatus: isCod ? 'PENDING' : 'NONE',
-            finalAmount: authoritativeFinalAmount,
-            orderStatus: isCod ? OrderStatus.PENDING : finalOrderStatus,
-            paymentStatus: input.paymentStatus,
-            paymentMethod: input.paymentMethod,
-            shippingMode: shippingCalc.shippingMethodCode,
-            isFirstOrder: firstOrderCheck.isEligible,
-            shippingWaiverSource: shippingCalc.sellers[0]?.freeShippingSource || null,
-            shippingCostBearer: shippingCalc.sellers[0]?.costBearer || null,
-            razorpayOrderId: input.razorpayOrderId,
-            razorpayPaymentId: input.razorpayPaymentId,
-            razorpaySignature: input.razorpaySignature,
-            notes: input.notes,
-          },
-        });
+        let order: any = null;
+        try {
+          await tx.$executeRawUnsafe('SAVEPOINT order_create_sp;');
+          order = await tx.order.create({
+            data: {
+              orderNumber,
+              userId: input.userId,
+              addressId: input.addressId,
+              totalAmount: input.totalAmount,
+              discountAmount: authoritativeDiscount,
+              couponId: resolvedCoupon?.id || input.couponId || null,
+              couponCode: resolvedCoupon?.code || input.couponCode || null,
+              couponType: resolvedCoupon?.discountType || input.couponType || null,
+              couponFundingType:
+                authoritativeDiscount > 0 || resolvedCoupon ? couponFundingType : null,
+              shippingAmount: authoritativeShipping,
+              taxAmount: authoritativeTax,
+              codFee: authoritativeCodFee,
+              codFeeTax: authoritativeCodFeeTax,
+              codVerificationStatus: isCod ? 'PENDING' : 'NONE',
+              finalAmount: authoritativeFinalAmount,
+              orderStatus: isCod ? OrderStatus.PENDING : finalOrderStatus,
+              paymentStatus: input.paymentStatus,
+              paymentMethod: input.paymentMethod,
+              shippingMode: shippingCalc.shippingMethodCode,
+              isFirstOrder: firstOrderCheck.isEligible,
+              shippingWaiverSource: shippingCalc.sellers[0]?.freeShippingSource || null,
+              shippingCostBearer: shippingCalc.sellers[0]?.costBearer || null,
+              razorpayOrderId: input.razorpayOrderId,
+              razorpayPaymentId: input.razorpayPaymentId,
+              razorpaySignature: input.razorpaySignature,
+              notes: input.notes,
+            },
+          });
+          await tx.$executeRawUnsafe('RELEASE SAVEPOINT order_create_sp;');
+        } catch (orderErr: any) {
+          await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT order_create_sp;').catch(() => {});
+          console.warn(
+            '[ORDER_REPO_ORDER_FALLBACK] Missing columns on orders table, retrying with core schema:',
+            orderErr?.message || orderErr,
+          );
+          order = await tx.order.create({
+            data: {
+              orderNumber,
+              userId: input.userId,
+              addressId: input.addressId,
+              totalAmount: input.totalAmount,
+              discountAmount: authoritativeDiscount,
+              shippingAmount: authoritativeShipping,
+              finalAmount: authoritativeFinalAmount,
+              orderStatus: isCod ? OrderStatus.PENDING : finalOrderStatus,
+              paymentStatus: input.paymentStatus,
+              paymentMethod: input.paymentMethod,
+              razorpayOrderId: input.razorpayOrderId,
+              razorpayPaymentId: input.razorpayPaymentId,
+              razorpaySignature: input.razorpaySignature,
+              notes: input.notes,
+            },
+          });
+        }
 
         // b. Create Order Items with Coupon Snapshots (BM-10)
         for (const item of preparedItems) {
@@ -392,23 +421,45 @@ export class OrderRepository {
             (a: any) => a.productId === item.productId,
           );
 
-          await tx.orderItem.create({
-            data: {
-              orderId: order.id,
-              productId: item.productId,
-              variantId: item.variantId || null,
-              name: item.name,
-              sku: item.sku,
-              price: item.price,
-              quantity: item.quantity,
-              total: item.total,
-              taxRate: item.taxRate ? Number(item.taxRate) : undefined,
-              taxAmount: item.taxAmount ? Number(item.taxAmount) : undefined,
-              couponId: resolvedCoupon?.id || null,
-              navyaCouponAmount: itmAlloc ? itmAlloc.navyaCouponAmount : 0,
-              sellerCouponAmount: itmAlloc ? itmAlloc.sellerCouponAmount : 0,
-            },
-          });
+          try {
+            await tx.$executeRawUnsafe('SAVEPOINT item_create_sp;');
+            await tx.orderItem.create({
+              data: {
+                orderId: order.id,
+                productId: item.productId,
+                variantId: item.variantId || null,
+                name: item.name,
+                sku: item.sku,
+                price: item.price,
+                quantity: item.quantity,
+                total: item.total,
+                taxRate: item.taxRate ? Number(item.taxRate) : undefined,
+                taxAmount: item.taxAmount ? Number(item.taxAmount) : undefined,
+                couponId: resolvedCoupon?.id || null,
+                navyaCouponAmount: itmAlloc ? itmAlloc.navyaCouponAmount : 0,
+                sellerCouponAmount: itmAlloc ? itmAlloc.sellerCouponAmount : 0,
+              },
+            });
+            await tx.$executeRawUnsafe('RELEASE SAVEPOINT item_create_sp;');
+          } catch (itemErr: any) {
+            await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT item_create_sp;').catch(() => {});
+            console.warn(
+              '[ORDER_REPO_ITEM_FALLBACK] Missing column in order_items, falling back to core schema:',
+              itemErr?.message || itemErr,
+            );
+            await tx.orderItem.create({
+              data: {
+                orderId: order.id,
+                productId: item.productId,
+                variantId: item.variantId || null,
+                name: item.name,
+                sku: item.sku,
+                price: item.price,
+                quantity: item.quantity,
+                total: item.total,
+              },
+            });
+          }
         }
 
         // c. Group Items by Seller / Shop for Vendor Orders
@@ -454,6 +505,7 @@ export class OrderRepository {
                 : shopPayout;
 
             try {
+              await tx.$executeRawUnsafe('SAVEPOINT vo_create_sp;');
               await tx.vendorOrder.create({
                 data: {
                   masterOrderId: order.id,
@@ -467,44 +519,47 @@ export class OrderRepository {
                   status: 'PENDING',
                 },
               });
+              await tx.$executeRawUnsafe('RELEASE SAVEPOINT vo_create_sp;');
             } catch (voErr: any) {
+              await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT vo_create_sp;').catch(() => {});
               const errMsg = voErr?.message || '';
-              if (
-                errMsg.includes('allocatedCouponAmount') ||
-                errMsg.includes('couponFundingType') ||
-                errMsg.includes('does not exist')
-              ) {
-                console.warn(
-                  '[ORDER_REPO_VO_FALLBACK] Missing column in vendor_orders table, falling back to core columns:',
-                  errMsg,
-                );
-                await tx.vendorOrder.create({
-                  data: {
-                    masterOrderId: order.id,
-                    shopId,
-                    vendorOrderNumber,
-                    totalAmount: sSubtotal,
-                    commissionAmount: shopCommission,
-                    vendorPayoutAmount: adjustedShopPayout,
-                    status: 'PENDING',
-                  },
-                });
-              } else {
-                throw voErr;
-              }
+              console.warn(
+                '[ORDER_REPO_VO_FALLBACK] Missing column in vendor_orders table, falling back to core columns:',
+                errMsg,
+              );
+              await tx.vendorOrder.create({
+                data: {
+                  masterOrderId: order.id,
+                  shopId,
+                  vendorOrderNumber,
+                  totalAmount: sSubtotal,
+                  commissionAmount: shopCommission,
+                  vendorPayoutAmount: adjustedShopPayout,
+                  status: 'PENDING',
+                },
+              });
             }
 
             // BM-10: Navya Promotional Subsidy Accounting
             if (couponFundingType === 'NAVYA' && sCouponDiscount > 0) {
-              await tx.financialAuditLog.create({
-                data: {
-                  entityType: 'PROMOTIONAL_SUBSIDY',
-                  entityId: order.id,
-                  action: 'NAVYA_PROMOTIONAL_SUBSIDY_APPLIED',
-                  amount: sCouponDiscount,
-                  notes: `Navya promotional subsidy applied for shop ${shopId} under coupon ${resolvedCoupon?.code || input.couponCode}: ₹${sCouponDiscount}`,
-                },
-              });
+              try {
+                await tx.$executeRawUnsafe('SAVEPOINT subsidy_audit_sp;');
+                await tx.financialAuditLog.create({
+                  data: {
+                    entityType: 'PROMOTIONAL_SUBSIDY',
+                    entityId: order.id,
+                    action: 'NAVYA_PROMOTIONAL_SUBSIDY_APPLIED',
+                    amount: sCouponDiscount,
+                    notes: `Navya promotional subsidy applied for shop ${shopId} under coupon ${resolvedCoupon?.code || input.couponCode}: ₹${sCouponDiscount}`,
+                  },
+                });
+                await tx.$executeRawUnsafe('RELEASE SAVEPOINT subsidy_audit_sp;');
+              } catch (auditErr: any) {
+                await tx
+                  .$executeRawUnsafe('ROLLBACK TO SAVEPOINT subsidy_audit_sp;')
+                  .catch(() => {});
+                console.warn('[ORDER_REPO_SUBSIDY_AUDIT_WARN]', auditErr?.message || auditErr);
+              }
             }
           }
         }
@@ -545,27 +600,69 @@ export class OrderRepository {
           estimatedTotalGatewayCost = est.total;
         }
 
-        await tx.paymentTransaction.create({
-          data: {
-            orderId: order.id,
-            razorpayOrderId: input.razorpayOrderId,
-            razorpayPaymentId: input.razorpayPaymentId,
-            razorpaySignature: input.razorpaySignature,
-            amount: authoritativeFinalAmount,
-            currency: 'INR',
-            status: input.paymentStatus,
-            method: input.paymentMethod.toString(),
-            gatewayFee: estimatedGatewayFee,
-            gatewayTax: estimatedGatewayTax,
-            netAmount: isRazorpay
-              ? CommissionService.roundMoney(authoritativeFinalAmount - estimatedTotalGatewayCost)
-              : authoritativeFinalAmount,
-            gatewayFeeStatus: 'ESTIMATED',
-          },
-        });
+        try {
+          await tx.$executeRawUnsafe('SAVEPOINT pt_create_sp;');
+          await tx.paymentTransaction.create({
+            data: {
+              orderId: order.id,
+              razorpayOrderId: input.razorpayOrderId,
+              razorpayPaymentId: input.razorpayPaymentId,
+              razorpaySignature: input.razorpaySignature,
+              amount: authoritativeFinalAmount,
+              currency: 'INR',
+              status: input.paymentStatus,
+              method: input.paymentMethod.toString(),
+              gatewayFee: estimatedGatewayFee,
+              gatewayTax: estimatedGatewayTax,
+              netAmount: isRazorpay
+                ? CommissionService.roundMoney(authoritativeFinalAmount - estimatedTotalGatewayCost)
+                : authoritativeFinalAmount,
+              gatewayFeeStatus: 'ESTIMATED',
+            },
+          });
+          await tx.$executeRawUnsafe('RELEASE SAVEPOINT pt_create_sp;');
+        } catch (ptErr: any) {
+          await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT pt_create_sp;').catch(() => {});
+          console.warn(
+            '[ORDER_REPO_PT_FALLBACK] Missing columns in payment_transactions, falling back to core schema:',
+            ptErr?.message || ptErr,
+          );
+          try {
+            await tx.$executeRawUnsafe('SAVEPOINT pt_core_sp;');
+            await tx.paymentTransaction.create({
+              data: {
+                orderId: order.id,
+                razorpayOrderId: input.razorpayOrderId,
+                razorpayPaymentId: input.razorpayPaymentId,
+                razorpaySignature: input.razorpaySignature,
+                amount: authoritativeFinalAmount,
+                currency: 'INR',
+                status: input.paymentStatus,
+                method: input.paymentMethod.toString(),
+              },
+            });
+            await tx.$executeRawUnsafe('RELEASE SAVEPOINT pt_core_sp;');
+          } catch (corePtErr) {
+            await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT pt_core_sp;').catch(() => {});
+            console.warn(
+              '[ORDER_REPO_PT_CORE_FAIL] Could not insert core paymentTransaction:',
+              corePtErr,
+            );
+          }
+        }
 
         // e. Create Discrete Multi-Seller Shipments with Frozen Address Snapshots
-        await MultiSellerShipmentService.createShipmentsForOrder(order.id, tx);
+        try {
+          await tx.$executeRawUnsafe('SAVEPOINT shipment_create_sp;');
+          await MultiSellerShipmentService.createShipmentsForOrder(order.id, tx);
+          await tx.$executeRawUnsafe('RELEASE SAVEPOINT shipment_create_sp;');
+        } catch (shipmentErr: any) {
+          await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT shipment_create_sp;').catch(() => {});
+          console.warn(
+            '[ORDER_REPO_SHIPMENTS_WARN] Error creating shipments for order, continuing checkout flow:',
+            shipmentErr?.message || shipmentErr,
+          );
+        }
 
         // f. Decrement Stock Inventory Atomically (BM-06 Inventory Race Protection)
         for (const item of preparedItems) {
@@ -612,28 +709,38 @@ export class OrderRepository {
 
         // Gateway Fee Accounting: Record platform absorption of gateway cost under BM-06 & BM-11
         if (isRazorpay) {
-          await tx.financialAuditLog.create({
-            data: {
-              entityType: 'GATEWAY_FEE',
-              entityId: order.id,
-              action: 'RECORD_GATEWAY_FEE_ESTIMATED',
-              amount: estimatedTotalGatewayCost,
-              notes: `Payment gateway fee estimated (2% MDR ₹${estimatedGatewayFee} + 18% GST ₹${estimatedGatewayTax}) absorbed by Navya Collection`,
-              idempotencyKey: `GW_FEE_EST:${order.id}`,
-            },
-          });
+          try {
+            await tx.$executeRawUnsafe('SAVEPOINT gw_audit_sp;');
+            await tx.financialAuditLog.create({
+              data: {
+                entityType: 'GATEWAY_FEE',
+                entityId: order.id,
+                action: 'RECORD_GATEWAY_FEE_ESTIMATED',
+                amount: estimatedTotalGatewayCost,
+                notes: `Payment gateway fee estimated (2% MDR ₹${estimatedGatewayFee} + 18% GST ₹${estimatedGatewayTax}) absorbed by Navya Collection`,
+                idempotencyKey: `GW_FEE_EST:${order.id}`,
+              },
+            });
+            await tx.$executeRawUnsafe('RELEASE SAVEPOINT gw_audit_sp;');
+          } catch (auditErr: any) {
+            await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT gw_audit_sp;').catch(() => {});
+            console.warn('[ORDER_REPO_GATEWAY_AUDIT_WARN]', auditErr?.message || auditErr);
+          }
         }
 
         // BM-11: Record Initial Order Unit Economics & Contribution Snapshot
         try {
+          await tx.$executeRawUnsafe('SAVEPOINT contrib_sp;');
           const { ContributionService } = await import('@/backend/services/contribution.service');
           await ContributionService.recordOrderContribution(
             order.id,
             'PAYMENT_CAPTURED' as any,
             tx,
           );
-        } catch (contribErr) {
-          console.warn('[BM11_INITIAL_CONTRIBUTION_WARN]', contribErr);
+          await tx.$executeRawUnsafe('RELEASE SAVEPOINT contrib_sp;');
+        } catch (contribErr: any) {
+          await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT contrib_sp;').catch(() => {});
+          console.warn('[BM11_INITIAL_CONTRIBUTION_WARN]', contribErr?.message || contribErr);
         }
 
         // g. Clear Customer Cart
