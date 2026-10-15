@@ -3,6 +3,7 @@ import { OrderStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 import { CommissionService } from '@/backend/services/commission.service';
 import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { MultiSellerShipmentService } from '@/backend/services/shipping/multi-seller-shipment.service';
+import { ensureOrderSchemaSynced } from '@/lib/order-schema-guard';
 import { prisma } from '@/lib/prisma';
 
 export interface CreateOrderInput {
@@ -136,6 +137,9 @@ export class OrderRepository {
    * Atomically creates an entire multi-seller order with all sub-orders, shipments, transactions, and inventory decrements.
    */
   static async createOrderWithItems(input: CreateOrderInput) {
+    // 0. Ensure critical order and item columns exist in the database (self-healing migration guard)
+    await ensureOrderSchemaSynced();
+
     const orderNumber = this.generateOrderNumber();
     const finalOrderStatus =
       input.paymentStatus === PaymentStatus.PAID ? OrderStatus.CONFIRMED : OrderStatus.PENDING;

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { PaymentService } from '@/features/payments/services/payment.service';
 import { ensureUserExists } from '@/lib/ensure-user';
+import { ensureOrderSchemaSynced } from '@/lib/order-schema-guard';
 import { getCurrentUser } from '@/lib/session';
 import { ShipmentService } from '@/services/shipping/shipment.service';
 
@@ -26,6 +27,8 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    await ensureOrderSchemaSynced();
 
     const result = await PaymentService.verifyPaymentSignatureAndFulfill(validUserId, {
       razorpayOrderId,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { PaymentService } from '@/features/payments/services/payment.service';
+import { ensureOrderSchemaSynced } from '@/lib/order-schema-guard';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/session';
 
@@ -50,6 +51,8 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    await ensureOrderSchemaSynced();
 
     const result = await PaymentService.createCodOrder(userId, {
       addressId,

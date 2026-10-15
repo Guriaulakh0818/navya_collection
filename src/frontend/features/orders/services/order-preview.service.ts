@@ -8,6 +8,7 @@ import { ShippingPolicyRepository } from '@/features/shipping/repositories/shipp
 import { ShippingService } from '@/features/shipping/services/shipping.service';
 import { TaxService } from '@/features/tax/services/tax.service';
 import { ensureUserExists } from '@/lib/ensure-user';
+import { ensureOrderSchemaSynced } from '@/lib/order-schema-guard';
 import { prisma } from '@/lib/prisma';
 
 import { OrderPreviewQueryInput } from '../schemas/order-preview.schema';
@@ -57,6 +58,7 @@ export class OrderPreviewService {
       }
 
       await ensureUserExists(userId);
+      await ensureOrderSchemaSynced();
 
       // 2. Resolve Active Cart Items (Batched single query for ultra-fast performance)
       let cartData: any = null;
