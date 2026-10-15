@@ -22,10 +22,16 @@ export interface TaxCalculationData {
 export interface CartItem {
   id: string;
   productId: string;
+  variantId?: string | null;
   name: string;
   price: number;
   quantity: number;
   image?: string;
+  isAvailable?: boolean;
+  inStock?: boolean;
+  availableStock?: number;
+  availabilityStatus?: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DELETED' | 'INACTIVE';
+  availabilityMessage?: string;
 }
 
 export interface Address {

@@ -27,6 +27,10 @@ export interface CartStoreItem {
   shopName?: string;
   shopSlug?: string;
   shopLogo?: string;
+  isAvailable?: boolean;
+  inStock?: boolean;
+  availabilityStatus?: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DELETED' | 'INACTIVE';
+  availabilityMessage?: string;
 }
 
 export interface CartCalculatedTotals {
@@ -50,6 +54,12 @@ interface CartStore extends CartCalculatedTotals {
 
   // Cart Actions
   fetchCart: () => Promise<void>;
+  validateCart: () => Promise<{
+    hasUnavailableItems: boolean;
+    unavailableCount: number;
+    availableCount: number;
+  }>;
+  removeUnavailableItems: () => Promise<void>;
   addItem: (item: {
     id?: string;
     productId: string;
@@ -97,9 +107,12 @@ function calculateTotals(items: CartStoreItem[]): CartCalculatedTotals {
   let originalSubtotal = 0;
 
   const validItems = items.map((item) => {
-    const itemSubtotal = item.price * item.quantity;
-    subtotal += itemSubtotal;
-    originalSubtotal += (item.compareAtPrice || item.price) * item.quantity;
+    const isAvail = item.isAvailable !== false;
+    const itemSubtotal = isAvail ? item.price * item.quantity : 0;
+    if (isAvail) {
+      subtotal += itemSubtotal;
+      originalSubtotal += (item.compareAtPrice || item.price) * item.quantity;
+    }
     return {
       ...item,
       subtotal: itemSubtotal,
@@ -109,8 +122,10 @@ function calculateTotals(items: CartStoreItem[]): CartCalculatedTotals {
   const discount = Math.max(0, originalSubtotal - subtotal);
 
   // BM-05: Calculate seller-level shipping (₹49 standard per seller shipment < ₹999, free if >= ₹999)
+  // Only calculate for available items!
+  const availableItems = validItems.filter((i) => i.isAvailable !== false);
   const sellerSubtotals = new Map<string, number>();
-  for (const item of validItems) {
+  for (const item of availableItems) {
     const sId = (item as any).shopId || 'default-shop';
     sellerSubtotals.set(sId, (sellerSubtotals.get(sId) || 0) + item.price * item.quantity);
   }
@@ -123,7 +138,7 @@ function calculateTotals(items: CartStoreItem[]): CartCalculatedTotals {
       maxRemaining = Math.max(maxRemaining, 999 - sTotal);
     }
   }
-  if (validItems.length === 0) {
+  if (availableItems.length === 0) {
     shipping = 0;
     maxRemaining = 0;
   }
@@ -132,7 +147,7 @@ function calculateTotals(items: CartStoreItem[]): CartCalculatedTotals {
 
   return {
     items: validItems,
-    itemCount: validItems.reduce((acc, item) => acc + item.quantity, 0),
+    itemCount: availableItems.reduce((acc, item) => acc + item.quantity, 0),
     subtotal,
     discount,
     shipping,
@@ -203,6 +218,94 @@ export const useCartStore = create<CartStore>()(
           }
         } catch {
           set({ isLoading: false, error: 'Network error loading cart' });
+        }
+      },
+
+      validateCart: async () => {
+        const currentItems = get().items;
+        if (currentItems.length === 0) {
+          return { hasUnavailableItems: false, unavailableCount: 0, availableCount: 0 };
+        }
+
+        try {
+          const res = await fetch('/api/v1/cart/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              items: currentItems.map((i) => ({
+                id: i.id,
+                productId: i.productId,
+                variantId: i.variantId || undefined,
+                sku: i.sku || undefined,
+                size: i.size || undefined,
+                color: i.color || undefined,
+                quantity: i.quantity,
+              })),
+            }),
+          });
+
+          const json = await res.json();
+          if (json.success && json.data) {
+            const validated = json.data.items || [];
+            const validatedMap = new Map<string, any>();
+            for (const v of validated) {
+              validatedMap.set(v.id, v);
+              validatedMap.set(`${v.productId}_${v.variantId || 'null'}`, v);
+            }
+
+            const updatedItems = currentItems.map((item) => {
+              const match =
+                validatedMap.get(item.id) ||
+                validatedMap.get(`${item.productId}_${item.variantId || 'null'}`) ||
+                validatedMap.get(item.productId);
+
+              if (match) {
+                return {
+                  ...item,
+                  isAvailable: match.isAvailable,
+                  inStock: match.inStock,
+                  availableStock: match.availableStock,
+                  availabilityStatus: match.availabilityStatus,
+                  availabilityMessage: match.availabilityMessage,
+                };
+              }
+              return item;
+            });
+
+            const totals = calculateTotals(updatedItems);
+            set({ ...totals, items: updatedItems });
+
+            return {
+              hasUnavailableItems: json.data.hasUnavailableItems,
+              unavailableCount: json.data.unavailableCount,
+              availableCount: json.data.availableCount,
+            };
+          }
+        } catch (err) {
+          console.error('[CART_STORE_VALIDATE_ERROR]', err);
+        }
+
+        return {
+          hasUnavailableItems: false,
+          unavailableCount: 0,
+          availableCount: currentItems.length,
+        };
+      },
+
+      removeUnavailableItems: async () => {
+        const state = get();
+        const unavailableItems = state.items.filter((i) => i.isAvailable === false);
+        const remainingItems = state.items.filter((i) => i.isAvailable !== false);
+        const totals = calculateTotals(remainingItems);
+        set({ ...totals, items: remainingItems, error: null });
+
+        if (!state.isGuest) {
+          for (const item of unavailableItems) {
+            try {
+              const deleteId = item.id.startsWith('item_') ? item.productId : item.id;
+              await fetch(`/api/v1/cart/items/${deleteId}`, { method: 'DELETE' });
+            } catch {}
+          }
         }
       },
 

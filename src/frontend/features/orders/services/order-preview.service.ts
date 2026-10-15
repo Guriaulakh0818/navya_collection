@@ -239,9 +239,59 @@ export class OrderPreviewService {
           const itemSubtotal = price * quantity;
           const taxRate = dbProduct?.taxRate ? Number(dbProduct.taxRate) : 5;
 
-          const availableStock = dbVariant
-            ? (dbVariant.availableStock ?? dbVariant.stock ?? 50)
-            : (dbProduct?.stock ?? 50);
+          // Live database availability and stock check
+          let isAvailable = true;
+          let inStock = true;
+          let availableStock = 0;
+          let availabilityStatus: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DELETED' | 'INACTIVE' = 'AVAILABLE';
+          let availabilityMessage = 'In Stock';
+
+          if (!dbProduct || dbProduct.deletedAt !== null) {
+            isAvailable = false;
+            inStock = false;
+            availableStock = 0;
+            availabilityStatus = 'DELETED';
+            availabilityMessage = 'Currently unavailable';
+          } else if (dbProduct.status !== 'active') {
+            isAvailable = false;
+            inStock = false;
+            availableStock = 0;
+            availabilityStatus = 'INACTIVE';
+            availabilityMessage = 'Currently unavailable';
+          } else if (i.variantId && (!dbVariant || dbVariant.deletedAt !== null)) {
+            isAvailable = false;
+            inStock = false;
+            availableStock = 0;
+            availabilityStatus = 'DELETED';
+            availabilityMessage = 'Currently unavailable';
+          } else if (dbVariant && dbVariant.status !== 'active') {
+            isAvailable = false;
+            inStock = false;
+            availableStock = 0;
+            availabilityStatus = 'INACTIVE';
+            availabilityMessage = 'Currently unavailable';
+          } else {
+            availableStock = dbVariant
+              ? (dbVariant.availableStock ?? dbVariant.stock ?? 0)
+              : (dbProduct.stock ?? 0);
+
+            if (availableStock <= 0) {
+              isAvailable = false;
+              inStock = false;
+              availabilityStatus = 'OUT_OF_STOCK';
+              availabilityMessage = 'Currently unavailable';
+            } else if (availableStock < quantity) {
+              isAvailable = true;
+              inStock = true;
+              availabilityStatus = 'AVAILABLE';
+              availabilityMessage = `Only ${availableStock} left in stock`;
+            } else {
+              isAvailable = true;
+              inStock = true;
+              availabilityStatus = 'AVAILABLE';
+              availabilityMessage = 'In Stock';
+            }
+          }
 
           return {
             id: dbProduct?.id || i.productId || `item_${idx}_${Date.now()}`,
@@ -259,7 +309,10 @@ export class OrderPreviewService {
             compareAtPrice,
             quantity,
             availableStock,
-            inStock: availableStock > 0,
+            inStock,
+            isAvailable,
+            availabilityStatus,
+            availabilityMessage,
             image,
             subtotal: itemSubtotal,
             taxRate,
@@ -267,33 +320,47 @@ export class OrderPreviewService {
           };
         });
 
-        const inputSubtotal = resolvedItems.reduce((sum, item) => sum + item.subtotal, 0);
+        const availableResolved = resolvedItems.filter((item) => item.isAvailable);
+        const unavailableResolved = resolvedItems.filter((item) => !item.isAvailable);
 
-        const initialShip = await CustomerShippingService.calculateMultiSellerShipping(
-          userId,
-          resolvedItems.map((r: any) => ({
-            productId: r.productId,
-            shopId: r.shopId,
-            quantity: r.quantity,
-            price: r.price,
-          })),
-          {
-            customerAddressId: input.addressId,
-            shippingMethodCode: input.shippingMethodCode || 'STANDARD',
-            paymentMethod: input.paymentMethod || 'PREPAID',
-          },
-        );
+        if (unavailableResolved.length > 0) {
+          warnings.push(
+            unavailableResolved.length === 1
+              ? `'${unavailableResolved[0].name}' is currently unavailable and will not be charged or ordered.`
+              : `${unavailableResolved.length} items in your order are currently unavailable and will not be charged or ordered.`,
+          );
+        }
+
+        const inputSubtotal = availableResolved.reduce((sum, item) => sum + item.subtotal, 0);
+
+        let initialShip = { finalShippingAmount: 0, sellerBreakdown: [] as any[] };
+        if (availableResolved.length > 0) {
+          initialShip = await CustomerShippingService.calculateMultiSellerShipping(
+            userId,
+            availableResolved.map((r: any) => ({
+              productId: r.productId,
+              shopId: r.shopId,
+              quantity: r.quantity,
+              price: r.price,
+            })),
+            {
+              customerAddressId: input.addressId,
+              shippingMethodCode: input.shippingMethodCode || 'STANDARD',
+              paymentMethod: input.paymentMethod || 'PREPAID',
+            },
+          );
+        }
 
         const threshold = input.paymentMethod === 'COD' ? 1999 : 999;
         cartData = {
           id: `cart_${userId}`,
           userId,
           items: resolvedItems,
-          itemCount: resolvedItems.reduce((sum, item) => sum + item.quantity, 0),
+          itemCount: availableResolved.reduce((sum, item) => sum + item.quantity, 0),
           subtotal: inputSubtotal,
           discount: 0,
-          shipping: initialShip.finalShippingAmount,
-          total: inputSubtotal + initialShip.finalShippingAmount,
+          shipping: availableResolved.length === 0 ? 0 : initialShip.finalShippingAmount,
+          total: inputSubtotal + (availableResolved.length === 0 ? 0 : initialShip.finalShippingAmount),
           freeShippingThreshold: threshold,
           freeShippingRemaining: (initialShip.sellerBreakdown || []).reduce(
             (m: number, s: any) => Math.max(m, s.freeShippingRemaining || 0),
@@ -315,21 +382,43 @@ export class OrderPreviewService {
         };
       }
 
-      // Validate Stock for each item
+      // Validate items for availability and stock
       const validatedItems = cartData.items.map((item: any) => {
-        const isStockAvailable = item.quantity <= item.availableStock;
-        if (!isStockAvailable) {
+        const isAvailable =
+          item.isAvailable !== undefined ? item.isAvailable : item.inStock !== false;
+        const inStock =
+          item.inStock !== false &&
+          (item.availableStock === undefined || item.availableStock > 0);
+        const isStockAvailable =
+          !isAvailable || item.quantity <= (item.availableStock ?? 99);
+        if (isAvailable && !isStockAvailable) {
           warnings.push(
             `Item '${item.name}' has only ${item.availableStock} unit(s) left in stock. Quantity adjusted.`,
           );
         }
         return {
           ...item,
-          inStock: item.availableStock > 0,
+          isAvailable,
+          inStock,
+          availabilityStatus:
+            item.availabilityStatus || (isAvailable ? 'AVAILABLE' : 'DELETED'),
+          availabilityMessage:
+            item.availabilityMessage ||
+            (isAvailable ? 'In Stock' : 'Currently unavailable'),
         };
       });
 
-      const subtotal = cartData.subtotal;
+      const availableItems = validatedItems.filter(
+        (i: any) => i.isAvailable !== false && i.inStock,
+      );
+      const unavailableItems = validatedItems.filter(
+        (i: any) => i.isAvailable === false || !i.inStock,
+      );
+
+      const subtotal = availableItems.reduce(
+        (sum: number, item: any) => sum + (item.subtotal || item.price * item.quantity),
+        0,
+      );
 
       // 3. Resolve Customer Delivery Address
       let address: any = null;
@@ -365,7 +454,7 @@ export class OrderPreviewService {
         const couponRes = await CouponService.validateCoupon(userId, {
           code: input.couponCode,
           cartAmount: subtotal,
-          items: validatedItems.map((i: any) => ({
+          items: availableItems.map((i: any) => ({
             productId: i.productId,
             shopId: i.shopId,
             categoryId: i.categoryId,
@@ -390,45 +479,53 @@ export class OrderPreviewService {
       let estimatedDelivery = '3-5 business days';
       let isServiceable = true;
 
-      const shipRes = await CustomerShippingService.calculateMultiSellerShipping(
-        userId,
-        validatedItems.map((i: any) => ({
-          productId: i.productId,
-          shopId: i.shopId || 'DEFAULT_SHOP',
-          quantity: i.quantity,
-          price: i.price,
-        })),
-        {
-          customerAddressId: address?.id,
-          shippingMethodCode: input.shippingMethodCode || 'STANDARD',
-          paymentMethod: input.paymentMethod || 'PREPAID',
-        },
-      );
+      let shipRes: any = { finalShippingAmount: 0, sellerBreakdown: [] };
+      if (availableItems.length > 0) {
+        shipRes = await CustomerShippingService.calculateMultiSellerShipping(
+          userId,
+          availableItems.map((i: any) => ({
+            productId: i.productId,
+            shopId: i.shopId || 'DEFAULT_SHOP',
+            quantity: i.quantity,
+            price: i.price,
+          })),
+          {
+            customerAddressId: address?.id,
+            shippingMethodCode: input.shippingMethodCode || 'STANDARD',
+            paymentMethod: input.paymentMethod || 'PREPAID',
+          },
+        );
 
-      shipping = shipRes.finalShippingAmount;
-      estimatedDelivery = '3-5 business days';
-      isServiceable = shipRes.isServiceable ?? true;
+        shipping = shipRes.finalShippingAmount;
+        estimatedDelivery = '3-5 business days';
+        isServiceable = shipRes.isServiceable ?? true;
+      } else {
+        shipping = 0;
+      }
 
       // 6. Calculate Dynamic Tax (BM-06 Rule Engine)
       let tax = 0;
       let taxBreakdown: any = null;
 
-      const taxRes = await TaxService.calculateDynamicTax({
-        items: validatedItems.map((i: any) => ({
-          productId: i.productId,
-          shopId: i.shopId,
-          price: i.price,
-          quantity: i.quantity,
-          taxRate: i.taxRate,
-        })),
-        addressId: address?.id,
-        shippingAmount: shipping,
-        discountAmount: discount,
-      });
+      let taxRes: any = { success: true, data: { tax: 0, taxBreakdown: null, sellers: [] } };
+      if (availableItems.length > 0) {
+        taxRes = await TaxService.calculateDynamicTax({
+          items: availableItems.map((i: any) => ({
+            productId: i.productId,
+            shopId: i.shopId,
+            price: i.price,
+            quantity: i.quantity,
+            taxRate: i.taxRate,
+          })),
+          addressId: address?.id,
+          shippingAmount: shipping,
+          discountAmount: discount,
+        });
 
-      if (taxRes.success && taxRes.data) {
-        tax = taxRes.data.tax;
-        taxBreakdown = taxRes.data.taxBreakdown;
+        if (taxRes.success && taxRes.data) {
+          tax = taxRes.data.tax;
+          taxBreakdown = taxRes.data.taxBreakdown;
+        }
       }
 
       let grandTotal = CommissionService.roundMoney(netSubtotal + shipping + tax);
@@ -436,7 +533,7 @@ export class OrderPreviewService {
 
       // 7. BM-07 Cash on Delivery (COD) Rules & Multi-Seller Fee Breakdown
       // Selling price limit: ₹5,000 max applied ONLY to product selling price subtotal
-      const isCodEligible = subtotal <= 5000;
+      const isCodEligible = subtotal <= 5000 && availableItems.length > 0;
 
       let codFee = 0;
       let codFeeTax = 0;
@@ -452,9 +549,9 @@ export class OrderPreviewService {
         sellerShipmentCodAmount: number;
       }> = [];
 
-      // Group validated items by shopId for multi-seller COD allocation
-      const shopItemsMap = new Map<string, typeof validatedItems>();
-      for (const item of validatedItems) {
+      // Group validated available items by shopId for multi-seller COD allocation
+      const shopItemsMap = new Map<string, typeof availableItems>();
+      for (const item of availableItems) {
         const sId = item.shopId || 'DEFAULT_SHOP';
         if (!shopItemsMap.has(sId)) shopItemsMap.set(sId, []);
         shopItemsMap.get(sId)!.push(item);
@@ -545,9 +642,11 @@ export class OrderPreviewService {
 
       if (input.paymentMethod === 'COD') {
         if (!isCodEligible) {
-          warnings.push(
-            'Cash on Delivery is unavailable for orders with product selling price exceeding ₹5,000.',
-          );
+          if (availableItems.length > 0) {
+            warnings.push(
+              'Cash on Delivery is unavailable for orders with product selling price exceeding ₹5,000.',
+            );
+          }
         } else {
           codFee = cumulativeCodFee;
           codFeeTax = cumulativeCodFeeTax;
@@ -566,7 +665,7 @@ export class OrderPreviewService {
           code: 'RAZORPAY',
           name: 'Online Payment (Razorpay)',
           description: 'UPI, Credit/Debit Cards, NetBanking, Wallets',
-          isAvailable: true,
+          isAvailable: availableItems.length > 0,
           badge: 'INSTANT CONFIRMATION',
         },
         {
@@ -589,7 +688,7 @@ export class OrderPreviewService {
           customer,
           address,
           items: validatedItems,
-          itemCount: validatedItems.reduce((sum: number, i: any) => sum + i.quantity, 0),
+          itemCount: availableItems.reduce((sum: number, i: any) => sum + i.quantity, 0),
           subtotal,
           discount,
           netSubtotal,
@@ -608,6 +707,10 @@ export class OrderPreviewService {
           shippingData: shipRes || null,
           paymentMethods,
           warnings,
+          hasUnavailableItems: unavailableItems.length > 0,
+          unavailableCount: unavailableItems.length,
+          availableCount: availableItems.length,
+          isOrderable: availableItems.length > 0,
         },
       };
     } catch (error: any) {

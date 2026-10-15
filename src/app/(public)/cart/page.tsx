@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  AlertCircle,
   Building2,
   ChevronRight,
   Minus,
@@ -11,7 +12,7 @@ import {
   Tag,
   Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -27,20 +28,33 @@ export default function MultiVendorCartPage() {
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const clearCart = useCartStore((s) => s.clearCart);
+  const removeUnavailableItems = useCartStore((s) => s.removeUnavailableItems);
+  const validateCart = useCartStore((s) => s.validateCart);
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const setAppliedCoupon = useCartStore((s) => s.setAppliedCoupon);
+
+  useEffect(() => {
+    validateCart();
+  }, [validateCart]);
 
   // Group items by Boutique Shop
   const shopGroups = groupCartItemsByShop(items);
 
+  const availableItems = items.filter((item) => item.isAvailable !== false);
+  const unavailableItems = items.filter((item) => item.isAvailable === false);
+  const hasUnavailable = unavailableItems.length > 0;
+
   // Calculate Order Totals
-  const grandSubtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const grandSubtotal = availableItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount = appliedCoupon?.discountAmount || 0;
 
   // Shipping estimate (FREE if shop subtotal >= 999 else ₹49 per vendor)
-  const shippingTotal = shopGroups.reduce((total, group) => {
-    return total + (group.subtotal >= 999 ? 0 : 49);
-  }, 0);
+  const shippingTotal =
+    availableItems.length === 0
+      ? 0
+      : shopGroups.reduce((total, group) => {
+          return total + (group.subtotal >= 999 ? 0 : 49);
+        }, 0);
 
   const grandTotal = Math.max(0, grandSubtotal - discountAmount + shippingTotal);
 
@@ -101,6 +115,33 @@ export default function MultiVendorCartPage() {
             Clear Bag
           </Button>
         </div>
+
+        {/* Unavailable items warning banner */}
+        {hasUnavailable && (
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-extrabold text-rose-950 text-xs sm:text-sm">
+                  {unavailableItems.length} item(s) in your shopping bag are currently unavailable
+                </p>
+                <p className="text-rose-700 text-[11px] sm:text-xs">
+                  Unavailable items are excluded from your payable subtotal. You can remove them and proceed with your available items.
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => removeUnavailableItems()}
+              className="rounded-full border-rose-300 bg-white hover:bg-rose-100 text-rose-800 text-xs font-extrabold px-4 py-1.5 shrink-0 shadow-xs cursor-pointer flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              Remove Unavailable Items
+            </Button>
+          </div>
+        )}
 
         {/* MAIN LAYOUT: SHOP GROUPS + ORDER SUMMARY */}
         <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
@@ -207,46 +248,74 @@ export default function MultiVendorCartPage() {
                                   Color: <strong className="text-navy">{item.color}</strong>
                                 </span>
                               )}
-                              <span className="text-emerald-700 text-[9px] sm:text-[10px] font-extrabold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
-                                In Stock
-                              </span>
+                              {item.isAvailable === false ? (
+                                <span className="text-rose-800 text-[9px] sm:text-[10px] font-extrabold bg-rose-100 border border-rose-300 px-2 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs">
+                                  <AlertCircle className="w-2.5 h-2.5 text-rose-600" /> Currently unavailable
+                                </span>
+                              ) : (
+                                <span className="text-emerald-700 text-[9px] sm:text-[10px] font-extrabold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                                  In Stock
+                                </span>
+                              )}
                             </div>
-                            <p className="text-xs sm:text-sm font-black text-navy font-mono pt-0.5">
-                              {formatPrice(item.price)}
-                            </p>
+
+                            {item.isAvailable === false ? (
+                              <div className="pt-0.5">
+                                <span className="text-xs sm:text-sm line-through text-slate-400 font-mono">
+                                  {formatPrice(item.price)}
+                                </span>
+                                <span className="text-[10px] text-rose-600 font-extrabold block">
+                                  Excluded from subtotal
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="text-xs sm:text-sm font-black text-navy font-mono pt-0.5">
+                                {formatPrice(item.price)}
+                              </p>
+                            )}
                           </div>
                         </div>
 
                         {/* Quantity Controls & Delete Button */}
                         <div className="flex items-center justify-between w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-                          <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 border border-slate-200 rounded-xl p-1 shadow-xs">
+                          {item.isAvailable === false ? (
                             <button
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                              className={`h-6 w-6 sm:h-7 sm:w-7 rounded-lg border bg-white flex items-center justify-center transition-colors cursor-pointer ${
-                                item.quantity <= 1
-                                  ? 'border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300'
-                                  : 'border-slate-200 text-slate-700 hover:bg-slate-100'
-                              }`}
-                              aria-label={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
-                              title={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
+                              onClick={() => removeItem(item.id)}
+                              className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-xl cursor-pointer transition-colors shadow-2xs"
                             >
-                              {item.quantity <= 1 ? (
-                                <Trash2 className="h-3 w-3 text-rose-600" />
-                              ) : (
-                                <Minus className="h-3 w-3" />
-                              )}
+                              <Trash2 className="h-3.5 w-3.5 text-rose-600" />
+                              <span>Remove</span>
                             </button>
-                            <span className="w-6 sm:w-8 text-center text-xs font-black text-navy font-mono">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                              aria-label="Increase quantity"
-                            >
-                              <Plus className="h-3 w-3" />
-                            </button>
-                          </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 border border-slate-200 rounded-xl p-1 shadow-xs">
+                              <button
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                className={`h-6 w-6 sm:h-7 sm:w-7 rounded-lg border bg-white flex items-center justify-center transition-colors cursor-pointer ${
+                                  item.quantity <= 1
+                                    ? 'border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300'
+                                    : 'border-slate-200 text-slate-700 hover:bg-slate-100'
+                                }`}
+                                aria-label={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
+                                title={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
+                              >
+                                {item.quantity <= 1 ? (
+                                  <Trash2 className="h-3 w-3 text-rose-600" />
+                                ) : (
+                                  <Minus className="h-3 w-3" />
+                                )}
+                              </button>
+                              <span className="w-6 sm:w-8 text-center text-xs font-black text-navy font-mono">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                                aria-label="Increase quantity"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
 
                           <button
                             onClick={() => removeItem(item.id)}
@@ -332,10 +401,24 @@ export default function MultiVendorCartPage() {
 
               {/* Checkout Button */}
               <Button
-                asChild
-                className="w-full py-3.5 sm:py-4 bg-gradient-to-r from-amber-500 to-orange hover:from-amber-600 hover:to-orange/90 text-white font-extrabold text-xs sm:text-sm rounded-xl sm:rounded-2xl shadow-md shadow-orange/20 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+                disabled={availableItems.length === 0}
+                asChild={availableItems.length > 0}
+                className={`w-full py-3.5 sm:py-4 font-extrabold text-xs sm:text-sm rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 ${
+                  availableItems.length === 0
+                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                    : 'bg-gradient-to-r from-amber-500 to-orange hover:from-amber-600 hover:to-orange/90 text-white shadow-md shadow-orange/20 active:scale-95 cursor-pointer'
+                }`}
               >
-                <Link href="/checkout">Proceed to Checkout →</Link>
+                {availableItems.length > 0 ? (
+                  <Link href="/checkout">
+                    <span>
+                      Proceed to Checkout ({availableItems.length}{' '}
+                      {availableItems.length === 1 ? 'item' : 'items'}) →
+                    </span>
+                  </Link>
+                ) : (
+                  <span>No Available Items to Checkout</span>
+                )}
               </Button>
             </div>
           </div>

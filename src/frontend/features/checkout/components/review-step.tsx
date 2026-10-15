@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, CreditCard, MapPin, ShieldCheck, Truck } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CreditCard, MapPin, ShieldCheck, Trash2, Truck } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -45,6 +45,9 @@ export interface OrderPreviewData {
     quantity: number;
     availableStock: number;
     inStock: boolean;
+    isAvailable?: boolean;
+    availabilityStatus?: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DELETED' | 'INACTIVE';
+    availabilityMessage?: string;
     image?: string;
     subtotal: number;
   }[];
@@ -62,6 +65,10 @@ export interface OrderPreviewData {
   totalSavings: number;
   estimatedDelivery: string;
   isServiceable?: boolean;
+  hasUnavailableItems?: boolean;
+  unavailableCount?: number;
+  availableCount?: number;
+  isOrderable?: boolean;
   appliedCoupon?: {
     code: string;
     title: string;
@@ -216,6 +223,24 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
     }).catch(() => {});
   }, []);
 
+  const handleRemoveItem = async (itemId: string, variantId?: string | null) => {
+    try {
+      await useCartStore.getState().removeItem(itemId, variantId);
+      await fetchOrderPreview();
+    } catch (err) {
+      console.error('Failed to remove item', err);
+    }
+  };
+
+  const handleRemoveAllUnavailable = async () => {
+    try {
+      await useCartStore.getState().removeUnavailableItems();
+      await fetchOrderPreview();
+    } catch (err) {
+      console.error('Failed to remove unavailable items', err);
+    }
+  };
+
   const handleConfirmOrder = async () => {
     if (!agreedTerms) {
       setErrorMsg(
@@ -229,9 +254,27 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
       return;
     }
 
+    if (previewData && previewData.availableCount === 0) {
+      setErrorMsg(
+        '⚠️ All items in your order are currently unavailable. Please add available items before placing your order.',
+      );
+      return;
+    }
+
     setIsPlacing(true);
     setErrorMsg(null);
     setPaymentNotice(null);
+
+    // Filter ONLY available items to process in payment & order creation
+    const availableStoreItems = useCartStore
+      .getState()
+      .items.filter((i) => i.isAvailable !== false && i.inStock !== false);
+
+    if (availableStoreItems.length === 0) {
+      setErrorMsg('⚠️ No available items in your cart to order.');
+      setIsPlacing(false);
+      return;
+    }
 
     // 1. ONLINE (Razorpay Payment Flow)
     if (selectedPaymentMethod === 'ONLINE') {
@@ -242,7 +285,7 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           return;
         }
 
-        const clientItemsPayload = useCartStore.getState().items.map((i) => ({
+        const clientItemsPayload = availableStoreItems.map((i) => ({
           productId: i.productId,
           variantId: i.variantId || undefined,
           name: i.name || (i as any).productName,
@@ -362,7 +405,7 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
 
     // 2. COD (Cash On Delivery Flow)
     try {
-      const clientItemsPayload = useCartStore.getState().items.map((i) => ({
+      const clientItemsPayload = availableStoreItems.map((i) => ({
         productId: i.productId,
         variantId: i.variantId || undefined,
         name: i.name || (i as any).productName,
@@ -588,67 +631,145 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
 
       {/* Section 2: Order Items List */}
       <div className="space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-          Order Items ({previewData.itemCount || previewData.items.length} item
-          {(previewData.itemCount || previewData.items.length) > 1 ? 's' : ''})
-        </h3>
-
-        <div className="space-y-2.5">
-          {previewData.items.map((item) => (
-            <div
-              key={item.id || item.productId}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-slate-200 p-3 sm:p-3.5 bg-white min-w-0"
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+            Order Items ({previewData.itemCount || previewData.items.length} item
+            {(previewData.itemCount || previewData.items.length) > 1 ? 's' : ''})
+          </h3>
+          {previewData.hasUnavailableItems && (
+            <button
+              type="button"
+              onClick={handleRemoveAllUnavailable}
+              className="text-xs font-bold text-rose-600 hover:text-rose-700 underline flex items-center gap-1 cursor-pointer"
             >
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="relative h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
-                  <Image
-                    src={
-                      item.image ||
-                      'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800'
-                    }
-                    alt={item.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+              <Trash2 className="w-3.5 h-3.5" /> Remove Unavailable Items
+            </button>
+          )}
+        </div>
 
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-xs sm:text-sm font-semibold text-navy line-clamp-1 break-words">
-                    {item.name ||
-                      (item.variantName
-                        ? `${item.productName} - ${item.variantName}`
-                        : item.productName)}
-                  </h4>
-                  <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                    {item.color && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
-                        Color: {item.color}
-                      </span>
-                    )}
-                    {item.size && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
-                        Size: {item.size}
-                      </span>
-                    )}
-                    <span className="text-[11px] text-slate-500 font-medium">
-                      Qty: {item.quantity} × ₹{item.price.toLocaleString('en-IN')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 shrink-0">
-                <span className="font-bold text-navy text-xs sm:text-sm block">
-                  ₹{item.subtotal.toLocaleString('en-IN')}
-                </span>
-                {item.inStock ? (
-                  <span className="text-[10px] font-bold text-emerald-600">In Stock</span>
-                ) : (
-                  <span className="text-[10px] font-bold text-red-500">Low Stock</span>
-                )}
+        {/* Top Warning Banner if unavailable items are present */}
+        {previewData.hasUnavailableItems && (
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-extrabold text-rose-950 text-xs sm:text-sm">
+                  {previewData.unavailableCount && previewData.unavailableCount > 1
+                    ? `${previewData.unavailableCount} items in your order are currently unavailable`
+                    : 'An item in your order is currently unavailable'}
+                </p>
+                <p className="text-rose-700 text-[11px] sm:text-xs">
+                  Unavailable items are excluded from your payable total. You can remove them and proceed with your remaining available items.
+                </p>
               </div>
             </div>
-          ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleRemoveAllUnavailable}
+              className="rounded-full border-rose-300 bg-white hover:bg-rose-100 text-rose-800 text-xs font-extrabold px-3.5 py-1.5 shrink-0 shadow-xs cursor-pointer flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              Remove Unavailable
+            </Button>
+          </div>
+        )}
+
+        <div className="space-y-2.5">
+          {previewData.items.map((item) => {
+            const isUnavailable = item.isAvailable === false || item.inStock === false;
+
+            return (
+              <div
+                key={item.id || item.productId}
+                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border p-3 sm:p-3.5 bg-white min-w-0 transition-all ${
+                  isUnavailable
+                    ? 'border-rose-200 bg-rose-50/20'
+                    : 'border-slate-200'
+                }`}
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className={`relative h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-slate-100 border ${isUnavailable ? 'border-rose-200 opacity-60' : 'border-slate-200'}`}>
+                    <Image
+                      src={
+                        item.image ||
+                        'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800'
+                      }
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <h4 className={`text-xs sm:text-sm font-semibold line-clamp-1 break-words ${isUnavailable ? 'text-slate-500' : 'text-navy'}`}>
+                      {item.name ||
+                        (item.variantName
+                          ? `${item.productName} - ${item.variantName}`
+                          : item.productName)}
+                    </h4>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                      {item.color && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
+                          Color: {item.color}
+                        </span>
+                      )}
+                      {item.size && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
+                          Size: {item.size}
+                        </span>
+                      )}
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        Qty: {item.quantity} × ₹{item.price.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+
+                    {isUnavailable && (
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300">
+                          <AlertCircle className="w-3 h-3 text-rose-600 shrink-0" />
+                          Currently unavailable
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(item.id, item.variantId)}
+                          className="inline-flex items-center gap-1 text-[11px] font-extrabold text-rose-600 hover:text-rose-800 underline cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 shrink-0">
+                  {isUnavailable ? (
+                    <div className="text-right">
+                      <span className="line-through text-slate-400 text-xs block">
+                        ₹{item.subtotal.toLocaleString('en-IN')}
+                      </span>
+                      <span className="text-[10px] text-rose-600 font-extrabold block">
+                        Excluded from total
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="font-bold text-navy text-xs sm:text-sm block">
+                        ₹{item.subtotal.toLocaleString('en-IN')}
+                      </span>
+                      {item.inStock ? (
+                        <span className="text-[10px] font-bold text-emerald-600">In Stock</span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-red-500">Low Stock</span>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {selectedPaymentMethod === 'COD' &&
@@ -738,11 +859,21 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           <button
             type="button"
             onClick={handleConfirmOrder}
-            disabled={isPlacing || !previewData.isServiceable}
-            className="w-full sm:w-auto flex-1 sm:flex-initial rounded-full font-extrabold text-xs sm:text-sm px-6 py-3.5 sm:py-4 bg-orange hover:bg-orange-600 text-white shadow-lg transition-all active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2 text-center break-words"
+            disabled={
+              isPlacing ||
+              !previewData.isServiceable ||
+              (previewData.availableCount !== undefined && previewData.availableCount === 0)
+            }
+            className={`w-full sm:w-auto flex-1 sm:flex-initial rounded-full font-extrabold text-xs sm:text-sm px-6 py-3.5 sm:py-4 transition-all flex items-center justify-center gap-2 text-center break-words ${
+              previewData.availableCount === 0
+                ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                : 'bg-orange hover:bg-orange-600 text-white shadow-lg active:scale-[0.99] cursor-pointer'
+            }`}
           >
             {isPlacing ? (
               <Loader light size="sm" text="Processing Order..." />
+            ) : previewData.availableCount === 0 ? (
+              'No Available Items to Order'
             ) : selectedPaymentMethod === 'ONLINE' ? (
               `Pay ₹${previewData.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })} Now`
             ) : (

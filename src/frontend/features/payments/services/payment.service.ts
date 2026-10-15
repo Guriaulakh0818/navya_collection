@@ -72,10 +72,15 @@ export class PaymentService {
         };
       }
 
-      if (preview.items.length === 0) {
+      const availableItems = preview.items.filter(
+        (i: any) => i.isAvailable !== false && i.inStock !== false,
+      );
+
+      if (availableItems.length === 0) {
         return {
           success: false,
-          message: 'Your cart is empty.',
+          message:
+            'All items in your cart are currently unavailable. Please remove them to proceed.',
           statusCode: 400,
         };
       }
@@ -236,6 +241,10 @@ export class PaymentService {
 
       const preview = previewRes.data;
 
+      const availableItems = preview.items.filter(
+        (i: any) => i.isAvailable !== false && i.inStock !== false,
+      );
+
       // 4. Create Database Order Atomically
       const order = await OrderRepository.createOrderWithItems({
         userId,
@@ -254,7 +263,7 @@ export class PaymentService {
         razorpayOrderId,
         razorpayPaymentId,
         razorpaySignature,
-        items: preview.items.map((i: any) => ({
+        items: availableItems.map((i: any) => ({
           productId: i.productId,
           variantId: i.variantId,
           name: i.name,
@@ -416,10 +425,15 @@ export class PaymentService {
         };
       }
 
-      if (preview.items.length === 0) {
+      const availableItems = preview.items.filter(
+        (i: any) => i.isAvailable !== false && i.inStock !== false,
+      );
+
+      if (availableItems.length === 0) {
         return {
           success: false,
-          message: 'Your cart is empty.',
+          message:
+            'All items in your cart are currently unavailable. Please remove them to proceed.',
           statusCode: 400,
         };
       }
@@ -441,7 +455,7 @@ export class PaymentService {
         finalAmount: preview.grandTotal,
         paymentMethod: PaymentMethod.COD,
         paymentStatus: PaymentStatus.PENDING,
-        items: preview.items.map((i: any) => ({
+        items: availableItems.map((i: any) => ({
           productId: i.productId,
           variantId: i.variantId,
           name: i.name,

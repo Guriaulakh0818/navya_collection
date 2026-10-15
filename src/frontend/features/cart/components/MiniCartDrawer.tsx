@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  AlertCircle,
   Building2,
   ChevronRight,
   Minus,
@@ -10,6 +11,7 @@ import {
   Trash2,
   Truck,
 } from 'lucide-react';
+import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -30,13 +32,25 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const clearCart = useCartStore((s) => s.clearCart);
+  const removeUnavailableItems = useCartStore((s) => s.removeUnavailableItems);
+  const validateCart = useCartStore((s) => s.validateCart);
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const setAppliedCoupon = useCartStore((s) => s.setAppliedCoupon);
 
+  useEffect(() => {
+    if (open) {
+      validateCart();
+    }
+  }, [open, validateCart]);
+
   const shopGroups = groupCartItemsByShop(items);
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const availableItems = items.filter((item) => item.isAvailable !== false);
+  const unavailableItems = items.filter((item) => item.isAvailable === false);
+  const hasUnavailable = unavailableItems.length > 0;
+
+  const subtotal = availableItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount = appliedCoupon?.discountAmount || 0;
-  const shipping = subtotal >= 999 || items.length === 0 ? 0 : 49;
+  const shipping = availableItems.length === 0 || subtotal >= 999 ? 0 : 49;
   const total = Math.max(0, subtotal - discountAmount + shipping);
 
   return (
@@ -65,6 +79,25 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
         </div>
       ) : (
         <div className="flex h-full flex-col justify-between overflow-hidden p-4 min-h-0">
+          {/* Top Banner if unavailable items are present */}
+          {hasUnavailable && (
+            <div className="mb-3 rounded-2xl bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-950 font-semibold flex items-center justify-between gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                <span className="truncate">
+                  {unavailableItems.length} item(s) currently unavailable
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeUnavailableItems()}
+                className="text-[11px] font-extrabold text-rose-700 hover:text-rose-900 underline shrink-0 cursor-pointer"
+              >
+                Remove All
+              </button>
+            </div>
+          )}
+
           {/* Free Shipping Notification */}
           <div className="mb-3 rounded-2xl bg-orange/10 p-3 text-xs text-orange font-semibold flex items-center gap-2 shrink-0">
             <Truck className="h-4 w-4 shrink-0" />
@@ -91,80 +124,125 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
 
                 {/* Items in Shop */}
                 <div className="space-y-2">
-                  {group.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex gap-3 rounded-xl border border-slate-100 bg-white p-2.5 shadow-xs"
-                    >
-                      <div className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-slate-100 border border-slate-100">
-                        {item.image ? (
-                          <Image src={item.image} alt={item.name} fill className="object-cover" />
-                        ) : (
-                          <div className="h-full w-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">
-                            BOUTIQUE
-                          </div>
-                        )}
-                      </div>
+                  {group.items.map((item) => {
+                    const isUnavailable = item.isAvailable === false;
 
-                      <div className="flex-1 min-w-0 flex flex-col justify-between">
-                        <div>
-                          <h4 className="text-xs font-bold text-slate-900 truncate">{item.name}</h4>
-                          {(item.color || item.size || item.variantName) && (
-                            <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-500 font-semibold mt-0.5">
-                              {item.color && (
-                                <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
-                                  Color: <strong>{item.color}</strong>
-                                </span>
-                              )}
-                              {item.size && (
-                                <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
-                                  Size: <strong>{item.size}</strong>
-                                </span>
-                              )}
+                    return (
+                      <div
+                        key={item.id}
+                        className={`flex gap-3 rounded-xl border p-2.5 shadow-xs transition-all ${
+                          isUnavailable
+                            ? 'border-rose-200 bg-rose-50/20'
+                            : 'border-slate-100 bg-white'
+                        }`}
+                      >
+                        <div
+                          className={`relative h-14 w-14 shrink-0 rounded-lg overflow-hidden bg-slate-100 border ${
+                            isUnavailable ? 'border-rose-200 opacity-60' : 'border-slate-100'
+                          }`}
+                        >
+                          {item.image ? (
+                            <Image src={item.image} alt={item.name} fill className="object-cover" />
+                          ) : (
+                            <div className="h-full w-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">
+                              BOUTIQUE
                             </div>
                           )}
-                          <p className="text-[11px] text-slate-900 font-extrabold mt-0.5">
-                            {formatPrice(item.price)}
-                          </p>
                         </div>
 
-                        <div className="flex items-center gap-2 mt-1">
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className={`h-5 w-5 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
-                              item.quantity <= 1
-                                ? 'border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300'
-                                : 'border-slate-200 text-slate-600 hover:bg-slate-100'
-                            }`}
-                            title={item.quantity <= 1 ? 'Remove from cart' : 'Decrease quantity'}
-                            aria-label={
-                              item.quantity <= 1 ? 'Remove from cart' : 'Decrease quantity'
-                            }
-                          >
-                            {item.quantity <= 1 ? (
-                              <Trash2 className="h-2.5 w-2.5 text-red-500" />
-                            ) : (
-                              <Minus className="h-3 w-3" />
+                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                          <div>
+                            <h4
+                              className={`text-xs font-bold truncate ${
+                                isUnavailable ? 'text-slate-500' : 'text-slate-900'
+                              }`}
+                            >
+                              {item.name}
+                            </h4>
+                            {(item.color || item.size || item.variantName) && (
+                              <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-500 font-semibold mt-0.5">
+                                {item.color && (
+                                  <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
+                                    Color: <strong>{item.color}</strong>
+                                  </span>
+                                )}
+                                {item.size && (
+                                  <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">
+                                    Size: <strong>{item.size}</strong>
+                                  </span>
+                                )}
+                              </div>
                             )}
-                          </button>
-                          <span className="text-xs font-bold text-slate-800">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="h-5 w-5 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 cursor-pointer"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </button>
 
-                          <button
-                            onClick={() => removeItem(item.id)}
-                            className="ml-auto text-slate-400 hover:text-red-500 p-1"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                            {isUnavailable ? (
+                              <div className="mt-1">
+                                <span className="inline-flex items-center gap-1 text-[9.5px] font-extrabold px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300">
+                                  <AlertCircle className="w-2.5 h-2.5 text-rose-600 shrink-0" />
+                                  Currently unavailable
+                                </span>
+                              </div>
+                            ) : (
+                              <p className="text-[11px] text-slate-900 font-extrabold mt-0.5">
+                                {formatPrice(item.price)}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between mt-1">
+                            {isUnavailable ? (
+                              <button
+                                onClick={() => removeItem(item.id)}
+                                className="flex items-center gap-1 text-[10.5px] font-bold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                                <span>Remove</span>
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                  className={`h-5 w-5 rounded-full border flex items-center justify-center transition-colors cursor-pointer ${
+                                    item.quantity <= 1
+                                      ? 'border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300'
+                                      : 'border-slate-200 text-slate-600 hover:bg-slate-100'
+                                  }`}
+                                  title={
+                                    item.quantity <= 1 ? 'Remove from cart' : 'Decrease quantity'
+                                  }
+                                  aria-label={
+                                    item.quantity <= 1 ? 'Remove from cart' : 'Decrease quantity'
+                                  }
+                                >
+                                  {item.quantity <= 1 ? (
+                                    <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                                  ) : (
+                                    <Minus className="h-3 w-3" />
+                                  )}
+                                </button>
+                                <span className="text-xs font-bold text-slate-800">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                  className="h-5 w-5 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-100 cursor-pointer"
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </button>
+                              </div>
+                            )}
+
+                            <button
+                              onClick={() => removeItem(item.id)}
+                              className="ml-auto text-slate-400 hover:text-red-500 p-1"
+                              title="Delete from cart"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -178,11 +256,20 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
             </div>
 
             <Button
-              className="w-full rounded-xl bg-navy text-white text-xs font-extrabold py-3 hover:bg-navy/90"
+              className={`w-full rounded-xl text-white text-xs font-extrabold py-3 ${
+                availableItems.length === 0
+                  ? 'bg-slate-400 cursor-not-allowed hover:bg-slate-400'
+                  : 'bg-navy hover:bg-navy/90'
+              }`}
               onClick={onClose}
-              asChild
+              disabled={availableItems.length === 0}
+              asChild={availableItems.length > 0}
             >
-              <Link href="/cart">View Full Multi-Vendor Cart →</Link>
+              {availableItems.length > 0 ? (
+                <Link href="/cart">View Full Multi-Vendor Cart →</Link>
+              ) : (
+                <span>No Available Items to Checkout</span>
+              )}
             </Button>
           </div>
         </div>
