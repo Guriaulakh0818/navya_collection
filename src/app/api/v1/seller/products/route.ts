@@ -338,7 +338,9 @@ export async function POST(request: NextRequest) {
                 ? v.sku.trim()
                 : generateVariantSku(parentSku, v.color, v.size, index);
 
-            const variantImgUrl = v.imageUrl || v.image;
+            const primaryProductImg =
+              allImages.find((img) => img.isPrimary)?.imageUrl || allImages[0]?.imageUrl || null;
+            const variantImgUrl = v.imageUrl || v.image || primaryProductImg;
             const attributesPayload = {
               ...(data.attributes || {}),
               ...(typeof v.attributes === 'object' && v.attributes !== null ? v.attributes : {}),

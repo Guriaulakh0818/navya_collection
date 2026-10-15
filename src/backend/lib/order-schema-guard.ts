@@ -81,6 +81,65 @@ export async function ensureOrderSchemaSynced(force = false): Promise<void> {
         ADD COLUMN IF NOT EXISTS "commissionCalculationVersion" TEXT DEFAULT 'BM-03-MRP-V1';
     `);
 
+    // 5. Ensure VendorOrder table columns exist
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "vendor_orders"
+        ADD COLUMN IF NOT EXISTS "totalMrp" DECIMAL(10,2),
+        ADD COLUMN IF NOT EXISTS "allocatedCouponAmount" DECIMAL(10,2) DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS "sellerBasePayout" DECIMAL(10,2),
+        ADD COLUMN IF NOT EXISTS "sellerGstAmount" DECIMAL(10,2) DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS "sellerGstStatus" TEXT;
+    `);
+
+    // 6. Ensure enum-typed column on vendor_orders
+    await prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        ALTER TABLE "vendor_orders" ADD COLUMN IF NOT EXISTS "couponFundingType" "CouponFundingType";
+      EXCEPTION
+        WHEN undefined_object THEN null;
+        WHEN duplicate_column THEN null;
+      END $$;
+    `);
+
+    // 7. Ensure coupons & coupon_usages table structures exist
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "coupons"
+        ADD COLUMN IF NOT EXISTS "title" TEXT,
+        ADD COLUMN IF NOT EXISTS "description" TEXT,
+        ADD COLUMN IF NOT EXISTS "usageLimit" INTEGER,
+        ADD COLUMN IF NOT EXISTS "usagePerUser" INTEGER DEFAULT 1,
+        ADD COLUMN IF NOT EXISTS "usedCount" INTEGER DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS "startDate" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+        ADD COLUMN IF NOT EXISTS "applicableCategories" TEXT[] DEFAULT ARRAY[]::TEXT[],
+        ADD COLUMN IF NOT EXISTS "applicableProducts" TEXT[] DEFAULT ARRAY[]::TEXT[],
+        ADD COLUMN IF NOT EXISTS "excludedProducts" TEXT[] DEFAULT ARRAY[]::TEXT[];
+    `);
+
+    await prisma.$executeRawUnsafe(`
+      DO $$ BEGIN
+        ALTER TABLE "coupons" ADD COLUMN IF NOT EXISTS "fundingType" "CouponFundingType" DEFAULT 'NAVYA';
+      EXCEPTION
+        WHEN undefined_object THEN null;
+        WHEN duplicate_column THEN null;
+      END $$;
+    `);
+
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "coupon_usages" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "couponId" TEXT NOT NULL,
+        "userId" TEXT NOT NULL,
+        "orderId" TEXT,
+        "usedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // 8. Ensure financial_audit_logs columns exist
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "financial_audit_logs"
+        ADD COLUMN IF NOT EXISTS "idempotencyKey" TEXT;
+    `);
+
     isOrderSchemaSynced = true;
   } catch (err: any) {
     console.warn('[ORDER_SCHEMA_GUARD_WARN]', err?.message || err);

@@ -453,19 +453,46 @@ export class OrderRepository {
                 ? Math.max(0, CommissionService.roundMoney(shopPayout - sCouponDiscount))
                 : shopPayout;
 
-            await tx.vendorOrder.create({
-              data: {
-                masterOrderId: order.id,
-                shopId,
-                vendorOrderNumber,
-                totalAmount: sSubtotal,
-                commissionAmount: shopCommission,
-                vendorPayoutAmount: adjustedShopPayout,
-                allocatedCouponAmount: sCouponDiscount,
-                couponFundingType: sCouponDiscount > 0 ? couponFundingType : null,
-                status: 'PENDING',
-              },
-            });
+            try {
+              await tx.vendorOrder.create({
+                data: {
+                  masterOrderId: order.id,
+                  shopId,
+                  vendorOrderNumber,
+                  totalAmount: sSubtotal,
+                  commissionAmount: shopCommission,
+                  vendorPayoutAmount: adjustedShopPayout,
+                  allocatedCouponAmount: sCouponDiscount,
+                  couponFundingType: sCouponDiscount > 0 ? couponFundingType : null,
+                  status: 'PENDING',
+                },
+              });
+            } catch (voErr: any) {
+              const errMsg = voErr?.message || '';
+              if (
+                errMsg.includes('allocatedCouponAmount') ||
+                errMsg.includes('couponFundingType') ||
+                errMsg.includes('does not exist')
+              ) {
+                console.warn(
+                  '[ORDER_REPO_VO_FALLBACK] Missing column in vendor_orders table, falling back to core columns:',
+                  errMsg,
+                );
+                await tx.vendorOrder.create({
+                  data: {
+                    masterOrderId: order.id,
+                    shopId,
+                    vendorOrderNumber,
+                    totalAmount: sSubtotal,
+                    commissionAmount: shopCommission,
+                    vendorPayoutAmount: adjustedShopPayout,
+                    status: 'PENDING',
+                  },
+                });
+              } else {
+                throw voErr;
+              }
+            }
 
             // BM-10: Navya Promotional Subsidy Accounting
             if (couponFundingType === 'NAVYA' && sCouponDiscount > 0) {

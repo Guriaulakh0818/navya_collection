@@ -254,26 +254,26 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       });
 
       // 2. Refresh Product Images (including variant photos)
-      if (data.images) {
-        const allImages = [...data.images];
-        if (hasVariants && data.variants) {
-          data.variants.forEach((v) => {
-            const vUrl = v.imageUrl || v.image;
-            if (vUrl && !allImages.some((img) => img.imageUrl === vUrl)) {
-              allImages.push({
-                imageUrl: vUrl,
-                altText: `${data.name} - ${v.color || 'Variant'}`,
-                isPrimary: allImages.length === 0,
-                sortOrder: allImages.length,
-              });
-            }
-          });
-        }
+      const allImages: any[] = data.images ? [...data.images] : [];
+      if (hasVariants && data.variants) {
+        data.variants.forEach((v) => {
+          const vUrl = v.imageUrl || v.image;
+          if (vUrl && !allImages.some((img: any) => img.imageUrl === vUrl)) {
+            allImages.push({
+              imageUrl: vUrl,
+              altText: `${data.name} - ${v.color || 'Variant'}`,
+              isPrimary: allImages.length === 0,
+              sortOrder: allImages.length,
+            });
+          }
+        });
+      }
 
-        const hasExplicitPrimary = allImages.some((img) => Boolean(img.isPrimary));
+      if (data.images) {
+        const hasExplicitPrimary = allImages.some((img: any) => Boolean(img.isPrimary));
         await tx.productImage.deleteMany({ where: { productId: id } });
         await tx.productImage.createMany({
-          data: allImages.map((img, idx) => ({
+          data: allImages.map((img: any, idx: number) => ({
             productId: id,
             imageUrl: img.imageUrl,
             altText: img.altText || data.name,
@@ -294,7 +294,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
                   ? v.sku.trim()
                   : generateVariantSku(parentSku, v.color, v.size, index);
 
-              const variantImgUrl = v.imageUrl || v.image;
+              const primaryProductImg =
+                allImages.find((img: any) => img.isPrimary)?.imageUrl ||
+                allImages[0]?.imageUrl ||
+                null;
+              const variantImgUrl = v.imageUrl || v.image || primaryProductImg;
               const attributesPayload = {
                 ...(data.attributes || {}),
                 ...(typeof v.attributes === 'object' && v.attributes !== null ? v.attributes : {}),

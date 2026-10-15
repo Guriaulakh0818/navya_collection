@@ -285,6 +285,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   const [customColorInput, setCustomColorInput] = useState('');
   const [customSizeInput, setCustomSizeInput] = useState('');
   const [variantUploadingIndex, setVariantUploadingIndex] = useState<number | null>(null);
+  const [colorUploading, setColorUploading] = useState<string | null>(null);
 
   const allFlattenedCategories = getFlattenedCategoryOptions();
 
@@ -727,17 +728,28 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           setFormData((prev) => {
             const isFirstImage = prev.images.length === 0;
+            const updatedImages = [
+              ...prev.images,
+              {
+                imageUrl: secureUrl,
+                publicId: uploadRes.publicId,
+                isPrimary: isFirstImage,
+                sortOrder: prev.images.length,
+              },
+            ];
+
+            // Auto-link to existing variants that do not yet have an image
+            const updatedVariants = prev.variants.map((v: any) => {
+              if (!v.imageUrl) {
+                return { ...v, imageUrl: secureUrl };
+              }
+              return v;
+            });
+
             return {
               ...prev,
-              images: [
-                ...prev.images,
-                {
-                  imageUrl: secureUrl,
-                  publicId: uploadRes.publicId,
-                  isPrimary: isFirstImage,
-                  sortOrder: prev.images.length,
-                },
-              ],
+              images: updatedImages,
+              variants: updatedVariants,
             };
           });
 
@@ -763,13 +775,22 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   };
 
   const handleSetPrimaryImage = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.map((img: any, i: number) => ({
-        ...img,
-        isPrimary: i === index,
-      })),
-    }));
+    setFormData((prev) => {
+      const selectedImgUrl = prev.images[index]?.imageUrl;
+      return {
+        ...prev,
+        images: prev.images.map((img: any, i: number) => ({
+          ...img,
+          isPrimary: i === index,
+        })),
+        variants: prev.variants.map((v: any) => {
+          if (!v.imageUrl && selectedImgUrl) {
+            return { ...v, imageUrl: selectedImgUrl };
+          }
+          return v;
+        }),
+      };
+    });
   };
 
   // Upload photo specifically for a variant
@@ -884,6 +905,11 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
     const newVariants: any[] = [];
 
+    const primaryImg =
+      formData.images.find((img: any) => img.isPrimary)?.imageUrl ||
+      formData.images[0]?.imageUrl ||
+      '';
+
     if (mode === 'SIZE_ONLY') {
       sizes.forEach((sz) => {
         const existing = formData.variants.find((v: any) => v.size === sz && !v.color);
@@ -893,24 +919,34 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           price: existing?.price ?? basePrice ?? 0,
           stock: existing?.stock ?? baseStock ?? 10,
           sku: existing?.sku || '',
-          imageUrl: existing?.imageUrl || '',
+          imageUrl: existing?.imageUrl || primaryImg,
         });
       });
     } else if (mode === 'COLOR_ONLY') {
-      colors.forEach((clr) => {
+      colors.forEach((clr, cIdx) => {
         const existing = formData.variants.find((v: any) => v.color === clr && !v.size);
+        const colorExisting = formData.variants.find((v: any) => v.color === clr && v.imageUrl);
+        const fallbackImg =
+          existing?.imageUrl ||
+          colorExisting?.imageUrl ||
+          formData.images[cIdx]?.imageUrl ||
+          (colors.length === 1 ? primaryImg : '');
         newVariants.push({
           size: '',
           color: clr,
           price: existing?.price ?? basePrice ?? 0,
           stock: existing?.stock ?? baseStock ?? 10,
           sku: existing?.sku || '',
-          imageUrl: existing?.imageUrl || '',
+          imageUrl: fallbackImg,
         });
       });
     } else if (mode === 'SIZE_AND_COLOR') {
-      colors.forEach((clr) => {
+      colors.forEach((clr, cIdx) => {
         const colorExisting = formData.variants.find((v: any) => v.color === clr && v.imageUrl);
+        const fallbackImg =
+          colorExisting?.imageUrl ||
+          formData.images[cIdx]?.imageUrl ||
+          (colors.length === 1 ? primaryImg : '');
         sizes.forEach((sz) => {
           const existing = formData.variants.find((v: any) => v.color === clr && v.size === sz);
           newVariants.push({
@@ -919,7 +955,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             price: existing?.price ?? basePrice ?? 0,
             stock: existing?.stock ?? baseStock ?? 10,
             sku: existing?.sku || '',
-            imageUrl: existing?.imageUrl || colorExisting?.imageUrl || '',
+            imageUrl: existing?.imageUrl || fallbackImg,
           });
         });
       });
@@ -947,13 +983,21 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       }));
     } else {
       const colorExisting = formData.variants.find((v: any) => v.color === color && v.imageUrl);
+      const primaryImg =
+        formData.images.find((img: any) => img.isPrimary)?.imageUrl ||
+        formData.images[0]?.imageUrl ||
+        '';
       const newVariant = {
         size,
         color,
         price: Number(formData.price) || 0,
         stock: 10,
         sku: '',
-        imageUrl: colorExisting?.imageUrl || '',
+        imageUrl:
+          colorExisting?.imageUrl ||
+          (selectedColors.length === 1 ? primaryImg : '') ||
+          formData.images[0]?.imageUrl ||
+          '',
       };
       const updated = [...formData.variants, newVariant];
       const totalStock = updated.reduce((sum: number, v: any) => sum + Number(v.stock || 0), 0);
@@ -1008,6 +1052,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   };
 
   const handleUploadColorPhoto = async (color: string, file: File) => {
+    if (!file) return;
+    setColorUploading(color);
     try {
       const fileToUpload = await compressImageFile(file);
       const uploadData = new FormData();
@@ -1057,6 +1103,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       }
     } catch {
       showToast('Server error: please try again after sometime', 'error');
+    } finally {
+      setColorUploading(null);
     }
   };
 
@@ -1849,25 +1897,96 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                       Main Photo
                     </span>
                   )}
-                  <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    {!img.isPrimary && (
+
+                  {/* Linked color badges on thumbnail */}
+                  {(() => {
+                    const linkedColors = Array.from(
+                      new Set(
+                        formData.variants
+                          .filter((v: any) => v.imageUrl === img.imageUrl && v.color)
+                          .map((v: any) => v.color),
+                      ),
+                    );
+                    if (linkedColors.length === 0) return null;
+                    return (
+                      <div className="absolute bottom-1.5 left-1.5 right-1.5 flex flex-wrap gap-1 pointer-events-none">
+                        {linkedColors.map((c: any) => (
+                          <span
+                            key={c}
+                            className="bg-navy/90 text-amber-300 font-bold text-[8px] px-1.5 py-0.5 rounded shadow-xs"
+                          >
+                            ✓ {c}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  <div className="absolute inset-0 bg-navy/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2">
+                    <div className="flex items-center gap-1.5">
+                      {!img.isPrimary && (
+                        <button
+                          type="button"
+                          onClick={() => handleSetPrimaryImage(idx)}
+                          className="p-1.5 bg-white text-navy hover:text-amber-600 rounded-lg text-xs font-bold shadow-xs cursor-pointer"
+                          title="Set as Main Photo"
+                        >
+                          ★
+                        </button>
+                      )}
                       <button
                         type="button"
-                        onClick={() => handleSetPrimaryImage(idx)}
-                        className="p-1.5 bg-white text-navy hover:text-amber-600 rounded-lg text-xs font-bold shadow-xs cursor-pointer"
-                        title="Set as Main Photo"
+                        onClick={() => handleRemoveImage(idx)}
+                        className="p-1.5 bg-rose-600 text-white rounded-lg text-xs shadow-xs hover:bg-rose-700 cursor-pointer"
+                        title="Remove Photo"
                       >
-                        ★
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {selectedColors.length > 0 && (
+                      <select
+                        defaultValue=""
+                        onChange={(e) => {
+                          const clr = e.target.value;
+                          if (clr) {
+                            handleAssignGalleryImageToColor(clr, img.imageUrl);
+                          }
+                          e.target.value = '';
+                        }}
+                        className="w-full text-center px-1 py-0.5 bg-white text-navy font-bold text-[9px] rounded shadow-xs outline-none cursor-pointer"
+                        title="Link photo to a color variant"
+                      >
+                        <option value="" disabled>
+                          To Color ▾
+                        </option>
+                        {selectedColors.map((clr) => (
+                          <option key={clr} value={clr}>
+                            {clr}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {formData.variants.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            variants: prev.variants.map((v: any) => ({
+                              ...v,
+                              imageUrl: img.imageUrl,
+                            })),
+                          }));
+                          showToast('Applied this photo to all variants!', 'success');
+                        }}
+                        className="w-full text-center px-1.5 py-0.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[8px] uppercase tracking-wider rounded shadow-xs cursor-pointer"
+                        title="Apply to all variants"
+                      >
+                        All Variants
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(idx)}
-                      className="p-1.5 bg-rose-600 text-white rounded-lg text-xs shadow-xs hover:bg-rose-700 cursor-pointer"
-                      title="Remove Photo"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                 </div>
               ))}
@@ -2599,53 +2718,101 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                   </span>
                                 </div>
 
-                                <div className="flex items-center gap-1.5">
-                                  <label className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-navy border border-slate-200 rounded text-[10px] font-bold cursor-pointer transition-colors">
-                                    <Upload className="w-2.5 h-2.5 text-amber-600" />
-                                    <span>{colorImgUrl ? 'Change' : 'Upload'}</span>
-                                    <input
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) handleUploadColorPhoto(clr, file);
-                                      }}
-                                      className="hidden"
-                                    />
-                                  </label>
-
-                                  {formData.images.length > 0 && (
-                                    <select
-                                      defaultValue=""
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        if (val === '__CLEAR__') {
-                                          handleAssignGalleryImageToColor(clr, '');
-                                        } else if (val) {
-                                          handleAssignGalleryImageToColor(clr, val);
-                                        }
-                                        e.target.value = '';
-                                      }}
-                                      className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1.5 py-0.5 outline-none cursor-pointer"
-                                      title="Select from product gallery"
-                                    >
-                                      <option value="" disabled>
-                                        Gallery ▾
-                                      </option>
-                                      {formData.images.map((img: any, iIdx: number) => (
-                                        <option key={iIdx} value={img.imageUrl}>
-                                          Photo {iIdx + 1}
-                                        </option>
-                                      ))}
-                                      {colorImgUrl && (
-                                        <option
-                                          value="__CLEAR__"
-                                          className="text-rose-600 font-semibold"
-                                        >
-                                          ✕ Remove Photo
-                                        </option>
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center gap-1.5">
+                                    <label className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-navy border border-slate-200 rounded text-[10px] font-bold cursor-pointer transition-colors shadow-2xs">
+                                      {colorUploading === clr ? (
+                                        <span className="text-amber-600 font-bold animate-pulse">
+                                          Uploading...
+                                        </span>
+                                      ) : (
+                                        <>
+                                          <Upload className="w-2.5 h-2.5 text-amber-600" />
+                                          <span>{colorImgUrl ? 'Change' : 'Upload'}</span>
+                                        </>
                                       )}
-                                    </select>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        disabled={colorUploading === clr}
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) handleUploadColorPhoto(clr, file);
+                                          e.target.value = '';
+                                        }}
+                                        className="hidden"
+                                      />
+                                    </label>
+
+                                    {formData.images.length > 0 && (
+                                      <select
+                                        defaultValue=""
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          if (val === '__CLEAR__') {
+                                            handleAssignGalleryImageToColor(clr, '');
+                                          } else if (val) {
+                                            handleAssignGalleryImageToColor(clr, val);
+                                          }
+                                          e.target.value = '';
+                                        }}
+                                        className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1.5 py-0.5 outline-none cursor-pointer"
+                                        title="Select from product gallery"
+                                      >
+                                        <option value="" disabled>
+                                          Gallery ▾
+                                        </option>
+                                        {formData.images.map((img: any, iIdx: number) => (
+                                          <option key={iIdx} value={img.imageUrl}>
+                                            Photo {iIdx + 1}
+                                          </option>
+                                        ))}
+                                        {colorImgUrl && (
+                                          <option
+                                            value="__CLEAR__"
+                                            className="text-rose-600 font-semibold"
+                                          >
+                                            ✕ Remove Photo
+                                          </option>
+                                        )}
+                                      </select>
+                                    )}
+                                  </div>
+
+                                  {/* Quick Gallery Thumbnail Click-to-Assign */}
+                                  {formData.images.length > 0 && (
+                                    <div className="flex items-center gap-1 pt-1 flex-wrap">
+                                      <span className="text-[9px] font-bold text-slate-400 shrink-0">
+                                        Tap to link:
+                                      </span>
+                                      {formData.images.map((img: any, iIdx: number) => {
+                                        const isSelected = colorImgUrl === img.imageUrl;
+                                        return (
+                                          <button
+                                            key={iIdx}
+                                            type="button"
+                                            onClick={() =>
+                                              handleAssignGalleryImageToColor(
+                                                clr,
+                                                isSelected ? '' : img.imageUrl,
+                                              )
+                                            }
+                                            className={`relative w-6 h-7 rounded border overflow-hidden cursor-pointer transition-all ${
+                                              isSelected
+                                                ? 'border-amber-500 ring-2 ring-amber-500/50 scale-105 shadow-2xs'
+                                                : 'border-slate-200 hover:border-slate-400 opacity-60 hover:opacity-100'
+                                            }`}
+                                            title={`Click to assign Photo ${iIdx + 1} to ${clr}`}
+                                          >
+                                            <img
+                                              src={img.imageUrl}
+                                              alt=""
+                                              className="w-full h-full object-cover"
+                                            />
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
                                   )}
                                 </div>
                               </div>
@@ -2767,6 +2934,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                 <table className="w-full text-left text-xs border-collapse">
                                   <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
                                     <tr>
+                                      <th className="py-2 px-3">Photo</th>
                                       <th className="py-2 px-3">Color</th>
                                       <th className="py-2 px-3">Price (₹)</th>
                                       <th className="py-2 px-3">Stock Units</th>
@@ -2784,6 +2952,21 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
                                       return (
                                         <tr key={v.color} className="hover:bg-slate-50/50">
+                                          <td className="py-2 px-3">
+                                            {v.imageUrl ? (
+                                              <div className="w-8 h-10 rounded-md border border-slate-200 overflow-hidden bg-slate-50 shrink-0 shadow-2xs">
+                                                <img
+                                                  src={v.imageUrl}
+                                                  alt=""
+                                                  className="w-full h-full object-cover"
+                                                />
+                                              </div>
+                                            ) : (
+                                              <div className="w-8 h-10 rounded-md border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-slate-300 shrink-0">
+                                                <ImageIcon className="w-3.5 h-3.5 opacity-40" />
+                                              </div>
+                                            )}
+                                          </td>
                                           <td className="py-2 px-3 font-bold text-navy">
                                             <div className="flex items-center gap-1.5">
                                               <span
@@ -2938,6 +3121,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                     <table className="w-full text-left text-xs border-collapse">
                       <thead className="bg-slate-100 text-slate-700 font-extrabold uppercase tracking-wider text-[10px]">
                         <tr>
+                          <th className="p-3">Photo</th>
                           <th className="p-3">Size</th>
                           <th className="p-3">Price (₹)</th>
                           <th className="p-3">Stock Units</th>
@@ -2948,6 +3132,81 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                       <tbody className="divide-y divide-slate-100 bg-white">
                         {formData.variants.map((v: any, idx: number) => (
                           <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
+                            <td className="p-3">
+                              <div className="flex items-center gap-2">
+                                {v.imageUrl ? (
+                                  <div className="relative w-10 h-12 rounded-lg overflow-hidden border border-slate-200 bg-slate-50 shrink-0 shadow-2xs">
+                                    <img
+                                      src={v.imageUrl}
+                                      alt=""
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="w-10 h-12 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                                    <ImageIcon className="w-4 h-4 opacity-40" />
+                                  </div>
+                                )}
+
+                                <div className="flex flex-col gap-1">
+                                  <label className="inline-flex items-center gap-1 px-2 py-0.5 bg-white hover:bg-slate-100 text-navy border border-slate-200 rounded text-[9px] font-bold cursor-pointer transition-colors shadow-2xs">
+                                    {variantUploadingIndex === idx ? (
+                                      <span>Uploading...</span>
+                                    ) : (
+                                      <>
+                                        <Upload className="w-2.5 h-2.5 text-amber-600" />
+                                        <span>{v.imageUrl ? 'Change' : 'Upload'}</span>
+                                      </>
+                                    )}
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      disabled={variantUploadingIndex === idx}
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleVariantImageUpload(idx, file);
+                                        e.target.value = '';
+                                      }}
+                                      className="hidden"
+                                    />
+                                  </label>
+
+                                  {formData.images.length > 0 && (
+                                    <select
+                                      defaultValue=""
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val === '__CLEAR__') {
+                                          handleAssignGalleryImageToVariant(idx, '');
+                                        } else if (val) {
+                                          handleAssignGalleryImageToVariant(idx, val);
+                                        }
+                                        e.target.value = '';
+                                      }}
+                                      className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1 py-0.5 max-w-[85px] outline-none cursor-pointer"
+                                      title="Select from product gallery"
+                                    >
+                                      <option value="" disabled>
+                                        Gallery ▾
+                                      </option>
+                                      {formData.images.map((img: any, iIdx: number) => (
+                                        <option key={iIdx} value={img.imageUrl}>
+                                          Photo {iIdx + 1}
+                                        </option>
+                                      ))}
+                                      {v.imageUrl && (
+                                        <option
+                                          value="__CLEAR__"
+                                          className="text-rose-600 font-semibold"
+                                        >
+                                          ✕ Clear
+                                        </option>
+                                      )}
+                                    </select>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
                             <td className="p-3 font-bold text-slate-800">{v.size}</td>
                             <td className="p-3">
                               <input

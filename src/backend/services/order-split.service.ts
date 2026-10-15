@@ -293,29 +293,58 @@ export class OrderSplitService {
         vendorIndex++;
 
         // Create Child VendorOrder with BM-03 & BM-10 fields
-        const vendorOrder = await tx.vendorOrder.create({
-          data: {
-            masterOrderId: masterOrder.id,
-            shopId: targetShopId || shopId,
-            vendorOrderNumber,
-            totalAmount: shopSellingSubtotal,
-            totalMrp: shopTotalMrp,
-            commissionAmount: shopTotalCommission,
-            vendorPayoutAmount,
-            allocatedCouponAmount: sellerAllocatedCoupon,
-            couponFundingType: (resolvedFundingType as CouponFundingType) || null,
-            sellerBasePayout: isSellerFunded
-              ? Math.max(
-                  0,
-                  CommissionService.roundMoney(shopSellerBasePayout - sellerAllocatedCoupon),
-                )
-              : shopSellerBasePayout,
-            sellerGstAmount: shopSellerGstAmount,
-            sellerGstStatus,
-            status: initialOrderStatus,
-            shippingStatus: 'PENDING',
-          },
-        });
+        let vendorOrder: any;
+        try {
+          vendorOrder = await tx.vendorOrder.create({
+            data: {
+              masterOrderId: masterOrder.id,
+              shopId: targetShopId || shopId,
+              vendorOrderNumber,
+              totalAmount: shopSellingSubtotal,
+              totalMrp: shopTotalMrp,
+              commissionAmount: shopTotalCommission,
+              vendorPayoutAmount,
+              allocatedCouponAmount: sellerAllocatedCoupon,
+              couponFundingType: (resolvedFundingType as CouponFundingType) || null,
+              sellerBasePayout: isSellerFunded
+                ? Math.max(
+                    0,
+                    CommissionService.roundMoney(shopSellerBasePayout - sellerAllocatedCoupon),
+                  )
+                : shopSellerBasePayout,
+              sellerGstAmount: shopSellerGstAmount,
+              sellerGstStatus,
+              status: initialOrderStatus,
+              shippingStatus: 'PENDING',
+            },
+          });
+        } catch (voErr: any) {
+          const errMsg = voErr?.message || '';
+          if (
+            errMsg.includes('allocatedCouponAmount') ||
+            errMsg.includes('couponFundingType') ||
+            errMsg.includes('does not exist')
+          ) {
+            console.warn(
+              '[ORDER_SPLIT_VO_FALLBACK] Missing column in vendor_orders table, falling back to core columns:',
+              errMsg,
+            );
+            vendorOrder = await tx.vendorOrder.create({
+              data: {
+                masterOrderId: masterOrder.id,
+                shopId: targetShopId || shopId,
+                vendorOrderNumber,
+                totalAmount: shopSellingSubtotal,
+                commissionAmount: shopTotalCommission,
+                vendorPayoutAmount,
+                status: initialOrderStatus,
+                shippingStatus: 'PENDING',
+              },
+            });
+          } else {
+            throw voErr;
+          }
+        }
 
         createdVendorOrders.push(vendorOrder);
 
