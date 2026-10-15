@@ -12,6 +12,9 @@ export const addToCartSchema = z.object({
   name: z.string().optional(),
   price: z.number().optional(),
   image: z.string().optional(),
+  size: z.string().optional().nullable(),
+  color: z.string().optional().nullable(),
+  sku: z.string().optional().nullable(),
 });
 
 export const updateCartItemSchema = z.object({
@@ -31,6 +34,9 @@ export const mergeCartSchema = z.object({
       name: z.string().optional(),
       price: z.number().optional(),
       image: z.string().optional(),
+      size: z.string().optional().nullable(),
+      color: z.string().optional().nullable(),
+      sku: z.string().optional().nullable(),
     }),
   ),
 });

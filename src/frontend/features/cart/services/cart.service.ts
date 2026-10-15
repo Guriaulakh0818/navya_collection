@@ -79,8 +79,18 @@ export class CartService {
           productName: item.product.name,
           productSlug: item.product.slug,
           variantName: variantNameFormatted,
-          size: item.variant?.size || null,
-          color: item.variant?.color || null,
+          size:
+            item.variant?.size ||
+            (typeof item.variant?.attributes === 'object' && item.variant?.attributes !== null
+              ? (item.variant.attributes as any).size
+              : null) ||
+            null,
+          color:
+            item.variant?.color ||
+            (typeof item.variant?.attributes === 'object' && item.variant?.attributes !== null
+              ? (item.variant.attributes as any).color
+              : null) ||
+            null,
           shopId: item.product.shopId || null,
           shopName: item.product.shop?.name || null,
           shopSlug: item.product.shop?.slug || null,
@@ -209,7 +219,9 @@ export class CartService {
           availableStock =
             variant.availableStock && variant.availableStock > 0
               ? variant.availableStock
-              : (variant.stock && variant.stock > 0 ? variant.stock : product.stock || 25);
+              : variant.stock && variant.stock > 0
+                ? variant.stock
+                : product.stock || 25;
         } else {
           // If specific variant ID is stale or newly re-created, fallback to product stock
           availableStock = product.stock || 25;

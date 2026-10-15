@@ -80,7 +80,7 @@ export class CartRepository {
    * Adds an item to user's cart or increments existing quantity.
    */
   static async addOrUpdateItem(cartId: string, input: AddToCartInput) {
-    const { productId, variantId, quantity } = input;
+    const { productId, variantId, quantity, sku, size, color } = input;
     let cleanVariantId = variantId || null;
 
     if (cleanVariantId) {
@@ -94,6 +94,34 @@ export class CartRepository {
       } catch {
         cleanVariantId = null;
       }
+    }
+
+    // Resilient fallback: find variant by SKU or size/color if variantId was missing or outdated
+    if (!cleanVariantId && sku) {
+      try {
+        const variantBySku = await prisma.productVariant.findFirst({
+          where: { sku, deletedAt: null },
+        });
+        if (variantBySku) {
+          cleanVariantId = variantBySku.id;
+        }
+      } catch {}
+    }
+
+    if (!cleanVariantId && (size || color)) {
+      try {
+        const variantByAttrs = await prisma.productVariant.findFirst({
+          where: {
+            productId,
+            deletedAt: null,
+            ...(size ? { size } : {}),
+            ...(color ? { color } : {}),
+          },
+        });
+        if (variantByAttrs) {
+          cleanVariantId = variantByAttrs.id;
+        }
+      } catch {}
     }
 
     // Check if item already exists in cart
@@ -169,7 +197,14 @@ export class CartRepository {
    */
   static async mergeGuestItems(
     cartId: string,
-    guestItems: { productId: string; variantId?: string | null; quantity: number }[],
+    guestItems: {
+      productId: string;
+      variantId?: string | null;
+      quantity: number;
+      sku?: string | null;
+      size?: string | null;
+      color?: string | null;
+    }[],
   ) {
     return await prisma.$transaction(async (tx) => {
       for (const guestItem of guestItems) {
@@ -198,11 +233,53 @@ export class CartRepository {
             availableStock =
               variant.availableStock && variant.availableStock > 0
                 ? variant.availableStock
-                : (variant.stock && variant.stock > 0 ? variant.stock : product.stock || 25);
+                : variant.stock && variant.stock > 0
+                  ? variant.stock
+                  : product.stock || 25;
           } else {
             // If variant was deleted or re-created, don't crash foreign key constraint
             cleanVariantId = null;
           }
+        }
+
+        // Resilient fallback by SKU or size/color
+        if (!cleanVariantId && guestItem.sku) {
+          try {
+            const vBySku = await tx.productVariant.findFirst({
+              where: { sku: guestItem.sku, deletedAt: null },
+            });
+            if (vBySku) {
+              cleanVariantId = vBySku.id;
+              availableStock =
+                vBySku.availableStock && vBySku.availableStock > 0
+                  ? vBySku.availableStock
+                  : vBySku.stock && vBySku.stock > 0
+                    ? vBySku.stock
+                    : product.stock || 25;
+            }
+          } catch {}
+        }
+
+        if (!cleanVariantId && (guestItem.size || guestItem.color)) {
+          try {
+            const vByAttrs = await tx.productVariant.findFirst({
+              where: {
+                productId: guestItem.productId,
+                deletedAt: null,
+                ...(guestItem.size ? { size: guestItem.size } : {}),
+                ...(guestItem.color ? { color: guestItem.color } : {}),
+              },
+            });
+            if (vByAttrs) {
+              cleanVariantId = vByAttrs.id;
+              availableStock =
+                vByAttrs.availableStock && vByAttrs.availableStock > 0
+                  ? vByAttrs.availableStock
+                  : vByAttrs.stock && vByAttrs.stock > 0
+                    ? vByAttrs.stock
+                    : product.stock || 25;
+            }
+          } catch {}
         }
 
         const targetQty = Math.min(guestItem.quantity, availableStock);

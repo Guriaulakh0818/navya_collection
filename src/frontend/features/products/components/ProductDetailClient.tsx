@@ -108,20 +108,24 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Helper to extract variant color safely
-  const getVColor = (v: any) =>
-    (
-      v?.color ||
-      v?.colorName ||
-      (typeof v?.attributes === 'object' && v?.attributes !== null ? v.attributes?.color : '')
-    )?.trim() || '';
+  const getVColor = (v: any) => {
+    if (!v) return '';
+    const raw =
+      v.color ??
+      v.colorName ??
+      (typeof v.attributes === 'object' && v.attributes !== null ? v.attributes.color : '');
+    return raw !== undefined && raw !== null ? String(raw).trim() : '';
+  };
 
   // Helper to extract variant size safely
-  const getVSize = (v: any) =>
-    (
-      v?.size ||
-      v?.sizeName ||
-      (typeof v?.attributes === 'object' && v?.attributes !== null ? v.attributes?.size : '')
-    )?.trim() || '';
+  const getVSize = (v: any) => {
+    if (!v) return '';
+    const raw =
+      v.size ??
+      v.sizeName ??
+      (typeof v.attributes === 'object' && v.attributes !== null ? v.attributes.size : '');
+    return raw !== undefined && raw !== null ? String(raw).trim() : '';
+  };
 
   // Extract all unique colors present across variants
   const availableColors = useMemo(() => {
@@ -177,7 +181,18 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     const targetClr = clr.trim().toLowerCase();
     const currentSize = activeSize.trim().toLowerCase();
 
-    // 1. Match same size with new color
+    // 1. Match same size with new color (in-stock preferred)
+    const matchSameSizeInStock = product?.variants?.find((v: any) => {
+      const c = getVColor(v).toLowerCase();
+      const s = getVSize(v).toLowerCase();
+      return c === targetClr && s === currentSize && (v.stock ?? 1) > 0;
+    });
+    if (matchSameSizeInStock) {
+      setSelectedVariant(matchSameSizeInStock.id);
+      return;
+    }
+
+    // 2. Match same size with new color
     const matchSameSize = product?.variants?.find((v: any) => {
       const c = getVColor(v).toLowerCase();
       const s = getVSize(v).toLowerCase();
@@ -188,7 +203,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       return;
     }
 
-    // 2. Match in-stock variant with new color
+    // 3. Fallback to first in-stock variant of that specific color
     const matchInStock = product?.variants?.find((v: any) => {
       const c = getVColor(v).toLowerCase();
       return c === targetClr && (v.stock ?? 1) > 0;
@@ -198,7 +213,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       return;
     }
 
-    // 3. Fallback to any variant of that color
+    // 4. Fallback to any variant of that specific color
     const matchAny = product?.variants?.find((v: any) => {
       const c = getVColor(v).toLowerCase();
       return c === targetClr;
@@ -212,34 +227,26 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     const targetSz = sz.trim().toLowerCase();
     const currentColor = activeColor.trim().toLowerCase();
 
-    // 1. Match same color with new size
-    const matchSameColor = product?.variants?.find((v: any) => {
-      const c = getVColor(v).toLowerCase();
-      const s = getVSize(v).toLowerCase();
-      return c === currentColor && s === targetSz;
-    });
-    if (matchSameColor) {
-      setSelectedVariant(matchSameColor.id);
-      return;
+    // 1. Match exact same color with requested size
+    if (currentColor) {
+      const matchSameColor = product?.variants?.find((v: any) => {
+        const c = getVColor(v).toLowerCase();
+        const s = getVSize(v).toLowerCase();
+        return c === currentColor && s === targetSz;
+      });
+      if (matchSameColor) {
+        setSelectedVariant(matchSameColor.id);
+        return;
+      }
     }
 
-    // 2. Match in-stock variant with new size
-    const matchInStock = product?.variants?.find((v: any) => {
-      const s = getVSize(v).toLowerCase();
-      return s === targetSz && (v.stock ?? 1) > 0;
-    });
-    if (matchInStock) {
-      setSelectedVariant(matchInStock.id);
-      return;
-    }
-
-    // 3. Fallback to any variant of that size
-    const matchAny = product?.variants?.find((v: any) => {
+    // 2. If no active color or single-color product, match size only
+    const matchSizeOnly = product?.variants?.find((v: any) => {
       const s = getVSize(v).toLowerCase();
       return s === targetSz;
     });
-    if (matchAny) {
-      setSelectedVariant(matchAny.id);
+    if (matchSizeOnly) {
+      setSelectedVariant(matchSizeOnly.id);
     }
   };
 
@@ -280,6 +287,13 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       return !item.variantId;
     });
   }, [cartItems, product.id, activeVariant?.id, mounted]);
+
+  const activeVariantImageUrl =
+    activeVariant?.imageUrl ||
+    activeVariant?.image ||
+    (typeof activeVariant?.attributes === 'object' && activeVariant?.attributes !== null
+      ? activeVariant.attributes.imageUrl
+      : null);
 
   const currentVariantQuantity = currentCartItem?.quantity || 0;
 
@@ -371,13 +385,6 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     setNewComment('');
     setNewName('');
   };
-
-  const activeVariantImageUrl =
-    activeVariant?.imageUrl ||
-    activeVariant?.image ||
-    (typeof activeVariant?.attributes === 'object' && activeVariant?.attributes !== null
-      ? activeVariant.attributes.imageUrl
-      : null);
 
   const displayImages = useMemo(() => {
     const base = [...(product.images || [])];
@@ -658,25 +665,34 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                     {availableSizes.map((sz) => {
                       const targetSz = sz.trim().toLowerCase();
                       const currentColor = activeColor.trim().toLowerCase();
-                      const match =
-                        product.variants.find((v: any) => {
-                          const c = getVColor(v).toLowerCase();
-                          const s = getVSize(v).toLowerCase();
-                          return c === currentColor && s === targetSz;
-                        }) ||
-                        product.variants.find((v: any) => {
-                          const s = getVSize(v).toLowerCase();
-                          return s === targetSz;
-                        });
+                      const match = currentColor
+                        ? product.variants.find((v: any) => {
+                            const c = getVColor(v).toLowerCase();
+                            const s = getVSize(v).toLowerCase();
+                            return c === currentColor && s === targetSz;
+                          })
+                        : product.variants.find((v: any) => {
+                            const s = getVSize(v).toLowerCase();
+                            return s === targetSz;
+                          });
+
                       const isSelected = activeSize.trim().toLowerCase() === targetSz;
-                      const isOut = match ? (match.stock ?? 1) <= 0 : false;
+                      const isOut =
+                        !match ||
+                        (match.stock !== undefined && match.stock !== null && match.stock <= 0);
 
                       return (
                         <button
                           key={sz}
                           type="button"
                           disabled={isOut}
-                          onClick={() => handleSelectSize(sz)}
+                          onClick={() => {
+                            if (match) {
+                              setSelectedVariant(match.id);
+                            } else {
+                              handleSelectSize(sz);
+                            }
+                          }}
                           className={`min-w-8.5 h-8 sm:min-w-10 sm:h-9 px-2.5 rounded-lg border text-xs font-extrabold flex items-center justify-center transition-all shrink-0 cursor-pointer active:scale-95 ${
                             isSelected
                               ? 'border-navy bg-navy text-white shadow-xs ring-2 ring-navy/20'
