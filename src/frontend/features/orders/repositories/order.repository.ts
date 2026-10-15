@@ -651,19 +651,6 @@ export class OrderRepository {
           }
         }
 
-        // e. Create Discrete Multi-Seller Shipments with Frozen Address Snapshots
-        try {
-          await tx.$executeRawUnsafe('SAVEPOINT shipment_create_sp;');
-          await MultiSellerShipmentService.createShipmentsForOrder(order.id, tx);
-          await tx.$executeRawUnsafe('RELEASE SAVEPOINT shipment_create_sp;');
-        } catch (shipmentErr: any) {
-          await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT shipment_create_sp;').catch(() => {});
-          console.warn(
-            '[ORDER_REPO_SHIPMENTS_WARN] Error creating shipments for order, continuing checkout flow:',
-            shipmentErr?.message || shipmentErr,
-          );
-        }
-
         // f. Decrement Stock Inventory Atomically (BM-06 Inventory Race Protection)
         for (const item of preparedItems) {
           if (item.variantId) {
@@ -707,72 +694,144 @@ export class OrderRepository {
           }
         }
 
-        // Gateway Fee Accounting: Record platform absorption of gateway cost under BM-06 & BM-11
-        if (isRazorpay) {
-          try {
-            await tx.$executeRawUnsafe('SAVEPOINT gw_audit_sp;');
-            await tx.financialAuditLog.create({
-              data: {
-                entityType: 'GATEWAY_FEE',
-                entityId: order.id,
-                action: 'RECORD_GATEWAY_FEE_ESTIMATED',
-                amount: estimatedTotalGatewayCost,
-                notes: `Payment gateway fee estimated (2% MDR ₹${estimatedGatewayFee} + 18% GST ₹${estimatedGatewayTax}) absorbed by Navya Collection`,
-                idempotencyKey: `GW_FEE_EST:${order.id}`,
-              },
-            });
-            await tx.$executeRawUnsafe('RELEASE SAVEPOINT gw_audit_sp;');
-          } catch (auditErr: any) {
-            await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT gw_audit_sp;').catch(() => {});
-            console.warn('[ORDER_REPO_GATEWAY_AUDIT_WARN]', auditErr?.message || auditErr);
-          }
-        }
-
-        // BM-11: Record Initial Order Unit Economics & Contribution Snapshot
-        try {
-          await tx.$executeRawUnsafe('SAVEPOINT contrib_sp;');
-          const { ContributionService } = await import('@/backend/services/contribution.service');
-          await ContributionService.recordOrderContribution(
-            order.id,
-            'PAYMENT_CAPTURED' as any,
-            tx,
-          );
-          await tx.$executeRawUnsafe('RELEASE SAVEPOINT contrib_sp;');
-        } catch (contribErr: any) {
-          await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT contrib_sp;').catch(() => {});
-          console.warn('[BM11_INITIAL_CONTRIBUTION_WARN]', contribErr?.message || contribErr);
-        }
-
-        // g. Clear Customer Cart
-        const cart = await tx.cart.findUnique({
-          where: { userId: input.userId },
-        });
-
-        if (cart) {
-          await tx.cartItem.deleteMany({
-            where: { cartId: cart.id },
-          });
-        }
-
-        return tx.order.findUnique({
-          where: { id: order.id },
-          include: {
-            items: true,
-            address: true,
-            vendorOrders: true,
-            shipments: {
-              include: { items: true },
-            },
-            paymentTransactions: true,
-          },
-        });
+        // Return core committed data immediately so transaction commits in < 500ms
+        return {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          finalAmount: authoritativeFinalAmount,
+          isRazorpay,
+          estimatedTotalGatewayCost,
+          estimatedGatewayFee,
+          estimatedGatewayTax,
+          resolvedCouponId: resolvedCoupon?.id,
+          couponFundingType,
+          sellerAllocations: couponAllocation?.sellerAllocations || [],
+        };
       },
-      { maxWait: 10000, timeout: 25000 },
+      {
+        maxWait: 15000, // 15 seconds to acquire database connection
+        timeout: 45000, // Generous 45-second execution ceiling (eliminates 5s timeouts)
+      },
     );
 
+    // =========================================================================
+    // POST-COMMIT WORKFLOW (RUNS OUTSIDE TRANSACTION VIA ROOT PRISMA CLIENT)
+    // The customer's order is 100% committed, stock is locked, and payment saved.
+    // None of these post-order operations can ever abort the order or trigger timeout.
+    // =========================================================================
+    const {
+      orderId,
+      isRazorpay,
+      estimatedTotalGatewayCost,
+      estimatedGatewayFee,
+      estimatedGatewayTax,
+      resolvedCouponId,
+      couponFundingType: committedFundingType,
+      sellerAllocations,
+    } = result;
+
+    // 1. Asynchronously Record Coupon Usage (BM-10)
+    if (resolvedCouponId) {
+      try {
+        const { CouponRepository } =
+          await import('@/features/coupons/repositories/coupon.repository');
+        await CouponRepository.recordUsage(resolvedCouponId, input.userId, orderId, prisma);
+      } catch (couponUsageErr) {
+        console.warn('[ORDER_REPO_COUPON_USAGE_WARN]', couponUsageErr);
+      }
+    }
+
+    // 2. Navya Promotional Subsidy Accounting Logs (BM-10)
+    if (committedFundingType === 'NAVYA' && sellerAllocations.length > 0) {
+      for (const sAlloc of sellerAllocations) {
+        if (sAlloc.allocatedDiscount > 0) {
+          try {
+            await prisma.financialAuditLog.create({
+              data: {
+                entityType: 'PROMOTIONAL_SUBSIDY',
+                entityId: orderId,
+                action: 'NAVYA_PROMOTIONAL_SUBSIDY_APPLIED',
+                amount: sAlloc.allocatedDiscount,
+                notes: `Navya promotional subsidy applied for shop ${sAlloc.sellerId} under coupon ${resolvedCoupon?.code || input.couponCode}: ₹${sAlloc.allocatedDiscount}`,
+              },
+            });
+          } catch (subsidyErr) {
+            console.warn('[ORDER_REPO_SUBSIDY_AUDIT_WARN]', subsidyErr);
+          }
+        }
+      }
+    }
+
+    // 3. Create Discrete Multi-Seller Shipments (BM-04)
+    try {
+      await MultiSellerShipmentService.createShipmentsForOrder(orderId, prisma);
+    } catch (shipmentErr) {
+      console.warn('[ORDER_REPO_SHIPMENTS_WARN] Error creating shipments for order:', shipmentErr);
+    }
+
+    // 4. Gateway Fee Accounting: Record platform absorption of gateway cost under BM-06 & BM-11
+    if (isRazorpay && estimatedTotalGatewayCost > 0) {
+      try {
+        await prisma.financialAuditLog.create({
+          data: {
+            entityType: 'GATEWAY_FEE',
+            entityId: orderId,
+            action: 'RECORD_GATEWAY_FEE_ESTIMATED',
+            amount: estimatedTotalGatewayCost,
+            notes: `Payment gateway fee estimated (2% MDR ₹${estimatedGatewayFee} + 18% GST ₹${estimatedGatewayTax}) absorbed by Navya Collection`,
+            idempotencyKey: `GW_FEE_EST:${orderId}`,
+          },
+        });
+      } catch (auditErr) {
+        console.warn('[ORDER_REPO_GATEWAY_AUDIT_WARN]', auditErr);
+      }
+    }
+
+    // 5. BM-11: Record Initial Order Unit Economics & Contribution Snapshot
+    try {
+      const { ContributionService } = await import('@/backend/services/contribution.service');
+      await ContributionService.recordOrderContribution(orderId, 'PAYMENT_CAPTURED' as any, prisma);
+    } catch (contribErr) {
+      console.warn('[BM11_INITIAL_CONTRIBUTION_WARN]', contribErr);
+    }
+
+    // 6. Clear Customer Cart
+    try {
+      const cart = await prisma.cart.findUnique({
+        where: { userId: input.userId },
+      });
+      if (cart) {
+        await prisma.cartItem.deleteMany({
+          where: { cartId: cart.id },
+        });
+      }
+    } catch (cartErr) {
+      console.warn('[ORDER_REPO_CART_CLEAR_WARN]', cartErr);
+    }
+
+    // 7. Safely Retrieve Final Finalized Order using Root Prisma Client
+    const finalizedOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+        address: true,
+        vendorOrders: true,
+        shipments: {
+          include: { items: true },
+        },
+        paymentTransactions: true,
+      },
+    });
+
+    const safeOrder = finalizedOrder || {
+      id: orderId,
+      orderNumber: result.orderNumber,
+      finalAmount: result.finalAmount,
+    };
+
     // Background Dispatch to Shiprocket if credentials configured
-    if (result && result.shipments && result.shipments.length > 0) {
-      for (const shp of result.shipments) {
+    if (safeOrder && (safeOrder as any).shipments && (safeOrder as any).shipments.length > 0) {
+      for (const shp of (safeOrder as any).shipments) {
         MultiSellerShipmentService.dispatchShipmentToShiprocket(shp.id).catch((err) => {
           console.warn(`[BACKGROUND_SHIPROCKET_DISPATCH_FAILED] Shipment: ${shp.id}`, err);
         });
@@ -780,13 +839,13 @@ export class OrderRepository {
     }
 
     // Automated Transactional Email Dispatch (Seller, Admin, Customer)
-    if (result?.id) {
-      OrderEmailNotificationService.notifyOrderCreated(result.id).catch((emailErr) => {
-        console.warn(`[ORDER_EMAIL_NOTIFICATION_ERROR] Order: ${result.id}`, emailErr);
+    if (safeOrder?.id) {
+      OrderEmailNotificationService.notifyOrderCreated(safeOrder.id).catch((emailErr) => {
+        console.warn(`[ORDER_EMAIL_NOTIFICATION_ERROR] Order: ${safeOrder.id}`, emailErr);
       });
     }
 
-    return result;
+    return safeOrder;
   }
 
   /**

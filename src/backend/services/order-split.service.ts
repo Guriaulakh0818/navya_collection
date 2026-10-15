@@ -138,406 +138,429 @@ export class OrderSplitService {
       paymentMethod === 'COD' ? 'PENDING' : razorpayPaymentId ? 'PAID' : 'PENDING';
 
     // 3. Execute Atomic Database Transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Step A: Create Master Order with BM-05 Shipping & BM-10 Coupon Snapshot Fields
-      const masterOrder = await tx.order.create({
-        data: {
-          orderNumber: masterOrderNumber,
-          userId,
-          addressId,
-          totalAmount: grossSubtotal,
-          discountAmount: authoritativeDiscount,
-          shippingAmount: shippingTotal,
-          finalAmount,
-          orderStatus: initialOrderStatus,
-          paymentStatus: initialPaymentStatus,
-          paymentMethod,
-          shippingMode: shippingCalc.shippingMethodCode,
-          isFirstOrder: firstOrderCheck.isEligible,
-          shippingWaiverSource: shippingCalc.sellers[0]?.freeShippingSource || null,
-          shippingCostBearer: shippingCalc.sellers[0]?.costBearer || null,
-          razorpayOrderId,
-          razorpayPaymentId,
-          razorpaySignature,
-          notes,
-          couponId: resolvedCouponId,
-          couponCode: resolvedCouponCode,
-          couponType: resolvedCouponType,
-          couponFundingType: (resolvedFundingType as CouponFundingType) || null,
-        },
-      });
-
-      // Step B: Create Child VendorOrders & OrderItems per Shop
-      const createdVendorOrders = [];
-      const createdOrderItems = [];
-
-      let vendorIndex = 1;
-      for (const [shopId, sItems] of Array.from(shopItemsMap.entries())) {
-        const validShop = await tx.shop.findUnique({
-          where: { id: shopId },
-          select: { id: true, ownerId: true, gstin: true, commissionRate: true },
+    const result = await prisma.$transaction(
+      async (tx) => {
+        // Step A: Create Master Order with BM-05 Shipping & BM-10 Coupon Snapshot Fields
+        const masterOrder = await tx.order.create({
+          data: {
+            orderNumber: masterOrderNumber,
+            userId,
+            addressId,
+            totalAmount: grossSubtotal,
+            discountAmount: authoritativeDiscount,
+            shippingAmount: shippingTotal,
+            finalAmount,
+            orderStatus: initialOrderStatus,
+            paymentStatus: initialPaymentStatus,
+            paymentMethod,
+            shippingMode: shippingCalc.shippingMethodCode,
+            isFirstOrder: firstOrderCheck.isEligible,
+            shippingWaiverSource: shippingCalc.sellers[0]?.freeShippingSource || null,
+            shippingCostBearer: shippingCalc.sellers[0]?.costBearer || null,
+            razorpayOrderId,
+            razorpayPaymentId,
+            razorpaySignature,
+            notes,
+            couponId: resolvedCouponId,
+            couponCode: resolvedCouponCode,
+            couponType: resolvedCouponType,
+            couponFundingType: (resolvedFundingType as CouponFundingType) || null,
+          },
         });
-        const targetShopId = validShop ? validShop.id : null;
-        const sellerId = validShop?.ownerId || userId;
-        const shopCommissionRate = validShop?.commissionRate
-          ? Number(validShop.commissionRate)
-          : CommissionService.COMMISSION_RATE_PERCENT;
 
-        const preparedItems: Array<{
-          item: (typeof sItems)[0];
-          productData: any;
-          itemMrp: number;
-          itemSellingPrice: number;
-          itemQty: number;
-          itemTotal: number;
-          itemCalc: ReturnType<typeof CommissionService.calculateItemCommission>;
-        }> = [];
+        // Step B: Create Child VendorOrders & OrderItems per Shop
+        const createdVendorOrders = [];
+        const createdOrderItems = [];
 
-        let shopTotalMrp = 0;
-        let shopSellingSubtotal = 0;
-        let shopTotalCommission = 0;
-        let shopSellerBasePayout = 0;
-        let shopSellerGstAmount = 0;
-        let shopSellerTotalPayout = 0;
-
-        for (const item of sItems) {
-          const productData = await tx.product.findUnique({
-            where: { id: item.productId },
-            select: {
-              price: true,
-              compareAtPrice: true,
-              returnPolicyType: true,
-              returnAllowed: true,
-              returnWindowDays: true,
-              replacementAllowed: true,
-              replacementWindowDays: true,
-            },
+        let vendorIndex = 1;
+        for (const [shopId, sItems] of Array.from(shopItemsMap.entries())) {
+          const validShop = await tx.shop.findUnique({
+            where: { id: shopId },
+            select: { id: true, ownerId: true, gstin: true, commissionRate: true },
           });
+          const targetShopId = validShop ? validShop.id : null;
+          const sellerId = validShop?.ownerId || userId;
+          const shopCommissionRate = validShop?.commissionRate
+            ? Number(validShop.commissionRate)
+            : CommissionService.COMMISSION_RATE_PERCENT;
 
-          let variantCompareAt: number | null = null;
-          if (item.variantId) {
-            const variantData = await tx.productVariant.findUnique({
-              where: { id: item.variantId },
-              select: { compareAtPrice: true },
+          const preparedItems: Array<{
+            item: (typeof sItems)[0];
+            productData: any;
+            itemMrp: number;
+            itemSellingPrice: number;
+            itemQty: number;
+            itemTotal: number;
+            itemCalc: ReturnType<typeof CommissionService.calculateItemCommission>;
+          }> = [];
+
+          let shopTotalMrp = 0;
+          let shopSellingSubtotal = 0;
+          let shopTotalCommission = 0;
+          let shopSellerBasePayout = 0;
+          let shopSellerGstAmount = 0;
+          let shopSellerTotalPayout = 0;
+
+          for (const item of sItems) {
+            const productData = await tx.product.findUnique({
+              where: { id: item.productId },
+              select: {
+                price: true,
+                compareAtPrice: true,
+                returnPolicyType: true,
+                returnAllowed: true,
+                returnWindowDays: true,
+                replacementAllowed: true,
+                replacementWindowDays: true,
+              },
             });
-            if (variantData?.compareAtPrice) {
-              variantCompareAt = Number(variantData.compareAtPrice);
+
+            let variantCompareAt: number | null = null;
+            if (item.variantId) {
+              const variantData = await tx.productVariant.findUnique({
+                where: { id: item.variantId },
+                select: { compareAtPrice: true },
+              });
+              if (variantData?.compareAtPrice) {
+                variantCompareAt = Number(variantData.compareAtPrice);
+              }
             }
+
+            const itemSellingPrice = Number(item.price);
+            const itemQty = Math.max(1, Number(item.quantity));
+            const itemTotal = CommissionService.roundMoney(itemSellingPrice * itemQty);
+
+            const rawMrp =
+              variantCompareAt ??
+              (productData?.compareAtPrice ? Number(productData.compareAtPrice) : null) ??
+              (item as any).compareAtPrice ??
+              itemSellingPrice;
+            const itemMrp = Math.max(itemSellingPrice, Number(rawMrp || itemSellingPrice));
+
+            const itemCalc = CommissionService.calculateItemCommission({
+              productId: item.productId,
+              sellerId,
+              mrp: itemMrp,
+              sellingPrice: itemSellingPrice,
+              quantity: itemQty,
+              commissionRate: shopCommissionRate,
+              taxRate: (item as any).taxRate ? Number((item as any).taxRate) : 0,
+              sellerGstStatus: validShop?.gstin ? 'REGISTERED' : 'UNREGISTERED',
+              sellerGstin: validShop?.gstin || null,
+            });
+
+            shopTotalMrp = CommissionService.roundMoney(
+              shopTotalMrp + itemCalc.commissionBaseAmount,
+            );
+            shopSellingSubtotal = CommissionService.roundMoney(shopSellingSubtotal + itemTotal);
+            shopTotalCommission = CommissionService.roundMoney(
+              shopTotalCommission + itemCalc.commissionAmount,
+            );
+            shopSellerBasePayout = CommissionService.roundMoney(
+              shopSellerBasePayout + itemCalc.sellerBasePayout,
+            );
+            shopSellerGstAmount = CommissionService.roundMoney(
+              shopSellerGstAmount + itemCalc.sellerGstAmount,
+            );
+            shopSellerTotalPayout = CommissionService.roundMoney(
+              shopSellerTotalPayout + itemCalc.sellerTotalPayout,
+            );
+
+            preparedItems.push({
+              item,
+              productData,
+              itemMrp,
+              itemSellingPrice,
+              itemQty,
+              itemTotal,
+              itemCalc,
+            });
           }
 
-          const itemSellingPrice = Number(item.price);
-          const itemQty = Math.max(1, Number(item.quantity));
-          const itemTotal = CommissionService.roundMoney(itemSellingPrice * itemQty);
+          const sellerGstStatus = validShop?.gstin ? 'REGISTERED' : 'UNREGISTERED';
 
-          const rawMrp =
-            variantCompareAt ??
-            (productData?.compareAtPrice ? Number(productData.compareAtPrice) : null) ??
-            (item as any).compareAtPrice ??
-            itemSellingPrice;
-          const itemMrp = Math.max(itemSellingPrice, Number(rawMrp || itemSellingPrice));
-
-          const itemCalc = CommissionService.calculateItemCommission({
-            productId: item.productId,
-            sellerId,
-            mrp: itemMrp,
-            sellingPrice: itemSellingPrice,
-            quantity: itemQty,
-            commissionRate: shopCommissionRate,
-            taxRate: (item as any).taxRate ? Number((item as any).taxRate) : 0,
-            sellerGstStatus: validShop?.gstin ? 'REGISTERED' : 'UNREGISTERED',
-            sellerGstin: validShop?.gstin || null,
-          });
-
-          shopTotalMrp = CommissionService.roundMoney(shopTotalMrp + itemCalc.commissionBaseAmount);
-          shopSellingSubtotal = CommissionService.roundMoney(shopSellingSubtotal + itemTotal);
-          shopTotalCommission = CommissionService.roundMoney(
-            shopTotalCommission + itemCalc.commissionAmount,
+          // BM-10 Funding Responsibility:
+          // If SELLER-funded: Seller payout is reduced by the seller's allocated coupon!
+          // If NAVYA-funded: Seller receives full un-discounted payout (Navya absorbs discount)!
+          const sAllocation = couponAllocation.sellerAllocations.find(
+            (sa) => sa.sellerId === (targetShopId || shopId) || sa.sellerId === shopId,
           );
-          shopSellerBasePayout = CommissionService.roundMoney(
-            shopSellerBasePayout + itemCalc.sellerBasePayout,
-          );
-          shopSellerGstAmount = CommissionService.roundMoney(
-            shopSellerGstAmount + itemCalc.sellerGstAmount,
-          );
-          shopSellerTotalPayout = CommissionService.roundMoney(
-            shopSellerTotalPayout + itemCalc.sellerTotalPayout,
-          );
+          const sellerAllocatedCoupon = sAllocation?.allocatedCoupon || 0;
+          const isSellerFunded = resolvedFundingType === 'SELLER';
 
-          preparedItems.push({
-            item,
-            productData,
-            itemMrp,
-            itemSellingPrice,
-            itemQty,
-            itemTotal,
-            itemCalc,
-          });
-        }
+          const vendorPayoutAmount = isSellerFunded
+            ? Math.max(
+                0,
+                CommissionService.roundMoney(shopSellerTotalPayout - sellerAllocatedCoupon),
+              )
+            : shopSellerTotalPayout;
 
-        const sellerGstStatus = validShop?.gstin ? 'REGISTERED' : 'UNREGISTERED';
+          const vendorOrderNumber = `${masterOrderNumber}-V${vendorIndex}`;
+          vendorIndex++;
 
-        // BM-10 Funding Responsibility:
-        // If SELLER-funded: Seller payout is reduced by the seller's allocated coupon!
-        // If NAVYA-funded: Seller receives full un-discounted payout (Navya absorbs discount)!
-        const sAllocation = couponAllocation.sellerAllocations.find(
-          (sa) => sa.sellerId === (targetShopId || shopId) || sa.sellerId === shopId,
-        );
-        const sellerAllocatedCoupon = sAllocation?.allocatedCoupon || 0;
-        const isSellerFunded = resolvedFundingType === 'SELLER';
-
-        const vendorPayoutAmount = isSellerFunded
-          ? Math.max(0, CommissionService.roundMoney(shopSellerTotalPayout - sellerAllocatedCoupon))
-          : shopSellerTotalPayout;
-
-        const vendorOrderNumber = `${masterOrderNumber}-V${vendorIndex}`;
-        vendorIndex++;
-
-        // Create Child VendorOrder with BM-03 & BM-10 fields
-        let vendorOrder: any;
-        try {
-          vendorOrder = await tx.vendorOrder.create({
-            data: {
-              masterOrderId: masterOrder.id,
-              shopId: targetShopId || shopId,
-              vendorOrderNumber,
-              totalAmount: shopSellingSubtotal,
-              totalMrp: shopTotalMrp,
-              commissionAmount: shopTotalCommission,
-              vendorPayoutAmount,
-              allocatedCouponAmount: sellerAllocatedCoupon,
-              couponFundingType: (resolvedFundingType as CouponFundingType) || null,
-              sellerBasePayout: isSellerFunded
-                ? Math.max(
-                    0,
-                    CommissionService.roundMoney(shopSellerBasePayout - sellerAllocatedCoupon),
-                  )
-                : shopSellerBasePayout,
-              sellerGstAmount: shopSellerGstAmount,
-              sellerGstStatus,
-              status: initialOrderStatus,
-              shippingStatus: 'PENDING',
-            },
-          });
-        } catch (voErr: any) {
-          const errMsg = voErr?.message || '';
-          if (
-            errMsg.includes('allocatedCouponAmount') ||
-            errMsg.includes('couponFundingType') ||
-            errMsg.includes('does not exist')
-          ) {
-            console.warn(
-              '[ORDER_SPLIT_VO_FALLBACK] Missing column in vendor_orders table, falling back to core columns:',
-              errMsg,
-            );
+          // Create Child VendorOrder with BM-03 & BM-10 fields
+          let vendorOrder: any;
+          try {
             vendorOrder = await tx.vendorOrder.create({
               data: {
                 masterOrderId: masterOrder.id,
                 shopId: targetShopId || shopId,
                 vendorOrderNumber,
                 totalAmount: shopSellingSubtotal,
+                totalMrp: shopTotalMrp,
                 commissionAmount: shopTotalCommission,
                 vendorPayoutAmount,
+                allocatedCouponAmount: sellerAllocatedCoupon,
+                couponFundingType: (resolvedFundingType as CouponFundingType) || null,
+                sellerBasePayout: isSellerFunded
+                  ? Math.max(
+                      0,
+                      CommissionService.roundMoney(shopSellerBasePayout - sellerAllocatedCoupon),
+                    )
+                  : shopSellerBasePayout,
+                sellerGstAmount: shopSellerGstAmount,
+                sellerGstStatus,
                 status: initialOrderStatus,
                 shippingStatus: 'PENDING',
               },
             });
-          } else {
-            throw voErr;
+          } catch (voErr: any) {
+            const errMsg = voErr?.message || '';
+            if (
+              errMsg.includes('allocatedCouponAmount') ||
+              errMsg.includes('couponFundingType') ||
+              errMsg.includes('does not exist')
+            ) {
+              console.warn(
+                '[ORDER_SPLIT_VO_FALLBACK] Missing column in vendor_orders table, falling back to core columns:',
+                errMsg,
+              );
+              vendorOrder = await tx.vendorOrder.create({
+                data: {
+                  masterOrderId: masterOrder.id,
+                  shopId: targetShopId || shopId,
+                  vendorOrderNumber,
+                  totalAmount: shopSellingSubtotal,
+                  commissionAmount: shopTotalCommission,
+                  vendorPayoutAmount,
+                  status: initialOrderStatus,
+                  shippingStatus: 'PENDING',
+                },
+              });
+            } else {
+              throw voErr;
+            }
           }
-        }
 
-        createdVendorOrders.push(vendorOrder);
+          createdVendorOrders.push(vendorOrder);
 
-        // Initialize SellerSettlement Record (BM-01, BM-03, BM-05, BM-10)
-        const sellerShippingBreakdown = shippingCalc.sellerBreakdown.find(
-          (b) => b.sellerId === (targetShopId || shopId) || b.sellerId === shopId,
-        );
-        const sellerFundedCost = sellerShippingBreakdown?.isSellerFunded
-          ? sellerShippingBreakdown.sellerFundedShippingCost || 49
-          : 0;
-
-        const sellerDiscounts = isSellerFunded
-          ? CommissionService.roundMoney(sellerFundedCost + sellerAllocatedCoupon)
-          : sellerFundedCost;
-
-        const netSettlementAmount = Math.max(
-          0,
-          CommissionService.roundMoney(shopSellerTotalPayout - sellerDiscounts),
-        );
-
-        const settlementNumber = `NC-SET-${timestamp}-${randomSuffix}-V${vendorIndex - 1}`;
-        await tx.sellerSettlement.create({
-          data: {
-            settlementNumber,
-            masterOrderId: masterOrder.id,
-            vendorOrderId: vendorOrder.id,
-            shopId: targetShopId || shopId,
-            sellerId,
-            grossProductValue: shopSellingSubtotal,
-            totalMrp: shopTotalMrp,
-            commissionRate: shopCommissionRate,
-            commissionAmount: shopTotalCommission,
-            sellerBasePayout: isSellerFunded
-              ? Math.max(
-                  0,
-                  CommissionService.roundMoney(shopSellerBasePayout - sellerAllocatedCoupon),
-                )
-              : shopSellerBasePayout,
-            sellerGstStatus,
-            sellerGstRate: validShop?.gstin ? preparedItems[0]?.itemCalc.taxRate || 0 : 0,
-            sellerGstAmount: shopSellerGstAmount,
-            sellerTotalPayout: vendorPayoutAmount,
-            forwardShippingActual: 0,
-            reverseShippingActual: 0,
-            returnShippingDeduction: 0,
-            sellerDiscounts,
-            sellerFundedShippingDeduction: sellerFundedCost,
-            netSettlementAmount,
-            status: 'PENDING_SETTLEMENT',
-            settlementEligibilityDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          },
-        });
-
-        // Allocate seller's shipping charge across items for this shop (BM-04)
-        const shopShippingCharge =
-          shippingCalc.sellerBreakdown.find(
+          // Initialize SellerSettlement Record (BM-01, BM-03, BM-05, BM-10)
+          const sellerShippingBreakdown = shippingCalc.sellerBreakdown.find(
             (b) => b.sellerId === (targetShopId || shopId) || b.sellerId === shopId,
-          )?.shippingCharge || 0;
-
-        let allocatedShipping = 0;
-        for (let i = 0; i < preparedItems.length; i++) {
-          const prepared = preparedItems[i];
-          if (shopShippingCharge === 0) {
-            prepared.itemCalc.customerShippingAmount = 0;
-          } else if (i === preparedItems.length - 1) {
-            prepared.itemCalc.customerShippingAmount = CommissionService.roundMoney(
-              shopShippingCharge - allocatedShipping,
-            );
-          } else {
-            const itemRatio =
-              shopSellingSubtotal > 0
-                ? prepared.itemTotal / shopSellingSubtotal
-                : 1 / preparedItems.length;
-            const itemShipping = CommissionService.roundMoney(shopShippingCharge * itemRatio);
-            prepared.itemCalc.customerShippingAmount = itemShipping;
-            allocatedShipping = CommissionService.roundMoney(allocatedShipping + itemShipping);
-          }
-        }
-
-        // Create OrderItems for this VendorOrder with Policy, BM-03 & BM-10 Pricing Snapshot
-        for (const prepared of preparedItems) {
-          const { item, productData, itemTotal, itemCalc } = prepared;
-
-          const itemAlloc = couponAllocation.itemAllocations.find(
-            (ia) =>
-              ia.productId === item.productId &&
-              (ia.shopId === (targetShopId || shopId) || ia.shopId === shopId),
           );
-          const itemAllocatedCoupon = itemAlloc?.allocatedCoupon || 0;
-          const navyaCouponAmount = !isSellerFunded ? itemAllocatedCoupon : 0;
-          const sellerCouponAmount = isSellerFunded ? itemAllocatedCoupon : 0;
+          const sellerFundedCost = sellerShippingBreakdown?.isSellerFunded
+            ? sellerShippingBreakdown.sellerFundedShippingCost || 49
+            : 0;
 
-          const orderItem = await tx.orderItem.create({
+          const sellerDiscounts = isSellerFunded
+            ? CommissionService.roundMoney(sellerFundedCost + sellerAllocatedCoupon)
+            : sellerFundedCost;
+
+          const netSettlementAmount = Math.max(
+            0,
+            CommissionService.roundMoney(shopSellerTotalPayout - sellerDiscounts),
+          );
+
+          const settlementNumber = `NC-SET-${timestamp}-${randomSuffix}-V${vendorIndex - 1}`;
+          await tx.sellerSettlement.create({
             data: {
-              orderId: masterOrder.id,
+              settlementNumber,
+              masterOrderId: masterOrder.id,
               vendorOrderId: vendorOrder.id,
-              productId: item.productId,
-              variantId: item.variantId || null,
               shopId: targetShopId || shopId,
-              name: item.name,
-              sku: item.sku || `SKU-${item.productId.slice(-6)}`,
-              price: item.price,
-              quantity: item.quantity,
-              total: itemTotal,
-              policyType: productData?.returnPolicyType || 'RETURN_AND_REPLACEMENT',
-              returnAllowed: productData?.returnAllowed ?? true,
-              returnWindowDays: productData?.returnWindowDays ?? 3,
-              replacementAllowed: productData?.replacementAllowed ?? true,
-              replacementWindowDays: productData?.replacementWindowDays ?? 7,
-              mrp: itemCalc.mrp,
-              sellingPrice: itemCalc.sellingPrice,
-              sellerDiscountAmount: itemCalc.sellerDiscountAmount,
-              sellerDiscountPercentage: itemCalc.sellerDiscountPercentage,
-              commissionRate: itemCalc.commissionRate,
-              commissionBaseAmount: itemCalc.commissionBaseAmount,
-              commissionAmount: itemCalc.commissionAmount,
-              taxRate: itemCalc.taxRate,
-              taxAmount: itemCalc.taxAmount,
-              couponId: resolvedCouponId,
-              navyaCouponAmount,
-              sellerCouponAmount,
-              customerShippingAmount: itemCalc.customerShippingAmount,
-              sellerGstStatus: itemCalc.sellerGstStatus,
-              sellerGstin: itemCalc.sellerGstin,
+              sellerId,
+              grossProductValue: shopSellingSubtotal,
+              totalMrp: shopTotalMrp,
+              commissionRate: shopCommissionRate,
+              commissionAmount: shopTotalCommission,
               sellerBasePayout: isSellerFunded
                 ? Math.max(
                     0,
-                    CommissionService.roundMoney(itemCalc.sellerBasePayout - sellerCouponAmount),
+                    CommissionService.roundMoney(shopSellerBasePayout - sellerAllocatedCoupon),
                   )
-                : itemCalc.sellerBasePayout,
-              sellerGstAmount: itemCalc.sellerGstAmount,
-              sellerTotalPayout: isSellerFunded
-                ? Math.max(
-                    0,
-                    CommissionService.roundMoney(itemCalc.sellerTotalPayout - sellerCouponAmount),
-                  )
-                : itemCalc.sellerTotalPayout,
-              commissionCalculationVersion: itemCalc.commissionCalculationVersion,
+                : shopSellerBasePayout,
+              sellerGstStatus,
+              sellerGstRate: validShop?.gstin ? preparedItems[0]?.itemCalc.taxRate || 0 : 0,
+              sellerGstAmount: shopSellerGstAmount,
+              sellerTotalPayout: vendorPayoutAmount,
+              forwardShippingActual: 0,
+              reverseShippingActual: 0,
+              returnShippingDeduction: 0,
+              sellerDiscounts,
+              sellerFundedShippingDeduction: sellerFundedCost,
+              netSettlementAmount,
+              status: 'PENDING_SETTLEMENT',
+              settlementEligibilityDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
             },
           });
 
-          createdOrderItems.push(orderItem);
+          // Allocate seller's shipping charge across items for this shop (BM-04)
+          const shopShippingCharge =
+            shippingCalc.sellerBreakdown.find(
+              (b) => b.sellerId === (targetShopId || shopId) || b.sellerId === shopId,
+            )?.shippingCharge || 0;
 
-          // Step C: Atomically Reduce Inventory Stock
-          if (item.variantId) {
-            await tx.productVariant.updateMany({
-              where: { id: item.variantId, availableStock: { gte: item.quantity } },
+          let allocatedShipping = 0;
+          for (let i = 0; i < preparedItems.length; i++) {
+            const prepared = preparedItems[i];
+            if (shopShippingCharge === 0) {
+              prepared.itemCalc.customerShippingAmount = 0;
+            } else if (i === preparedItems.length - 1) {
+              prepared.itemCalc.customerShippingAmount = CommissionService.roundMoney(
+                shopShippingCharge - allocatedShipping,
+              );
+            } else {
+              const itemRatio =
+                shopSellingSubtotal > 0
+                  ? prepared.itemTotal / shopSellingSubtotal
+                  : 1 / preparedItems.length;
+              const itemShipping = CommissionService.roundMoney(shopShippingCharge * itemRatio);
+              prepared.itemCalc.customerShippingAmount = itemShipping;
+              allocatedShipping = CommissionService.roundMoney(allocatedShipping + itemShipping);
+            }
+          }
+
+          // Create OrderItems for this VendorOrder with Policy, BM-03 & BM-10 Pricing Snapshot
+          for (const prepared of preparedItems) {
+            const { item, productData, itemTotal, itemCalc } = prepared;
+
+            const itemAlloc = couponAllocation.itemAllocations.find(
+              (ia) =>
+                ia.productId === item.productId &&
+                (ia.shopId === (targetShopId || shopId) || ia.shopId === shopId),
+            );
+            const itemAllocatedCoupon = itemAlloc?.allocatedCoupon || 0;
+            const navyaCouponAmount = !isSellerFunded ? itemAllocatedCoupon : 0;
+            const sellerCouponAmount = isSellerFunded ? itemAllocatedCoupon : 0;
+
+            const orderItem = await tx.orderItem.create({
               data: {
-                availableStock: { decrement: item.quantity },
-                soldStock: { increment: item.quantity },
+                orderId: masterOrder.id,
+                vendorOrderId: vendorOrder.id,
+                productId: item.productId,
+                variantId: item.variantId || null,
+                shopId: targetShopId || shopId,
+                name: item.name,
+                sku: item.sku || `SKU-${item.productId.slice(-6)}`,
+                price: item.price,
+                quantity: item.quantity,
+                total: itemTotal,
+                policyType: productData?.returnPolicyType || 'RETURN_AND_REPLACEMENT',
+                returnAllowed: productData?.returnAllowed ?? true,
+                returnWindowDays: productData?.returnWindowDays ?? 3,
+                replacementAllowed: productData?.replacementAllowed ?? true,
+                replacementWindowDays: productData?.replacementWindowDays ?? 7,
+                mrp: itemCalc.mrp,
+                sellingPrice: itemCalc.sellingPrice,
+                sellerDiscountAmount: itemCalc.sellerDiscountAmount,
+                sellerDiscountPercentage: itemCalc.sellerDiscountPercentage,
+                commissionRate: itemCalc.commissionRate,
+                commissionBaseAmount: itemCalc.commissionBaseAmount,
+                commissionAmount: itemCalc.commissionAmount,
+                taxRate: itemCalc.taxRate,
+                taxAmount: itemCalc.taxAmount,
+                couponId: resolvedCouponId,
+                navyaCouponAmount,
+                sellerCouponAmount,
+                customerShippingAmount: itemCalc.customerShippingAmount,
+                sellerGstStatus: itemCalc.sellerGstStatus,
+                sellerGstin: itemCalc.sellerGstin,
+                sellerBasePayout: isSellerFunded
+                  ? Math.max(
+                      0,
+                      CommissionService.roundMoney(itemCalc.sellerBasePayout - sellerCouponAmount),
+                    )
+                  : itemCalc.sellerBasePayout,
+                sellerGstAmount: itemCalc.sellerGstAmount,
+                sellerTotalPayout: isSellerFunded
+                  ? Math.max(
+                      0,
+                      CommissionService.roundMoney(itemCalc.sellerTotalPayout - sellerCouponAmount),
+                    )
+                  : itemCalc.sellerTotalPayout,
+                commissionCalculationVersion: itemCalc.commissionCalculationVersion,
+              },
+            });
+
+            createdOrderItems.push(orderItem);
+
+            // Step C: Atomically Reduce Inventory Stock
+            if (item.variantId) {
+              await tx.productVariant.updateMany({
+                where: { id: item.variantId, availableStock: { gte: item.quantity } },
+                data: {
+                  availableStock: { decrement: item.quantity },
+                  soldStock: { increment: item.quantity },
+                },
+              });
+            }
+
+            await tx.product.updateMany({
+              where: { id: item.productId, stock: { gte: item.quantity } },
+              data: {
+                stock: { decrement: item.quantity },
               },
             });
           }
+        }
 
-          await tx.product.updateMany({
-            where: { id: item.productId, stock: { gte: item.quantity } },
+        // Step D: Create PaymentTransaction Record
+        let paymentTx: any = null;
+        try {
+          await tx.$executeRawUnsafe('SAVEPOINT split_pt_sp;');
+          paymentTx = await tx.paymentTransaction.create({
             data: {
-              stock: { decrement: item.quantity },
+              orderId: masterOrder.id,
+              razorpayOrderId,
+              razorpayPaymentId,
+              razorpaySignature,
+              amount: finalAmount,
+              currency: 'INR',
+              status: initialPaymentStatus,
+              method: paymentMethod,
             },
           });
+          await tx.$executeRawUnsafe('RELEASE SAVEPOINT split_pt_sp;');
+        } catch (ptErr) {
+          await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT split_pt_sp;').catch(() => {});
+          console.warn(
+            '[ORDER_SPLIT_PT_WARN] Failed to insert paymentTransaction, continuing order split:',
+            ptErr,
+          );
         }
-      }
 
-      // Step D: Create PaymentTransaction Record
-      let paymentTx: any = null;
-      try {
-        await tx.$executeRawUnsafe('SAVEPOINT split_pt_sp;');
-        paymentTx = await tx.paymentTransaction.create({
-          data: {
-            orderId: masterOrder.id,
-            razorpayOrderId,
-            razorpayPaymentId,
-            razorpaySignature,
-            amount: finalAmount,
-            currency: 'INR',
-            status: initialPaymentStatus,
-            method: paymentMethod,
-          },
-        });
-        await tx.$executeRawUnsafe('RELEASE SAVEPOINT split_pt_sp;');
-      } catch (ptErr) {
-        await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT split_pt_sp;').catch(() => {});
-        console.warn(
-          '[ORDER_SPLIT_PT_WARN] Failed to insert paymentTransaction, continuing order split:',
-          ptErr,
-        );
-      }
+        return {
+          masterOrder,
+          vendorOrders: createdVendorOrders,
+          orderItems: createdOrderItems,
+          paymentTx,
+        };
+      },
+      {
+        maxWait: 15000,
+        timeout: 45000,
+      },
+    );
 
+    // =========================================================================
+    // POST-COMMIT WORKFLOW (RUNS OUTSIDE TRANSACTION VIA ROOT PRISMA CLIENT)
+    // =========================================================================
+    if (result?.masterOrder?.id) {
       // Step E: Create Discrete Multi-Seller Shipments (BM-04)
       try {
         const { MultiSellerShipmentService } =
           await import('@/backend/services/shipping/multi-seller-shipment.service');
-        await MultiSellerShipmentService.createShipmentsForOrder(masterOrder.id, tx);
+        await MultiSellerShipmentService.createShipmentsForOrder(result.masterOrder.id, prisma);
       } catch (shipErr) {
         console.warn(
           '[ORDER_SPLIT_SHIPMENT_WARN] Error creating shipments for order split:',
@@ -547,41 +570,38 @@ export class OrderSplitService {
 
       // Step F: Atomically Consume Coupon Usage with Race Condition Guard (BM-10 Section 8 & 9)
       if (resolvedCouponId) {
-        const { CouponRepository } =
-          await import('@/features/coupons/repositories/coupon.repository');
-        await CouponRepository.recordUsage(resolvedCouponId, userId, masterOrder.id, tx);
+        try {
+          const { CouponRepository } =
+            await import('@/features/coupons/repositories/coupon.repository');
+          await CouponRepository.recordUsage(
+            resolvedCouponId,
+            userId,
+            result.masterOrder.id,
+            prisma,
+          );
+        } catch (couponErr) {
+          console.warn('[ORDER_SPLIT_COUPON_WARN]', couponErr);
+        }
       }
 
       // Step G: Record Navya Promotional Subsidy Ledger Entry (BM-10 Section 20)
       if (resolvedFundingType !== 'SELLER' && authoritativeDiscount > 0) {
         try {
-          await tx.$executeRawUnsafe('SAVEPOINT split_audit_sp;');
-          await tx.financialAuditLog.create({
+          await prisma.financialAuditLog.create({
             data: {
               entityType: 'PROMOTION',
-              entityId: masterOrder.id,
+              entityId: result.masterOrder.id,
               action: 'NAVYA_PROMOTIONAL_SUBSIDY_APPLIED',
               performedById: userId,
               amount: authoritativeDiscount,
               notes: `Navya promotional subsidy of ₹${authoritativeDiscount} funded on Coupon #${resolvedCouponCode || resolvedCouponId} for Master Order #${masterOrderNumber}.`,
             },
           });
-          await tx.$executeRawUnsafe('RELEASE SAVEPOINT split_audit_sp;');
         } catch (auditErr) {
-          await tx.$executeRawUnsafe('ROLLBACK TO SAVEPOINT split_audit_sp;').catch(() => {});
           console.warn('[ORDER_SPLIT_AUDIT_WARN] FinancialAuditLog write skipped:', auditErr);
         }
       }
 
-      return {
-        masterOrder,
-        vendorOrders: createdVendorOrders,
-        orderItems: createdOrderItems,
-        paymentTx,
-      };
-    });
-
-    if (result?.masterOrder?.id) {
       OrderEmailNotificationService.notifyOrderCreated(result.masterOrder.id).catch((emailErr) => {
         console.warn(`[ORDER_SPLIT_EMAIL_ERROR] Master Order: ${result.masterOrder.id}`, emailErr);
       });
