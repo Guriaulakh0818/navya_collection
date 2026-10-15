@@ -130,10 +130,17 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           items: clientItems.map((i) => ({
             productId: i.productId,
             variantId: i.variantId || undefined,
-            quantity: i.quantity,
             name: i.name || (i as any).productName,
+            productName: (i as any).productName || i.name,
+            variantName: i.variantName || undefined,
+            size: i.size || undefined,
+            color: i.color || undefined,
+            sku: i.sku || undefined,
             price: i.price,
+            compareAtPrice: i.compareAtPrice || undefined,
+            quantity: i.quantity,
             image: i.image,
+            shopId: i.shopId || undefined,
           })),
         }),
       });
@@ -238,9 +245,15 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
         const clientItemsPayload = useCartStore.getState().items.map((i) => ({
           productId: i.productId,
           variantId: i.variantId || undefined,
-          quantity: i.quantity,
           name: i.name || (i as any).productName,
+          productName: (i as any).productName || i.name,
+          variantName: i.variantName || undefined,
+          size: i.size || undefined,
+          color: i.color || undefined,
+          sku: i.sku || undefined,
           price: i.price,
+          compareAtPrice: i.compareAtPrice || undefined,
+          quantity: i.quantity,
           image: i.image,
           shopId: i.shopId || 'default-shop',
         }));
@@ -352,10 +365,17 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
       const clientItemsPayload = useCartStore.getState().items.map((i) => ({
         productId: i.productId,
         variantId: i.variantId || undefined,
-        quantity: i.quantity,
         name: i.name || (i as any).productName,
+        productName: (i as any).productName || i.name,
+        variantName: i.variantName || undefined,
+        size: i.size || undefined,
+        color: i.color || undefined,
+        sku: i.sku || undefined,
         price: i.price,
+        compareAtPrice: i.compareAtPrice || undefined,
+        quantity: i.quantity,
         image: i.image,
+        shopId: i.shopId || 'default-shop',
       }));
 
       const res = await fetch('/api/v1/payments/create-cod-order', {
@@ -594,17 +614,20 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
 
                 <div className="min-w-0 flex-1">
                   <h4 className="text-xs sm:text-sm font-semibold text-navy line-clamp-1 break-words">
-                    {item.productName || item.name}
+                    {item.name ||
+                      (item.variantName
+                        ? `${item.productName} - ${item.variantName}`
+                        : item.productName)}
                   </h4>
                   <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                    {item.size && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-                        Size: {item.size}
+                    {item.color && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
+                        Color: {item.color}
                       </span>
                     )}
-                    {item.color && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-                        Color: {item.color}
+                    {item.size && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
+                        Size: {item.size}
                       </span>
                     )}
                     <span className="text-[11px] text-slate-500 font-medium">

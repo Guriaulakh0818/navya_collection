@@ -62,12 +62,24 @@ export class OrderPreviewService {
       let cartData: any = null;
 
       if (input.items && input.items.length > 0) {
-        const itemKeys = input.items.map((i: any) => i.productId);
+        const itemProductKeys = input.items.map((i: any) => i.productId).filter(Boolean);
+        const itemVariantKeys = input.items.map((i: any) => i.variantId).filter(Boolean);
+        const itemSkus = input.items.map((i: any) => i.sku).filter(Boolean);
+
         let dbProducts: any[] = [];
+        let dbVariants: any[] = [];
         try {
           dbProducts = await prisma.product.findMany({
             where: {
-              OR: [{ id: { in: itemKeys } }, { slug: { in: itemKeys } }, { sku: { in: itemKeys } }],
+              OR: [
+                ...(itemProductKeys.length > 0
+                  ? [
+                      { id: { in: itemProductKeys } },
+                      { slug: { in: itemProductKeys } },
+                      { sku: { in: itemProductKeys } },
+                    ]
+                  : []),
+              ],
               deletedAt: null,
             },
             include: {
@@ -75,52 +87,177 @@ export class OrderPreviewService {
                 where: { deletedAt: null },
                 orderBy: { sortOrder: 'asc' },
               },
+              variants: {
+                where: { deletedAt: null },
+              },
             },
           });
         } catch {}
 
+        try {
+          const directVariantIds = itemVariantKeys.filter(
+            (id: string) => !id.startsWith('dummy_') && !id.startsWith('temp_'),
+          );
+          if (directVariantIds.length > 0 || itemSkus.length > 0) {
+            dbVariants = await prisma.productVariant.findMany({
+              where: {
+                OR: [
+                  ...(directVariantIds.length > 0 ? [{ id: { in: directVariantIds } }] : []),
+                  ...(itemSkus.length > 0 ? [{ sku: { in: itemSkus } }] : []),
+                ],
+                deletedAt: null,
+              },
+            });
+          }
+        } catch {}
+
         const productMap = new Map<string, any>();
+        const variantMap = new Map<string, any>();
+
         for (const p of dbProducts) {
           productMap.set(p.id, p);
           if (p.slug) productMap.set(p.slug, p);
           if (p.sku) productMap.set(p.sku, p);
+          if (p.variants) {
+            for (const v of p.variants) {
+              variantMap.set(v.id, v);
+              if (v.sku) variantMap.set(v.sku.toLowerCase(), v);
+              if (v.size || v.color) {
+                variantMap.set(
+                  `${v.productId}_${(v.size || '').toLowerCase()}_${(v.color || '').toLowerCase()}`,
+                  v,
+                );
+              }
+            }
+          }
+        }
+
+        for (const v of dbVariants) {
+          variantMap.set(v.id, v);
+          if (v.sku) variantMap.set(v.sku.toLowerCase(), v);
+          if (v.size || v.color) {
+            variantMap.set(
+              `${v.productId}_${(v.size || '').toLowerCase()}_${(v.color || '').toLowerCase()}`,
+              v,
+            );
+          }
         }
 
         const resolvedItems = input.items.map((i: any, idx: number) => {
           const dbProduct = productMap.get(i.productId);
-          const name = dbProduct?.name || i.name || i.productName || 'Fashion Item';
-          const price = dbProduct ? Number(dbProduct.price) : Number(i.price || 999);
-          const compareAtPrice = dbProduct?.compareAtPrice
-            ? Number(dbProduct.compareAtPrice)
-            : i.compareAtPrice
-              ? Number(i.compareAtPrice)
-              : Math.round(price * 1.4);
+
+          let dbVariant = null;
+          if (i.variantId) {
+            dbVariant = variantMap.get(i.variantId);
+          }
+          if (!dbVariant && i.sku) {
+            dbVariant = variantMap.get(i.sku.toLowerCase());
+          }
+          if (!dbVariant && dbProduct && (i.size || i.color)) {
+            dbVariant = variantMap.get(
+              `${dbProduct.id}_${(i.size || '').toLowerCase()}_${(i.color || '').toLowerCase()}`,
+            );
+          }
+
+          // Size and Color resolution
+          const size =
+            dbVariant?.size ||
+            (typeof dbVariant?.attributes === 'object' && dbVariant?.attributes !== null
+              ? (dbVariant.attributes as any).size
+              : null) ||
+            i.size ||
+            null;
+
+          const color =
+            dbVariant?.color ||
+            (typeof dbVariant?.attributes === 'object' && dbVariant?.attributes !== null
+              ? (dbVariant.attributes as any).color
+              : null) ||
+            i.color ||
+            null;
+
+          const baseProductName = dbProduct?.name || i.productName || 'Fashion Item';
+
+          // Variant name resolution
+          let variantName =
+            i.variantName ||
+            dbVariant?.name ||
+            (color && size ? `${color} ${size}` : size || color || null);
+
+          // Clean up variant name if it already starts with base product name
+          if (
+            variantName &&
+            baseProductName &&
+            variantName.toLowerCase().startsWith(baseProductName.toLowerCase())
+          ) {
+            variantName =
+              variantName
+                .slice(baseProductName.length)
+                .replace(/^[\s\-–—:]+/, '')
+                .trim() || variantName;
+          }
+
+          // Full display name: prefer explicit i.name (e.g. "t shirt - Black L") if provided
+          let displayName = i.name;
+          if (!displayName || displayName === baseProductName) {
+            displayName = variantName ? `${baseProductName} - ${variantName}` : baseProductName;
+          }
+
+          // Price resolution: Authoritative variant price > cart item price > base product price
+          let price = 999;
+          if (dbVariant?.price !== undefined && dbVariant?.price !== null) {
+            price = Number(dbVariant.price);
+          } else if (i.price !== undefined && Number(i.price) > 0) {
+            price = Number(i.price);
+          } else if (dbProduct?.price !== undefined && dbProduct?.price !== null) {
+            price = Number(dbProduct.price);
+          }
+
+          // Compare at price resolution
+          const compareAtPrice =
+            dbVariant?.compareAtPrice !== undefined && dbVariant?.compareAtPrice !== null
+              ? Number(dbVariant.compareAtPrice)
+              : i.compareAtPrice !== undefined &&
+                  i.compareAtPrice !== null &&
+                  Number(i.compareAtPrice) > 0
+                ? Number(i.compareAtPrice)
+                : dbProduct?.compareAtPrice
+                  ? Number(dbProduct.compareAtPrice)
+                  : Math.round(price * 1.4);
+
+          // Image resolution: Exact cart item image > variant image > primary product image > first product image > fallback
           const image =
+            i.image ||
+            dbVariant?.imageUrl ||
             dbProduct?.images?.find((img: any) => img.isPrimary)?.imageUrl ||
             dbProduct?.images?.[0]?.imageUrl ||
-            i.image ||
             'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=800';
+
           const quantity = Math.max(1, Number(i.quantity || 1));
           const itemSubtotal = price * quantity;
           const taxRate = dbProduct?.taxRate ? Number(dbProduct.taxRate) : 5;
 
+          const availableStock = dbVariant
+            ? (dbVariant.availableStock ?? dbVariant.stock ?? 50)
+            : (dbProduct?.stock ?? 50);
+
           return {
             id: dbProduct?.id || i.productId || `item_${idx}_${Date.now()}`,
             productId: dbProduct?.id || i.productId,
-            variantId: i.variantId || null,
+            variantId: dbVariant?.id || i.variantId || null,
             shopId: dbProduct?.shopId || i.shopId || 'default_shop',
-            name,
-            productName: name,
+            name: displayName,
+            productName: baseProductName,
             productSlug: dbProduct?.slug || 'product',
-            variantName: null,
-            size: i.size || null,
-            color: i.color || null,
-            sku: dbProduct?.sku || `SKU-${idx + 1}`,
+            variantName: variantName || null,
+            size,
+            color,
+            sku: dbVariant?.sku || i.sku || dbProduct?.sku || `SKU-${idx + 1}`,
             price,
             compareAtPrice,
             quantity,
-            availableStock: dbProduct?.stock || 50,
-            inStock: (dbProduct?.stock || 50) > 0,
+            availableStock,
+            inStock: availableStock > 0,
             image,
             subtotal: itemSubtotal,
             taxRate,
