@@ -8,14 +8,14 @@ import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/feat
 export const metadata: Metadata = {
   title: `About Us | ${SEO_CONSTANTS.SITE_NAME}`,
   description:
-    'Learn about Navya Collection — a fashion marketplace connecting customers across India with verified local clothing stores, designer boutiques, and regional fashion creators.',
+    'Learn about JiivaaKart — a fashion marketplace connecting customers across India with verified local clothing stores, designer boutiques, and regional fashion creators.',
   alternates: {
     canonical: `${SEO_CONSTANTS.SITE_URL}/about`,
   },
   openGraph: {
     title: `About Us | ${SEO_CONSTANTS.SITE_NAME}`,
     description:
-      'Learn about Navya Collection — a fashion marketplace connecting customers across India with verified local clothing stores, designer boutiques, and regional fashion creators.',
+      'Learn about JiivaaKart — a fashion marketplace connecting customers across India with verified local clothing stores, designer boutiques, and regional fashion creators.',
     url: `${SEO_CONSTANTS.SITE_URL}/about`,
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,
@@ -50,9 +50,9 @@ export default function AboutPage() {
             Connecting Local Clothing Boutiques with India.
           </h1>
           <p className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto font-medium leading-relaxed">
-            Navya Collection is an online marketplace dedicated to bringing independent fashion
-            boutiques, regional apparel creators, and local clothing stores onto a unified digital
-            platform, delivering authentic fashion straight to your doorstep across India.
+            JiivaaKart is an online marketplace dedicated to bringing independent fashion boutiques,
+            regional apparel creators, and local clothing stores onto a unified digital platform,
+            delivering authentic fashion straight to your doorstep across India.
           </p>
         </div>
 
@@ -118,9 +118,7 @@ export default function AboutPage() {
             <div className="flex items-center gap-2 text-amber-600 font-bold text-xs uppercase tracking-widest">
               <Users className="w-4 h-4" /> Partner Network
             </div>
-            <h2 className="font-heading text-2xl font-extrabold text-navy">
-              Sell on Navya Collection
-            </h2>
+            <h2 className="font-heading text-2xl font-extrabold text-navy">Sell on JiivaaKart</h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               Are you a boutique merchant, ethnic wear creator, or garment manufacturer in India?
               Expand your brand with automated order management, zero upfront registration fees, and
@@ -145,7 +143,7 @@ export default function AboutPage() {
             </div>
             <div>
               <h3 className="font-bold text-navy text-sm sm:text-base">
-                Have more questions about Navya?
+                Have more questions about JiivaaKart?
               </h3>
               <p className="text-xs text-slate-600">
                 Read our comprehensive FAQ covering orders, shipping, and seller onboarding.

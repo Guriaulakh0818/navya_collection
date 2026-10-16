@@ -4,9 +4,9 @@ import { Metadata } from 'next';
 import { MarketplaceSearchResults } from '@/frontend/features/search/components/MarketplaceSearchResults';
 
 export const metadata: Metadata = {
-  title: 'Marketplace Search Engine | Navya Collection',
+  title: 'Marketplace Search Engine | JiivaaKart',
   description:
-    'Search luxury ethnic couture, sarees, lehengas, gents garments, and verified boutique partner shops on Navya Collection.',
+    'Search luxury ethnic couture, sarees, lehengas, gents garments, and verified boutique partner shops on JiivaaKart.',
   robots: {
     index: false,
     follow: true,

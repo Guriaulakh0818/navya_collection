@@ -9,7 +9,7 @@ import {
 import { prisma } from '@/lib/prisma';
 
 export const metadata: Metadata = {
-  title: 'Executive Governance Command Center | Navya Admin',
+  title: 'Executive Governance Command Center | JiivaaKart Admin',
   description:
     'Multi-vendor marketplace governance dashboard for monitoring revenue, seller onboarding, product moderation, and financial payouts.',
 };
@@ -245,7 +245,7 @@ export default async function AdminDashboardPage() {
       id: o.id,
       orderNumber: o.orderNumber,
       customerName: o.user?.name || 'Customer',
-      shopName: o.items?.[0]?.shop?.name || 'Navya Boutique',
+      shopName: o.items?.[0]?.shop?.name || 'Jiivaa Boutique',
       totalAmount: Number(o.totalAmount || 0),
       status: o.orderStatus,
       paymentStatus: o.paymentStatus,

@@ -126,7 +126,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                 <div className="h-28 sm:h-32 bg-slate-900 relative overflow-hidden select-none">
                   <Image
                     src={bannerUrl}
-                    alt="Style That Speaks - Navya Collection"
+                    alt="Style That Speaks - JiivaaKart"
                     fill
                     priority={index < 2}
                     sizes="290px"

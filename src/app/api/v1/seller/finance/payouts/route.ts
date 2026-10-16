@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
           totalSettled: CommissionService.roundMoney(totalSettled),
           pendingPayout: CommissionService.roundMoney(pendingPayout),
           commissionStructure:
-            'Navya Commission = MRP × 10% | Seller Base Payout = Selling Price − Commission | GST added if registered',
+            'JiivaaKart Commission = MRP × 10% | Seller Base Payout = Selling Price − Commission | GST added if registered',
         },
         orders: vendorOrders,
         payouts,

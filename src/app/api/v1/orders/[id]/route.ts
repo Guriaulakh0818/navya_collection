@@ -95,7 +95,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       shipments: (order.shipments || []).map((shp: any) => ({
         id: shp.id,
         shipmentNumber: shp.shipmentNumber,
-        shopName: shp.shop?.name || 'Navya Boutique',
+        shopName: shp.shop?.name || 'Jiivaa Boutique',
         shopCode: shp.shop?.shopCode || null,
         status: shp.status,
         trackingStatus: shp.trackingStatus,

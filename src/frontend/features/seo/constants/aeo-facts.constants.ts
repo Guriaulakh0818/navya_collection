@@ -1,12 +1,12 @@
 /**
- * Centralized Authoritative Business & Platform Facts for Navya Collection AEO & GEO.
+ * Centralized Authoritative Business & Platform Facts for JiivaaKart AEO & GEO.
  * Single source of truth for factual descriptions, entities, policies, and routes.
  */
 export const AEO_FACTS = {
   BRAND: {
-    NAME: 'Navya Collection',
-    LEGAL_NAME: 'Navya Collection Private Limited',
-    DOMAIN: 'https://navyacollection.store',
+    NAME: 'JiivaaKart',
+    LEGAL_NAME: 'JiivaaKart Private Limited',
+    DOMAIN: 'https://jiivaakart.com',
     FOUNDING_YEAR: '2022',
     BUSINESS_TYPE: 'Fashion Marketplace',
     PRIMARY_MARKET: 'India',
@@ -19,13 +19,13 @@ export const AEO_FACTS = {
     MISSION:
       'Connecting customers across India with authentic local clothing stores, designer boutiques, and regional fashion creators.',
     CORE_DEFINITION:
-      'Navya Collection is a fashion marketplace connecting customers with local clothing stores, boutiques and fashion sellers across India.',
+      'JiivaaKart is a fashion marketplace connecting customers with local clothing stores, boutiques and fashion sellers across India.',
   },
 
   CONTACT: {
-    EMAIL: 'helpdesk@navyacollection.store',
+    EMAIL: 'helpdesk@jiivaakart.com',
     PHONE: '+91-9053883125',
-    SUPPORT_URL: 'https://navyacollection.store/contact',
+    SUPPORT_URL: 'https://jiivaakart.com/contact',
   },
 
   CANONICAL_ROUTES: {

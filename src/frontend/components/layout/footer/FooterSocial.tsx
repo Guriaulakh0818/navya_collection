@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-// Only verified, official public social profiles belonging to Navya Collection should be listed here.
+// Only verified, official public social profiles belonging to JiivaaKart should be listed here.
 // Unverified placeholders are strictly omitted per Phase 2.8 trust standards.
 const VERIFIED_SOCIALS: Array<{ href: string; label: string }> = [];
 

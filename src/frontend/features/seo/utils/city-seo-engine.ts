@@ -61,7 +61,7 @@ export function generateCityMetadata(data: CitySeoData | null): Metadata {
   if (!data) {
     return {
       title: `City Not Found | ${SEO_CONSTANTS.SITE_NAME}`,
-      description: 'The requested city marketplace page is not available on Navya Collection.',
+      description: 'The requested city marketplace page is not available on JiivaaKart.',
       robots: {
         index: false,
         follow: false,
@@ -76,8 +76,8 @@ export function generateCityMetadata(data: CitySeoData | null): Metadata {
 
   const description =
     approvedShopCount > 0
-      ? `Discover clothing collections from verified local boutiques and fashion stores in ${locationLabel} on Navya Collection.`
-      : `Explore fashion from approved partner stores in ${locationLabel} on Navya Collection.`;
+      ? `Discover clothing collections from verified local boutiques and fashion stores in ${locationLabel} on JiivaaKart.`
+      : `Explore fashion from approved partner stores in ${locationLabel} on JiivaaKart.`;
 
   return {
     title,
@@ -113,7 +113,7 @@ export function generateCityMetadata(data: CitySeoData | null): Metadata {
           url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
           width: 1200,
           height: 630,
-          alt: `Local Fashion Stores in ${cityName} - Navya Collection`,
+          alt: `Local Fashion Stores in ${cityName} - JiivaaKart`,
         },
       ],
     },

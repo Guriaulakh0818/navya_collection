@@ -126,10 +126,10 @@ export default async function MultiVendorMarketplaceHomePage() {
         {/* 7. BECOME A SELLER / LOCAL STORE STORY (Seller Value & Onboarding CTA) */}
         <SellerStorySection />
 
-        {/* 8. HOW NAVYA WORKS (4-Step Marketplace Flow) */}
+        {/* 8. HOW JIIVAAKART WORKS (4-Step Marketplace Flow) */}
         <HowNavyaWorksSection />
 
-        {/* 9. WHY SHOP ON NAVYA? (Customer Value Trust Cards) */}
+        {/* 9. WHY SHOP ON JIIVAAKART? (Customer Value Trust Cards) */}
         <WhyShopNavyaSection />
       </div>
     </div>

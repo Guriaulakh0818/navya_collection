@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Shopping Cart | Navya Collection',
-  description: 'View and manage items in your Navya Collection shopping cart.',
+  title: 'Shopping Cart | JiivaaKart',
+  description: 'View and manage items in your JiivaaKart shopping cart.',
   robots: {
     index: false,
     follow: false,

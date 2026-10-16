@@ -35,12 +35,12 @@ function buildNaturalCategoryDescription(
 
   if (parentName) {
     return truncateDescription(
-      `Explore authentic ${name} in ${parentName} collection on Navya Collection, featuring products from local clothing stores and boutiques across India.`,
+      `Explore authentic ${name} in ${parentName} collection on JiivaaKart, featuring products from local clothing stores and boutiques across India.`,
     );
   }
 
   return truncateDescription(
-    `Explore ${name} on Navya Collection, featuring fashion from verified clothing stores and boutiques across India.`,
+    `Explore ${name} on JiivaaKart, featuring fashion from verified clothing stores and boutiques across India.`,
   );
 }
 
@@ -61,7 +61,7 @@ export function generateCategoryMetadata(
   if (!category || category.status === 'inactive') {
     return {
       title: { absolute: `Category Not Found | ${SEO_CONSTANTS.SITE_NAME}` },
-      description: 'The requested category is not available on Navya Collection.',
+      description: 'The requested category is not available on JiivaaKart.',
       robots: {
         index: false,
         follow: false,
@@ -108,7 +108,7 @@ export function generateCategoryMetadata(
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: `${category.name} collection on Navya Collection`,
+          alt: `${category.name} collection on JiivaaKart`,
         },
       ],
     },
@@ -179,7 +179,7 @@ export function generateCategoryDirectoryMetadata(): Metadata {
   const canonicalUrl = `${siteUrl}/category`;
   const title = `All Fashion Categories | ${SEO_CONSTANTS.SITE_NAME}`;
   const description =
-    'Explore verified clothing categories, regional ethnic wear, designer collections, and boutique fashion from local stores across India on Navya Collection.';
+    'Explore verified clothing categories, regional ethnic wear, designer collections, and boutique fashion from local stores across India on JiivaaKart.';
 
   return {
     title: { absolute: title },
@@ -206,7 +206,7 @@ export function generateCategoryDirectoryMetadata(): Metadata {
           url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
           width: 1200,
           height: 630,
-          alt: 'All Categories on Navya Collection',
+          alt: 'All Categories on JiivaaKart',
         },
       ],
     },

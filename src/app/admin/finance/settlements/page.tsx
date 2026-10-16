@@ -423,7 +423,7 @@ export default function AdminManualSettlementsPage() {
                                 </span>
                               </div>
                               <div className="flex justify-between gap-4 text-amber-700">
-                                <span>Navya Commission (10%):</span>
+                                <span>JiivaaKart Commission (10%):</span>
                                 <span>-{formatPrice(set.commissionAmount)}</span>
                               </div>
                               {Number(set.commissionReversal || 0) > 0 && (

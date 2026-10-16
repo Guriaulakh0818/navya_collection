@@ -3,23 +3,21 @@ export const NOTIFICATION_CONSTANTS = {
     API_URL: 'https://api.brevo.com/v3',
     SMS_ENDPOINT: '/transactionalSMS/sms',
     EMAIL_ENDPOINT: '/smtp/email',
-    SENDER_NAME: process.env.BREVO_SENDER_NAME || 'Navya Collection',
-    SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || 'support@navyacollection.store',
-    SMS_SENDER: process.env.BREVO_SMS_SENDER || 'NAVYA',
+    SENDER_NAME: process.env.BREVO_SENDER_NAME || 'JiivaaKart',
+    SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || 'support@jiivaakart.com',
+    SMS_SENDER: process.env.BREVO_SMS_SENDER || 'JIIVAA',
   },
   BREVO: {
     API_URL: 'https://api.brevo.com/v3',
     SMS_ENDPOINT: '/transactionalSMS/sms',
     EMAIL_ENDPOINT: '/smtp/email',
-    SENDER_NAME: process.env.BREVO_SENDER_NAME || 'Navya Collection',
-    SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || 'support@navyacollection.store',
-    SMS_SENDER: process.env.BREVO_SMS_SENDER || 'NAVYA',
+    SENDER_NAME: process.env.BREVO_SENDER_NAME || 'JiivaaKart',
+    SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || 'support@jiivaakart.com',
+    SMS_SENDER: process.env.BREVO_SMS_SENDER || 'JIIVAA',
   },
   ADMIN: {
     EMAIL:
-      process.env.ADMIN_ALERT_EMAIL ||
-      process.env.BREVO_SENDER_EMAIL ||
-      'admin@navyacollection.store',
+      process.env.ADMIN_ALERT_EMAIL || process.env.BREVO_SENDER_EMAIL || 'admin@jiivaakart.com',
     MOBILE: process.env.ADMIN_ALERT_MOBILE || '9053883125',
   },
   RETRY: {

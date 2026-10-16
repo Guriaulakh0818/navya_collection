@@ -86,7 +86,7 @@ export function BecomeSellerContent() {
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-navy tracking-tight leading-tight">
           Sell Your Fashion &amp; Apparel on <br className="hidden sm:inline" />
-          <span className="text-amber-600 font-extrabold">Navya Collection Marketplace</span>
+          <span className="text-amber-600 font-extrabold">JiivaaKart Marketplace</span>
         </h1>
 
         <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">

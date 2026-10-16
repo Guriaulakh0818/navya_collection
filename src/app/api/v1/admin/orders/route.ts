@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
-    const admin = await getAdminUser();
+    const admin = await getAdminUser(request);
     if (
       !admin ||
       !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes((admin.role || '').toUpperCase())
@@ -202,7 +202,7 @@ export async function GET(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const admin = await getAdminUser();
+    const admin = await getAdminUser(request);
     if (
       !admin ||
       !['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes((admin.role || '').toUpperCase())

@@ -4,6 +4,8 @@ import { ArrowRight, Sparkles, Store, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { BRAND_ASSETS } from '@/shared/config/brand-assets';
+
 export function SellerStorySection() {
   return (
     <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-50/90 via-orange-50/60 to-amber-100/40 border border-amber-200/90 p-6 sm:p-8 lg:p-10 my-8 sm:my-12 shadow-xs">
@@ -25,8 +27,8 @@ export function SellerStorySection() {
           </h2>
 
           <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed max-w-lg">
-            Join Navya Collection and take your store beyond your neighbourhood. Reach customers
-            across India and grow your business online with 0% setup friction.
+            Join JiivaaKart and take your store beyond your neighbourhood. Reach customers across
+            India and grow your business online with 0% setup friction.
           </p>
 
           <div className="pt-2">
@@ -54,14 +56,19 @@ export function SellerStorySection() {
 
             <ArrowRight className="w-4 h-4 text-amber-400 shrink-0" />
 
-            {/* Step 2: Navya Collection */}
+            {/* Step 2: JiivaaKart Platform */}
             <div className="flex flex-col items-center text-center space-y-1.5 min-w-[72px]">
               <div className="w-12 h-12 rounded-full bg-navy-900 border-2 border-white shadow-md flex items-center justify-center relative overflow-hidden">
                 <div className="relative w-8 h-8 rounded-full overflow-hidden bg-white">
-                  <Image src="/logo.png" alt="Navya Logo" fill className="object-cover" />
+                  <Image
+                    src={BRAND_ASSETS.monogram}
+                    alt="JiivaaKart Logo"
+                    fill
+                    className="object-contain p-0.5"
+                  />
                 </div>
               </div>
-              <span className="text-[11px] font-extrabold text-navy-900">Navya Platform</span>
+              <span className="text-[11px] font-extrabold text-navy-900">JiivaaKart Platform</span>
             </div>
 
             <ArrowRight className="w-4 h-4 text-amber-400 shrink-0" />

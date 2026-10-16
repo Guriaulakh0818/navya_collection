@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { AdminProductApprovalTable } from '@/frontend/features/admin/components/AdminProductApprovalTable';
 
 export const metadata: Metadata = {
-  title: 'Seller Product Approvals Queue | Navya Admin Portal',
+  title: 'Seller Product Approvals Queue | JiivaaKart Admin Portal',
   description:
     'Moderate seller submitted products, inspect Cloudinary gallery images, prices, variants, and approve or reject submissions.',
 };

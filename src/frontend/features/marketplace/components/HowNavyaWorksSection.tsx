@@ -47,7 +47,7 @@ export function HowNavyaWorksSection() {
             <span>Marketplace Workflow</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-navy-900 tracking-tight font-sans">
-            How Navya Collection Works
+            How JiivaaKart Works
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
             Connecting fashion lovers directly with local clothing stores and boutique owners.

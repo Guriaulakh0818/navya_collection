@@ -47,7 +47,7 @@ export const CATEGORY_TAXONOMY: MainCategoryOption[] = [
           { id: 'spot_sports_store', name: 'Sports Store', slug: 'sports-store' },
           { id: 'spot_trendy_street', name: 'Trendy Street', slug: 'trendy-street' },
           { id: 'spot_genz_fashion', name: 'Gen Z Fashion', slug: 'gen-z-fashion' },
-          { id: 'spot_new_on_navya', name: 'New on Navya', slug: 'new-arrivals' },
+          { id: 'spot_new_on_navya', name: 'New on JiivaaKart', slug: 'new-arrivals' },
           { id: 'spot_top_rated', name: 'Top-Rated Styles', slug: 'top-rated' },
           { id: 'spot_shop_your_vibe', name: 'Shop Your Vibe', slug: 'shop-your-vibe' },
           { id: 'spot_budget_finds', name: 'Budget Finds', slug: 'budget-finds' },

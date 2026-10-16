@@ -73,7 +73,7 @@ export class NotificationService {
    * Sends admin email alert & in-app notifications immediately after seller submits registration application.
    */
   static async notifyAdminNewSellerRegistration(options: AdminSellerRegistrationEmailOptions) {
-    const adminBaseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.navyacollection.store';
+    const adminBaseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.jiivaakart.com';
     const reviewLink = `${adminBaseUrl.replace(/\/$/, '')}/admin/sellers/${options.shopId}`;
 
     // 1. Create in-app notifications for Admin & Owner users
@@ -190,7 +190,7 @@ export class NotificationService {
    * Sends admin email alert & in-app notifications immediately when a seller creates or submits a product for approval.
    */
   static async notifyAdminNewProductSubmission(options: AdminProductSubmissionEmailOptions) {
-    const adminBaseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.navyacollection.store';
+    const adminBaseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.jiivaakart.com';
     const reviewLink = `${adminBaseUrl.replace(/\/$/, '')}/products`;
 
     // 1. Create in-app notifications for Admin & Owner users
@@ -408,13 +408,13 @@ export class NotificationService {
             }
 
             <div style="text-align: center; margin: 28px 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store'}${status === 'APPROVED' ? '/seller/dashboard' : '/become-seller'}" style="background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 14px; font-weight: 700; border-radius: 50px; display: inline-block;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com'}${status === 'APPROVED' ? '/seller/dashboard' : '/become-seller'}" style="background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 14px; font-weight: 700; border-radius: 50px; display: inline-block;">
                 ${status === 'APPROVED' ? 'Access Seller Dashboard →' : 'View Application Status →'}
               </a>
             </div>
 
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
-            <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">© ${new Date().getFullYear()} Navya Collection Marketplace Desk</p>
+            <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">© ${new Date().getFullYear()} JiivaaKart Marketplace Desk</p>
           </div>
         `;
 

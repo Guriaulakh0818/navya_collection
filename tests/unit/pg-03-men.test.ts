@@ -364,9 +364,9 @@ describe('PG-03 — MEN PUBLIC PAGE FORENSIC PRODUCTION AUDIT SUITE', () => {
       expect(metadata.title).toEqual({
         absolute: `Men | ${SEO_CONSTANTS.SITE_NAME}`,
       });
-      // Verify no duplicate "Navya Collection | Navya Collection"
+      // Verify no duplicate "JiivaaKart | JiivaaKart"
       const titleString = (metadata.title as any).absolute;
-      const occurrences = (titleString.match(/Navya Collection/g) || []).length;
+      const occurrences = (titleString.match(/JiivaaKart/g) || []).length;
       expect(occurrences).toBe(1);
     });
 

@@ -5,7 +5,7 @@ import type { ProductSeoInput, SeoContext } from '../types/product-seo.types';
 import { generateBreadcrumbSchema, generateOrganizationSchema } from './schema-generators';
 import { generateSeoSlug } from './slug-generator';
 
-const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store';
+const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com';
 
 /**
  * Truncates text smartly to target char limit without breaking words
@@ -166,14 +166,14 @@ export function generateProductMetadata(product: ProductSeoInput, context?: SeoC
           url: img.url,
           width: img.width || 1200,
           height: img.height || 630,
-          alt: img.alt || `${product.name} - Navya Collection`,
+          alt: img.alt || `${product.name} - JiivaaKart`,
         }))
       : [
           {
             url: primaryImage,
             width: 1200,
             height: 630,
-            alt: `${product.name} - Navya Collection`,
+            alt: `${product.name} - JiivaaKart`,
           },
         ];
 

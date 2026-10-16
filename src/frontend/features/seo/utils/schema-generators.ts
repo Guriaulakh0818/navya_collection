@@ -175,8 +175,7 @@ export function generateShopSchema(shop: {
     '@type': 'Store',
     '@id': `${SEO_CONSTANTS.SITE_URL}/shop/${shop.slug}#store`,
     name: shop.name,
-    description:
-      shop.description || `${shop.name} boutique partner on Navya Collection marketplace.`,
+    description: shop.description || `${shop.name} boutique partner on JiivaaKart marketplace.`,
     url: `${SEO_CONSTANTS.SITE_URL}/shop/${shop.slug}`,
     logo: shop.logo || SEO_CONSTANTS.ORGANIZATION.LOGO,
     telephone: shop.phone,

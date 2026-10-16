@@ -56,7 +56,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     // Security: Seller cannot change fundingType to NAVYA or transfer shopId
     if (body.fundingType && body.fundingType.toUpperCase() === 'NAVYA') {
       return NextResponse.json(
-        { success: false, message: 'Sellers cannot change coupons to Navya-funded.' },
+        { success: false, message: 'Sellers cannot change coupons to JiivaaKart-funded.' },
         { status: 403 },
       );
     }

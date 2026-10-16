@@ -70,7 +70,7 @@ export default function AdminCommissionAnalyticsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `navya_commission_report_${Date.now()}.csv`);
+    link.setAttribute('download', `jiivaakart_commission_report_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -87,7 +87,7 @@ export default function AdminCommissionAnalyticsPage() {
           </h1>
           <p className="text-xs text-slate-500 mt-1 font-medium">
             Real-time track of Gross GMV, Platform Commission (10% on Product MRP per BM-02),
-            Variable Costs, and Net Navya Contribution Margin.
+            Variable Costs, and Net JiivaaKart Contribution Margin.
           </p>
         </div>
 
@@ -150,7 +150,7 @@ export default function AdminCommissionAnalyticsPage() {
         <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-6 space-y-2 shadow-xs">
           <div className="flex items-center justify-between text-emerald-700">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
-              Navya Contribution
+              JiivaaKart Contribution
             </span>
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
           </div>

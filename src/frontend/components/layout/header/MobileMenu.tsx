@@ -63,7 +63,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
   const shopName =
     (user as any)?.shopName ||
     (user as any)?.shop?.name ||
-    (userRole === 'OWNER' || userRole === 'ADMIN' ? 'Navya Boutique' : 'My Boutique');
+    (userRole === 'OWNER' || userRole === 'ADMIN' ? 'JiivaaKart Boutique' : 'My Boutique');
 
   const menuItems = [
     { label: 'Home', href: '/', icon: Home },
@@ -121,12 +121,12 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#183A73]/10 text-[#183A73] font-extrabold shadow-xs'
-                    : 'text-slate-700 hover:bg-slate-50 hover:text-[#183A73]'
+                    ? 'bg-[#0A2342]/10 text-[#0A2342] font-extrabold shadow-xs'
+                    : 'text-slate-700 hover:bg-slate-50 hover:text-[#0A2342]'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`h-4 w-4 ${isSelected ? 'text-[#183A73]' : 'text-slate-400'}`} />
+                  <Icon className={`h-4 w-4 ${isSelected ? 'text-[#0A2342]' : 'text-slate-400'}`} />
                   <span>{item.label}</span>
                 </div>
                 <ChevronRight className="h-4 w-4 text-slate-400" />

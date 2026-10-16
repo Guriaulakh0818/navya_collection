@@ -374,7 +374,7 @@ export default function AdminShippingPage() {
                         shop.email ||
                         shop.owner?.email ||
                         primaryLocation?.contactEmail ||
-                        'seller@navyacollection.store';
+                        'seller@jiivaakart.com';
                       const locationCode =
                         primaryLocation?.locationCode ||
                         shop.shiprocketPickupName ||
@@ -391,7 +391,7 @@ export default function AdminShippingPage() {
                               {shop.name}
                             </div>
                             <div className="text-[11px] text-amber-800 font-mono font-bold mt-0.5">
-                              {shop.shopCode || `NAVYA-SHOP-${shop.id.slice(-6).toUpperCase()}`}
+                              {shop.shopCode || `JIIVAA-SHOP-${shop.id.slice(-6).toUpperCase()}`}
                             </div>
                           </td>
 

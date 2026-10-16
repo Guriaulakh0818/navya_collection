@@ -8,14 +8,14 @@ import { AEO_FACTS, generateFaqSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/
 export const metadata: Metadata = {
   title: `Frequently Asked Questions (FAQ) | ${SEO_CONSTANTS.SITE_NAME}`,
   description:
-    'Find clear, factual answers about shopping, local boutiques, orders, payments, shipping, returns, and seller registration on Navya Collection.',
+    'Find clear, factual answers about shopping, local boutiques, orders, payments, shipping, returns, and seller registration on JiivaaKart.',
   alternates: {
     canonical: `${SEO_CONSTANTS.SITE_URL}/faq`,
   },
   openGraph: {
     title: `Frequently Asked Questions (FAQ) | ${SEO_CONSTANTS.SITE_NAME}`,
     description:
-      'Find clear, factual answers about shopping, local boutiques, orders, payments, shipping, returns, and seller registration on Navya Collection.',
+      'Find clear, factual answers about shopping, local boutiques, orders, payments, shipping, returns, and seller registration on JiivaaKart.',
     url: `${SEO_CONSTANTS.SITE_URL}/faq`,
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,
@@ -25,24 +25,24 @@ export const metadata: Metadata = {
 
 const FAQ_SECTIONS = [
   {
-    title: 'About Navya Collection & Marketplace Model',
+    title: 'About JiivaaKart & Marketplace Model',
     icon: Store,
     accent: 'text-orange bg-amber-50 border-amber-200',
     items: [
       {
-        question: 'What is Navya Collection?',
+        question: 'What is JiivaaKart?',
         answer:
-          'Navya Collection is a fashion marketplace connecting customers with local clothing stores, boutiques, and fashion sellers across India.',
+          'JiivaaKart is a fashion marketplace connecting customers with local clothing stores, boutiques, and fashion sellers across India.',
         link: { label: 'Explore Marketplace Catalog', href: '/shop' },
       },
       {
-        question: 'Is Navya Collection a single store or a multi-vendor platform?',
+        question: 'Is JiivaaKart a single store or a multi-vendor platform?',
         answer:
-          'Navya Collection is a multi-vendor platform. Products are offered directly by verified independent boutiques, tailoring houses, and garment creators located across different Indian cities.',
+          'JiivaaKart is a multi-vendor platform. Products are offered directly by verified independent boutiques, tailoring houses, and garment creators located across different Indian cities.',
         link: { label: 'Browse Boutique Partners', href: '/shop' },
       },
       {
-        question: 'What types of fashion are available on Navya Collection?',
+        question: 'What types of fashion are available on JiivaaKart?',
         answer:
           'Customers can discover authentic Indian ethnic wear (sarees, lehengas, kurtis, sherwanis, ethnic sets), contemporary western wear, daily casuals, festive outfits, and curated kids fashion.',
         link: { label: 'View All Categories', href: '/category' },
@@ -55,7 +55,7 @@ const FAQ_SECTIONS = [
     accent: 'text-emerald-600 bg-emerald-50 border-emerald-200',
     items: [
       {
-        question: 'How do I place an order on Navya Collection?',
+        question: 'How do I place an order on JiivaaKart?',
         answer:
           'Browse products by category or boutique, choose your preferred size, and add items to your cart. Proceed to checkout, enter your shipping details, and select your payment method.',
         link: { label: 'Start Shopping', href: '/shop' },
@@ -105,7 +105,7 @@ const FAQ_SECTIONS = [
       {
         question: 'What is the return and exchange window?',
         answer:
-          'Navya Collection offers a 3-day customer return policy and a 7-day size replacement policy from the date of package delivery for unused garments with original tags intact.',
+          'JiivaaKart offers a 3-day customer return policy and a 7-day size replacement policy from the date of package delivery for unused garments with original tags intact.',
         link: { label: 'Read Return Policy', href: '/return-policy' },
       },
       {
@@ -122,14 +122,14 @@ const FAQ_SECTIONS = [
     ],
   },
   {
-    title: 'Selling on Navya Collection',
+    title: 'Selling on JiivaaKart',
     icon: Store,
     accent: 'text-indigo-600 bg-indigo-50 border-indigo-200',
     items: [
       {
-        question: 'Who can sell on Navya Collection?',
+        question: 'Who can sell on JiivaaKart?',
         answer:
-          'Any verified clothing retailer, boutique owner, ethnic wear designer, or garment manufacturer based in India can join Navya Collection as a seller.',
+          'Any verified clothing retailer, boutique owner, ethnic wear designer, or garment manufacturer based in India can join JiivaaKart as a seller.',
         link: { label: 'Become a Seller', href: '/become-seller' },
       },
       {
@@ -148,7 +148,7 @@ const FAQ_SECTIONS = [
       {
         question: 'How do I contact customer support?',
         answer:
-          'You can email our customer support team at helpdesk@navyacollection.store or call/WhatsApp us at +91 9053883125.',
+          'You can email our customer support team at helpdesk@jiivaakart.com or call/WhatsApp us at +91 9053883125.',
         link: { label: 'Contact Support Page', href: '/contact' },
       },
     ],
@@ -187,7 +187,7 @@ export default function FaqPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto font-medium leading-relaxed">
-            Essential facts, policies, and guidance for shopping and selling on the Navya Collection
+            Essential facts, policies, and guidance for shopping and selling on the JiivaaKart
             marketplace.
           </p>
         </div>

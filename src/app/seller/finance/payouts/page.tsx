@@ -159,7 +159,7 @@ export default function SellerPayoutLedgerPage() {
                   <th className="px-3 py-3">Date</th>
                   <th className="px-3 py-3 text-right">MRP</th>
                   <th className="px-3 py-3 text-right">Selling Price</th>
-                  <th className="px-3 py-3 text-right">Navya Comm (10% MRP)</th>
+                  <th className="px-3 py-3 text-right">JiivaaKart Comm (10% MRP)</th>
                   <th className="px-3 py-3 text-right">Base Payout</th>
                   <th className="px-3 py-3 text-right">GST</th>
                   <th className="px-3 py-3 text-right">Total Payout</th>

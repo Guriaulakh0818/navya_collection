@@ -11,7 +11,7 @@ export function buildSMSMessage(
   type: NotificationType,
   vars: NotificationTemplateVariables,
 ): string {
-  const brand = 'Navya Collection';
+  const brand = 'JiivaaKart';
   const name = vars.customerName || 'Valued Customer';
   const orderNum = vars.orderNumber || '';
   const amount = formatPrice(vars.amount);
@@ -44,6 +44,6 @@ export function buildSMSMessage(
       return `Hi ${name}, order ${orderNum} has been cancelled. Reason: ${vars.reason || 'Requested by customer'}. Any paid amount will be refunded.`;
 
     default:
-      return `[${brand}] Update on your request: ${vars.customMessage || 'Thank you for choosing Navya Collection.'}`;
+      return `[${brand}] Update on your request: ${vars.customMessage || 'Thank you for choosing JiivaaKart.'}`;
   }
 }

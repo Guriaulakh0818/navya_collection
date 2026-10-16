@@ -5,7 +5,7 @@ import { SEO_CONSTANTS } from '@/features/seo';
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: SEO_CONSTANTS.SITE_NAME,
-    short_name: 'Navya',
+    short_name: 'JiivaaKart',
     description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
     start_url: '/',
     display: 'standalone',
@@ -18,13 +18,13 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/x-icon',
       },
       {
-        src: '/logo.png',
+        src: '/logos/jiivaakart-icon.png',
         sizes: '192x192',
         type: 'image/png',
         purpose: 'maskable',
       },
       {
-        src: '/logo.png',
+        src: '/logos/jiivaakart-icon.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any',

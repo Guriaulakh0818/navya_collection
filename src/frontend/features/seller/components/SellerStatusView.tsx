@@ -364,14 +364,14 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             Contact Support Team
           </button>
           <a
-            href="mailto:helpdesk@navyacollection.store"
+            href="mailto:helpdesk@jiivaakart.com"
             className="flex items-center gap-1.5 text-slate-700 hover:text-amber-700 font-bold transition-colors cursor-pointer"
           >
             <Mail className="w-4 h-4 text-amber-600" />
-            helpdesk@navyacollection.store
+            helpdesk@jiivaakart.com
           </a>
           <a
-            href="https://wa.me/919053883125?text=Hello%20Navya%20Collection%20Support%2C%20I%20have%20a%20query%20regarding%20my%20seller%20account."
+            href="https://wa.me/919053883125?text=Hello%20JiivaaKart%20Support%2C%20I%20have%20a%20query%20regarding%20my%20seller%20account."
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-slate-700 hover:text-emerald-700 font-bold transition-colors cursor-pointer"
@@ -396,7 +396,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
           <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <h3 className="text-lg font-extrabold text-navy flex items-center gap-2">
               <Mail className="w-5 h-5 text-amber-600" />
-              Navya Merchant Partner Support
+              JiivaaKart Merchant Partner Support
             </h3>
             <p className="text-xs text-slate-600">
               Need assistance with your seller application or status verification? Reach out
@@ -407,16 +407,16 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Email:</span>
                 <a
-                  href="mailto:helpdesk@navyacollection.store"
+                  href="mailto:helpdesk@jiivaakart.com"
                   className="font-bold text-navy hover:underline"
                 >
-                  helpdesk@navyacollection.store
+                  helpdesk@jiivaakart.com
                 </a>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">WhatsApp / Call:</span>
                 <a
-                  href="https://wa.me/919053883125?text=Hello%20Navya%20Collection%20Support%2C%20I%20have%20a%20query%20regarding%20my%20seller%20account."
+                  href="https://wa.me/919053883125?text=Hello%20JiivaaKart%20Support%2C%20I%20have%20a%20query%20regarding%20my%20seller%20account."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-bold text-emerald-700 hover:underline"

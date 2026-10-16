@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {
-  title: 'Order Confirmed | Navya Collection',
+  title: 'Order Confirmed | JiivaaKart',
   description: 'Your order has been placed successfully.',
   robots: {
     index: false,

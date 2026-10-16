@@ -18,15 +18,15 @@ const envSchema = z.object({
   ),
   NEXT_PUBLIC_APP_URL: z.preprocess(
     cleanString,
-    z.string().url().default('https://navyacollection.store'),
+    z.string().url().default('https://jiivaakart.com'),
   ),
   NEXT_PUBLIC_ADMIN_URL: z.preprocess(
     cleanString,
-    z.string().url().default('https://admin.navyacollection.store'),
+    z.string().url().default('https://admin.jiivaakart.com'),
   ),
   NEXT_PUBLIC_SELLER_URL: z.preprocess(
     cleanString,
-    z.string().url().default('https://seller.navyacollection.store'),
+    z.string().url().default('https://seller.jiivaakart.com'),
   ),
   DATABASE_URL: z.preprocess(
     (val) => {
@@ -53,9 +53,9 @@ const envSchema = z.object({
   BREVO_API_KEY: z.preprocess(cleanString, z.string().optional()),
   BREVO_SENDER_EMAIL: z.preprocess((val) => {
     const cleaned = cleanString(val);
-    return cleaned || 'support@navyacollection.store';
-  }, z.string().email().default('support@navyacollection.store')),
-  BREVO_SENDER_NAME: z.preprocess(cleanString, z.string().optional().default('Navya Collection')),
+    return cleaned || 'support@jiivaakart.com';
+  }, z.string().email().default('support@jiivaakart.com')),
+  BREVO_SENDER_NAME: z.preprocess(cleanString, z.string().optional().default('JiivaaKart')),
 
   // Razorpay Payment Gateway
   RAZORPAY_KEY_ID: z.preprocess(cleanString, z.string().optional()),

@@ -8,8 +8,8 @@ import { getCurrentUser } from '@/features/auth/actions/auth.actions';
 import { LoginForm } from '@/features/auth/components/login-form';
 
 export const metadata: Metadata = {
-  title: 'Login | Navya Collection',
-  description: 'Login to your Navya Collection customer or seller account.',
+  title: 'Login | JiivaaKart',
+  description: 'Login to your JiivaaKart customer or seller account.',
   robots: {
     index: false,
     follow: false,

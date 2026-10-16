@@ -29,7 +29,7 @@ export default function AdminError({
 
         <div className="space-y-2">
           <span className="px-3 py-1 bg-navy/5 text-navy border border-navy/10 rounded-full text-[11px] font-black uppercase tracking-wider inline-block">
-            Navya Admin Safety Shield
+            JiivaaKart Admin Safety Shield
           </span>
           <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
             Admin Operation Interrupted

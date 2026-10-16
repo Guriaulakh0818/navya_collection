@@ -7,12 +7,12 @@ export function renderWelcomeEmail(vars: NotificationTemplateVariables): {
   html: string;
 } {
   const name = vars.customerName || 'Valued Customer';
-  const subject = 'Welcome to Navya Collection! ✨';
+  const subject = 'Welcome to JiivaaKart! ✨';
   const body = `
     <span class="badge">Welcome Offer Inside</span>
-    <h2 style="font-size: 22px; color: #183A73; margin-top: 0;">Welcome to Navya Collection, ${name}!</h2>
-    <p>We are thrilled to have you join India's premier destination for affordable luxury gents & kids fashion.</p>
-    <p>As a special welcome gift, use coupon code <strong style="color: #F15A25; background: #FFF7ED; padding: 2px 8px; border-radius: 4px;">FIRST200</strong> on your first order above ₹999 to get instant ₹200 OFF!</p>
+    <h2 style="font-size: 22px; color: #0A2342; margin-top: 0;">Welcome to JiivaaKart, ${name}!</h2>
+    <p>We are thrilled to have you join India's premier fashion marketplace.</p>
+    <p>As a special welcome gift, use coupon code <strong style="color: #F28C28; background: #FFF7ED; padding: 2px 8px; border-radius: 4px;">FIRST200</strong> on your first order above ₹999 to get instant ₹200 OFF!</p>
     <div style="text-align: center;">
       <a href="https://navyacollection.store/shop" class="button">Explore Shop Collection →</a>
     </div>
@@ -25,7 +25,7 @@ export function renderOrderConfirmationEmail(vars: NotificationTemplateVariables
   html: string;
 } {
   const name = vars.customerName || 'Customer';
-  const orderNum = vars.orderNumber || 'NC-ORDER';
+  const orderNum = vars.orderNumber || 'JK-ORDER';
   const subject = `Order Confirmed - #${orderNum}`;
 
   const productRows = (vars.products || [])
@@ -76,7 +76,7 @@ export function renderShippingConfirmationEmail(vars: NotificationTemplateVariab
   html: string;
 } {
   const name = vars.customerName || 'Customer';
-  const orderNum = vars.orderNumber || 'NC-ORDER';
+  const orderNum = vars.orderNumber || 'JK-ORDER';
   const tracking = vars.trackingNumber || 'N/A';
   const courier = vars.courierName || 'Shiprocket Partner';
   const subject = `Order Shipped - #${orderNum}`;
@@ -104,7 +104,7 @@ export function renderDeliveredEmail(vars: NotificationTemplateVariables): {
   html: string;
 } {
   const name = vars.customerName || 'Customer';
-  const orderNum = vars.orderNumber || 'NC-ORDER';
+  const orderNum = vars.orderNumber || 'JK-ORDER';
   const subject = `Order Delivered - #${orderNum}`;
 
   const body = `
@@ -125,7 +125,7 @@ export function renderCancelledEmail(vars: NotificationTemplateVariables): {
   html: string;
 } {
   const name = vars.customerName || 'Customer';
-  const orderNum = vars.orderNumber || 'NC-ORDER';
+  const orderNum = vars.orderNumber || 'JK-ORDER';
   const reason = vars.reason || 'Requested by customer';
   const subject = `Order Cancellation Notice - #${orderNum}`;
 

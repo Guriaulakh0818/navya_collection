@@ -179,9 +179,8 @@ export class OrderEmailNotificationService {
         ? `${order.address.addressLine1}${order.address.addressLine2 ? `, ${order.address.addressLine2}` : ''}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}`
         : 'Address on file';
 
-      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store';
-      const adminBaseUrl =
-        process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.navyacollection.store';
+      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com';
+      const adminBaseUrl = process.env.NEXT_PUBLIC_ADMIN_URL || 'https://admin.jiivaakart.com';
       const sellerBaseUrl = process.env.NEXT_PUBLIC_SELLER_URL || `${appBaseUrl}/seller`;
 
       // =========================================================================
@@ -300,8 +299,8 @@ export class OrderEmailNotificationService {
 
               <!-- Footer -->
               <div style="background-color: #f8fafc; padding: 24px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
-                <p style="margin: 0 0 8px 0; color: #64748b;">Need help with this order? Contact our concierge team at <a href="mailto:support@navyacollection.store" style="color: #183A73; text-decoration: none; font-weight: 600;">support@navyacollection.store</a></p>
-                <p style="margin: 0;">© ${new Date().getFullYear()} Navya Collection Marketplace. All rights reserved.</p>
+                <p style="margin: 0 0 8px 0; color: #64748b;">Need help with this order? Contact our concierge team at <a href="mailto:support@jiivaakart.com" style="color: #0A2342; text-decoration: none; font-weight: 600;">support@jiivaakart.com</a></p>
+                <p style="margin: 0;">© ${new Date().getFullYear()} JiivaaKart Private Limited. All rights reserved.</p>
               </div>
             </div>
           </body>
@@ -649,7 +648,7 @@ export class OrderEmailNotificationService {
       const customerName = order.user?.name || order.address?.fullName || 'Customer';
       const customerEmail = (order.user?.email || '').trim().toLowerCase();
       const orderNumber = order.orderNumber;
-      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store';
+      const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com';
 
       const statusNormalized = String(newStatus).toUpperCase();
       const trackingAwb =
@@ -659,7 +658,7 @@ export class OrderEmailNotificationService {
         options?.trackingUrl ||
         order.trackingUrl ||
         (trackingAwb !== 'AWB-PENDING'
-          ? `https://navyacollection.store/tracking?awb=${trackingAwb}`
+          ? `https://jiivaakart.com/tracking?awb=${trackingAwb}`
           : `${appBaseUrl}/account/orders`);
 
       let emailSubject = '';
@@ -782,8 +781,8 @@ export class OrderEmailNotificationService {
 
               <!-- Footer -->
               <div style="background-color: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
-                <p style="margin: 0 0 6px 0; color: #64748b;">Have a question? We're here to help: <a href="mailto:support@navyacollection.store" style="color: #183A73; text-decoration: none; font-weight: 600;">support@navyacollection.store</a></p>
-                <p style="margin: 0;">© ${new Date().getFullYear()} Navya Collection. All rights reserved.</p>
+                <p style="margin: 0 0 6px 0; color: #64748b;">Have a question? We're here to help: <a href="mailto:support@jiivaakart.com" style="color: #0A2342; text-decoration: none; font-weight: 600;">support@jiivaakart.com</a></p>
+                <p style="margin: 0;">© ${new Date().getFullYear()} JiivaaKart Private Limited. All rights reserved.</p>
               </div>
             </div>
           </body>

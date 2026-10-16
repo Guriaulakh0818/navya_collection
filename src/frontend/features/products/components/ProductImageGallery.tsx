@@ -42,7 +42,7 @@ export function ProductImageGallery({
       >
         <div className="text-center space-y-2">
           <span className="font-heading text-2xl font-bold text-navy/40 uppercase tracking-widest block">
-            NAVYA
+            JIIVAAKART
           </span>
           <span className="text-xs text-slate-400 font-medium">Premium Fashion Image</span>
         </div>

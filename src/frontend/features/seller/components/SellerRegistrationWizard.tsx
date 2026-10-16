@@ -872,7 +872,7 @@ export function SellerRegistrationWizard() {
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
               <Building2 className="w-8 h-8 text-amber-600" />
-              Become a Navya Merchant Partner
+              Become a JiivaaKart Merchant Partner
             </h1>
             <p className="text-sm text-slate-600 font-medium mt-1">
               Join India&apos;s premier multi-vendor luxury couture marketplace in just a few quick
@@ -1131,7 +1131,7 @@ export function SellerRegistrationWizard() {
               </label>
               <input
                 type="text"
-                placeholder="e.g. Navya Royal Store"
+                placeholder="e.g. Royal Heritage Boutique"
                 value={formData.shopDetails.shopName}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -1299,7 +1299,7 @@ export function SellerRegistrationWizard() {
               </label>
               <input
                 type="text"
-                placeholder="e.g. Navya Royal Enterprises"
+                placeholder="e.g. Royal Fashion Enterprises"
                 value={formData.businessType.legalName}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -1583,7 +1583,7 @@ export function SellerRegistrationWizard() {
               </label>
               <input
                 type="text"
-                placeholder="e.g. Navya Royal Enterprises"
+                placeholder="e.g. Royal Fashion Enterprises"
                 value={formData.bankDetails.accountHolderName}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -1769,7 +1769,7 @@ export function SellerRegistrationWizard() {
               </label>
               <input
                 type="text"
-                placeholder="e.g. navyacouture@sbi"
+                placeholder="e.g. royalcouture@sbi"
                 value={formData.bankDetails.upiId}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -1956,8 +1956,8 @@ export function SellerRegistrationWizard() {
             </div>
 
             <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold text-amber-900 shadow-xs">
-              ⚡ By submitting this application, you agree to Navya Collection Merchant Agreement
-              terms, standard 10% platform commission, and quality standards.
+              ⚡ By submitting this application, you agree to JiivaaKart Merchant Agreement terms,
+              standard 10% platform commission, and quality standards.
             </div>
           </div>
         </div>

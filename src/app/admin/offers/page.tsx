@@ -291,7 +291,7 @@ export default function AdminOffersPage() {
                 setFormData({
                   title: 'Free Delivery on First Order',
                   description:
-                    'Get 100% free delivery across India on your very first order at Navya Collection!',
+                    'Get 100% free delivery across India on your very first order at JiivaaKart!',
                   type: 'FREE_DELIVERY',
                   value: 0,
                   minCartValue: 0,

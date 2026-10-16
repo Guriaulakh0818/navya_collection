@@ -288,11 +288,11 @@ describe('PG-02 — PUBLIC SHOP PAGES FORENSIC QA AUDIT SUITE', () => {
       const meta = generateShopMetadata(mockShop, { hasProducts: true });
 
       expect(meta.title).toEqual({
-        absolute: 'Barkat Fashion - Amritsar | Navya Collection',
+        absolute: 'Barkat Fashion - Amritsar | JiivaaKart',
       });
-      expect(meta.alternates?.canonical).toBe('https://navyacollection.store/shop/barkat-fashion');
-      expect(meta.openGraph?.url).toBe('https://navyacollection.store/shop/barkat-fashion');
-      expect(meta.openGraph?.siteName).toBe('Navya Collection');
+      expect(meta.alternates?.canonical).toBe('https://jiivaakart.com/shop/barkat-fashion');
+      expect(meta.openGraph?.url).toBe('https://jiivaakart.com/shop/barkat-fashion');
+      expect(meta.openGraph?.siteName).toBe('JiivaaKart');
       expect((meta.robots as any)?.index).toBe(true);
       expect((meta.robots as any)?.follow).toBe(true);
     });

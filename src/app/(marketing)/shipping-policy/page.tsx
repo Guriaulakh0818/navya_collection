@@ -8,14 +8,14 @@ import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/feat
 export const metadata: Metadata = {
   title: `Shipping Policy & Delivery Information | ${SEO_CONSTANTS.SITE_NAME}`,
   description:
-    'Shipping rates, delivery timelines, multi-seller fulfillment, and tracking information for Navya Collection marketplace orders across India.',
+    'Shipping rates, delivery timelines, multi-seller fulfillment, and tracking information for JiivaaKart marketplace orders across India.',
   alternates: {
     canonical: `${SEO_CONSTANTS.SITE_URL}/shipping-policy`,
   },
   openGraph: {
     title: `Shipping Policy & Delivery Information | ${SEO_CONSTANTS.SITE_NAME}`,
     description:
-      'Shipping rates, delivery timelines, multi-seller fulfillment, and tracking information for Navya Collection marketplace orders across India.',
+      'Shipping rates, delivery timelines, multi-seller fulfillment, and tracking information for JiivaaKart marketplace orders across India.',
     url: `${SEO_CONSTANTS.SITE_URL}/shipping-policy`,
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,
@@ -119,7 +119,7 @@ export default function ShippingPolicyPage() {
                 2. Multi-Seller Fulfillment &amp; Independent Vendor Shipments
               </h2>
               <p>
-                Navya Collection is a curated designer marketplace. If your cart contains items from
+                JiivaaKart is a curated designer marketplace. If your cart contains items from
                 multiple boutique partners, each seller prepares and dispatches their package
                 independently from their registered hub.
               </p>

@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 
 export const metadata: Metadata = {
-  title: 'Order Cancellation Policy | Navya Collection',
+  title: 'Order Cancellation Policy | JiivaaKart',
   description:
-    'Guidelines, timelines, and refund procedures for order cancellations before and after dispatch on Navya Collection.',
+    'Guidelines, timelines, and refund procedures for order cancellations before and after dispatch on JiivaaKart.',
 };
 
 export default function CancellationPolicyPage() {
@@ -73,8 +73,8 @@ export default function CancellationPolicyPage() {
                 1. Seller Order Acceptance Window &amp; Auto-Cancellation Rule
               </h2>
               <p>
-                Navya Collection protects buyers from out-of-stock scenarios. When you place an
-                order with an independent boutique merchant:
+                JiivaaKart protects buyers from out-of-stock scenarios. When you place an order with
+                an independent boutique merchant:
               </p>
               <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
                 <li>

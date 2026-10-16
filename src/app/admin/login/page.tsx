@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowLeft, ArrowRight, KeyRound, Mail, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -12,6 +12,7 @@ import { useAdminAuthStore } from '@/stores';
 
 export default function AdminLoginPage() {
   const setAdminUser = useAdminAuthStore((s) => s.setUser);
+  const setToken = useAdminAuthStore((s) => s.setToken);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,6 +40,12 @@ export default function AdminLoginPage() {
     ? rawRedirect
     : `/admin${rawRedirect.startsWith('/') ? rawRedirect : `/${rawRedirect}`}`;
 
+  useEffect(() => {
+    if (searchParams.get('expired') === 'true') {
+      toast('Your admin session has expired. Please log in again to continue.', 'error');
+    }
+  }, [searchParams, toast]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -60,6 +67,9 @@ export default function AdminLoginPage() {
       }
 
       setAdminUser(data.user);
+      if (data.token) {
+        setToken(data.token);
+      }
       toast(
         `Welcome, ${data.user.name || 'Admin'}! Authenticated as ${data.user.role}.`,
         'success',
@@ -79,10 +89,10 @@ export default function AdminLoginPage() {
         <div className="flex flex-col items-center text-center">
           <Link href="/" className="flex flex-col items-center leading-none group py-1">
             <span className="font-heading text-2xl font-bold tracking-wider text-navy uppercase group-hover:text-navy/90 transition-colors">
-              NAVYA
+              JIIVAAKART
             </span>
             <span className="font-heading text-xs font-extrabold tracking-[0.26em] text-orange uppercase mt-1">
-              COLLECTION
+              STYLE THAT SPEAKS
             </span>
           </Link>
           <p className="text-xs font-semibold text-slate-400 mt-2">Admin Portal</p>
@@ -100,7 +110,7 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="gurvindersingh0218@gmail.com / admin@navyacollection.store"
+                placeholder="gurvindersingh0218@gmail.com / admin@jiivaakart.com"
                 autoComplete="off"
                 required
                 className="w-full bg-transparent text-sm font-semibold text-slate-900 placeholder:text-slate-400 outline-none"
@@ -142,13 +152,13 @@ export default function AdminLoginPage() {
 
         {/* Back Link & Security Note */}
         <div className="mt-8 border-t border-slate-100 pt-5 text-center flex flex-col items-center gap-3">
-          <a
-            href="https://navyacollection.store"
+          <Link
+            href="/"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-navy transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back to Main Store</span>
-          </a>
+          </Link>
 
           <p className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />

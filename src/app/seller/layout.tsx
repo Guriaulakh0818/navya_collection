@@ -97,7 +97,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
           <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-4">
             <h1 className="text-xl font-extrabold text-navy flex items-center gap-2">
               <Store className="w-6 h-6 text-amber-600" />
-              Navya Collection Merchant Portal
+              JiivaaKart Merchant Portal
             </h1>
             <button
               onClick={handleLogout}
@@ -149,7 +149,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
         {/* Merchant Info Pill */}
         <div className="p-4 mx-4 my-4 rounded-xl bg-slate-100/80 border border-slate-200">
           <span className="text-xs font-bold text-slate-900 block truncate">
-            {sellerData?.shop?.name || 'Navya Merchant Shop'}
+            {sellerData?.shop?.name || 'JiivaaKart Merchant Shop'}
           </span>
           <span className="text-[10px] text-emerald-600 font-mono mt-0.5 flex items-center gap-1 font-semibold">
             <CheckCircle2 className="w-3 h-3 text-emerald-500" />

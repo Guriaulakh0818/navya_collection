@@ -234,8 +234,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     packageWidth: initialData?.packageWidth ? Number(initialData.packageWidth) : 25,
     packageHeight: initialData?.packageHeight ? Number(initialData.packageHeight) : 5,
     countryOfOrigin: initialData?.countryOfOrigin || 'India',
-    manufacturerDetails:
-      initialData?.manufacturerDetails || 'Navya Collection Artisan Partner, India',
+    manufacturerDetails: initialData?.manufacturerDetails || 'JiivaaKart Artisan Partner, India',
     status: initialData?.status || 'active',
     returnPolicyType: initialData?.returnPolicyType || 'RETURN_AND_REPLACEMENT',
     categoryId: initialData?.categoryId || '',
@@ -448,8 +447,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       packageWidth: initialData.packageWidth ? Number(initialData.packageWidth) : 25,
       packageHeight: initialData.packageHeight ? Number(initialData.packageHeight) : 5,
       countryOfOrigin: initialData.countryOfOrigin || 'India',
-      manufacturerDetails:
-        initialData.manufacturerDetails || 'Navya Collection Artisan Partner, India',
+      manufacturerDetails: initialData.manufacturerDetails || 'JiivaaKart Artisan Partner, India',
       status: initialData.status || 'active',
       returnPolicyType: initialData.returnPolicyType || 'RETURN_AND_REPLACEMENT',
       categoryId: initialData.categoryId || '',
@@ -551,8 +549,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             packageWidth: prod.packageWidth ? Number(prod.packageWidth) : 25,
             packageHeight: prod.packageHeight ? Number(prod.packageHeight) : 5,
             countryOfOrigin: prod.countryOfOrigin || 'India',
-            manufacturerDetails:
-              prod.manufacturerDetails || 'Navya Collection Artisan Partner, India',
+            manufacturerDetails: prod.manufacturerDetails || 'JiivaaKart Artisan Partner, India',
             status: prod.status || 'active',
             returnPolicyType: prod.returnPolicyType || 'RETURN_AND_REPLACEMENT',
             categoryId: prod.categoryId || '',
@@ -1525,7 +1522,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             </label>
             <input
               type="text"
-              placeholder="e.g. Navya Couture, Boutique Edition, Self Manufactured"
+              placeholder="e.g. Jiivaa Couture, Boutique Edition, Self Manufactured"
               value={formData.brand}
               onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:border-navy focus:bg-white focus:outline-none transition-all"
@@ -2362,7 +2359,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Select one of the 3 standardized marketplace policy options. Window durations are
-              strictly locked and enforced by Navya Collection.
+              strictly locked and enforced by JiivaaKart.
             </p>
           </div>
           <span className="text-[11px] font-bold text-slate-400">Step 4B</span>
@@ -2497,8 +2494,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-2 text-[11px] text-slate-600">
           <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>
-            <strong>Enforced by Navya Marketplace:</strong> Sellers cannot input arbitrary return
-            days. When an order is placed, this policy is permanently locked to that order.
+            <strong>Enforced by JiivaaKart Marketplace:</strong> Sellers cannot input arbitrary
+            return days. When an order is placed, this policy is permanently locked to that order.
           </span>
         </div>
       </div>
@@ -3521,7 +3518,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             </label>
             <input
               type="text"
-              placeholder="e.g. Royal Banarasi Silk Saree | Navya Collection"
+              placeholder="e.g. Royal Banarasi Silk Saree | JiivaaKart"
               value={formData.metaTitle}
               onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-navy focus:bg-white focus:outline-none transition-all font-medium"

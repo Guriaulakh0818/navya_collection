@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 
 export const metadata: Metadata = {
-  title: 'Terms & Conditions | Navya Collection Marketplace',
+  title: 'Terms & Conditions | JiivaaKart Marketplace',
   description:
-    'Terms of Use and Conditions governing the Navya Collection multi-vendor fashion marketplace for buyers and merchant sellers.',
+    'Terms of Use and Conditions governing the JiivaaKart multi-vendor fashion marketplace for buyers and merchant sellers.',
 };
 
 export default function TermsAndConditionsPage() {
@@ -42,8 +42,8 @@ export default function TermsAndConditionsPage() {
                 1. Acceptance of Terms
               </h2>
               <p>
-                Welcome to Navya Collection (
-                <strong className="text-navy">navyacollection.store</strong>). By registering an
+                Welcome to JiivaaKart, operated by{' '}
+                <strong className="text-navy">JiivaaKart Private Limited</strong>. By registering an
                 account, purchasing products, or operating a merchant seller store on this Platform,
                 you agree to be bound by these Terms and Conditions and all applicable laws and
                 regulations of the Republic of India.
@@ -56,9 +56,9 @@ export default function TermsAndConditionsPage() {
                 2. Marketplace Intermediary Role
               </h2>
               <p>
-                Navya Collection operates as an e-commerce marketplace platform connecting
-                independent boutique merchants and textile manufacturers (&quot;Sellers&quot;) with
-                retail consumers (&quot;Buyers&quot;).
+                JiivaaKart operates as an e-commerce marketplace platform connecting independent
+                boutique merchants and textile manufacturers (&quot;Sellers&quot;) with retail
+                consumers (&quot;Buyers&quot;).
               </p>
               <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
                 <li>
@@ -112,9 +112,10 @@ export default function TermsAndConditionsPage() {
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy">5. Intellectual Property</h2>
               <p>
-                All trademarks, logos, UI designs, and software algorithms on navyacollection.store
-                are the exclusive intellectual property of Navya Collection. Unsanctioned scraping,
-                unauthorized listing cloning, or reverse engineering is strictly prohibited.
+                All trademarks, logos, UI designs, and software algorithms on JiivaaKart are the
+                exclusive intellectual property of JiivaaKart Private Limited. Unsanctioned
+                scraping, unauthorized listing cloning, or reverse engineering is strictly
+                prohibited.
               </p>
             </section>
 
@@ -123,7 +124,7 @@ export default function TermsAndConditionsPage() {
               <p>
                 These Terms shall be governed by and interpreted in accordance with the laws of
                 India. Any disputes arising out of transactions on this Platform shall be subject to
-                the exclusive jurisdiction of the competent courts in Karnal, Haryana.
+                the exclusive jurisdiction of the competent courts in Haryana, India.
               </p>
             </section>
           </div>

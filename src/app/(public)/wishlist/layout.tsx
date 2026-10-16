@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'My Wishlist | Navya Collection',
-  description: 'View and manage your saved wishlist items on Navya Collection.',
+  title: 'My Wishlist | JiivaaKart',
+  description: 'View and manage your saved wishlist items on JiivaaKart.',
   robots: {
     index: false,
     follow: false,

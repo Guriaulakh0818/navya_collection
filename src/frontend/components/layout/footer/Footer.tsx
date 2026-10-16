@@ -4,6 +4,8 @@ import { Mail, MapPin, Phone, RefreshCw, ShieldCheck, Truck } from 'lucide-react
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { BRAND_ASSETS } from '@/shared/config/brand-assets';
+
 import { FooterNewsletter } from './FooterNewsletter';
 
 export function Footer() {
@@ -96,30 +98,30 @@ export function Footer() {
             <Link href="/" className="inline-flex items-center gap-3 group mb-2">
               <div className="relative w-10 h-10 rounded-full overflow-hidden border border-white/20 shadow-xs shrink-0 bg-white">
                 <Image
-                  src="/images/navya-logo.png"
-                  alt="Navya Collection Logo"
+                  src={BRAND_ASSETS.monogram}
+                  alt="JiivaaKart"
                   fill
-                  className="object-cover"
+                  className="object-contain p-1"
                 />
               </div>
 
               <div className="flex flex-col leading-none">
                 <span className="font-heading text-xl font-bold tracking-wider text-white uppercase">
-                  NAVYA
+                  JIIVAAKART
                 </span>
                 <span className="font-heading text-[10px] font-extrabold tracking-[0.2em] text-orange uppercase mt-0.5">
-                  COLLECTION
+                  STYLE THAT SPEAKS
                 </span>
               </div>
             </Link>
             <p className="text-xs text-white/70 leading-relaxed max-w-sm">
-              Navya Collection is a fashion marketplace connecting customers across India with
-              verified local clothing stores, designer boutiques, and regional apparel creators.
+              JiivaaKart is a fashion marketplace connecting customers across India with verified
+              local clothing stores, designer boutiques, and regional apparel creators.
             </p>
             <div className="pt-2 space-y-2 text-xs text-white/80">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-orange shrink-0" />
-                <span>India | navyacollection.store</span>
+                <span>India | jiivaakart.com</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-orange shrink-0" />
@@ -133,10 +135,10 @@ export function Footer() {
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-orange shrink-0" />
                 <a
-                  href="mailto:helpdesk@navyacollection.store"
+                  href="mailto:helpdesk@jiivaakart.com"
                   className="truncate hover:text-orange transition-colors hover:underline"
                 >
-                  helpdesk@navyacollection.store
+                  helpdesk@jiivaakart.com
                 </a>
               </div>
             </div>
@@ -196,7 +198,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link href="/become-seller" className="hover:text-orange transition-colors">
-                    Sell on Navya (Boutiques)
+                    Sell on JiivaaKart
                   </Link>
                 </li>
                 <li>
@@ -246,7 +248,7 @@ export function Footer() {
         {/* Footer Bottom */}
         <div className="pt-6 sm:pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/70">
           <p className="text-center sm:text-left text-xs">
-            © {new Date().getFullYear()} Navya Collection. All rights reserved.
+            © {new Date().getFullYear()} JiivaaKart Private Limited. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
             <span className="bg-white/10 px-2.5 py-1 rounded text-xs font-medium text-white whitespace-nowrap">

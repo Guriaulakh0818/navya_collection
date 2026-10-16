@@ -243,11 +243,17 @@ export class AdminAuthService {
     }
 
     // 7. Create Admin Session (Reuse Session Infrastructure, HTTP-Only Cookie)
-    const sessionRes = await createUserSession({
-      id: user!.id,
-      phone: user!.mobile || '',
-      role: user!.role,
-    });
+    const sessionRes = await createUserSession(
+      {
+        id: user!.id,
+        phone: user!.mobile || '',
+        email: user!.email || '',
+        name: user!.name || '',
+        role: user!.role,
+      },
+      undefined,
+      'navya_admin_session',
+    );
 
     console.log(
       `[${timestamp}] [ADMIN_AUTH] Email: ${masked} | Status: SUCCESS | Role: ${user!.role}`,

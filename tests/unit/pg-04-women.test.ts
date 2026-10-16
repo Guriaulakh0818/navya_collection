@@ -384,7 +384,7 @@ describe('PG-04 — WOMEN PUBLIC PAGE FORENSIC PRODUCTION AUDIT SUITE', () => {
         absolute: `Women | ${SEO_CONSTANTS.SITE_NAME}`,
       });
       const titleString = (metadata.title as any).absolute;
-      const occurrences = (titleString.match(/Navya Collection/g) || []).length;
+      const occurrences = (titleString.match(/JiivaaKart/g) || []).length;
       expect(occurrences).toBe(1);
     });
 

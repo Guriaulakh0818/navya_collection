@@ -11,11 +11,13 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/providers';
+import { useAdminAuthStore } from '@/stores';
 import { formatPrice } from '@/utils/format-price';
 
 interface RealOrderData {
@@ -87,6 +89,7 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   const fetchRealOrders = useCallback(async () => {
     setIsLoading(true);
@@ -96,11 +99,28 @@ export default function AdminOrdersPage() {
       if (search) url.searchParams.set('search', search);
       if (statusFilter !== 'ALL') url.searchParams.set('status', statusFilter);
 
-      const res = await fetch(url.toString(), { cache: 'no-store' });
+      const token = useAdminAuthStore.getState().token;
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(url.toString(), {
+        headers,
+        cache: 'no-store',
+        credentials: 'include',
+      });
       const json = await res.json().catch(() => null);
       if (res.ok && json?.success && json?.data) {
         setOrders(json.data.orders || []);
         setStats(json.data.stats || { totalOrders: 0, totalRevenue: 0 });
+      } else if (res.status === 401 || res.status === 403) {
+        toast(
+          json?.message || 'Admin session expired or access unauthorized. Please re-login.',
+          'error',
+        );
+        const currentPath = window.location.pathname + window.location.search;
+        router.push(`/admin/login?redirectUrl=${encodeURIComponent(currentPath)}&expired=true`);
       } else {
         toast(json?.message || 'Failed to load orders', 'error');
       }
@@ -110,7 +130,7 @@ export default function AdminOrdersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [search, statusFilter, toast]);
+  }, [search, statusFilter, toast, router]);
 
   useEffect(() => {
     fetchRealOrders();
@@ -119,9 +139,16 @@ export default function AdminOrdersPage() {
   const handleUpdateStatus = async (orderId: string, nextStatus: string) => {
     setUpdatingId(orderId);
     try {
+      const token = useAdminAuthStore.getState().token;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch('/api/v1/admin/orders', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
+        credentials: 'include',
         body: JSON.stringify({ orderId, orderStatus: nextStatus }),
       });
       const json = await res.json();
@@ -129,6 +156,8 @@ export default function AdminOrdersPage() {
         setOrders((prev) =>
           prev.map((o) => (o.id === orderId ? { ...o, orderStatus: nextStatus } : o)),
         );
+      } else {
+        toast(json?.message || 'Failed to update order status', 'error');
       }
     } catch (err) {
       console.error('Failed to update order status:', err);
@@ -259,7 +288,7 @@ export default function AdminOrdersPage() {
                     </td>
 
                     <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap font-bold text-slate-800">
-                      {order.shopNames.join(', ') || 'Navya Boutique'}
+                      {order.shopNames.join(', ') || 'Jiivaa Boutique'}
                     </td>
 
                     <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap text-slate-600 font-medium">

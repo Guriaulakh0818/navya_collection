@@ -21,7 +21,7 @@ export function Header({ children }: HeaderProps) {
           {/* Single-Line Header Bar */}
           <div className="mx-auto max-w-[1440px] px-2 sm:px-4 md:px-6 h-16 md:h-20 flex items-center justify-between gap-1.5 sm:gap-2 lg:gap-3 xl:gap-4 w-full min-w-0">
             {/* Left: Logo */}
-            <div className="flex items-center shrink-0">
+            <div className="flex items-center shrink-0 sm:mr-2 md:mr-3 lg:mr-4">
               <HeaderLogo />
             </div>
 

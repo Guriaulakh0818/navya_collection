@@ -1,6 +1,14 @@
 'use client';
 
-import { AlertCircle, AlertTriangle, CreditCard, MapPin, ShieldCheck, Trash2, Truck } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  CreditCard,
+  MapPin,
+  ShieldCheck,
+  Trash2,
+  Truck,
+} from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -330,17 +338,17 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           key: keyId,
           amount,
           currency,
-          name: 'Navya Collection',
-          description: 'Payment for Fashion & Apparel Order',
-          image: '/logo.png',
+          name: 'JiivaaKart',
+          description: 'JiivaaKart Fashion Order',
+          image: '/logos/jiivaakart-app-logo.png',
           order_id: razorpayOrderId,
           prefill: {
             name: (address as any)?.fullName || address?.name || customer?.name || 'Customer',
-            email: customer?.email || 'customer@navyacollection.store',
+            email: customer?.email || 'customer@jiivaakart.com',
             contact: address?.mobile || customer?.mobile || '',
           },
           theme: {
-            color: '#1B2A4A',
+            color: '#0A2342',
           },
           retry: {
             enabled: true,
@@ -659,7 +667,8 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
                     : 'An item in your order is currently unavailable'}
                 </p>
                 <p className="text-rose-700 text-[11px] sm:text-xs">
-                  Unavailable items are excluded from your payable total. You can remove them and proceed with your remaining available items.
+                  Unavailable items are excluded from your payable total. You can remove them and
+                  proceed with your remaining available items.
                 </p>
               </div>
             </div>
@@ -684,13 +693,13 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
               <div
                 key={item.id || item.productId}
                 className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border p-3 sm:p-3.5 bg-white min-w-0 transition-all ${
-                  isUnavailable
-                    ? 'border-rose-200 bg-rose-50/20'
-                    : 'border-slate-200'
+                  isUnavailable ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200'
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className={`relative h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-slate-100 border ${isUnavailable ? 'border-rose-200 opacity-60' : 'border-slate-200'}`}>
+                  <div
+                    className={`relative h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-slate-100 border ${isUnavailable ? 'border-rose-200 opacity-60' : 'border-slate-200'}`}
+                  >
                     <Image
                       src={
                         item.image ||
@@ -703,7 +712,9 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <h4 className={`text-xs sm:text-sm font-semibold line-clamp-1 break-words ${isUnavailable ? 'text-slate-500' : 'text-navy'}`}>
+                    <h4
+                      className={`text-xs sm:text-sm font-semibold line-clamp-1 break-words ${isUnavailable ? 'text-slate-500' : 'text-navy'}`}
+                    >
                       {item.name ||
                         (item.variantName
                           ? `${item.productName} - ${item.variantName}`

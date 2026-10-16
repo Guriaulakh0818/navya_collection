@@ -1,25 +1,24 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { BRAND_ASSETS } from '@/shared/config/brand-assets';
+
 export function HeaderLogo() {
   return (
-    <Link href="/" className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 group py-1">
-      <div className="relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full overflow-hidden border border-slate-200 shadow-xs shrink-0 group-hover:scale-105 transition-transform bg-white">
+    <Link
+      href="/"
+      className="flex items-center shrink-0 group py-1 focus-visible:outline-2 focus-visible:outline-navy rounded-lg"
+      aria-label="JiivaaKart Home"
+    >
+      <div className="relative h-10 sm:h-11 md:h-12 lg:h-[52px] w-[86px] sm:w-[95px] md:w-[104px] lg:w-[112px] transition-transform group-hover:scale-[1.02] -translate-y-0.5 sm:-translate-y-1 md:-translate-y-1.5">
         <Image
-          src="/images/navya-logo.png"
-          alt="Navya Collection Logo"
+          src={BRAND_ASSETS.logoHorizontal}
+          alt="JiivaaKart"
           fill
-          className="object-cover"
           priority
+          sizes="(max-width: 640px) 86px, (max-width: 768px) 95px, (max-width: 1024px) 104px, 112px"
+          className="object-contain object-left"
         />
-      </div>
-      <div className="flex flex-col leading-none">
-        <span className="font-heading text-base sm:text-lg md:text-xl font-bold tracking-wider text-navy uppercase group-hover:text-navy/90 transition-colors">
-          NAVYA
-        </span>
-        <span className="font-heading text-[9px] sm:text-[10px] md:text-[11px] font-extrabold tracking-[0.2em] sm:tracking-[0.24em] text-orange uppercase mt-0.5">
-          COLLECTION
-        </span>
       </div>
     </Link>
   );

@@ -1,5 +1,5 @@
 /**
- * NAVYA COLLECTION — DYNAMIC PRODUCT ATTRIBUTE ENGINE & CATEGORY TEMPLATE REGISTRY
+ * JIIVAAKART — DYNAMIC PRODUCT ATTRIBUTE ENGINE & CATEGORY TEMPLATE REGISTRY
  *
  * Architecture:
  * Department -> Category -> Subcategory -> Product Type -> Attribute Template -> Seller Product Form -> Product -> Variants
@@ -21,11 +21,7 @@ export interface AttributeFieldDefinition {
   required?: boolean;
   helperText?: string;
   group?:
-    | 'Styling & Fit'
-    | 'Fabric & Material'
-    | 'Details & Work'
-    | 'Specifications'
-    | 'Care & Details';
+    'Styling & Fit' | 'Fabric & Material' | 'Details & Work' | 'Specifications' | 'Care & Details';
 }
 
 export interface SizeSystemOption {
@@ -40,11 +36,7 @@ export interface ProductTypeDefinition {
   name: string;
   description?: string;
   sizeSystemId:
-    | 'MEN_CLOTHING'
-    | 'MEN_BOTTOMWEAR'
-    | 'WOMEN_CLOTHING'
-    | 'KIDS_AGE'
-    | 'ACCESSORIES_ONE_SIZE';
+    'MEN_CLOTHING' | 'MEN_BOTTOMWEAR' | 'WOMEN_CLOTHING' | 'KIDS_AGE' | 'ACCESSORIES_ONE_SIZE';
   attributes: AttributeFieldDefinition[];
 }
 
@@ -251,7 +243,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'gsm',
                 label: 'GSM',
                 type: 'select',
-                options: ['160 GSM (Lightweight)', '180 GSM (Standard)', '220 GSM (Heavyweight)', '240+ GSM (Super Heavy)'],
+                options: [
+                  '160 GSM (Lightweight)',
+                  '180 GSM (Standard)',
+                  '220 GSM (Heavyweight)',
+                  '240+ GSM (Super Heavy)',
+                ],
                 group: 'Fabric & Material',
               },
               {
@@ -301,7 +298,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'collarType',
                 label: 'Collar Type',
                 type: 'select',
-                options: ['Spread Collar', 'Button-Down Collar', 'Mandarin / Band Collar', 'Cuban / Camp Collar', 'Cutaway Collar'],
+                options: [
+                  'Spread Collar',
+                  'Button-Down Collar',
+                  'Mandarin / Band Collar',
+                  'Cuban / Camp Collar',
+                  'Cutaway Collar',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -317,7 +320,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pattern',
                 label: 'Pattern',
                 type: 'select',
-                options: ['Solid', 'Striped', 'Checked / Plaid', 'Printed', 'Textured / Self Design'],
+                options: [
+                  'Solid',
+                  'Striped',
+                  'Checked / Plaid',
+                  'Printed',
+                  'Textured / Self Design',
+                ],
                 group: 'Styling & Fit',
               },
               {
@@ -389,7 +398,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'collar',
                 label: 'Collar',
                 type: 'select',
-                options: ['Ribbed Polo Collar', 'Tipped Collar', 'Stand Collar', 'Button-Down Polo Collar'],
+                options: [
+                  'Ribbed Polo Collar',
+                  'Tipped Collar',
+                  'Stand Collar',
+                  'Button-Down Polo Collar',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -412,7 +426,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['100% Pique Cotton', 'Cotton Matty', 'Poly-Cotton Blend', 'Dry-Fit Poly Knit'],
+                options: [
+                  '100% Pique Cotton',
+                  'Cotton Matty',
+                  'Poly-Cotton Blend',
+                  'Dry-Fit Poly Knit',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -458,21 +477,36 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'hood',
                 label: 'Hood',
                 type: 'select',
-                options: ['Drawstring Hood', 'Attached Hood (No Cord)', 'Without Hood (Sweatshirt)'],
+                options: [
+                  'Drawstring Hood',
+                  'Attached Hood (No Cord)',
+                  'Without Hood (Sweatshirt)',
+                ],
                 group: 'Styling & Fit',
               },
               {
                 id: 'pattern',
                 label: 'Pattern',
                 type: 'select',
-                options: ['Solid', 'Printed / Graphic', 'Colourblocked', 'Tie-Dye', 'Embroidered Logo'],
+                options: [
+                  'Solid',
+                  'Printed / Graphic',
+                  'Colourblocked',
+                  'Tie-Dye',
+                  'Embroidered Logo',
+                ],
                 group: 'Styling & Fit',
               },
               {
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['100% Cotton Fleece', 'Cotton Rich Blend', 'Poly-Fleece', 'Heavyweight French Terry'],
+                options: [
+                  '100% Cotton Fleece',
+                  'Cotton Rich Blend',
+                  'Poly-Fleece',
+                  'Heavyweight French Terry',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -480,7 +514,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fleece',
                 label: 'Fleece',
                 type: 'select',
-                options: ['Brushed Fleece (Heavy Warm)', 'French Terry / Loopback (Mid-Weight)', 'Unbrushed Lightweight'],
+                options: [
+                  'Brushed Fleece (Heavy Warm)',
+                  'French Terry / Loopback (Mid-Weight)',
+                  'Unbrushed Lightweight',
+                ],
                 group: 'Fabric & Material',
               },
               {
@@ -508,7 +546,15 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'jacketType',
                 label: 'Jacket Type',
                 type: 'select',
-                options: ['Bomber Jacket', 'Denim Jacket', 'Biker Jacket', 'Puffer Jacket', 'Windbreaker', 'Trench Coat', 'Varsity Jacket'],
+                options: [
+                  'Bomber Jacket',
+                  'Denim Jacket',
+                  'Biker Jacket',
+                  'Puffer Jacket',
+                  'Windbreaker',
+                  'Trench Coat',
+                  'Varsity Jacket',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -524,7 +570,15 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Genuine Leather', 'Faux Leather / PU', 'Denim', 'Nylon', 'Polyester', 'Suede', 'Wool Blend'],
+                options: [
+                  'Genuine Leather',
+                  'Faux Leather / PU',
+                  'Denim',
+                  'Nylon',
+                  'Polyester',
+                  'Suede',
+                  'Wool Blend',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -553,7 +607,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pockets',
                 label: 'Pockets',
                 type: 'select',
-                options: ['Multi-Pocket Utility', 'Flap Chest Pockets', 'Side Welt Pockets', 'Interior Pocket'],
+                options: [
+                  'Multi-Pocket Utility',
+                  'Flap Chest Pockets',
+                  'Side Welt Pockets',
+                  'Interior Pocket',
+                ],
                 group: 'Styling & Fit',
               },
               {
@@ -592,7 +651,16 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fit',
                 label: 'Fit',
                 type: 'select',
-                options: ['Skinny', 'Slim', 'Straight', 'Relaxed', 'Baggy', 'Wide Leg', 'Bootcut', 'Flared'],
+                options: [
+                  'Skinny',
+                  'Slim',
+                  'Straight',
+                  'Relaxed',
+                  'Baggy',
+                  'Wide Leg',
+                  'Bootcut',
+                  'Flared',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -622,7 +690,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['100% Cotton Denim', 'Cotton Blend with Spandex / Elastane', 'Cotton Poly Stretch'],
+                options: [
+                  '100% Cotton Denim',
+                  'Cotton Blend with Spandex / Elastane',
+                  'Cotton Poly Stretch',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -630,14 +702,23 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'stretch',
                 label: 'Stretch',
                 type: 'select',
-                options: ['Non-Stretch', 'Low Stretch (1-2%)', 'Medium Stretch (3-4%)', 'High Stretch / Super Flex'],
+                options: [
+                  'Non-Stretch',
+                  'Low Stretch (1-2%)',
+                  'Medium Stretch (3-4%)',
+                  'High Stretch / Super Flex',
+                ],
                 group: 'Fabric & Material',
               },
               {
                 id: 'denimWeight',
                 label: 'Denim Weight',
                 type: 'select',
-                options: ['9-11 oz (Lightweight)', '12-13 oz (Standard)', '14+ oz (Heavyweight Rigid)'],
+                options: [
+                  '9-11 oz (Lightweight)',
+                  '12-13 oz (Standard)',
+                  '14+ oz (Heavyweight Rigid)',
+                ],
                 group: 'Fabric & Material',
               },
               {
@@ -659,7 +740,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'distressed',
                 label: 'Distressed',
                 type: 'select',
-                options: ['Clean Look (Non-Distressed)', 'Mildly Distressed', 'Heavily Distressed / Ripped'],
+                options: [
+                  'Clean Look (Non-Distressed)',
+                  'Mildly Distressed',
+                  'Heavily Distressed / Ripped',
+                ],
                 group: 'Styling & Fit',
               },
               {
@@ -695,7 +780,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'waistType',
                 label: 'Waist Type',
                 type: 'select',
-                options: ['Fixed Button Waistband', 'Extended Tab Waistband', 'Elasticated Back Waistband'],
+                options: [
+                  'Fixed Button Waistband',
+                  'Extended Tab Waistband',
+                  'Elasticated Back Waistband',
+                ],
                 group: 'Styling & Fit',
               },
               {
@@ -850,7 +939,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pocketType',
                 label: 'Pocket Type',
                 type: 'select',
-                options: ['Gusseted Cargo Flap Pockets', 'Velcro Patch Pockets', 'Zippered Utility Pockets'],
+                options: [
+                  'Gusseted Cargo Flap Pockets',
+                  'Velcro Patch Pockets',
+                  'Zippered Utility Pockets',
+                ],
                 group: 'Styling & Fit',
               },
               {
@@ -945,7 +1038,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Polyester Dry-Fit', 'Cotton Fleece', 'Poly-Cotton Interlock', 'Nylon Taslan'],
+                options: [
+                  'Polyester Dry-Fit',
+                  'Cotton Fleece',
+                  'Poly-Cotton Interlock',
+                  'Nylon Taslan',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -974,7 +1072,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pattern',
                 label: 'Pattern',
                 type: 'select',
-                options: ['Solid with Side Stripes', 'Solid Plain', 'Colourblocked', 'Reflective Detail'],
+                options: [
+                  'Solid with Side Stripes',
+                  'Solid Plain',
+                  'Colourblocked',
+                  'Reflective Detail',
+                ],
                 group: 'Styling & Fit',
               },
             ],
@@ -999,7 +1102,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'kurtaType',
                 label: 'Kurta Type',
                 type: 'select',
-                options: ['Short Kurta', 'Long Knee-Length Kurta', 'Pathani Kurta', 'Asymmetric Hem Kurta', 'Angrakha Kurta'],
+                options: [
+                  'Short Kurta',
+                  'Long Knee-Length Kurta',
+                  'Pathani Kurta',
+                  'Asymmetric Hem Kurta',
+                  'Angrakha Kurta',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -1015,7 +1124,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Pure Cotton', 'Linen', 'Cotton Silk', 'Art Silk', 'Jacquard Silk', 'Chanderi Silk'],
+                options: [
+                  'Pure Cotton',
+                  'Linen',
+                  'Cotton Silk',
+                  'Art Silk',
+                  'Jacquard Silk',
+                  'Chanderi Silk',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -1023,7 +1139,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pattern',
                 label: 'Pattern',
                 type: 'select',
-                options: ['Solid', 'Embroidered', 'Floral Printed', 'Ikat', 'Bandhani', 'Chikankari'],
+                options: [
+                  'Solid',
+                  'Embroidered',
+                  'Floral Printed',
+                  'Ikat',
+                  'Bandhani',
+                  'Chikankari',
+                ],
                 group: 'Styling & Fit',
               },
               {
@@ -1053,7 +1176,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'embroidery',
                 label: 'Embroidery',
                 type: 'select',
-                options: ['Lucknowi Chikankari', 'Zari Thread Work', 'Mirror Work', 'Minimal Neck Embroidery', 'None (Plain)'],
+                options: [
+                  'Lucknowi Chikankari',
+                  'Zari Thread Work',
+                  'Mirror Work',
+                  'Minimal Neck Embroidery',
+                  'None (Plain)',
+                ],
                 group: 'Details & Work',
               },
               {
@@ -1074,7 +1203,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'setIncludes',
                 label: 'Set Includes',
                 type: 'select',
-                options: ['Kurta + Pyjama', 'Kurta + Churidar', 'Kurta + Dhoti', 'Kurta + Pyjama + Nehru Jacket (3 Pcs)'],
+                options: [
+                  'Kurta + Pyjama',
+                  'Kurta + Churidar',
+                  'Kurta + Dhoti',
+                  'Kurta + Pyjama + Nehru Jacket (3 Pcs)',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -1082,7 +1216,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'kurtaFabric',
                 label: 'Kurta Fabric',
                 type: 'select',
-                options: ['Cotton Silk', 'Pure Silk', 'Jacquard', 'Chanderi', 'Georgette with Lining'],
+                options: [
+                  'Cotton Silk',
+                  'Pure Silk',
+                  'Jacquard',
+                  'Chanderi',
+                  'Georgette with Lining',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -1113,7 +1253,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'embroidery',
                 label: 'Embroidery',
                 type: 'select',
-                options: ['Zari Borders', 'Heavy Neck Work', 'Sequin Highlights', 'Minimal Thread Work'],
+                options: [
+                  'Zari Borders',
+                  'Heavy Neck Work',
+                  'Sequin Highlights',
+                  'Minimal Thread Work',
+                ],
                 group: 'Details & Work',
               },
               {
@@ -1134,7 +1279,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'sherwaniType',
                 label: 'Sherwani Type',
                 type: 'select',
-                options: ['Achkan Sherwani', 'Indo-Western Sherwani', 'Jodhpuri Bandhgala', 'Anarkali Flare Sherwani'],
+                options: [
+                  'Achkan Sherwani',
+                  'Indo-Western Sherwani',
+                  'Jodhpuri Bandhgala',
+                  'Anarkali Flare Sherwani',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -1150,7 +1300,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'embroidery',
                 label: 'Embroidery',
                 type: 'select',
-                options: ['Zardozi Work', 'Hand Thread Embroidery', 'Pearl & Bead Embellishment', 'Zari Jaal Work'],
+                options: [
+                  'Zardozi Work',
+                  'Hand Thread Embroidery',
+                  'Pearl & Bead Embellishment',
+                  'Zari Jaal Work',
+                ],
                 group: 'Details & Work',
               },
               {
@@ -1171,7 +1326,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'setIncludes',
                 label: 'Set Includes',
                 type: 'select',
-                options: ['Sherwani + Churidar', 'Sherwani + Churidar + Stole / Dupatta', 'Complete 4 Pcs Ensemble'],
+                options: [
+                  'Sherwani + Churidar',
+                  'Sherwani + Churidar + Stole / Dupatta',
+                  'Complete 4 Pcs Ensemble',
+                ],
                 group: 'Specifications',
               },
               {
@@ -1192,7 +1351,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Raw Silk', 'Matka Silk', 'Linen', 'Cotton Silk', 'Tweed / Wool Blend', 'Velvet'],
+                options: [
+                  'Raw Silk',
+                  'Matka Silk',
+                  'Linen',
+                  'Cotton Silk',
+                  'Tweed / Wool Blend',
+                  'Velvet',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -1215,7 +1381,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'embroidery',
                 label: 'Embroidery',
                 type: 'select',
-                options: ['Pocket Square Embroidery', 'Zari Button Loops', 'Minimal Chest Work', 'Plain Non-Embroidered'],
+                options: [
+                  'Pocket Square Embroidery',
+                  'Zari Button Loops',
+                  'Minimal Chest Work',
+                  'Plain Non-Embroidered',
+                ],
                 group: 'Details & Work',
               },
               {
@@ -1278,7 +1449,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['100% Giza Cotton', 'Fine Poplin', 'Oxford Weave', 'Twill Suiting Cotton', 'Linen'],
+                options: [
+                  '100% Giza Cotton',
+                  'Fine Poplin',
+                  'Oxford Weave',
+                  'Twill Suiting Cotton',
+                  'Linen',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -1352,7 +1529,10 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'closure',
                 label: 'Closure',
                 type: 'select',
-                options: ['Extended Waistband Tab with Hook & Bar and Zip', 'Standard Button & Zip'],
+                options: [
+                  'Extended Waistband Tab with Hook & Bar and Zip',
+                  'Standard Button & Zip',
+                ],
                 group: 'Styling & Fit',
               },
             ],
@@ -1382,7 +1562,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Wool Blend', 'Velvet', 'Linen Blend', 'Textured Tweed', 'Poly-Viscose Suiting'],
+                options: [
+                  'Wool Blend',
+                  'Velvet',
+                  'Linen Blend',
+                  'Textured Tweed',
+                  'Poly-Viscose Suiting',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -1404,7 +1590,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pockets',
                 label: 'Pockets',
                 type: 'select',
-                options: ['Flap Pockets with Chest Pocket', 'Ticket Pocket Detail', 'Jetted Pockets'],
+                options: [
+                  'Flap Pockets with Chest Pocket',
+                  'Ticket Pocket Detail',
+                  'Jetted Pockets',
+                ],
                 group: 'Styling & Fit',
               },
               {
@@ -1432,7 +1622,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'suitType',
                 label: 'Suit Type',
                 type: 'select',
-                options: ['2-Piece Suit (Blazer + Trouser)', '3-Piece Suit (Blazer + Vest + Trouser)', 'Tuxedo Suit'],
+                options: [
+                  '2-Piece Suit (Blazer + Trouser)',
+                  '3-Piece Suit (Blazer + Vest + Trouser)',
+                  'Tuxedo Suit',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -1508,7 +1702,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'productType',
                 label: 'Product Type',
                 type: 'select',
-                options: ['Gym T-Shirt', 'Compression Top', 'Training Shorts', 'Track Pant', 'Tracksuit Set', 'Running Jacket'],
+                options: [
+                  'Gym T-Shirt',
+                  'Compression Top',
+                  'Training Shorts',
+                  'Track Pant',
+                  'Tracksuit Set',
+                  'Running Jacket',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -1516,7 +1717,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'activity',
                 label: 'Activity',
                 type: 'select',
-                options: ['Gym & Weightlifting', 'Running & Jogging', 'Yoga & Training', 'Outdoor Sports'],
+                options: [
+                  'Gym & Weightlifting',
+                  'Running & Jogging',
+                  'Yoga & Training',
+                  'Outdoor Sports',
+                ],
                 required: true,
                 group: 'Care & Details',
               },
@@ -1600,7 +1806,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'walletType',
                 label: 'Wallet Type',
                 type: 'select',
-                options: ['Bi-Fold Wallet', 'Tri-Fold Wallet', 'Slim Card Holder', 'Travel Wallet / Passport Case', 'Money Clip Wallet'],
+                options: [
+                  'Bi-Fold Wallet',
+                  'Tri-Fold Wallet',
+                  'Slim Card Holder',
+                  'Travel Wallet / Passport Case',
+                  'Money Clip Wallet',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -1608,7 +1820,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'material',
                 label: 'Material',
                 type: 'select',
-                options: ['Genuine Top-Grain Leather', 'Full-Grain Leather', 'Faux Leather / PU', 'Canvas / Nylon'],
+                options: [
+                  'Genuine Top-Grain Leather',
+                  'Full-Grain Leather',
+                  'Faux Leather / PU',
+                  'Canvas / Nylon',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -1623,7 +1840,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'numberOfCompartments',
                 label: 'Number of Compartments',
                 type: 'select',
-                options: ['2 Full Currency Compartments', '1 Currency Compartment', 'Hidden Secret Compartment'],
+                options: [
+                  '2 Full Currency Compartments',
+                  '1 Currency Compartment',
+                  'Hidden Secret Compartment',
+                ],
                 group: 'Specifications',
               },
               {
@@ -1658,7 +1879,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'beltType',
                 label: 'Belt Type',
                 type: 'select',
-                options: ['Formal Dress Belt', 'Casual Belt', 'Reversible (Black/Brown)', 'Braided / Woven Belt'],
+                options: [
+                  'Formal Dress Belt',
+                  'Casual Belt',
+                  'Reversible (Black/Brown)',
+                  'Braided / Woven Belt',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -1666,7 +1892,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'material',
                 label: 'Material',
                 type: 'select',
-                options: ['Genuine Buffalo Leather', 'Full Grain Leather', 'Synthetic Leather / PU', 'Canvas Webbing'],
+                options: [
+                  'Genuine Buffalo Leather',
+                  'Full Grain Leather',
+                  'Synthetic Leather / PU',
+                  'Canvas Webbing',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -1674,7 +1905,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'buckleType',
                 label: 'Buckle Type',
                 type: 'select',
-                options: ['Single Prong Pin Buckle', 'Automatic Ratchet Buckle', 'Plate Buckle', 'Reversible Twist Buckle'],
+                options: [
+                  'Single Prong Pin Buckle',
+                  'Automatic Ratchet Buckle',
+                  'Plate Buckle',
+                  'Reversible Twist Buckle',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -1703,7 +1939,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'watchType',
                 label: 'Watch Type',
                 type: 'select',
-                options: ['Chronograph', 'Analog Classic', 'Minimalist Dress Watch', 'Automatic Skeleton', 'Digital Sports'],
+                options: [
+                  'Chronograph',
+                  'Analog Classic',
+                  'Minimalist Dress Watch',
+                  'Automatic Skeleton',
+                  'Digital Sports',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -1711,7 +1953,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'movement',
                 label: 'Movement',
                 type: 'select',
-                options: ['Japanese Quartz Movement', 'Automatic Self-Winding', 'Mechanical Hand-Wound', 'Digital Quartz'],
+                options: [
+                  'Japanese Quartz Movement',
+                  'Automatic Self-Winding',
+                  'Mechanical Hand-Wound',
+                  'Digital Quartz',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -1734,7 +1981,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'strapMaterial',
                 label: 'Strap Material',
                 type: 'select',
-                options: ['Stainless Steel Link Bracelet', 'Genuine Leather Strap', 'Silicone / Rubber', 'Mesh Milanese'],
+                options: [
+                  'Stainless Steel Link Bracelet',
+                  'Genuine Leather Strap',
+                  'Silicone / Rubber',
+                  'Mesh Milanese',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -1749,7 +2001,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'waterResistance',
                 label: 'Water Resistance',
                 type: 'select',
-                options: ['30m (Splash Resistant 3 ATM)', '50m (5 ATM)', '100m (10 ATM)', 'Non-Waterproof'],
+                options: [
+                  '30m (Splash Resistant 3 ATM)',
+                  '50m (5 ATM)',
+                  '100m (10 ATM)',
+                  'Non-Waterproof',
+                ],
                 group: 'Specifications',
               },
               {
@@ -1777,7 +2034,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'frameShape',
                 label: 'Frame Shape',
                 type: 'select',
-                options: ['Aviator', 'Wayfarer', 'Clubmaster / Browline', 'Round', 'Hexagonal', 'Rectangular'],
+                options: [
+                  'Aviator',
+                  'Wayfarer',
+                  'Clubmaster / Browline',
+                  'Round',
+                  'Hexagonal',
+                  'Rectangular',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -1785,7 +2049,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'frameMaterial',
                 label: 'Frame Material',
                 type: 'select',
-                options: ['Metal / Stainless Steel', 'Acetate', 'Polycarbonate', 'TR90 Ultra Light'],
+                options: [
+                  'Metal / Stainless Steel',
+                  'Acetate',
+                  'Polycarbonate',
+                  'TR90 Ultra Light',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -1793,14 +2062,25 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'lensColor',
                 label: 'Lens Color',
                 type: 'select',
-                options: ['Black / Smoke', 'Brown / Amber', 'Green (G-15)', 'Blue Mirror', 'Silver Mirror'],
+                options: [
+                  'Black / Smoke',
+                  'Brown / Amber',
+                  'Green (G-15)',
+                  'Blue Mirror',
+                  'Silver Mirror',
+                ],
                 group: 'Styling & Fit',
               },
               {
                 id: 'lensType',
                 label: 'Lens Type',
                 type: 'select',
-                options: ['Polarized Anti-Glare', 'UV400 Protective', 'Gradient Tinted', 'Mirrored'],
+                options: [
+                  'Polarized Anti-Glare',
+                  'UV400 Protective',
+                  'Gradient Tinted',
+                  'Mirrored',
+                ],
                 group: 'Specifications',
               },
               {
@@ -1846,7 +2126,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'type',
                 label: 'Type',
                 type: 'select',
-                options: ['Boxer Briefs / Trunks', 'Classic Briefs', 'Boxers (Woven Lounge)', 'Low Rise Trunks'],
+                options: [
+                  'Boxer Briefs / Trunks',
+                  'Classic Briefs',
+                  'Boxers (Woven Lounge)',
+                  'Low Rise Trunks',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -1854,7 +2139,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['100% Combed Cotton', 'Modal Fabric', 'Bamboo Cotton', 'MicroModal with Elastane'],
+                options: [
+                  '100% Combed Cotton',
+                  'Modal Fabric',
+                  'Bamboo Cotton',
+                  'MicroModal with Elastane',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -1869,7 +2159,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'waistband',
                 label: 'Waistband',
                 type: 'select',
-                options: ['Ultra-Soft Microfiber Waistband', 'Outer Encased Elastic', 'Logo Jacquard Elastic'],
+                options: [
+                  'Ultra-Soft Microfiber Waistband',
+                  'Outer Encased Elastic',
+                  'Logo Jacquard Elastic',
+                ],
                 group: 'Styling & Fit',
               },
               {
@@ -1936,7 +2230,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'length',
                 label: 'Length',
                 type: 'select',
-                options: ['No-Show / Loafer Socks', 'Ankle Length', 'Crew Length', 'Mid-Calf Formal'],
+                options: [
+                  'No-Show / Loafer Socks',
+                  'Ankle Length',
+                  'Crew Length',
+                  'Mid-Calf Formal',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -1974,7 +2273,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'type',
                 label: 'Type',
                 type: 'select',
-                options: ['Thermal Top (Full Sleeve)', 'Thermal Bottom / Long John', 'Complete Set (Top + Bottom)'],
+                options: [
+                  'Thermal Top (Full Sleeve)',
+                  'Thermal Bottom / Long John',
+                  'Complete Set (Top + Bottom)',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -1982,7 +2285,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Poly-Cotton Rib with Fleece Inside', 'Merino Wool Blend', 'Heattech Thermal Knit'],
+                options: [
+                  'Poly-Cotton Rib with Fleece Inside',
+                  'Merino Wool Blend',
+                  'Heattech Thermal Knit',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -2040,7 +2347,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'kurtaType',
                 label: 'Kurta Type',
                 type: 'select',
-                options: ['Straight Kurta', 'Anarkali Kurta', 'A-Line Kurta', 'Angrakha', 'Flared Hem', 'Kaftan Kurta'],
+                options: [
+                  'Straight Kurta',
+                  'Anarkali Kurta',
+                  'A-Line Kurta',
+                  'Angrakha',
+                  'Flared Hem',
+                  'Kaftan Kurta',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2056,7 +2370,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Pure Cotton', 'Chanderi Silk', 'Georgette', 'Viscose Rayon', 'Silk Blend', 'Muslin'],
+                options: [
+                  'Pure Cotton',
+                  'Chanderi Silk',
+                  'Georgette',
+                  'Viscose Rayon',
+                  'Silk Blend',
+                  'Muslin',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -2064,7 +2385,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'neck',
                 label: 'Neck',
                 type: 'select',
-                options: ['Round Neck with Slit', 'V-Neck', 'Sweetheart Neck', 'Mandarin Collar', 'Boat Neck', 'Keyhole Neck'],
+                options: [
+                  'Round Neck with Slit',
+                  'V-Neck',
+                  'Sweetheart Neck',
+                  'Mandarin Collar',
+                  'Boat Neck',
+                  'Keyhole Neck',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2072,7 +2400,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'sleeve',
                 label: 'Sleeve',
                 type: 'select',
-                options: ['3/4th Sleeve', 'Full Sleeve', 'Sleeveless', 'Elbow Sleeve', 'Bell Sleeve'],
+                options: [
+                  '3/4th Sleeve',
+                  'Full Sleeve',
+                  'Sleeveless',
+                  'Elbow Sleeve',
+                  'Bell Sleeve',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2080,14 +2414,29 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pattern',
                 label: 'Pattern',
                 type: 'select',
-                options: ['Floral Print', 'Solid', 'Gold Foil Print', 'Kalamkari', 'Bandhani', 'Chikankari', 'Ikat'],
+                options: [
+                  'Floral Print',
+                  'Solid',
+                  'Gold Foil Print',
+                  'Kalamkari',
+                  'Bandhani',
+                  'Chikankari',
+                  'Ikat',
+                ],
                 group: 'Styling & Fit',
               },
               {
                 id: 'embroidery',
                 label: 'Embroidery',
                 type: 'select',
-                options: ['Lucknowi Thread Work', 'Gota Patti', 'Mirror Work', 'Zardozi', 'Resham Thread', 'None (Plain)'],
+                options: [
+                  'Lucknowi Thread Work',
+                  'Gota Patti',
+                  'Mirror Work',
+                  'Zardozi',
+                  'Resham Thread',
+                  'None (Plain)',
+                ],
                 group: 'Details & Work',
               },
               {
@@ -2128,7 +2477,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Chanderi Silk', 'Pure Cotton', 'Georgette with Crepe Lining', 'Viscose Rayon', 'Organza'],
+                options: [
+                  'Chanderi Silk',
+                  'Pure Cotton',
+                  'Georgette with Crepe Lining',
+                  'Viscose Rayon',
+                  'Organza',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -2144,14 +2499,25 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pattern',
                 label: 'Pattern',
                 type: 'select',
-                options: ['Floral Printed', 'Jaal Embroidery', 'Bandhej', 'Block Print', 'Jacquard'],
+                options: [
+                  'Floral Printed',
+                  'Jaal Embroidery',
+                  'Bandhej',
+                  'Block Print',
+                  'Jacquard',
+                ],
                 group: 'Styling & Fit',
               },
               {
                 id: 'embroidery',
                 label: 'Embroidery',
                 type: 'select',
-                options: ['Gota Patti Border', 'Zari Work', 'Heavy Yoke Handwork', 'Mirror Embroidery'],
+                options: [
+                  'Gota Patti Border',
+                  'Zari Work',
+                  'Heavy Yoke Handwork',
+                  'Mirror Embroidery',
+                ],
                 group: 'Details & Work',
               },
               {
@@ -2165,7 +2531,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'bottomType',
                 label: 'Bottom Type',
                 type: 'select',
-                options: ['Straight Pants', 'Flared Palazzo', 'Gathered Sharara', 'Salwar', 'Dhoti Pants'],
+                options: [
+                  'Straight Pants',
+                  'Flared Palazzo',
+                  'Gathered Sharara',
+                  'Salwar',
+                  'Dhoti Pants',
+                ],
                 group: 'Styling & Fit',
               },
             ],
@@ -2195,7 +2567,15 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Pure Banarasi Katan Silk', 'Art Silk', 'Chiffon', 'Georgette', 'Pure Linen', 'Organza', 'Tussar Silk'],
+                options: [
+                  'Pure Banarasi Katan Silk',
+                  'Art Silk',
+                  'Chiffon',
+                  'Georgette',
+                  'Pure Linen',
+                  'Organza',
+                  'Tussar Silk',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -2210,7 +2590,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'blouseIncluded',
                 label: 'Blouse Included',
                 type: 'select',
-                options: ['Unstitched Blouse Piece Included', 'Stitched Blouse Included', 'Blouse Not Included'],
+                options: [
+                  'Unstitched Blouse Piece Included',
+                  'Stitched Blouse Included',
+                  'Blouse Not Included',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -2225,28 +2609,49 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pattern',
                 label: 'Pattern',
                 type: 'select',
-                options: ['Woven Zari Motif', 'Floral Jaal', 'Solid with Heavy Border', 'Digital Floral Print', 'Bandhani'],
+                options: [
+                  'Woven Zari Motif',
+                  'Floral Jaal',
+                  'Solid with Heavy Border',
+                  'Digital Floral Print',
+                  'Bandhani',
+                ],
                 group: 'Styling & Fit',
               },
               {
                 id: 'border',
                 label: 'Border',
                 type: 'select',
-                options: ['Zari Woven Border', 'Embroidered Cutwork Border', 'Temple Border', 'Scalloped Border'],
+                options: [
+                  'Zari Woven Border',
+                  'Embroidered Cutwork Border',
+                  'Temple Border',
+                  'Scalloped Border',
+                ],
                 group: 'Details & Work',
               },
               {
                 id: 'embroidery',
                 label: 'Embroidery',
                 type: 'select',
-                options: ['Real Zari Woven', 'Hand Embroidered Resham', 'Stone / Moti Work', 'None (Woven Brocade)'],
+                options: [
+                  'Real Zari Woven',
+                  'Hand Embroidered Resham',
+                  'Stone / Moti Work',
+                  'None (Woven Brocade)',
+                ],
                 group: 'Details & Work',
               },
               {
                 id: 'occasion',
                 label: 'Occasion',
                 type: 'select',
-                options: ['Wedding & Bridal', 'Festive Puja', 'Traditional Ethnic', 'Evening Party'],
+                options: [
+                  'Wedding & Bridal',
+                  'Festive Puja',
+                  'Traditional Ethnic',
+                  'Evening Party',
+                ],
                 group: 'Care & Details',
               },
             ],
@@ -2260,7 +2665,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'lehengaType',
                 label: 'Lehenga Type',
                 type: 'select',
-                options: ['Circular / Flared Lehenga', 'A-Line Lehenga', 'Mermaid / Fishtail', 'Jacket Lehenga'],
+                options: [
+                  'Circular / Flared Lehenga',
+                  'A-Line Lehenga',
+                  'Mermaid / Fishtail',
+                  'Jacket Lehenga',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2268,7 +2678,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Velvet', 'Heavy Georgette', 'Raw Silk', 'Organza', 'Net with Satin Lining', 'Banarasi Brocade'],
+                options: [
+                  'Velvet',
+                  'Heavy Georgette',
+                  'Raw Silk',
+                  'Organza',
+                  'Net with Satin Lining',
+                  'Banarasi Brocade',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -2276,7 +2693,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'blouseFabric',
                 label: 'Blouse Fabric',
                 type: 'select',
-                options: ['Raw Silk', 'Velvet', 'Heavy Embroidered Georgette', 'Matching Lehenga Fabric'],
+                options: [
+                  'Raw Silk',
+                  'Velvet',
+                  'Heavy Embroidered Georgette',
+                  'Matching Lehenga Fabric',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -2291,7 +2713,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'embroidery',
                 label: 'Embroidery',
                 type: 'select',
-                options: ['Zardozi', 'Dori & Sequin Work', 'Mirror Work', 'Thread Embroidery', 'Hand Karigari'],
+                options: [
+                  'Zardozi',
+                  'Dori & Sequin Work',
+                  'Mirror Work',
+                  'Thread Embroidery',
+                  'Hand Karigari',
+                ],
                 group: 'Details & Work',
               },
               {
@@ -2334,7 +2762,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'neck',
                 label: 'Neck',
                 type: 'select',
-                options: ['Round Neck', 'V-Neck', 'Square Neck', 'Off-Shoulder', 'Sweetheart', 'Halter Neck'],
+                options: [
+                  'Round Neck',
+                  'V-Neck',
+                  'Square Neck',
+                  'Off-Shoulder',
+                  'Sweetheart',
+                  'Halter Neck',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2342,7 +2777,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'sleeve',
                 label: 'Sleeve',
                 type: 'select',
-                options: ['Short Sleeve', 'Puff Sleeve', 'Full Sleeve', 'Sleeveless', 'Ruffle Sleeve'],
+                options: [
+                  'Short Sleeve',
+                  'Puff Sleeve',
+                  'Full Sleeve',
+                  'Sleeveless',
+                  'Ruffle Sleeve',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2357,7 +2798,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pattern',
                 label: 'Pattern',
                 type: 'select',
-                options: ['Solid', 'Floral Print', 'Striped', 'Polka Dot', 'Abstract', 'Graphic Print'],
+                options: [
+                  'Solid',
+                  'Floral Print',
+                  'Striped',
+                  'Polka Dot',
+                  'Abstract',
+                  'Graphic Print',
+                ],
                 group: 'Styling & Fit',
               },
               {
@@ -2393,7 +2841,16 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'dressType',
                 label: 'Dress Type',
                 type: 'select',
-                options: ['Maxi Dress', 'Midi Dress', 'Mini / Short Dress', 'Bodycon Dress', 'A-Line Dress', 'Wrap Dress', 'Fit & Flare', 'Shirt Dress'],
+                options: [
+                  'Maxi Dress',
+                  'Midi Dress',
+                  'Mini / Short Dress',
+                  'Bodycon Dress',
+                  'A-Line Dress',
+                  'Wrap Dress',
+                  'Fit & Flare',
+                  'Shirt Dress',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2409,7 +2866,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'length',
                 label: 'Length',
                 type: 'select',
-                options: ['Maxi (Ankle Length)', 'Midi (Calf Length)', 'Mini (Above Knee)', 'Knee Length'],
+                options: [
+                  'Maxi (Ankle Length)',
+                  'Midi (Calf Length)',
+                  'Mini (Above Knee)',
+                  'Knee Length',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2417,7 +2879,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'neck',
                 label: 'Neck',
                 type: 'select',
-                options: ['V-Neck', 'Square Neck', 'Round Neck', 'Sweetheart', 'Cowl Neck', 'Off-Shoulder'],
+                options: [
+                  'V-Neck',
+                  'Square Neck',
+                  'Round Neck',
+                  'Sweetheart',
+                  'Cowl Neck',
+                  'Off-Shoulder',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2425,7 +2894,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'sleeve',
                 label: 'Sleeve',
                 type: 'select',
-                options: ['Sleeveless', 'Puff Sleeve', 'Short Sleeve', 'Full Bishop Sleeve', 'Strappy / Spaghetti'],
+                options: [
+                  'Sleeveless',
+                  'Puff Sleeve',
+                  'Short Sleeve',
+                  'Full Bishop Sleeve',
+                  'Strappy / Spaghetti',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2433,7 +2908,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Georgette with Lining', 'Cotton Poplin', 'Viscose Rayon', 'Satin', 'Linen Blend', 'Velvet'],
+                options: [
+                  'Georgette with Lining',
+                  'Cotton Poplin',
+                  'Viscose Rayon',
+                  'Satin',
+                  'Linen Blend',
+                  'Velvet',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -2441,21 +2923,37 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pattern',
                 label: 'Pattern',
                 type: 'select',
-                options: ['Floral Print', 'Solid', 'Polka Dot', 'Marble / Abstract', 'Animal Print'],
+                options: [
+                  'Floral Print',
+                  'Solid',
+                  'Polka Dot',
+                  'Marble / Abstract',
+                  'Animal Print',
+                ],
                 group: 'Styling & Fit',
               },
               {
                 id: 'waistType',
                 label: 'Waist Type',
                 type: 'select',
-                options: ['Elasticated Smocked Waist', 'Tie-Up Belt Waist', 'High Empire Waist', 'Fitted Band'],
+                options: [
+                  'Elasticated Smocked Waist',
+                  'Tie-Up Belt Waist',
+                  'High Empire Waist',
+                  'Fitted Band',
+                ],
                 group: 'Styling & Fit',
               },
               {
                 id: 'occasion',
                 label: 'Occasion',
                 type: 'select',
-                options: ['Casual Outing', 'Date Night', 'Beach & Vacation', 'Formal Cocktail Party'],
+                options: [
+                  'Casual Outing',
+                  'Date Night',
+                  'Beach & Vacation',
+                  'Formal Cocktail Party',
+                ],
                 group: 'Care & Details',
               },
             ],
@@ -2537,7 +3035,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'skirtType',
                 label: 'Skirt Type',
                 type: 'select',
-                options: ['Pleated Midi Skirt', 'A-Line Skirt', 'Pencil Skirt', 'Tiered Maxi Skirt', 'Wrap Skirt'],
+                options: [
+                  'Pleated Midi Skirt',
+                  'A-Line Skirt',
+                  'Pencil Skirt',
+                  'Tiered Maxi Skirt',
+                  'Wrap Skirt',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2680,7 +3184,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'productType',
                 label: 'Product Type',
                 type: 'select',
-                options: ['Sports Bra', 'High-Waist Leggings', 'Gym Crop Top', 'Active T-Shirt', '2-Piece Workout Set'],
+                options: [
+                  'Sports Bra',
+                  'High-Waist Leggings',
+                  'Gym Crop Top',
+                  'Active T-Shirt',
+                  '2-Piece Workout Set',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2696,7 +3206,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Nylon-Spandex (Butter Soft)', 'Poly-Spandex Interlock', 'Dry-Fit Microfibre'],
+                options: [
+                  'Nylon-Spandex (Butter Soft)',
+                  'Poly-Spandex Interlock',
+                  'Dry-Fit Microfibre',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -2764,7 +3278,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'productType',
                 label: 'Product Type',
                 type: 'select',
-                options: ['Pyjama Set (Top + Bottom)', 'Nighty / Nightdress', 'Satin Robe & Slip Set', 'Shorts Set'],
+                options: [
+                  'Pyjama Set (Top + Bottom)',
+                  'Nighty / Nightdress',
+                  'Satin Robe & Slip Set',
+                  'Shorts Set',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2772,14 +3291,23 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'setIncludes',
                 label: 'Set Includes',
                 type: 'select',
-                options: ['2 Pieces (Shirt + Pyjama)', '1 Piece (Nightdress)', '3 Pieces (with Robe)'],
+                options: [
+                  '2 Pieces (Shirt + Pyjama)',
+                  '1 Piece (Nightdress)',
+                  '3 Pieces (with Robe)',
+                ],
                 group: 'Specifications',
               },
               {
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['100% Breathable Cotton', 'Soft Satin Silk', 'Modal Knit', 'Hosiery Cotton'],
+                options: [
+                  '100% Breathable Cotton',
+                  'Soft Satin Silk',
+                  'Modal Knit',
+                  'Hosiery Cotton',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -2840,7 +3368,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'productType',
                 label: 'Product Type',
                 type: 'select',
-                options: ['Feeding Kurta', 'Maternity Maxi Dress', 'Nursing Top', 'Maternity Leggings / Overbelly Pants'],
+                options: [
+                  'Feeding Kurta',
+                  'Maternity Maxi Dress',
+                  'Nursing Top',
+                  'Maternity Leggings / Overbelly Pants',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -2848,7 +3381,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'maternityStage',
                 label: 'Maternity Stage',
                 type: 'select',
-                options: ['All Trimesters & Postpartum Nursing', 'Pre-Natal Pregnancy', 'Post-Natal Nursing'],
+                options: [
+                  'All Trimesters & Postpartum Nursing',
+                  'Pre-Natal Pregnancy',
+                  'Post-Natal Nursing',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -2879,7 +3416,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'feedingFriendly',
                 label: 'Feeding Friendly',
                 type: 'select',
-                options: ['Yes - Concealed Dual Zippers', 'Yes - Front Button Placket', 'Yes - Wrap Nursing Flap', 'Non-Feeding Maternity'],
+                options: [
+                  'Yes - Concealed Dual Zippers',
+                  'Yes - Front Button Placket',
+                  'Yes - Wrap Nursing Flap',
+                  'Non-Feeding Maternity',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -2926,7 +3468,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'bagType',
                 label: 'Bag Type',
                 type: 'select',
-                options: ['Shoulder Tote Bag', 'Satchel', 'Structured Handbag', 'Hobo Bag', 'Laptop Handbag'],
+                options: [
+                  'Shoulder Tote Bag',
+                  'Satchel',
+                  'Structured Handbag',
+                  'Hobo Bag',
+                  'Laptop Handbag',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -2934,7 +3482,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'material',
                 label: 'Material',
                 type: 'select',
-                options: ['Genuine Leather', 'Premium Vegan Leather / PU', 'Canvas', 'Jute Handcrafted'],
+                options: [
+                  'Genuine Leather',
+                  'Premium Vegan Leather / PU',
+                  'Canvas',
+                  'Jute Handcrafted',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -2949,7 +3502,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'numberOfCompartments',
                 label: 'Number of Compartments',
                 type: 'select',
-                options: ['2 Main Compartments', '3 Compartments with Center Zip', '1 Spacious Compartment'],
+                options: [
+                  '2 Main Compartments',
+                  '3 Compartments with Center Zip',
+                  '1 Spacious Compartment',
+                ],
                 group: 'Specifications',
               },
               {
@@ -2970,7 +3527,10 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'strapType',
                 label: 'Strap Type',
                 type: 'select',
-                options: ['Double Handbag Straps + Detachable Crossbody Strap', 'Wide Shoulder Strap'],
+                options: [
+                  'Double Handbag Straps + Detachable Crossbody Strap',
+                  'Wide Shoulder Strap',
+                ],
                 group: 'Specifications',
               },
               {
@@ -2998,7 +3558,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'material',
                 label: 'Material',
                 type: 'select',
-                options: ['Vegan Leather / PU', 'Quilted Faux Leather', 'Jacquard Canvas', 'Velvet'],
+                options: [
+                  'Vegan Leather / PU',
+                  'Quilted Faux Leather',
+                  'Jacquard Canvas',
+                  'Velvet',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -3013,7 +3578,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'strapType',
                 label: 'Strap Type',
                 type: 'select',
-                options: ['Gold Chain Strap', 'Adjustable Leather Crossbody Strap', 'Wide Webbing Guitar Strap'],
+                options: [
+                  'Gold Chain Strap',
+                  'Adjustable Leather Crossbody Strap',
+                  'Wide Webbing Guitar Strap',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -3072,7 +3641,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'strapMaterial',
                 label: 'Strap Material',
                 type: 'select',
-                options: ['Stainless Steel Link Bracelet', 'Mesh Milanese', 'Genuine Leather', 'Ceramic'],
+                options: [
+                  'Stainless Steel Link Bracelet',
+                  'Mesh Milanese',
+                  'Genuine Leather',
+                  'Ceramic',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -3139,7 +3713,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'plating',
                 label: 'Plating',
                 type: 'select',
-                options: ['18K Gold Plated', '24K Micro Gold Plated', 'Antique Matte Gold', 'Silver Plated', 'Oxidised German Silver'],
+                options: [
+                  '18K Gold Plated',
+                  '24K Micro Gold Plated',
+                  'Antique Matte Gold',
+                  'Silver Plated',
+                  'Oxidised German Silver',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -3147,7 +3727,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'stoneType',
                 label: 'Stone Type',
                 type: 'select',
-                options: ['Kundan & Meenakari', 'CZ American Diamonds', 'Polki Glass Stones', 'Pearls & Beads', 'Semi-Precious Gemstones'],
+                options: [
+                  'Kundan & Meenakari',
+                  'CZ American Diamonds',
+                  'Polki Glass Stones',
+                  'Pearls & Beads',
+                  'Semi-Precious Gemstones',
+                ],
                 group: 'Specifications',
               },
               {
@@ -3186,7 +3772,15 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'braType',
                 label: 'Bra Type',
                 type: 'select',
-                options: ['T-Shirt Bra', 'Push-Up Bra', 'Bralette', 'Sports Bra', 'Strapless / Multiway Bra', 'Minimizer Bra', 'Nursing Bra'],
+                options: [
+                  'T-Shirt Bra',
+                  'Push-Up Bra',
+                  'Bralette',
+                  'Sports Bra',
+                  'Strapless / Multiway Bra',
+                  'Minimizer Bra',
+                  'Nursing Bra',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -3202,7 +3796,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'padding',
                 label: 'Padding',
                 type: 'select',
-                options: ['Padded (Non-Moulded)', 'Lightly Padded', 'Non-Padded (Double Layer)', 'Push-Up Level 1-2'],
+                options: [
+                  'Padded (Non-Moulded)',
+                  'Lightly Padded',
+                  'Non-Padded (Double Layer)',
+                  'Push-Up Level 1-2',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -3218,7 +3817,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'strapType',
                 label: 'Strap Type',
                 type: 'select',
-                options: ['Regular Adjustable Straps', 'Detachable Convertible Straps', 'Crossback / Racerback'],
+                options: [
+                  'Regular Adjustable Straps',
+                  'Detachable Convertible Straps',
+                  'Crossback / Racerback',
+                ],
                 group: 'Specifications',
               },
               {
@@ -3254,7 +3857,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'pantyType',
                 label: 'Panty Type',
                 type: 'select',
-                options: ['Hipster', 'Bikini', 'High Waist Brief', 'Boyshorts', 'Seamless Laser-Cut', 'Thong'],
+                options: [
+                  'Hipster',
+                  'Bikini',
+                  'High Waist Brief',
+                  'Boyshorts',
+                  'Seamless Laser-Cut',
+                  'Thong',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -3277,7 +3887,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['100% Breathable Cotton Gusset', 'Modal Elastane', 'Seamless Microfibre', 'Lace'],
+                options: [
+                  '100% Breathable Cotton Gusset',
+                  'Modal Elastane',
+                  'Seamless Microfibre',
+                  'Lace',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -3353,7 +3968,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'shapewearType',
                 label: 'Shapewear Type',
                 type: 'select',
-                options: ['High-Waist Tummy Tucker', 'Saree Shaper / Silhouette Petticoat', 'Thigh Shaper', 'Full Body Suit'],
+                options: [
+                  'High-Waist Tummy Tucker',
+                  'Saree Shaper / Silhouette Petticoat',
+                  'Thigh Shaper',
+                  'Full Body Suit',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -3369,7 +3989,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'coverage',
                 label: 'Coverage',
                 type: 'select',
-                options: ['High Waist to Mid-Thigh', 'High Waist Brief', 'Ankle Length Saree Shaper (with Slit)'],
+                options: [
+                  'High Waist to Mid-Thigh',
+                  'High Waist Brief',
+                  'Ankle Length Saree Shaper (with Slit)',
+                ],
                 group: 'Styling & Fit',
               },
               {
@@ -3391,7 +4015,10 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'compression',
                 label: 'Compression',
                 type: 'select',
-                options: ['Targeted Zoned Compression (Tummy, Waist & Thighs)', 'Uniform Medium Compression'],
+                options: [
+                  'Targeted Zoned Compression (Tummy, Waist & Thighs)',
+                  'Uniform Medium Compression',
+                ],
                 group: 'Specifications',
               },
             ],
@@ -3440,7 +4067,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'productType',
                 label: 'Product Type',
                 type: 'select',
-                options: ['Romper / Onesie', 'Sleepsuit / Footie', 'Baby Frock', 'Baba Suit (Top + Bottom)', 'Jhabla & Nappy Set'],
+                options: [
+                  'Romper / Onesie',
+                  'Sleepsuit / Footie',
+                  'Baby Frock',
+                  'Baba Suit (Top + Bottom)',
+                  'Jhabla & Nappy Set',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -3455,7 +4088,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['100% Organic Cotton', 'Soft Muslin Cotton', 'Hosiery Cotton', 'Fleece (Winter)'],
+                options: [
+                  '100% Organic Cotton',
+                  'Soft Muslin Cotton',
+                  'Hosiery Cotton',
+                  'Fleece (Winter)',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -3477,7 +4115,11 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'closure',
                 label: 'Closure',
                 type: 'select',
-                options: ['Nickel-Free Snap Buttons at Crotch', 'Envelope Neckline', 'Front Zip with Safety Chin Guard'],
+                options: [
+                  'Nickel-Free Snap Buttons at Crotch',
+                  'Envelope Neckline',
+                  'Front Zip with Safety Chin Guard',
+                ],
                 group: 'Specifications',
               },
               {
@@ -3498,7 +4140,15 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'productType',
                 label: 'Product Type',
                 type: 'select',
-                options: ['Graphic T-Shirt', 'Casual Shirt', 'Denim Jeans', 'Cargo Shorts', 'Track Pants', 'Kurta Set', 'Hoodie'],
+                options: [
+                  'Graphic T-Shirt',
+                  'Casual Shirt',
+                  'Denim Jeans',
+                  'Cargo Shorts',
+                  'Track Pants',
+                  'Kurta Set',
+                  'Hoodie',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -3543,7 +4193,12 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'occasion',
                 label: 'Occasion',
                 type: 'select',
-                options: ['Daily Playwear', 'Party & Birthday', 'Festive Celebration', 'School Outing'],
+                options: [
+                  'Daily Playwear',
+                  'Party & Birthday',
+                  'Festive Celebration',
+                  'School Outing',
+                ],
                 group: 'Care & Details',
               },
             ],
@@ -3557,7 +4212,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'productType',
                 label: 'Product Type',
                 type: 'select',
-                options: ['Frock / Party Dress', 'Top & T-Shirt', 'Skirt Set', 'Jeans & Jeggings', 'Lehenga Set', 'Dungaree'],
+                options: [
+                  'Frock / Party Dress',
+                  'Top & T-Shirt',
+                  'Skirt Set',
+                  'Jeans & Jeggings',
+                  'Lehenga Set',
+                  'Dungaree',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -3631,7 +4293,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'productType',
                 label: 'Product Type',
                 type: 'select',
-                options: ['Oversized Graphic Tee', 'Baggy Cargo Jeans', 'Cropped Hoodie', 'Varsity Jacket', 'Mini Skirt', 'Flared Pants'],
+                options: [
+                  'Oversized Graphic Tee',
+                  'Baggy Cargo Jeans',
+                  'Cropped Hoodie',
+                  'Varsity Jacket',
+                  'Mini Skirt',
+                  'Flared Pants',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -3683,7 +4352,13 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'type',
                 label: 'Type',
                 type: 'select',
-                options: ['Boys Briefs / Trunks', 'Girls Bloomers / Panties', 'Camisoles / Slips', 'Cotton Vests', 'Kids Thermals'],
+                options: [
+                  'Boys Briefs / Trunks',
+                  'Girls Bloomers / Panties',
+                  'Camisoles / Slips',
+                  'Cotton Vests',
+                  'Kids Thermals',
+                ],
                 required: true,
                 group: 'Styling & Fit',
               },
@@ -3714,7 +4389,14 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'ageGroup',
                 label: 'Age Group',
                 type: 'select',
-                options: ['2–4 Years', '4–6 Years', '6–8 Years', '8–10 Years', '10–12 Years', '12–14 Years'],
+                options: [
+                  '2–4 Years',
+                  '4–6 Years',
+                  '6–8 Years',
+                  '8–10 Years',
+                  '10–12 Years',
+                  '12–14 Years',
+                ],
                 required: true,
                 group: 'Specifications',
               },
@@ -3744,14 +4426,23 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
                 id: 'setIncludes',
                 label: 'Set Includes',
                 type: 'select',
-                options: ['Kurta + Pajama', 'Kurta + Pajama + Jacket (3 Pcs)', 'Lehenga + Choli + Dupatta'],
+                options: [
+                  'Kurta + Pajama',
+                  'Kurta + Pajama + Jacket (3 Pcs)',
+                  'Lehenga + Choli + Dupatta',
+                ],
                 group: 'Specifications',
               },
               {
                 id: 'fabric',
                 label: 'Fabric',
                 type: 'select',
-                options: ['Cotton Silk', 'Soft Brocade', 'Georgette with Pure Cotton Lining', 'Chanderi'],
+                options: [
+                  'Cotton Silk',
+                  'Soft Brocade',
+                  'Georgette with Pure Cotton Lining',
+                  'Chanderi',
+                ],
                 required: true,
                 group: 'Fabric & Material',
               },
@@ -3840,19 +4531,29 @@ export function resolveAttributeTemplate(
   if (normalized.includes('short')) {
     return resolveAttributeTemplate(undefined, 'men_shorts');
   }
-  if (normalized.includes('trackpant') || normalized.includes('track_pant') || normalized.includes('track-pant')) {
+  if (
+    normalized.includes('trackpant') ||
+    normalized.includes('track_pant') ||
+    normalized.includes('track-pant')
+  ) {
     return resolveAttributeTemplate(undefined, 'men_track_pants');
   }
   if (normalized.includes('trouser')) {
-    if (normalized.includes('formal')) return resolveAttributeTemplate(undefined, 'men_formal_trousers');
+    if (normalized.includes('formal'))
+      return resolveAttributeTemplate(undefined, 'men_formal_trousers');
     return resolveAttributeTemplate(undefined, 'men_trousers');
   }
-  if (normalized.includes('tshirt') || normalized.includes('t-shirt') || normalized.includes('tee')) {
+  if (
+    normalized.includes('tshirt') ||
+    normalized.includes('t-shirt') ||
+    normalized.includes('tee')
+  ) {
     if (normalized.includes('women')) return resolveAttributeTemplate(undefined, 'women_tops_tees');
     return resolveAttributeTemplate(undefined, 'men_tshirts');
   }
   if (normalized.includes('shirt')) {
-    if (normalized.includes('formal')) return resolveAttributeTemplate(undefined, 'men_formal_shirts');
+    if (normalized.includes('formal'))
+      return resolveAttributeTemplate(undefined, 'men_formal_shirts');
     return resolveAttributeTemplate(undefined, 'men_shirts');
   }
   if (normalized.includes('polo')) {
@@ -3862,7 +4563,8 @@ export function resolveAttributeTemplate(
     return resolveAttributeTemplate(undefined, 'men_hoodies');
   }
   if (normalized.includes('jacket') || normalized.includes('coat')) {
-    if (normalized.includes('nehru')) return resolveAttributeTemplate(undefined, 'men_nehru_jackets');
+    if (normalized.includes('nehru'))
+      return resolveAttributeTemplate(undefined, 'men_nehru_jackets');
     return resolveAttributeTemplate(undefined, 'men_jackets');
   }
   if (normalized.includes('blazer')) {
@@ -3916,7 +4618,11 @@ export function resolveAttributeTemplate(
   if (normalized.includes('maternity') || normalized.includes('feeding')) {
     return resolveAttributeTemplate(undefined, 'women_maternity');
   }
-  if (normalized.includes('sleepwear') || normalized.includes('nighty') || normalized.includes('pyjama')) {
+  if (
+    normalized.includes('sleepwear') ||
+    normalized.includes('nighty') ||
+    normalized.includes('pyjama')
+  ) {
     return resolveAttributeTemplate(undefined, 'women_sleepwear');
   }
   if (normalized.includes('handbag') || normalized.includes('tote')) {
@@ -3941,7 +4647,11 @@ export function resolveAttributeTemplate(
   if (normalized.includes('jewel')) {
     return resolveAttributeTemplate(undefined, 'women_jewellery');
   }
-  if (normalized.includes('baby') || normalized.includes('infant') || normalized.includes('romper')) {
+  if (
+    normalized.includes('baby') ||
+    normalized.includes('infant') ||
+    normalized.includes('romper')
+  ) {
     return resolveAttributeTemplate(undefined, 'kids_baby_clothing');
   }
   if (normalized.includes('boy')) {
@@ -3954,7 +4664,8 @@ export function resolveAttributeTemplate(
     return resolveAttributeTemplate(undefined, 'kids_teens');
   }
   if (normalized.includes('activewear') || normalized.includes('sports')) {
-    if (normalized.includes('women')) return resolveAttributeTemplate(undefined, 'women_activewear');
+    if (normalized.includes('women'))
+      return resolveAttributeTemplate(undefined, 'women_activewear');
     return resolveAttributeTemplate(undefined, 'men_activewear');
   }
 

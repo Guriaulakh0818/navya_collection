@@ -28,7 +28,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { ProtectedRoute } from '@/features/auth/components/protected-route';
 
-const NAVYA_WHATSAPP_NUMBER = '919053883125';
+const JIIVAA_WHATSAPP_NUMBER = '919053883125';
 
 interface ReturnRequestItem {
   id: string;
@@ -471,8 +471,8 @@ export default function OrderDetailPage() {
                   </div>
 
                   <a
-                    href={`https://wa.me/${NAVYA_WHATSAPP_NUMBER}?text=${encodeURIComponent(
-                      `Hi Navya Collection, regarding my Return/Replacement Request #${req.requestNumber || req.id} for Order #${order.orderNumber}.`,
+                    href={`https://wa.me/${JIIVAA_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                      `Hi JiivaaKart, regarding my Return/Replacement Request #${req.requestNumber || req.id} for Order #${order.orderNumber}.`,
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"

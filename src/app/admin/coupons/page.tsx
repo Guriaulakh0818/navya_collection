@@ -323,7 +323,7 @@ export default function AdminCouponsPage() {
                         </span>
                       ) : (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 border border-indigo-500/20">
-                          NAVYA-FUNDED
+                          JIIVAA-FUNDED
                         </span>
                       )}
                     </td>
@@ -444,7 +444,7 @@ export default function AdminCouponsPage() {
                       className="mt-0.5 accent-indigo-600"
                     />
                     <div>
-                      <span className="text-xs font-bold block">Navya-Funded</span>
+                      <span className="text-xs font-bold block">JiivaaKart-Funded</span>
                       <span className="text-[10px] text-slate-500 block leading-tight">
                         Platform absorbs promo; seller payout unaffected.
                       </span>

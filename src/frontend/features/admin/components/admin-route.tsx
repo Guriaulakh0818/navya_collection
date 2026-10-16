@@ -14,55 +14,41 @@ type AdminRouteProps = {
 export function AdminRoute({ children, fallback }: AdminRouteProps) {
   const router = useRouter();
   const adminUser = useAdminAuthStore((s) => s.user);
+  const adminToken = useAdminAuthStore((s) => s.token);
   const setAdminUser = useAdminAuthStore((s) => s.setUser);
+  const logout = useAdminAuthStore((s) => s.logout);
   const customerUser = useAuthStore((s) => s.user);
 
-  const [isChecking, setIsChecking] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+  const hasOptimisticAdmin = Boolean(
+    adminUser &&
+    ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(adminUser.role?.toUpperCase() || ''),
+  );
+
+  const [isChecking, setIsChecking] = useState(!hasOptimisticAdmin);
+  const [authorized, setAuthorized] = useState(hasOptimisticAdmin);
 
   useEffect(() => {
     let isMounted = true;
 
     async function checkAuth() {
-      // 1. Check client store first
-      const currentUser =
-        adminUser ||
-        (customerUser &&
-        ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(
-          customerUser.role?.toUpperCase() || '',
-        )
-          ? customerUser
-          : null);
-
-      if (
-        currentUser &&
-        ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(
-          currentUser.role?.toUpperCase() || '',
-        )
-      ) {
-        if (isMounted) {
-          setAuthorized(true);
-          setIsChecking(false);
-        }
-        return;
-      }
-
-      // 2. Fetch session from server (checks HTTP-Only cookies navya_admin_session / navya_session)
+      // 1. Verify session with server (checks HTTP-Only cookies navya_admin_session / navya_session and Bearer token)
       try {
-        let res = await fetch('/api/v1/auth/session');
-        if (!res.ok) {
-          res = await fetch('/api/auth/session');
+        const headers: Record<string, string> = {};
+        if (adminToken) {
+          headers['Authorization'] = `Bearer ${adminToken}`;
         }
-        if (!res.ok) {
-          res = await fetch('/api/v1/auth/profile');
-        }
-        const data = (await res.json().catch(() => null)) || {};
 
-        const userObj = data?.user;
-        if (userObj) {
-          const userRole = userObj.role?.toUpperCase() || '';
+        const res = await fetch('/api/v1/auth/session', {
+          headers,
+          cache: 'no-store',
+          credentials: 'include',
+        });
+        const data = await res.json().catch(() => null);
+
+        if (res.ok && data?.authenticated && data?.user) {
+          const userRole = data.user.role?.toUpperCase() || '';
           if (['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(userRole)) {
-            setAdminUser(userObj);
+            setAdminUser(data.user);
             if (isMounted) {
               setAuthorized(true);
               setIsChecking(false);
@@ -70,22 +56,34 @@ export function AdminRoute({ children, fallback }: AdminRouteProps) {
             return;
           }
         }
-      } catch {
-        // Session check failed
-      }
 
-      if (isMounted) {
-        setAuthorized(false);
-        setIsChecking(false);
-        const currentPath =
-          typeof window !== 'undefined'
-            ? window.location.pathname + window.location.search
-            : '/admin/dashboard';
-        const redirectParam =
-          currentPath && currentPath !== '/admin/login' && currentPath !== '/admin'
-            ? `?redirectUrl=${encodeURIComponent(currentPath)}`
-            : '';
-        router.push(`/admin/login${redirectParam}`);
+        // If server says unauthenticated or non-admin:
+        // Clear stale client state (prevent zombie sessions)
+        logout();
+        if (isMounted) {
+          setAuthorized(false);
+          setIsChecking(false);
+          const currentPath =
+            typeof window !== 'undefined'
+              ? window.location.pathname + window.location.search
+              : '/admin/dashboard';
+          const redirectParam =
+            currentPath && currentPath !== '/admin/login' && currentPath !== '/admin'
+              ? `?redirectUrl=${encodeURIComponent(currentPath)}&expired=true`
+              : '?expired=true';
+          router.push(`/admin/login${redirectParam}`);
+        }
+      } catch (err) {
+        console.warn('[ADMIN_ROUTE_AUTH_CHECK_FAILED]', err);
+        // If network failed and optimistic check passed, stay authorized
+        if (hasOptimisticAdmin && isMounted) {
+          setAuthorized(true);
+          setIsChecking(false);
+        } else if (isMounted) {
+          setAuthorized(false);
+          setIsChecking(false);
+          router.push('/admin/login?expired=true');
+        }
       }
     }
 
@@ -94,7 +92,7 @@ export function AdminRoute({ children, fallback }: AdminRouteProps) {
     return () => {
       isMounted = false;
     };
-  }, [adminUser, customerUser, setAdminUser, router]);
+  }, [adminToken, hasOptimisticAdmin, logout, router, setAdminUser]);
 
   if (isChecking) {
     return (

@@ -6,14 +6,14 @@ import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/feat
 export const metadata: Metadata = {
   title: `Contact Us | ${SEO_CONSTANTS.SITE_NAME}`,
   description:
-    'Get in touch with Navya Collection customer support for order assistance, shipping inquiries, and boutique partner onboarding.',
+    'Get in touch with JiivaaKart customer support for order assistance, shipping inquiries, and boutique partner onboarding.',
   alternates: {
     canonical: `${SEO_CONSTANTS.SITE_URL}/contact`,
   },
   openGraph: {
     title: `Contact Us | ${SEO_CONSTANTS.SITE_NAME}`,
     description:
-      'Get in touch with Navya Collection customer support for order assistance, shipping inquiries, and boutique partner onboarding.',
+      'Get in touch with JiivaaKart customer support for order assistance, shipping inquiries, and boutique partner onboarding.',
     url: `${SEO_CONSTANTS.SITE_URL}/contact`,
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,
@@ -55,7 +55,7 @@ export default function ContactPage() {
           <div className="space-y-4">
             {/* Email Card */}
             <a
-              href="mailto:helpdesk@navyacollection.store"
+              href="mailto:helpdesk@jiivaakart.com"
               className="flex items-start gap-4 p-4 rounded-2xl border-2 border-slate-100 bg-slate-50/70 hover:bg-orange/5 hover:border-orange/40 transition-all group shadow-xs"
             >
               <div className="h-11 w-11 rounded-2xl bg-orange/10 text-orange flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
@@ -71,7 +71,7 @@ export default function ContactPage() {
                   </span>
                 </div>
                 <p className="text-base font-extrabold text-navy mt-0.5 group-hover:text-orange transition-colors">
-                  helpdesk@navyacollection.store
+                  helpdesk@jiivaakart.com
                 </p>
               </div>
             </a>

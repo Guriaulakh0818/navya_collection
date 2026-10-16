@@ -114,7 +114,7 @@ export function ShopManagementForm() {
           returnPolicy:
             s.returnPolicy ||
             '3-day returns and 7-day size replacements for unworn items with original tags intact.',
-          metaTitle: s.metaTitle || `${s.name} | Luxury Ethnic Couture on Navya Collection`,
+          metaTitle: s.metaTitle || `${s.name} | Luxury Ethnic Couture on JiivaaKart`,
           metaDescription: s.metaDescription || s.description || '',
           isClosed: s.isClosed || false,
           closedReason: s.closedReason || 'Vacation',
@@ -454,7 +454,7 @@ export function ShopManagementForm() {
                 </label>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center">
                   <span className="bg-slate-100 border border-b-0 sm:border-b sm:border-r-0 border-slate-200 px-3 py-2.5 sm:py-3 text-slate-500 font-mono text-[10px] sm:text-[11px] rounded-t-xl sm:rounded-t-none sm:rounded-l-xl truncate">
-                    navyacollection.store/shop/
+                    jiivaakart.com/shop/
                   </span>
                   <input
                     type="text"

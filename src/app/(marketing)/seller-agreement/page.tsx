@@ -14,9 +14,9 @@ import Link from 'next/link';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 
 export const metadata: Metadata = {
-  title: 'Seller Marketplace Agreement & Terms | Navya Collection',
+  title: 'Seller Marketplace Agreement & Terms | JiivaaKart',
   description:
-    'Standard Merchant Terms and Conditions, Commission Slabs, Payout Schedules (T+7), Statutory Tax Deductions (TCS & TDS), and Seller Responsibilities on Navya Collection.',
+    'Standard Merchant Terms and Conditions, Commission Slabs, Payout Schedules (T+7), Statutory Tax Deductions (TCS & TDS), and Seller Responsibilities on JiivaaKart.',
 };
 
 export default function SellerAgreementPage() {
@@ -39,8 +39,8 @@ export default function SellerAgreementPage() {
               Seller Marketplace Agreement
             </h1>
             <p className="mt-2 text-xs sm:text-sm text-slate-500 font-medium">
-              Applicable to all boutique owners, manufacturers, and merchants onboarding onto Navya
-              Collection.
+              Applicable to all boutique owners, manufacturers, and merchants onboarding onto
+              JiivaaKart.
             </p>
           </div>
 
@@ -78,7 +78,7 @@ export default function SellerAgreementPage() {
                 <Building2 className="w-5 h-5 text-amber-600" />
                 1. Seller Onboarding, KYC &amp; Documentation
               </h2>
-              <p>To operate a storefront on Navya Collection, the merchant must provide:</p>
+              <p>To operate a storefront on JiivaaKart, the merchant must provide:</p>
               <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
                 <li>Valid Business PAN (or Proprietor PAN).</li>
                 <li>
@@ -112,9 +112,11 @@ export default function SellerAgreementPage() {
                   items &lt; ₹1,000 and 12% GST for items &ge; ₹1,000).
                 </p>
                 <p>
-                  <strong className="text-navy">Commission Invoice (Navya &rarr; Seller):</strong>{' '}
-                  Navya Collection issues a monthly service invoice for the 10% platform fee + 18%
-                  GST on the service fee.
+                  <strong className="text-navy">
+                    Commission Invoice (JiivaaKart &rarr; Seller):
+                  </strong>{' '}
+                  JiivaaKart issues a monthly service invoice for the 10% platform fee + 18% GST on
+                  the service fee.
                 </p>
                 <p>
                   <strong className="text-navy">GST TCS (Section 52):</strong> 0.5% GST TCS is
@@ -160,7 +162,7 @@ export default function SellerAgreementPage() {
               </h2>
               <p className="text-xs sm:text-sm">
                 <strong>Approved Customer Returns (BM-01):</strong> If a customer initiates a return
-                within the approved return window, the item is routed back to the seller. Navya
+                within the approved return window, the item is routed back to the seller. JiivaaKart
                 reverses its 10% commission and customer refund is issued. Actual logistics freight
                 liability is handled according to the BM-01 return financial model.
               </p>
@@ -168,7 +170,7 @@ export default function SellerAgreementPage() {
                 <strong>RTO (Return to Origin / Undelivered Consignments - BM-04):</strong> When a
                 shipment cannot be delivered to the customer and is returned to the seller as RTO,
                 the actual eligible logistics cost is shared equally:{' '}
-                <strong>50% borne by Navya Collection</strong> and{' '}
+                <strong>50% borne by JiivaaKart</strong> and{' '}
                 <strong>50% borne by the seller</strong> via an adjustment ledger entry.
               </p>
             </section>

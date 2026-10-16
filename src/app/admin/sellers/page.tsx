@@ -4,9 +4,9 @@ import { Metadata } from 'next';
 import { SellerApprovalTable } from '@/frontend/features/admin/components/SellerApprovalTable';
 
 export const metadata: Metadata = {
-  title: 'Seller Approvals & Governance | Navya Collection Admin',
+  title: 'Seller Approvals & Governance | JiivaaKart Admin',
   description:
-    'Manage, inspect, approve, reject, or suspend multi-vendor seller applications on Navya Collection.',
+    'Manage, inspect, approve, reject, or suspend multi-vendor seller applications on JiivaaKart.',
 };
 
 export default function AdminSellersPage() {

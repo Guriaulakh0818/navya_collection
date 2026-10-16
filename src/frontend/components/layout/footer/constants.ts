@@ -4,7 +4,7 @@ export const footerLinks = {
   company: [
     { href: '/about', label: 'About Us' },
     { href: '/contact', label: 'Contact' },
-    { href: '/become-seller', label: 'Sell on Navya' },
+    { href: '/become-seller', label: 'Sell on JiivaaKart' },
     { href: '/seller-agreement', label: 'Seller Agreement' },
   ],
   quickLinks: [

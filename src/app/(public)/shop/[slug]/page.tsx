@@ -131,7 +131,7 @@ export async function generateMetadata({ params }: ShopPageProps): Promise<Metad
   if (!data || !data.shop) {
     return {
       title: {
-        absolute: 'Shop Not Found | Navya Collection',
+        absolute: 'Shop Not Found | JiivaaKart',
       },
       robots: {
         index: false,

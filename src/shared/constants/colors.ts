@@ -1,7 +1,7 @@
 export const COLORS = {
-  NAVY: '#183A73',
-  NAVY_DARK: '#09172E',
-  ORANGE: '#F15A25',
+  NAVY: '#0A2342',
+  NAVY_DARK: '#051329',
+  ORANGE: '#F28C28',
   BG: '#FAFAFA',
   SURFACE: '#FFFFFF',
   TEXT: '#111827',

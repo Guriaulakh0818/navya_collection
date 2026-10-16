@@ -6,7 +6,7 @@ import type { ShopSeoInput } from '../types/shop-seo.types';
 import { generateBreadcrumbSchema, generateOrganizationSchema } from './schema-generators';
 import { generateSeoSlug } from './slug-generator';
 
-const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store';
+const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com';
 
 /**
  * Truncates text smartly to target char limit without breaking words
@@ -112,7 +112,7 @@ export function generateShopMetadata(
       shop.name,
       ...(shop.city ? [`${shop.name} ${shop.city}`, `${shop.city} boutique`] : []),
       ...(shop.state ? [`fashion store in ${shop.state}`] : []),
-      'Navya Collection shop',
+      'JiivaaKart shop',
       'verified boutique India',
       'ethnic wear boutique',
     ],
@@ -138,7 +138,7 @@ export function generateShopMetadata(
           url: primaryImage,
           width: 1200,
           height: 630,
-          alt: `${shop.name} - Navya Collection`,
+          alt: `${shop.name} - JiivaaKart`,
         },
       ],
     },

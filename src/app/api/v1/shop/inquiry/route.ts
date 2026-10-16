@@ -109,7 +109,7 @@ export async function POST(req: Request) {
           },
           body: JSON.stringify({
             sender: {
-              name: 'Navya Collection Marketplace',
+              name: 'JiivaaKart Marketplace',
               email: senderEmail,
             },
             to: [
@@ -123,7 +123,7 @@ export async function POST(req: Request) {
               <div style="font-family: Arial, sans-serif; padding: 24px; background-color: #f8fafc; color: #0f172a; border-radius: 16px; border: 1px solid #e2e8f0; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #1e3a8a; margin-top: 0;">📩 New Customer Inquiry Received!</h2>
                 <p>Hello <strong>${merchantName}</strong>,</p>
-                <p>You have received a new customer inquiry for <strong>${shop.name}</strong> on Navya Collection Marketplace.</p>
+                <p>You have received a new customer inquiry for <strong>${shop.name}</strong> on JiivaaKart Marketplace.</p>
                 
                 <div style="background-color: #ffffff; padding: 16px; border-radius: 12px; border: 1px solid #cbd5e1; margin: 20px 0;">
                   <p style="margin: 4px 0;"><strong>Customer Name:</strong> ${name.trim()}</p>

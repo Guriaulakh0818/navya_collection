@@ -203,7 +203,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }`}
         >
           <div className="flex h-16 items-center justify-center border-b border-white/10">
-            <h1 className="font-heading text-xl font-bold text-gold tracking-wide">Navya Admin</h1>
+            <h1 className="font-heading text-xl font-bold text-gold tracking-wide">
+              JiivaaKart Admin
+            </h1>
           </div>
 
           <nav className="mt-6 px-3 space-y-1">

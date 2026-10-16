@@ -6,11 +6,11 @@
 
 export const MARKETPLACE_CONFIG = {
   // Brand & Legal Entity Details
-  BRAND_NAME: 'Navya Collection',
-  DOMAIN: 'navyacollection.store',
-  SUPPORT_EMAIL: 'helpdesk@navyacollection.store',
+  BRAND_NAME: 'JiivaaKart',
+  DOMAIN: 'jiivaakart.com',
+  SUPPORT_EMAIL: 'helpdesk@jiivaakart.com',
   SUPPORT_PHONE: '+91 9053883125',
-  GRIEVANCE_EMAIL: 'grievance@navyacollection.store',
+  GRIEVANCE_EMAIL: 'grievance@jiivaakart.com',
   HEADQUARTERS: 'Karnal, Haryana - 132001, India',
 
   // Order & Inventory Oversell Protection Rules

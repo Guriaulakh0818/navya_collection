@@ -7,16 +7,16 @@ import { MarketplaceCatalogContent } from '@/frontend/features/shop/components/M
 export const metadata: Metadata = {
   metadataBase: new URL(SEO_CONSTANTS.SITE_URL),
   title: {
-    absolute: 'Explore Boutique Shops & Designers | Navya Collection',
+    absolute: 'Explore Boutique Shops & Designers | JiivaaKart',
   },
   description:
-    'Discover verified boutique partner stores across India on Navya Collection. Shop authentic designer fashion, luxury ethnic wear, and handcrafted garments.',
+    'Discover verified boutique partner stores across India on JiivaaKart. Shop authentic designer fashion, luxury ethnic wear, and handcrafted garments.',
   keywords: [
     'boutique shops India',
     'verified fashion designers',
     'Indian ethnic wear boutiques',
     'artisan clothing stores',
-    'Navya Collection partner shops',
+    'JiivaaKart partner shops',
   ],
   alternates: {
     canonical: `${SEO_CONSTANTS.SITE_URL}/shop`,
@@ -33,23 +33,23 @@ export const metadata: Metadata = {
     url: `${SEO_CONSTANTS.SITE_URL}/shop`,
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: 'en_IN',
-    title: 'Explore Boutique Shops & Designers | Navya Collection',
+    title: 'Explore Boutique Shops & Designers | JiivaaKart',
     description:
-      'Discover verified boutique partner stores across India on Navya Collection. Shop authentic designer fashion, luxury ethnic wear, and handcrafted garments.',
+      'Discover verified boutique partner stores across India on JiivaaKart. Shop authentic designer fashion, luxury ethnic wear, and handcrafted garments.',
     images: [
       {
         url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: 'Boutique Shops - Navya Collection',
+        alt: 'Boutique Shops - JiivaaKart',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Explore Boutique Shops & Designers | Navya Collection',
+    title: 'Explore Boutique Shops & Designers | JiivaaKart',
     description:
-      'Discover verified boutique partner stores across India on Navya Collection. Shop authentic designer fashion, luxury ethnic wear, and handcrafted garments.',
+      'Discover verified boutique partner stores across India on JiivaaKart. Shop authentic designer fashion, luxury ethnic wear, and handcrafted garments.',
     images: [SEO_CONSTANTS.DEFAULT_OG_IMAGE],
   },
 };

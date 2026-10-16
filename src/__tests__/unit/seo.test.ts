@@ -66,7 +66,7 @@ export async function testSeoModule() {
 
   // 6. Test Web Manifest config
   const manifestConfig = manifest();
-  if (manifestConfig.name !== 'Navya Collection' || !manifestConfig.icons) {
+  if (manifestConfig.name !== 'JiivaaKart' || !manifestConfig.icons) {
     throw new Error('manifest.ts failed to return valid PWA Web Manifest configuration.');
   }
 

@@ -8,14 +8,14 @@ import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/feat
 export const metadata: Metadata = {
   title: `Return, Replacement & Refund Policy | ${SEO_CONSTANTS.SITE_NAME}`,
   description:
-    '3-Day hassle-free return and 7-day size replacement policy for Navya Collection multi-vendor fashion marketplace orders across India.',
+    '3-Day hassle-free return and 7-day size replacement policy for JiivaaKart multi-vendor fashion marketplace orders across India.',
   alternates: {
     canonical: `${SEO_CONSTANTS.SITE_URL}/return-policy`,
   },
   openGraph: {
     title: `Return, Replacement & Refund Policy | ${SEO_CONSTANTS.SITE_NAME}`,
     description:
-      '3-Day hassle-free return and 7-day size replacement policy for Navya Collection multi-vendor fashion marketplace orders across India.',
+      '3-Day hassle-free return and 7-day size replacement policy for JiivaaKart multi-vendor fashion marketplace orders across India.',
     url: `${SEO_CONSTANTS.SITE_URL}/return-policy`,
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,

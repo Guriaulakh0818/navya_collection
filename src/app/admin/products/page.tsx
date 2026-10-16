@@ -344,13 +344,19 @@ export default function AdminProductsPage() {
         }
         totalSynced += data.stats?.productsSynced || 0;
         hasMore = Boolean(data.hasMore);
-        offset = data.nextOffset !== null && data.nextOffset !== undefined ? data.nextOffset : offset + limit;
+        offset =
+          data.nextOffset !== null && data.nextOffset !== undefined
+            ? data.nextOffset
+            : offset + limit;
         if (hasMore) {
           toast(`Synced batch... Continuing remaining products...`, 'info');
         }
       }
 
-      toast(`All real shops and catalog products pushed to live DB! Total: ${totalSynced}`, 'success');
+      toast(
+        `All real shops and catalog products pushed to live DB! Total: ${totalSynced}`,
+        'success',
+      );
       fetchProducts();
     } catch (err: any) {
       toast(err.message || 'Failed to sync catalog.', 'error');
@@ -568,7 +574,7 @@ export default function AdminProductsPage() {
 
                       <td className="py-3.5">
                         <span className="font-bold text-navy block">
-                          {product.shop?.name || 'Navya Store'}
+                          {product.shop?.name || 'Jiivaa Store'}
                         </span>
                         <span className="text-[10px] text-slate-500 font-medium">
                           {product.shop?.owner?.name || 'Admin'}
@@ -1172,7 +1178,7 @@ export default function AdminProductsPage() {
               </span>
               <div className="flex items-center justify-between">
                 <span className="font-extrabold text-navy text-xs">
-                  {selectedProductForDetails.shop?.name || 'Navya Collection'}
+                  {selectedProductForDetails.shop?.name || 'Jiivaa Store'}
                 </span>
                 <span className="text-[11px] text-slate-500 font-medium">
                   Owner: {selectedProductForDetails.shop?.owner?.name || 'Store Admin'}

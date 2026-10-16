@@ -217,7 +217,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           sessionStorage.removeItem('navya_login_email');
         }
         try {
-          toast('Verification successful! Welcome to Navya Collection.', 'success');
+          toast('Verification successful! Welcome to JiivaaKart.', 'success');
         } catch {}
         if (json.user) {
           useAuthStore.getState().setUser(json.user);
@@ -316,7 +316,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
         </h1>
         <p className="mt-1.5 text-xs sm:text-sm font-medium text-slate-600">
           {step === 'email'
-            ? 'Sign in to your Navya Collection account'
+            ? 'Sign in to your JiivaaKart account'
             : 'We sent a 6-digit code to your email'}
         </p>
 

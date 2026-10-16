@@ -45,7 +45,7 @@ export function WhyShopNavyaSection() {
         </div>
         <div>
           <h2 className="text-lg sm:text-xl font-black text-navy-900 tracking-tight">
-            Why Shop on Navya?
+            Why Shop on JiivaaKart?
           </h2>
           <p className="text-xs text-slate-500 font-medium">
             Building India&apos;s most trusted fashion marketplace for local clothing stores

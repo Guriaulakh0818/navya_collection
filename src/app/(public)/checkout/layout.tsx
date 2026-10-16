@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Secure Checkout | Navya Collection',
-  description: 'Complete your order securely on Navya Collection.',
+  title: 'Secure Checkout | JiivaaKart',
+  description: 'Complete your order securely on JiivaaKart.',
   robots: {
     index: false,
     follow: false,

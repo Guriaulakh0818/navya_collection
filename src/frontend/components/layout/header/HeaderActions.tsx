@@ -81,7 +81,7 @@ export function HeaderActions({ className }: HeaderActionsProps) {
   const shopName =
     (user as any)?.shopName ||
     (user as any)?.shop?.name ||
-    (userRole === 'OWNER' ? 'Navya Collection' : 'Merchant Store');
+    (userRole === 'OWNER' ? 'JiivaaKart' : 'Merchant Store');
 
   return (
     <div

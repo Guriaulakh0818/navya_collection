@@ -204,7 +204,7 @@ export default function AdminTeamPage() {
                 Full Name (Optional)
               </label>
               <Input
-                placeholder="e.g. Navya Store Supervisor"
+                placeholder="e.g. Jiivaa Store Supervisor"
                 value={inviteName}
                 onChange={(e) => setInviteName(e.target.value)}
                 className="rounded-xl text-xs"
@@ -249,7 +249,7 @@ export default function AdminTeamPage() {
                 type="text"
                 required
                 minLength={6}
-                placeholder="e.g. NavyaPass@2026"
+                placeholder="e.g. JiivaaPass@2026"
                 value={invitePassword}
                 onChange={(e) => setInvitePassword(e.target.value)}
                 className="rounded-xl text-xs font-mono"

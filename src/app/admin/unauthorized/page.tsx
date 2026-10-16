@@ -13,8 +13,8 @@ export default function AdminUnauthorizedPage() {
 
         <h1 className="font-heading text-2xl font-bold text-navy">Access Denied</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Admin privileges required. Your account does not have permission to access the Navya
-          Collection Admin Portal.
+          Admin privileges required. Your account does not have permission to access the JiivaaKart
+          Admin Portal.
         </p>
 
         <div className="mt-8 space-y-3">

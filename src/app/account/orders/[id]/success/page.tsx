@@ -32,8 +32,8 @@ export default async function OrderSuccessPage({ params }: { params: Promise<{ i
 
           <h1 className="font-heading text-3xl font-bold text-navy">Order Confirmed & Placed!</h1>
           <p className="text-sm font-medium text-slate-600 max-w-md mx-auto leading-relaxed">
-            Thank you for shopping with <strong className="text-navy">Navya Collection</strong>. We
-            have received your order and sent a confirmation to your registered phone number.
+            Thank you for shopping with <strong className="text-navy">JiivaaKart</strong>. We have
+            received your order and sent a confirmation to your registered phone number.
           </p>
 
           <div className="inline-flex items-center gap-3 pt-2">

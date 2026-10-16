@@ -1,22 +1,22 @@
 export const SEO_CONFIG = {
-  defaultTitle: 'Navya Collection | Affordable Premium Fashion',
-  titleTemplate: '%s | Navya Collection',
+  defaultTitle: 'JiivaaKart | Style That Speaks | Buy Local Boutique Fashion Online',
+  titleTemplate: '%s | JiivaaKart',
   defaultDescription:
-    'Navya Collection is an affordable premium fashion brand for gents and kids, built on trust, modern design, and smooth shopping experience.',
+    "JiivaaKart is India's premier multi-vendor fashion marketplace connecting shoppers with authentic boutique fashion, built on trust, modern design, and a smooth shopping experience.",
   keywords: [
     'fashion',
     'mens clothing',
     'kids clothing',
-    'navya collection',
-    'premium fashion',
-    'affordable fashion',
+    'jiivaakart',
+    'boutique fashion',
+    'ethnic wear',
     'online shopping',
     'india',
   ],
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    siteName: 'Navya Collection',
+    siteName: 'JiivaaKart',
     images: ['/images/og.jpg'],
   },
   twitter: {

@@ -501,7 +501,7 @@ export function MarketplaceCatalogContent() {
                       <div className="h-32 bg-slate-100 relative overflow-hidden">
                         <Image
                           src="/images/default-shop-banner.png"
-                          alt="Style That Speaks - Navya Collection"
+                          alt="Style That Speaks - JiivaaKart"
                           fill
                           priority={index < 2}
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

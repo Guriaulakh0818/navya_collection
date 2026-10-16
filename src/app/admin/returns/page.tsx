@@ -723,7 +723,7 @@ export default function AdminReturnsPage() {
                   )}
                 </div>
 
-                {/* 2. Navya Platform Commission */}
+                {/* 2. JiivaaKart Platform Commission */}
                 <div className="rounded-lg bg-white border border-indigo-100 p-2.5 space-y-1">
                   <div className="text-[10px] font-semibold text-gray-500 uppercase">
                     Commission Reversal
@@ -750,7 +750,7 @@ export default function AdminReturnsPage() {
                     </span>
                   </div>
                   <div className="text-[10px] text-indigo-700 font-medium">
-                    Navya retains: ₹0.00 (100% reversed)
+                    JiivaaKart retains: ₹0.00 (100% reversed)
                   </div>
                 </div>
 

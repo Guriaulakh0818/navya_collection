@@ -209,6 +209,7 @@ async function buildCategoryConditions(
     cleanSlug.includes('new-season') ||
     cleanSlug.includes('new-arrivals') ||
     cleanSlug.includes('new-on-navya') ||
+    cleanSlug.includes('new-on-jiivaa') ||
     cleanSlug.includes('shop-your-vibe') ||
     cleanSlug.includes('new-listings') ||
     cleanSlug === 'new';
@@ -379,7 +380,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (dbCategory) {
       if (dbCategory.status === 'inactive') {
         return {
-          title: 'Category Not Available | Navya Collection',
+          title: 'Category Not Available | JiivaaKart',
           robots: { index: false, follow: false },
         };
       }
@@ -485,8 +486,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: 'Category Not Found | Navya Collection',
-    description: 'The requested category does not exist on Navya Collection.',
+    title: 'Category Not Found | JiivaaKart',
+    description: 'The requested category does not exist on JiivaaKart.',
     robots: { index: false, follow: false },
   };
 }

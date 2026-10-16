@@ -6,7 +6,7 @@ import { SellerProductForm } from '@/frontend/features/seller/components/SellerP
 import { prisma } from '@/lib/prisma';
 
 export const metadata: Metadata = {
-  title: 'Edit Product Listing | Navya Merchant Portal',
+  title: 'Edit Product Listing | JiivaaKart Merchant Portal',
   description:
     'Edit product details, variants matrix, inventory stock levels, images, and SEO metadata.',
 };
@@ -53,9 +53,7 @@ export default async function EditSellerProductPage({
         ? Number(product.compareAtPrice)
         : undefined,
     costPrice:
-      product.costPrice && Number(product.costPrice) > 0
-        ? Number(product.costPrice)
-        : undefined,
+      product.costPrice && Number(product.costPrice) > 0 ? Number(product.costPrice) : undefined,
     taxGstRate: product.taxRate ? Number(product.taxRate) : 5,
     taxRate: product.taxRate ? Number(product.taxRate) : 5,
     hsnCode: product.hsnCode || '6204',

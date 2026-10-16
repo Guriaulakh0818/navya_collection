@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (matchingShops.length < CITY_SEO_THRESHOLDS.MIN_APPROVED_SHOPS) {
       return {
         title: `City Not Found | ${SEO_CONSTANTS.SITE_NAME}`,
-        description: 'The requested local city page is not available on Navya Collection.',
+        description: 'The requested local city page is not available on JiivaaKart.',
         robots: { index: false, follow: false },
       };
     }
@@ -86,7 +86,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (activeProducts.length < CITY_SEO_THRESHOLDS.MIN_ACTIVE_PRODUCTS) {
       return {
         title: `City Not Found | ${SEO_CONSTANTS.SITE_NAME}`,
-        description: 'The requested local city page is not available on Navya Collection.',
+        description: 'The requested local city page is not available on JiivaaKart.',
         robots: { index: false, follow: false },
       };
     }
@@ -107,7 +107,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (distinctCategories.size < CITY_SEO_THRESHOLDS.MIN_ACTIVE_CATEGORIES) {
       return {
         title: `City Not Found | ${SEO_CONSTANTS.SITE_NAME}`,
-        description: 'The requested local city page is not available on Navya Collection.',
+        description: 'The requested local city page is not available on JiivaaKart.',
         robots: { index: false, follow: false },
       };
     }
@@ -301,7 +301,7 @@ export default async function CityMarketplacePage({ params }: Props) {
           </h1>
           <p className="text-slate-200 text-sm sm:text-base max-w-2xl font-medium leading-relaxed">
             Explore authentic fashion collections and products from verified clothing boutiques in{' '}
-            <strong className="text-white">{locationDisplay}</strong> available on Navya Collection.
+            <strong className="text-white">{locationDisplay}</strong> available on JiivaaKart.
           </p>
         </div>
       </section>

@@ -26,7 +26,7 @@ export function HomepageFaqSection() {
             Frequently Asked Questions
           </h2>
           <p className="text-sm text-slate-600 font-normal leading-relaxed">
-            Essential facts about shopping and selling on Navya Collection fashion marketplace.
+            Essential facts about shopping and selling on JiivaaKart fashion marketplace.
           </p>
         </div>
 

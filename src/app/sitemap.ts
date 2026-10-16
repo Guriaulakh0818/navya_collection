@@ -5,7 +5,7 @@ import { CATEGORIES } from '@/frontend/features/categories/constants/category.co
 import { prisma } from '@/lib/prisma';
 
 /**
- * Dynamic Production XML Sitemap Generator for Navya Collection Marketplace.
+ * Dynamic Production XML Sitemap Generator for JiivaaKart Marketplace.
  * Emits canonical, indexable public URLs across:
  * - Core Hub & Marketplace Explorer Pages
  * - Public Content & Legal Policy Pages

@@ -40,10 +40,10 @@ describe('PG-01 — PUBLIC HOMEPAGE FORENSIC QA AUDIT SUITE', () => {
 
   describe('1. Business Identity & Authoritative Facts Audit', () => {
     it('verifies official business identity and legal name', () => {
-      expect(SEO_CONSTANTS.ORGANIZATION.NAME).toBe('Navya Collection');
-      expect(SEO_CONSTANTS.ORGANIZATION.LEGAL_NAME).toBe('Navya Collection Private Limited');
-      expect(AEO_FACTS.BRAND.NAME).toBe('Navya Collection');
-      expect(AEO_FACTS.BRAND.LEGAL_NAME).toBe('Navya Collection Private Limited');
+      expect(SEO_CONSTANTS.ORGANIZATION.NAME).toBe('JiivaaKart');
+      expect(SEO_CONSTANTS.ORGANIZATION.LEGAL_NAME).toBe('JiivaaKart Private Limited');
+      expect(AEO_FACTS.BRAND.NAME).toBe('JiivaaKart');
+      expect(AEO_FACTS.BRAND.LEGAL_NAME).toBe('JiivaaKart Private Limited');
     });
 
     it('verifies headquarters location in Fatehabad, Haryana, India', () => {
@@ -58,25 +58,25 @@ describe('PG-01 — PUBLIC HOMEPAGE FORENSIC QA AUDIT SUITE', () => {
     });
 
     it('verifies authoritative public support contact channels and site URL', () => {
-      expect(SEO_CONSTANTS.ORGANIZATION.URL).toBe('https://navyacollection.store');
-      expect(SEO_CONSTANTS.ORGANIZATION.EMAIL).toBe('helpdesk@navyacollection.store');
+      expect(SEO_CONSTANTS.ORGANIZATION.URL).toBe('https://jiivaakart.com');
+      expect(SEO_CONSTANTS.ORGANIZATION.EMAIL).toBe('helpdesk@jiivaakart.com');
       expect(SEO_CONSTANTS.ORGANIZATION.TELEPHONE).toMatch(/\+91-?9053883125/);
 
-      expect(AEO_FACTS.CONTACT.EMAIL).toBe('helpdesk@navyacollection.store');
+      expect(AEO_FACTS.CONTACT.EMAIL).toBe('helpdesk@jiivaakart.com');
       expect(AEO_FACTS.CONTACT.PHONE).toBe('+91-9053883125');
     });
   });
 
   describe('2. Metadata, OpenGraph & Canonical Audit', () => {
     it('verifies homepage metadata canonical points strictly to production domain', () => {
-      expect(metadata.alternates?.canonical).toBe('https://navyacollection.store');
-      expect(metadata.openGraph?.url).toBe('https://navyacollection.store');
+      expect(metadata.alternates?.canonical).toBe('https://jiivaakart.com');
+      expect(metadata.openGraph?.url).toBe('https://jiivaakart.com');
     });
 
     it('verifies homepage title, description, and OpenGraph social metadata', () => {
       expect(metadata.title).toBe(SEO_CONSTANTS.DEFAULT_TITLE);
       expect(metadata.description).toBe(SEO_CONSTANTS.DEFAULT_DESCRIPTION);
-      expect(metadata.openGraph?.siteName).toBe('Navya Collection');
+      expect(metadata.openGraph?.siteName).toBe('JiivaaKart');
       expect((metadata.twitter as any)?.card).toBe('summary_large_image');
       expect(metadata.openGraph?.images).toBeDefined();
     });
@@ -88,16 +88,16 @@ describe('PG-01 — PUBLIC HOMEPAGE FORENSIC QA AUDIT SUITE', () => {
 
       expect(orgSchema['@context']).toBe('https://schema.org');
       expect(orgSchema['@type']).toBe('Organization');
-      expect(orgSchema['@id']).toBe('https://navyacollection.store#organization');
-      expect(orgSchema.name).toBe('Navya Collection');
-      expect(orgSchema.legalName).toBe('Navya Collection Private Limited');
-      expect(orgSchema.url).toBe('https://navyacollection.store');
+      expect(orgSchema['@id']).toBe('https://jiivaakart.com#organization');
+      expect(orgSchema.name).toBe('JiivaaKart');
+      expect(orgSchema.legalName).toBe('JiivaaKart Private Limited');
+      expect(orgSchema.url).toBe('https://jiivaakart.com');
       expect(orgSchema.address.addressLocality).toBe('Fatehabad');
       expect(orgSchema.address.addressRegion).toBe('Haryana');
       expect(orgSchema.address.postalCode).toBe('125050');
       expect(orgSchema.address.addressCountry).toBe('IN');
       expect(orgSchema.contactPoint[0].telephone).toBe('+91-9053883125');
-      expect(orgSchema.contactPoint[0].email).toBe('helpdesk@navyacollection.store');
+      expect(orgSchema.contactPoint[0].email).toBe('helpdesk@jiivaakart.com');
 
       // Crucial: Must NEVER contain AggregateRating unless verified real reviews exist
       expect(orgSchema.aggregateRating).toBeUndefined();
@@ -108,12 +108,12 @@ describe('PG-01 — PUBLIC HOMEPAGE FORENSIC QA AUDIT SUITE', () => {
 
       expect(siteSchema['@context']).toBe('https://schema.org');
       expect(siteSchema['@type']).toBe('WebSite');
-      expect(siteSchema['@id']).toBe('https://navyacollection.store#website');
-      expect(siteSchema.url).toBe('https://navyacollection.store');
-      expect(siteSchema.publisher['@id']).toBe('https://navyacollection.store#organization');
+      expect(siteSchema['@id']).toBe('https://jiivaakart.com#website');
+      expect(siteSchema.url).toBe('https://jiivaakart.com');
+      expect(siteSchema.publisher['@id']).toBe('https://jiivaakart.com#organization');
       expect(siteSchema.potentialAction['@type']).toBe('SearchAction');
       expect(siteSchema.potentialAction.target.urlTemplate).toBe(
-        'https://navyacollection.store/search?q={search_term_string}',
+        'https://jiivaakart.com/search?q={search_term_string}',
       );
     });
 
@@ -123,9 +123,9 @@ describe('PG-01 — PUBLIC HOMEPAGE FORENSIC QA AUDIT SUITE', () => {
       expect(faqSchema).not.toBeNull();
       expect(faqSchema?.['@type']).toBe('FAQPage');
       expect(faqSchema?.mainEntity.length).toBe(HOMEPAGE_FAQS.length);
-      expect(faqSchema?.mainEntity[0].name).toBe('What is Navya Collection?');
+      expect(faqSchema?.mainEntity[0].name).toBe('What is JiivaaKart?');
       expect(faqSchema?.mainEntity[0].acceptedAnswer.text).toContain(
-        'Navya Collection is a fashion marketplace',
+        'JiivaaKart is a fashion marketplace',
       );
     });
   });

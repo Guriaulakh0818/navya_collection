@@ -96,7 +96,7 @@ export function ShopProfileStorefront({
       <div className="relative w-full h-48 sm:h-64 lg:h-80 bg-slate-100 border-b border-slate-200 overflow-hidden select-none">
         <Image
           src="/images/default-shop-banner.png"
-          alt="Style That Speaks - Navya Collection"
+          alt="Style That Speaks - JiivaaKart"
           fill
           priority
           sizes="100vw"
@@ -112,7 +112,11 @@ export function ShopProfileStorefront({
             <div className="flex items-center gap-4">
               <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white border-2 border-amber-300 overflow-hidden shrink-0 flex items-center justify-center shadow-md select-none">
                 <Image
-                  src={shop.slug === 'navya-collection' ? '/images/navya-logo.png' : (shop.logo || '/images/navya-logo.png')}
+                  src={
+                    shop.slug === 'navya-collection'
+                      ? '/images/navya-logo.png'
+                      : shop.logo || '/images/navya-logo.png'
+                  }
                   alt={shop.name}
                   width={96}
                   height={96}
@@ -132,8 +136,7 @@ export function ShopProfileStorefront({
                 </div>
 
                 <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-xl line-clamp-2">
-                  {shop.description ||
-                    `${shop.name} boutique partner on Navya Collection marketplace.`}
+                  {shop.description || `${shop.name} boutique partner on JiivaaKart marketplace.`}
                 </p>
 
                 <div className="flex items-center gap-4 mt-3 text-xs text-slate-600 flex-wrap">
@@ -400,14 +403,20 @@ export function ShopProfileStorefront({
               </div>
 
               <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3">
-                <h3 className="font-extrabold text-slate-900 text-sm">Customer Protection &amp; Care</h3>
+                <h3 className="font-extrabold text-slate-900 text-sm">
+                  Customer Protection &amp; Care
+                </h3>
                 <p className="text-slate-600 leading-relaxed font-medium">
-                  All orders, payments, shipments, and return requests are safely managed by Navya Collection customer care for 100% buyer protection.
+                  All orders, payments, shipments, and return requests are safely managed by
+                  JiivaaKart customer care for 100% buyer protection.
                 </p>
                 <div className="pt-2 text-slate-700 font-bold flex items-center gap-2">
                   <span>Platform Support:</span>
-                  <a href="mailto:support@navyacollection.store" className="text-navy hover:text-orange transition-colors">
-                    support@navyacollection.store
+                  <a
+                    href="mailto:support@jiivaakart.com"
+                    className="text-navy hover:text-orange transition-colors"
+                  >
+                    support@jiivaakart.com
                   </a>
                 </div>
               </div>

@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Navya Collection Marketplace',
+  title: 'Privacy Policy | JiivaaKart Marketplace',
   description:
-    'Comprehensive Privacy Policy of Navya Collection multi-vendor marketplace in compliance with the Digital Personal Data Protection (DPDP) Act 2023 and Information Technology Act 2000.',
+    'Comprehensive Privacy Policy of JiivaaKart multi-vendor marketplace in compliance with the Digital Personal Data Protection (DPDP) Act 2023 and Information Technology Act 2000.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -42,12 +42,12 @@ export default function PrivacyPolicyPage() {
                 1. Overview & Commitment
               </h2>
               <p>
-                Navya Collection (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;, or
-                &quot;Platform&quot;) operates the multi-vendor e-commerce marketplace at{' '}
-                <strong className="text-navy">navyacollection.store</strong>. We are committed to
-                protecting your personal data and privacy in full compliance with the Digital
-                Personal Data Protection (DPDP) Act, 2023, Information Technology Act, 2000, and
-                Consumer Protection (E-Commerce) Rules, 2020.
+                JiivaaKart (&quot;we&quot;, &quot;our&quot;, &quot;us&quot;, or
+                &quot;Platform&quot;), operated by JiivaaKart Private Limited, operates the
+                multi-vendor e-commerce marketplace. We are committed to protecting your personal
+                data and privacy in full compliance with the Digital Personal Data Protection (DPDP)
+                Act, 2023, Information Technology Act, 2000, and Consumer Protection (E-Commerce)
+                Rules, 2020.
               </p>
             </section>
 
@@ -58,23 +58,12 @@ export default function PrivacyPolicyPage() {
               </h2>
               <ul className="list-disc pl-5 space-y-2">
                 <li>
-                  <strong className="text-navy">Customer Account Information:</strong> Full name,
-                  verified mobile phone number, email address, shipping and billing addresses.
+                  <strong className="text-navy">Customer Contact Information:</strong> Name,
+                  delivery address, mobile number, and email address for order fulfillment.
                 </li>
                 <li>
-                  <strong className="text-navy">Merchant / Seller Information:</strong> Shop
-                  business name, owner name, business email, contact number, pickup warehouse
-                  address, GSTIN (where applicable), PAN, and bank payout credentials.
-                </li>
-                <li>
-                  <strong className="text-navy">Transactional & Logistics Data:</strong> Order
-                  history, SKU purchased, payment mode (Prepaid via Razorpay or Cash on Delivery),
-                  AWB tracking numbers, and delivery confirmation records.
-                </li>
-                <li>
-                  <strong className="text-navy">Device & Security Logs:</strong> IP address, browser
-                  type, device identifiers, and security event logs to safeguard against fraud and
-                  CSRF attacks.
+                  <strong className="text-navy">Transaction Details:</strong> Payment transaction
+                  identifiers, order items, and delivery status.
                 </li>
               </ul>
             </section>
@@ -85,10 +74,10 @@ export default function PrivacyPolicyPage() {
                 3. Payment Information Security
               </h2>
               <p>
-                Navya Collection does <strong className="text-navy">NOT</strong> store your raw
-                debit card, credit card, net banking credentials, or UPI PINs on our servers. All
-                digital payments are processed through RBI-authorized payment aggregators (such as
-                Razorpay) utilizing 256-bit SSL encryption and PCI-DSS Level 1 compliance.
+                JiivaaKart does <strong className="text-navy">NOT</strong> store your raw debit
+                card, credit card, net banking credentials, or UPI PINs on our servers. All digital
+                payments are processed through RBI-authorized payment aggregators (such as Razorpay)
+                utilizing 256-bit SSL encryption and PCI-DSS Level 1 compliance.
               </p>
             </section>
 
@@ -138,14 +127,15 @@ export default function PrivacyPolicyPage() {
               </p>
               <div className="text-xs space-y-1 mt-2 text-slate-800">
                 <p>
-                  <strong className="text-navy">Name:</strong> Grievance Officer, Navya Collection
+                  <strong className="text-navy">Name:</strong> Grievance Officer, JiivaaKart Private
+                  Limited
                 </p>
                 <p>
-                  <strong className="text-navy">Email:</strong> helpdesk@navyacollection.store
+                  <strong className="text-navy">Email:</strong> helpdesk@jiivaakart.com
                 </p>
                 <p>
-                  <strong className="text-navy">Address:</strong> Navya Collection Headquarters,
-                  Karnal, Haryana - 132001, India
+                  <strong className="text-navy">Address:</strong> JiivaaKart Private Limited
+                  Headquarters, Fatehabad, Haryana - 125050, India
                 </p>
                 <p>
                   <strong className="text-navy">Response Timeline:</strong> Acknowledgment within 48

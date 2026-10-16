@@ -483,8 +483,8 @@ export default function SellerOrdersPage() {
             </div>
 
             <p className="text-xs text-slate-500">
-              Per Navya marketplace safety policy (Section 9), capture product condition and packed
-              parcel proof before dispatch. This protects you in customer return disputes.
+              Per JiivaaKart marketplace safety policy (Section 9), capture product condition and
+              packed parcel proof before dispatch. This protects you in customer return disputes.
             </p>
 
             {/* Proof Type Selector */}

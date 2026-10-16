@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import type { NextRequest } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
 
@@ -80,6 +81,7 @@ export async function createUserSession(
     role?: string;
   },
   metadata?: SessionMetadata,
+  targetCookieName: string = SESSION_COOKIE_NAME,
 ) {
   const secret = getJwtSecret();
   const phone = user.phone || '';
@@ -124,13 +126,22 @@ export async function createUserSession(
   // 4. Set secure HTTP-Only cookie
   try {
     const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE_NAME, token, {
+    cookieStore.set(targetCookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
       maxAge: SESSION_EXPIRY_SECONDS,
     });
+    if (targetCookieName === ADMIN_SESSION_COOKIE_NAME) {
+      cookieStore.set(SESSION_COOKIE_NAME, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: SESSION_EXPIRY_SECONDS,
+      });
+    }
   } catch (err) {
     console.error('[COOKIE_SET_ERROR]', err);
   }
@@ -142,29 +153,95 @@ export async function createUserSession(
   };
 }
 
+export const ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'];
+
 /**
- * Retrieves the authenticated user from the current session cookie.
- * Verifies JWT signature, validates tokenHash in database, checks expiry,
- * updates lastActiveAt timestamp, and returns user identity.
+ * Helper to extract JWT token from request Authorization header, NextRequest cookies,
+ * or Next.js next/headers cookies() store.
  */
-export async function getCurrentUser(targetCookieName?: string): Promise<SessionUser | null> {
+async function resolveTokenFromSource(
+  targetCookieName?: string,
+  request?: Request | NextRequest | null,
+): Promise<string | null> {
+  // 1. Check Authorization: Bearer <token> header from request
+  if (request) {
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+    if (authHeader && authHeader.toLowerCase().startsWith('bearer ')) {
+      const token = authHeader.substring(7).trim();
+      if (token) return token;
+    }
+
+    // 2. Check NextRequest cookies map if available
+    if ('cookies' in request && typeof (request as any).cookies?.get === 'function') {
+      const val = targetCookieName
+        ? (request as any).cookies.get(targetCookieName)?.value
+        : (request as any).cookies.get(ADMIN_SESSION_COOKIE_NAME)?.value ||
+          (request as any).cookies.get(SESSION_COOKIE_NAME)?.value;
+      if (val) return val;
+    }
+
+    // 3. Check Cookie header string directly from request
+    const cookieHeader = request.headers.get('cookie') || request.headers.get('Cookie');
+    if (cookieHeader) {
+      const matchTarget = targetCookieName
+        ? cookieHeader.match(new RegExp(`(?:^|;\\s*)${targetCookieName}=([^;]+)`))
+        : null;
+      if (matchTarget?.[1]) return decodeURIComponent(matchTarget[1]);
+
+      const matchAdmin = cookieHeader.match(
+        new RegExp(`(?:^|;\\s*)${ADMIN_SESSION_COOKIE_NAME}=([^;]+)`),
+      );
+      if (matchAdmin?.[1]) return decodeURIComponent(matchAdmin[1]);
+
+      const matchSession = cookieHeader.match(
+        new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]+)`),
+      );
+      if (matchSession?.[1]) return decodeURIComponent(matchSession[1]);
+    }
+  }
+
+  // 4. Fallback to Next.js cookies() from next/headers
   try {
     const cookieStore = await cookies();
     const token = targetCookieName
       ? cookieStore.get(targetCookieName)?.value
       : cookieStore.get(ADMIN_SESSION_COOKIE_NAME)?.value ||
         cookieStore.get(SESSION_COOKIE_NAME)?.value;
+    if (token) return token;
+  } catch {
+    // Non-request context
+  }
 
+  return null;
+}
+
+/**
+ * Retrieves the authenticated user from the current session cookie or Bearer token.
+ * Verifies JWT signature, validates tokenHash in database, checks expiry,
+ * updates lastActiveAt timestamp, and returns user identity.
+ */
+export async function getCurrentUser(
+  targetCookieName?: string,
+  request?: Request | NextRequest | null,
+): Promise<SessionUser | null> {
+  try {
+    const token = await resolveTokenFromSource(targetCookieName, request);
     if (!token) return null;
 
     // 1. Verify JWT signature
     const secret = getJwtSecret();
-    const decoded = jwt.verify(token, secret) as {
+    let decoded: {
       userId: string;
       phone?: string;
       email?: string;
       role: string;
-    };
+    } | null = null;
+
+    try {
+      decoded = jwt.verify(token, secret) as any;
+    } catch {
+      return null;
+    }
 
     if (!decoded || !decoded.userId) return null;
 
@@ -206,10 +283,12 @@ export async function getCurrentUser(targetCookieName?: string): Promise<Session
             .catch(() => {});
         }
 
+        const effectiveRole = session.user.role || decoded.role || 'USER';
+
         return {
           id: session.user.id,
           phone: session.user.mobile || decoded.phone || '',
-          role: session.user.role || decoded.role || 'USER',
+          role: effectiveRole,
           name: session.user.profile?.name || session.user.name || null,
           email: session.user.email,
           shopName: session.user.ownedShops?.[0]?.name || null,
@@ -259,25 +338,27 @@ export async function getCurrentUser(targetCookieName?: string): Promise<Session
 }
 
 /**
- * Retrieves the authenticated admin user from the navya_admin_session cookie.
+ * Retrieves the authenticated admin user from request Authorization header or
+ * navya_admin_session cookie.
  * Falls back to navya_session if the user role is an admin role.
  */
-export async function getAdminUser(): Promise<SessionUser | null> {
-  const adminUser = await getCurrentUser(ADMIN_SESSION_COOKIE_NAME);
-  if (
-    adminUser &&
-    ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes((adminUser.role || '').toUpperCase())
-  ) {
+export async function getAdminUser(
+  requestOrCookie?: Request | NextRequest | string | null,
+): Promise<SessionUser | null> {
+  const isReq =
+    requestOrCookie && typeof requestOrCookie === 'object' && 'headers' in requestOrCookie;
+  const req = isReq ? (requestOrCookie as Request | NextRequest) : null;
+  const cookieName = typeof requestOrCookie === 'string' ? requestOrCookie : undefined;
+
+  // 1. Try Bearer token or ADMIN_SESSION_COOKIE_NAME first
+  const adminUser = await getCurrentUser(cookieName || ADMIN_SESSION_COOKIE_NAME, req);
+  if (adminUser && ADMIN_ROLES.includes((adminUser.role || '').toUpperCase())) {
     return adminUser;
   }
 
-  const fallbackUser = await getCurrentUser(SESSION_COOKIE_NAME);
-  if (
-    fallbackUser &&
-    ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(
-      (fallbackUser.role || '').toUpperCase(),
-    )
-  ) {
+  // 2. Fall back to standard session cookie if user has admin privileges
+  const fallbackUser = await getCurrentUser(SESSION_COOKIE_NAME, req);
+  if (fallbackUser && ADMIN_ROLES.includes((fallbackUser.role || '').toUpperCase())) {
     return fallbackUser;
   }
 

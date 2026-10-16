@@ -6,7 +6,7 @@ import { AdminSellerReviewClient } from '@/frontend/features/admin/components/Ad
 import { prisma } from '@/lib/prisma';
 
 export const metadata: Metadata = {
-  title: 'Seller Application Review | Navya Admin Governance',
+  title: 'Seller Application Review | JiivaaKart Admin Governance',
   description:
     'Inspect merchant registration details, verify documents, and approve or reject seller onboarding applications.',
 };

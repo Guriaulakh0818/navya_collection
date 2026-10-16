@@ -61,7 +61,7 @@ export default function SettingsPage() {
             Notifications & Preferences
           </h2>
           <p className="text-xs font-medium text-slate-500 mb-6">
-            Manage how Navya Collection contacts you regarding orders and offers.
+            Manage how JiivaaKart contacts you regarding orders and offers.
           </p>
 
           <form onSubmit={handleSaveSettings} className="space-y-4">

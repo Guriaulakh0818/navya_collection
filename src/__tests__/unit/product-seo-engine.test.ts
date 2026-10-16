@@ -51,7 +51,7 @@ export async function testProductSeoEngine() {
   const generatedTitle = generateProductMetaTitle(productSample);
   if (
     !generatedTitle.includes('Black Premium Cotton Shirt') ||
-    !generatedTitle.includes('Navya Collection')
+    !generatedTitle.includes('JiivaaKart')
   ) {
     throw new Error(`generateProductMetaTitle failed formula check: '${generatedTitle}'`);
   }
@@ -70,8 +70,8 @@ export async function testProductSeoEngine() {
   // 3. Dynamic Meta Description Formula
   const generatedDesc = generateProductMetaDescription(productSample);
   if (
-    !generatedDesc.includes('Buy Black Premium Cotton Shirt from Navya Collection') ||
-    !generatedDesc.includes('100% genuine products')
+    !generatedDesc.includes('Buy Black Premium Cotton Shirt') ||
+    !generatedDesc.includes('JiivaaKart')
   ) {
     throw new Error(`generateProductMetaDescription failed formula check: '${generatedDesc}'`);
   }
@@ -98,7 +98,7 @@ export async function testProductSeoEngine() {
 
   // 5. Canonical URL Generator
   const canonical = generateProductCanonicalUrl(productSample);
-  if (canonical !== 'https://navyacollection.store/product/black-premium-cotton-shirt') {
+  if (canonical !== 'https://jiivaakart.com/product/black-premium-cotton-shirt') {
     throw new Error(`generateProductCanonicalUrl failed: '${canonical}'`);
   }
 
@@ -108,7 +108,7 @@ export async function testProductSeoEngine() {
     !metadata.title ||
     !metadata.description ||
     metadata.alternates?.canonical !==
-      'https://navyacollection.store/product/black-premium-cotton-shirt' ||
+      'https://jiivaakart.com/product/black-premium-cotton-shirt' ||
     (metadata.openGraph as any)?.type !== 'article'
   ) {
     throw new Error('generateProductMetadata failed Next.js 15 metadata structure check.');

@@ -28,7 +28,7 @@ const dmSans = DM_Sans({
 export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
-    { media: '(prefers-color-scheme: dark)', color: '#09172E' },
+    { media: '(prefers-color-scheme: dark)', color: '#0A2342' },
   ],
   width: 'device-width',
   initialScale: 1,
@@ -43,10 +43,10 @@ export const metadata: Metadata = {
   },
   description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
   keywords: SEO_CONSTANTS.DEFAULT_KEYWORDS,
-  authors: [{ name: 'Navya Collection', url: SEO_CONSTANTS.SITE_URL }],
-  creator: 'Navya Collection',
-  publisher: 'Navya Collection',
-  applicationName: 'Navya Collection',
+  authors: [{ name: 'JiivaaKart', url: SEO_CONSTANTS.SITE_URL }],
+  creator: 'JiivaaKart',
+  publisher: 'JiivaaKart',
+  applicationName: 'JiivaaKart',
   alternates: {
     canonical: '/',
   },

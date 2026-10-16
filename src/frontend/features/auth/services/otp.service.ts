@@ -506,7 +506,7 @@ export class OtpService {
     let user: { id: string; email: string; name?: string; role: string } = {
       id: `usr_${email.replace(/[^a-z0-9]/gi, '_')}`,
       email,
-      name: 'Navya Customer',
+      name: 'Jiivaa Customer',
       role: 'USER',
     };
 
@@ -520,11 +520,11 @@ export class OtpService {
         user = {
           id: dbUser.id,
           email: dbUser.email || email,
-          name: dbUser.name || dbUser.profile?.name || 'Navya Customer',
+          name: dbUser.name || dbUser.profile?.name || 'Jiivaa Customer',
           role: dbUser.role || 'USER',
         };
       } else {
-        const defaultName = email.split('@')[0] || 'Navya Customer';
+        const defaultName = email.split('@')[0] || 'Jiivaa Customer';
         const newUser = await prisma.user.create({
           data: {
             email,
@@ -553,7 +553,7 @@ export class OtpService {
       user = {
         id: `usr_${email.replace(/[^a-z0-9]/gi, '_')}`,
         email,
-        name: 'Navya Customer',
+        name: 'Jiivaa Customer',
         role: 'USER',
       };
     }
