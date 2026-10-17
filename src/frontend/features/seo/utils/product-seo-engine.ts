@@ -250,6 +250,9 @@ export function generateProductJsonLdSchemas(product: ProductSeoInput, context?:
     priceCurrency: currency,
     price: Number(product.price || 0),
     priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    validFrom: product.createdAt
+      ? new Date(product.createdAt).toISOString().split('T')[0]
+      : '2026-01-01',
     itemCondition: 'https://schema.org/NewCondition',
     availability:
       product.stock !== undefined && product.stock <= 0

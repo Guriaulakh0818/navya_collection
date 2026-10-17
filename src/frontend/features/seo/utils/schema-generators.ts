@@ -36,6 +36,7 @@ export function generateOrganizationSchema(input?: OrganizationSchemaInput) {
     ],
     address: {
       '@type': 'PostalAddress',
+      streetAddress: SEO_CONSTANTS.ORGANIZATION.ADDRESS.STREET_ADDRESS,
       addressLocality: SEO_CONSTANTS.ORGANIZATION.ADDRESS.ADDRESS_LOCALITY,
       addressRegion: SEO_CONSTANTS.ORGANIZATION.ADDRESS.ADDRESS_REGION,
       postalCode: SEO_CONSTANTS.ORGANIZATION.ADDRESS.POSTAL_CODE,
@@ -101,6 +102,7 @@ export function generateProductSchema(product: ProductSchemaInput) {
       priceCurrency: currency,
       price: product.price,
       priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      validFrom: '2026-01-01',
       itemCondition: 'https://schema.org/NewCondition',
       availability:
         product.inStock !== false ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',

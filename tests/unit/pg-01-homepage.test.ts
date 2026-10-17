@@ -47,11 +47,13 @@ describe('PG-01 — PUBLIC HOMEPAGE FORENSIC QA AUDIT SUITE', () => {
     });
 
     it('verifies headquarters location in Fatehabad, Haryana, India', () => {
+      expect(SEO_CONSTANTS.ORGANIZATION.ADDRESS.STREET_ADDRESS).toBe('Main Market');
       expect(SEO_CONSTANTS.ORGANIZATION.ADDRESS.ADDRESS_LOCALITY).toBe('Fatehabad');
       expect(SEO_CONSTANTS.ORGANIZATION.ADDRESS.ADDRESS_REGION).toBe('Haryana');
       expect(SEO_CONSTANTS.ORGANIZATION.ADDRESS.POSTAL_CODE).toBe('125050');
       expect(SEO_CONSTANTS.ORGANIZATION.ADDRESS.ADDRESS_COUNTRY).toBe('IN');
 
+      expect(AEO_FACTS.BRAND.HEADQUARTERS.STREET).toBe('Main Market');
       expect(AEO_FACTS.BRAND.HEADQUARTERS.CITY).toBe('Fatehabad');
       expect(AEO_FACTS.BRAND.HEADQUARTERS.STATE).toBe('Haryana');
       expect(AEO_FACTS.BRAND.HEADQUARTERS.PINCODE).toBe('125050');
@@ -92,6 +94,7 @@ describe('PG-01 — PUBLIC HOMEPAGE FORENSIC QA AUDIT SUITE', () => {
       expect(orgSchema.name).toBe('JiivaaKart');
       expect(orgSchema.legalName).toBe('JiivaaKart Private Limited');
       expect(orgSchema.url).toBe('https://jiivaakart.com');
+      expect(orgSchema.address.streetAddress).toBe('Main Market');
       expect(orgSchema.address.addressLocality).toBe('Fatehabad');
       expect(orgSchema.address.addressRegion).toBe('Haryana');
       expect(orgSchema.address.postalCode).toBe('125050');

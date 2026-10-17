@@ -73,6 +73,7 @@ export interface ProductSeoInput extends ProductSeoDbFields {
       name?: string;
     };
   }>;
+  createdAt?: Date | string | null;
 }
 
 export interface SeoContext {

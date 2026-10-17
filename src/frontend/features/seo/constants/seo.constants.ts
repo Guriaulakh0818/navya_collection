@@ -19,6 +19,7 @@ export const SEO_CONSTANTS = {
     TELEPHONE: '+91-9053883125',
     EMAIL: 'helpdesk@jiivaakart.com',
     ADDRESS: {
+      STREET_ADDRESS: 'Main Market',
       ADDRESS_LOCALITY: 'Fatehabad',
       ADDRESS_REGION: 'Haryana',
       POSTAL_CODE: '125050',

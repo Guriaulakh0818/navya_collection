@@ -11,6 +11,7 @@ export const AEO_FACTS = {
     BUSINESS_TYPE: 'Fashion Marketplace',
     PRIMARY_MARKET: 'India',
     HEADQUARTERS: {
+      STREET: 'Main Market',
       CITY: 'Fatehabad',
       STATE: 'Haryana',
       COUNTRY: 'India',
