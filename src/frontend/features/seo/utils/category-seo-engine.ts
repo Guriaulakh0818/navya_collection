@@ -168,6 +168,35 @@ export function generateCategoryJsonLdSchemas(options: CategoryJsonLdOptions): a
     schemas.push(generateItemListSchema(itemListProducts));
   }
 
+  // 3. Dynamic Category FAQ Schema for AI Search (AEO) and Rich Snippets
+  const categoryFaqs = [
+    {
+      question: `What types of ${category.name} can I buy on JiivaaKart?`,
+      answer: `JiivaaKart features authentic, hand-curated ${category.name} from verified regional Indian boutiques, designers, and master weavers, ensuring premium fabrics and genuine craftsmanship.`,
+    },
+    {
+      question: `Is Cash on Delivery (COD) and 7-day return available for ${category.name}?`,
+      answer: `Yes, Cash on Delivery is supported on orders up to ₹5,000, and all eligible ${category.name} are backed by JiivaaKart's 7-day buyer protection return and exchange policy.`,
+    },
+    {
+      question: `How fast is the shipping for ${category.name}?`,
+      answer: `Orders are shipped via insured express logistics partners through Shiprocket and typically arrive in 2 to 5 business days across India. Enjoy free shipping on orders above ₹499.`,
+    },
+  ];
+
+  schemas.push({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: categoryFaqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  });
+
   return schemas;
 }
 

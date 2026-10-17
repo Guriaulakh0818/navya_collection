@@ -171,6 +171,12 @@ export function generateShopJsonLdSchemas(shop: ShopSeoInput, context?: SeoConte
     url: canonicalUrl,
     image: shop.banner || shop.logo || SEO_CONSTANTS.DEFAULT_OG_IMAGE,
     priceRange: '₹₹',
+    currenciesAccepted: 'INR',
+    paymentAccepted: 'Cash on Delivery, UPI, Credit Card, Debit Card, NetBanking',
+    areaServed: {
+      '@type': 'Country',
+      name: 'India',
+    },
     parentOrganization: {
       '@type': 'Organization',
       name: SEO_CONSTANTS.SITE_NAME,
@@ -229,5 +235,30 @@ export function generateShopJsonLdSchemas(shop: ShopSeoInput, context?: SeoConte
     { name: shop.name, url: `/shop/${generateSeoSlug(shop.slug || shop.name)}` },
   ]);
 
-  return [storeSchema, breadcrumbSchema];
+  // 3. Dynamic Boutique Store FAQ Schema for Local Search & AEO
+  const shopFaqs = [
+    {
+      question: `Is ${shop.name} a verified boutique on JiivaaKart?`,
+      answer: `Yes, ${shop.name} is a verified merchant partner on JiivaaKart. All collections are inspected for authentic craftsmanship and quality materials.`,
+    },
+    {
+      question: `Does ${shop.name} deliver across India?`,
+      answer: `Yes, ${shop.name} ships products nationwide across India via Shiprocket's insured courier network with live tracking and 7-day return support.`,
+    },
+  ];
+
+  const shopFaqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: shopFaqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
+  return [storeSchema, breadcrumbSchema, shopFaqSchema];
 }

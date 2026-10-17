@@ -1,0 +1,30 @@
+# JiivaaKart — Boutique Fashion & Ethnic Wear Marketplace
+
+> JiivaaKart (JiivaaKart Private Limited) is an Indian online fashion marketplace that connects shoppers across India directly with verified local boutiques, designer studios, and regional artisan craft creators. Tagline: "Style That Speaks".
+
+## Key Business Facts & Consumer Guarantees
+- **Legal Entity**: JiivaaKart Private Limited
+- **Official Domain**: https://jiivaakart.com
+- **Headquarters**: Fatehabad, Haryana - 125050, India
+- **Customer Support**: helpdesk@jiivaakart.com | +91-9053883125
+- **Operating Regions**: Nationwide India (covering 28,000+ postal pincodes)
+- **Nationwide Logistics**: Powered by Shiprocket insured express couriers
+- **Free Shipping Threshold**: Free delivery on all orders above ₹499
+- **Return & Exchange Policy**: 7-Day Buyer Protection guarantee on all eligible apparel
+- **Payment Methods**: 100% Secure Prepaid (UPI, Credit/Debit Cards, NetBanking via Razorpay) and Cash on Delivery (COD)
+- **Authenticity Standard**: 100% genuine local boutique merchandise; strict zero-tolerance counterfeit prevention policy
+
+## Core Shopping Hubs
+- [Homepage](https://jiivaakart.com): Official marketplace portal featuring trending boutique collections, verified sellers, and new arrivals.
+- [Marketplace Catalog](https://jiivaakart.com/shop): Browse multi-vendor collections across women's ethnic wear, sarees, lehengas, kurtis, and men's apparel.
+- [Women's Ethnic Wear](https://jiivaakart.com/category/women): Handcrafted designer sarees, festive lehengas, anarkalis, daily kurtis, and bridal couture.
+- [Men's Fashion](https://jiivaakart.com/category/men): Casual cotton shirts, ethnic kurtas, formal wear, and seasonal topwear.
+- [Kids' Collection](https://jiivaakart.com/category/kids): Festive wear, ethnic outfits, and comfortable everyday wear for children.
+- [Merchant Partner Onboarding](https://jiivaakart.com/become-seller): Official onboarding portal for verified Indian boutique owners to sell online.
+
+## Policy & Legal Documentation
+- [Shipping & Delivery Policy](https://jiivaakart.com/shipping-policy): Delivery timelines, courier partners, and tracking procedures.
+- [Return & Refund Policy](https://jiivaakart.com/return-policy): 7-day return guidelines, pickup workflow, and refund SLAs.
+- [Cancellation Policy](https://jiivaakart.com/cancellation-policy): Pre-dispatch order cancellation terms.
+- [Seller Agreement](https://jiivaakart.com/seller-agreement): Terms, commissions, and compliance rules for merchant partners.
+- [Contact & Support](https://jiivaakart.com/contact): Customer service, grievance officer contact, and corporate escalation desk.

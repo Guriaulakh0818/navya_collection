@@ -448,11 +448,12 @@ describe('PG-04 — WOMEN PUBLIC PAGE FORENSIC PRODUCTION AUDIT SUITE', () => {
         canonicalUrl: 'https://navyacollection.store/category/women',
       });
 
-      expect(schemas).toHaveLength(2);
+      expect(schemas).toHaveLength(3);
       expect(schemas[0]['@type']).toBe('BreadcrumbList');
       expect(schemas[1]['@type']).toBe('ItemList');
       expect(schemas[1].itemListElement).toHaveLength(1);
       expect(schemas[1].itemListElement[0].name).toBe('Hand-Painted Floral Organza Silk Saree');
+      expect(schemas[2]['@type']).toBe('FAQPage');
     });
 
     it('23. No fake ratings or synthetic review counts are generated', () => {

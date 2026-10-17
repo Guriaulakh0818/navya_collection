@@ -1,0 +1,52 @@
+# JiivaaKart — Complete Knowledge Base & Marketplace Directory
+URL: https://jiivaakart.com
+Organization: JiivaaKart Private Limited
+Tagline: Style That Speaks
+
+## 1. About JiivaaKart
+JiivaaKart is India's dedicated multi-vendor boutique fashion and regional ethnic couture marketplace. Unlike generic mass-market aggregators, JiivaaKart partners directly with verified local fashion boutiques, independent master tailors, regional textile artisans, and design houses across India.
+
+### Mission
+To bridge the gap between discerning fashion shoppers and verified regional Indian boutiques, offering authentic designer sarees, bridal lehengas, hand-block kurtis, and contemporary menswear with nationwide logistics, insured delivery, and guaranteed buyer protection.
+
+## 2. Platform Specifications & Policies
+
+### 2.1 Shipping & Order Delivery
+- Partner Network: Integrated with Shiprocket API connecting major Tier-1, Tier-2, and Tier-3 couriers (Bluedart, Delhivery, DTDC, Shadowfax, Xpressbees).
+- Transit Time: Typically 2 to 5 business days across 28,000+ Indian postal pincodes. Dispatch takes place within 24–48 hours of order confirmation.
+- Pricing: Free nationwide delivery on orders of ₹499 and above. A nominal shipping fee of ₹49 applies on orders under ₹499.
+- Tracking: Real-time live SMS, WhatsApp, and email tracking notifications provided at every milestone (Order Confirmed, In-Transit, Out for Delivery, Delivered).
+
+### 2.2 Buyer Protection & Returns
+- 7-Day Hassle-Free Return Policy: Eligible products can be returned or exchanged within 7 calendar days of physical delivery.
+- Return Pickup: Complimentary reverse courier pickup from the buyer's doorstep.
+- Refund Guarantee: Instant refunds initiated to original payment mode or UPI upon quality verification at the boutique facility.
+
+### 2.3 Payments & Security
+- Razorpay Payment Gateway: 100% RBI-compliant, PCI-DSS Level 1 certified checkout accepting UPI (Google Pay, PhonePe, Paytm, BHIM), all major Credit/Debit Cards (Visa, MasterCard, RuPay), and NetBanking.
+- Cash on Delivery (COD): Supported up to ₹5,000 order value with zero pre-payment required.
+
+## 3. Product Catalog & Categories
+
+### 3.1 Women's Ethnic & Fusion Wear
+- Sarees: Handcrafted Banarasi Silk, Kanjeevaram, Chanderi, Georgette, Organza, Floral Print, and Daily Wear Sarees.
+- Lehengas: Bridal Lehengas, Semi-Stitched Festive Ensembles, Mirror-Work Chaniya Cholis.
+- Kurtis & Suits: Anarkali Suits, Straight Cut Kurtis, Sharara Sets, Hand-Block Jaipur Prints.
+
+### 3.2 Men's Fashion
+- Casual Shirts: 100% Egyptian Cotton textured shirts, button-downs, printed casual shirts, cuban collar vacation shirts.
+- Ethnic Gents Wear: Kurta-pajama sets, Nehru jackets, festive ethnic shirts.
+
+### 3.3 Kids' Apparel
+- Festive traditional outfits, kurta-pyjama sets, and ethnic dresses for boys and girls.
+
+## 4. Merchant Partner Program
+- Boutique Registration: https://jiivaakart.com/become-seller
+- Verification Process: Strict business KYC verification (GSTIN/PAN verification via Sandbox.co.in).
+- Zero Listing Fees: Fair commission model only upon successful order fulfillment.
+
+## 5. Contact & Support
+- Customer Support Email: helpdesk@jiivaakart.com
+- Merchant Onboarding Email: support@jiivaakart.com
+- Customer Helpline: +91-9053883125
+- Corporate Headquarters: JiivaaKart Private Limited, Fatehabad, Haryana - 125050, India.

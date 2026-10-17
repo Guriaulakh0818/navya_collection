@@ -108,6 +108,43 @@ export function generateProductSchema(product: ProductSchemaInput) {
         '@type': 'Organization',
         name: SEO_CONSTANTS.SITE_NAME,
       },
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'IN',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 7,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        returnFees: 'https://schema.org/FreeReturn',
+      },
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: Number(product.price || 0) >= 499 ? 0 : 49,
+          currency,
+        },
+        shippingDestination: [
+          {
+            '@type': 'DefinedRegion',
+            addressCountry: 'IN',
+          },
+        ],
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 1,
+            maxValue: 2,
+            unitCode: 'd',
+          },
+          transitTime: {
+            '@type': 'QuantitativeValue',
+            minValue: 2,
+            maxValue: 5,
+            unitCode: 'd',
+          },
+        },
+      },
     },
   };
 

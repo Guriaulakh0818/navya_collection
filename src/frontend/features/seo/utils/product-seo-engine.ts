@@ -259,6 +259,43 @@ export function generateProductJsonLdSchemas(product: ProductSeoInput, context?:
       '@type': 'Organization',
       name: sellerName,
     },
+    hasMerchantReturnPolicy: {
+      '@type': 'MerchantReturnPolicy',
+      applicableCountry: 'IN',
+      returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+      merchantReturnDays: 7,
+      returnMethod: 'https://schema.org/ReturnByMail',
+      returnFees: 'https://schema.org/FreeReturn',
+    },
+    shippingDetails: {
+      '@type': 'OfferShippingDetails',
+      shippingRate: {
+        '@type': 'MonetaryAmount',
+        value: Number(product.price || 0) >= 499 ? 0 : 49,
+        currency,
+      },
+      shippingDestination: [
+        {
+          '@type': 'DefinedRegion',
+          addressCountry: 'IN',
+        },
+      ],
+      deliveryTime: {
+        '@type': 'ShippingDeliveryTime',
+        handlingTime: {
+          '@type': 'QuantitativeValue',
+          minValue: 1,
+          maxValue: 2,
+          unitCode: 'd',
+        },
+        transitTime: {
+          '@type': 'QuantitativeValue',
+          minValue: 2,
+          maxValue: 5,
+          unitCode: 'd',
+        },
+      },
+    },
   };
 
   // 3. Base Product Schema
@@ -344,5 +381,34 @@ export function generateProductJsonLdSchemas(product: ProductSeoInput, context?:
 
   const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
 
-  return [productSchema, breadcrumbSchema];
+  // 7. Dynamic Product FAQ Schema for Rich Results & AEO
+  const productFaqs = [
+    {
+      question: `Is this ${product.name} eligible for return or exchange?`,
+      answer: `Yes, this product is backed by JiivaaKart's 7-Day Buyer Protection policy. You can easily initiate a return or exchange within 7 days of delivery if the item is unworn with original tags attached.`,
+    },
+    {
+      question: `What are the shipping charges and delivery time?`,
+      answer: `Orders are shipped via insured couriers through Shiprocket and typically arrive within 2 to 5 business days across India. Free delivery is available on all orders of ₹499 and above.`,
+    },
+    {
+      question: `Is this product from a verified authentic boutique?`,
+      answer: `Yes, all apparel on JiivaaKart is curated from verified local boutiques and artisan partners across India, ensuring authentic craftsmanship and quality materials.`,
+    },
+  ];
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: productFaqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
+  return [productSchema, breadcrumbSchema, faqSchema];
 }

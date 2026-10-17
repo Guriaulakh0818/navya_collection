@@ -318,7 +318,7 @@ describe('PG-02 — PUBLIC SHOP PAGES FORENSIC QA AUDIT SUITE', () => {
       };
 
       const schemas = generateShopJsonLdSchemas(mockShopWithReviews);
-      expect(schemas).toHaveLength(2);
+      expect(schemas).toHaveLength(3);
 
       const storeSchema = schemas[0] as any;
       expect(storeSchema['@context']).toBe('https://schema.org');
@@ -331,6 +331,9 @@ describe('PG-02 — PUBLIC SHOP PAGES FORENSIC QA AUDIT SUITE', () => {
       expect(breadcrumbs['@type']).toBe('BreadcrumbList');
       expect(breadcrumbs.itemListElement).toHaveLength(3);
       expect(breadcrumbs.itemListElement[2].name).toBe('Jaspreet Fashions');
+
+      const faqSchema = schemas[2] as any;
+      expect(faqSchema['@type']).toBe('FAQPage');
     });
 
     it('15. NEVER generates fake ratings or aggregateRating when reviews count is 0', () => {
