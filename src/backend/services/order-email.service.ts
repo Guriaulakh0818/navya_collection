@@ -23,7 +23,7 @@ export class OrderEmailNotificationService {
       process.env.EMAIL_SENDER ||
       emailConfig.SENDER_EMAIL ||
       'gurvindersingh0218@gmail.com';
-    const senderName = emailConfig.SENDER_NAME || 'Navya Collection';
+    const senderName = emailConfig.SENDER_NAME || 'JiivaaKart';
 
     const cleanEmail = (payload.toEmail || '').trim().toLowerCase();
     if (!cleanEmail || !cleanEmail.includes('@')) {
@@ -229,9 +229,12 @@ export class OrderEmailNotificationService {
             <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
               
               <!-- Header -->
-              <div style="background: linear-gradient(135deg, #183A73 0%, #0F2145 100%); padding: 32px 24px; text-align: center;">
-                <h1 style="color: #ffffff; font-size: 26px; font-weight: 900; margin: 0; letter-spacing: 2px;">NAVYA COLLECTION</h1>
-                <p style="color: #F15A25; font-size: 11px; font-weight: 800; letter-spacing: 4px; margin-top: 6px; text-transform: uppercase;">Style That Speaks</p>
+              <div style="background: linear-gradient(135deg, #0A2342 0%, #061527 100%); padding: 28px 24px; text-align: center;">
+                <div style="text-align: center; margin-bottom: 8px;">
+                  <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 44px; width: auto; object-fit: contain; margin: 0 auto; display: block;" />
+                </div>
+                <h1 style="color: #ffffff; font-size: 24px; font-weight: 900; margin: 6px 0 0 0; letter-spacing: 2px;">JIIVAAKART</h1>
+                <p style="color: #F28C28; font-size: 11px; font-weight: 800; letter-spacing: 4px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
               </div>
 
               <!-- Main Content -->
@@ -310,7 +313,7 @@ export class OrderEmailNotificationService {
         this.sendBrevoEmail({
           toEmail: customerEmail,
           toName: customerName,
-          subject: `🎉 Order Confirmed! #${orderNumber} - Navya Collection`,
+          subject: `🎉 Order Confirmed! #${orderNumber} - JiivaaKart`,
           htmlContent: customerHtml,
         }).catch((err) => console.error('[CUSTOMER_ORDER_EMAIL_ERR]', err));
       }
@@ -421,9 +424,12 @@ export class OrderEmailNotificationService {
             <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
               
               <!-- Header -->
-              <div style="background-color: #0f172a; padding: 28px 24px; text-align: center; border-bottom: 4px solid #F15A25;">
-                <h1 style="color: #ffffff; font-size: 22px; font-weight: 800; margin: 0; letter-spacing: 1px;">NAVYA SELLER HUB</h1>
-                <p style="color: #f59e0b; font-size: 12px; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 2px;">New Order Notification</p>
+              <div style="background-color: #0A2342; padding: 28px 24px; text-align: center; border-bottom: 4px solid #F28C28;">
+                <div style="text-align: center; margin-bottom: 8px;">
+                  <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 40px; width: auto; object-fit: contain; margin: 0 auto; display: block;" />
+                </div>
+                <h1 style="color: #ffffff; font-size: 22px; font-weight: 800; margin: 6px 0 0 0; letter-spacing: 1px;">JIIVAAKART SELLER HUB</h1>
+                <p style="color: #F28C28; font-size: 12px; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 2px;">New Order Notification</p>
               </div>
 
               <!-- Main Content -->
@@ -499,7 +505,7 @@ export class OrderEmailNotificationService {
               <!-- Footer -->
               <div style="background-color: #f8fafc; padding: 20px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
                 <p style="margin: 0 0 4px 0; color: #64748b;">Please pack and dispatch within 24-48 hours to maintain your Fast Dispatch seller badge.</p>
-                <p style="margin: 0;">© ${new Date().getFullYear()} Navya Collection Multi-Vendor Merchant Portal</p>
+                <p style="margin: 0;">© ${new Date().getFullYear()} JiivaaKart Multi-Vendor Merchant Portal</p>
               </div>
             </div>
           </body>
@@ -550,8 +556,11 @@ export class OrderEmailNotificationService {
         <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
           <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
             
-            <div style="background-color: #0f172a; padding: 24px; text-align: center;">
-              <h2 style="color: #f59e0b; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px;">NAVYA ADMIN GOVERNANCE</h2>
+            <div style="background-color: #0A2342; padding: 24px; text-align: center;">
+              <div style="text-align: center; margin-bottom: 8px;">
+                <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 40px; width: auto; object-fit: contain; margin: 0 auto; display: block;" />
+              </div>
+              <h2 style="color: #F28C28; font-size: 20px; font-weight: 800; margin: 6px 0 0 0; letter-spacing: 1px;">JIIVAAKART ADMIN GOVERNANCE</h2>
               <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">New Marketplace Transaction Placed</p>
             </div>
 
@@ -592,7 +601,7 @@ export class OrderEmailNotificationService {
             </div>
 
             <div style="background-color: #f8fafc; padding: 16px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
-              © ${new Date().getFullYear()} Navya Collection Marketplace Engine
+              © ${new Date().getFullYear()} JiivaaKart Marketplace Engine
             </div>
           </div>
         </body>
@@ -710,7 +719,7 @@ export class OrderEmailNotificationService {
           break;
 
         case 'DELIVERED':
-          emailSubject = `🎉 Package Delivered! Thank you for shopping with Navya Collection - #${orderNumber}`;
+          emailSubject = `🎉 Package Delivered! Thank you for shopping with JiivaaKart - #${orderNumber}`;
           badgeLabel = 'Successfully Delivered';
           badgeColor = '#16a34a';
           titleMessage = 'Your package has been delivered!';
@@ -753,9 +762,12 @@ export class OrderEmailNotificationService {
             <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
               
               <!-- Header -->
-              <div style="background: linear-gradient(135deg, #183A73 0%, #0F2145 100%); padding: 30px 24px; text-align: center;">
-                <h1 style="color: #ffffff; font-size: 24px; font-weight: 900; margin: 0; letter-spacing: 2px;">NAVYA COLLECTION</h1>
-                <p style="color: #F15A25; font-size: 11px; font-weight: 800; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
+              <div style="background: linear-gradient(135deg, #0A2342 0%, #061527 100%); padding: 28px 24px; text-align: center;">
+                <div style="text-align: center; margin-bottom: 8px;">
+                  <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 44px; width: auto; object-fit: contain; margin: 0 auto; display: block;" />
+                </div>
+                <h1 style="color: #ffffff; font-size: 24px; font-weight: 900; margin: 6px 0 0 0; letter-spacing: 2px;">JIIVAAKART</h1>
+                <p style="color: #F28C28; font-size: 11px; font-weight: 800; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
               </div>
 
               <!-- Main Content -->

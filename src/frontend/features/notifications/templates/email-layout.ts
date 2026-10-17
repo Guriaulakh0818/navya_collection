@@ -22,6 +22,9 @@ export function wrapEmailLayout(title: string, bodyHtml: string): string {
 <body>
   <div class="container">
     <div class="header">
+      <div style="text-align: center; margin-bottom: 10px;">
+        <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 44px; width: auto; object-fit: contain; margin: 0 auto; display: block;" />
+      </div>
       <div class="header-logo">JIIVAAKART</div>
       <div class="header-subtitle">STYLE THAT SPEAKS</div>
     </div>

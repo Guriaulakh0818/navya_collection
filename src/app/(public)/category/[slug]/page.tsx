@@ -354,7 +354,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (CATEGORY_ALIAS_MAP[cleanSlug]) {
     return {
       alternates: {
-        canonical: `https://navyacollection.store/category/${CATEGORY_ALIAS_MAP[cleanSlug]}`,
+        canonical: `https://jiivaakart.com/category/${CATEGORY_ALIAS_MAP[cleanSlug]}`,
       },
       robots: { index: false, follow: true },
     };
@@ -808,7 +808,7 @@ export default async function CategoryPage({ params }: Props) {
           }
         : null,
     products: allProducts,
-    canonicalUrl: `https://navyacollection.store/category/${category.slug}`,
+    canonicalUrl: `https://jiivaakart.com/category/${category.slug}`,
   });
 
   return (

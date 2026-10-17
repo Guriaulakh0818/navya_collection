@@ -56,6 +56,7 @@ export async function POST(req: Request) {
             htmlContent: `
               <div style="font-family: Arial, sans-serif; padding: 28px; background-color: #f8fafc; color: #0f172a; border-radius: 16px; border: 1px solid #e2e8f0; max-width: 600px; margin: 0 auto;">
                 <div style="text-align: center; margin-bottom: 20px;">
+                  <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 44px; width: auto; object-fit: contain; margin: 0 auto 8px auto; display: block;" />
                   <h1 style="color: #0A2342; font-size: 24px; font-weight: 900; margin: 0;">JIIVAAKART</h1>
                   <p style="color: #F28C28; font-size: 11px; font-weight: 800; tracking: 3px; margin: 4px 0 0 0; text-transform: uppercase;">VIP Club Membership Confirmed</p>
                 </div>
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
                 </div>
 
                 <div style="text-align: center; margin-top: 24px;">
-                  <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store'}/shop" style="background-color: #0A2342; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 14px; font-weight: 800; border-radius: 50px; display: inline-block; shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com'}/shop" style="background-color: #0A2342; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 14px; font-weight: 800; border-radius: 50px; display: inline-block; shadow: 0 4px 6px rgba(0,0,0,0.1);">
                     Shop Latest Collection Now 🛍️
                   </a>
                 </div>

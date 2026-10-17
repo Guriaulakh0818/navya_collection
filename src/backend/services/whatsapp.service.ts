@@ -14,7 +14,7 @@ export function generateWhatsAppReturnUrl(params: {
   requestType: 'Return' | 'Replacement';
 }): string {
   const message = [
-    'Hi Navya Collection,',
+    'Hi JiivaaKart,',
     'I want to raise a return/replacement request.',
     '',
     `Order ID: ${params.orderNumber}`,

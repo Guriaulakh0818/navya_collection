@@ -104,13 +104,14 @@ export class NotificationService {
 
     const htmlContent = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
-        <div style="text-align: center; margin-bottom: 24px; background-color: #0f172a; padding: 20px; border-radius: 12px;">
-          <h2 style="color: #f59e0b; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px;">NAVYA COLLECTION ADMIN GOVERNANCE</h2>
+        <div style="text-align: center; margin-bottom: 24px; background-color: #0A2342; padding: 20px; border-radius: 12px;">
+          <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 40px; width: auto; object-fit: contain; margin: 0 auto 8px auto; display: block;" />
+          <h2 style="color: #F28C28; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px;">JIIVAAKART ADMIN GOVERNANCE</h2>
           <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">New Merchant Onboarding Submission Alert</p>
         </div>
         
         <p style="font-size: 15px; color: #1e293b; font-weight: 600;">Hello Administrator,</p>
-        <p style="font-size: 14px; color: #475569; line-height: 1.5;">A new merchant partner has completed and submitted their 8-step registration on Navya Collection Marketplace:</p>
+        <p style="font-size: 14px; color: #475569; line-height: 1.5;">A new merchant partner has completed and submitted their 8-step registration on JiivaaKart Marketplace:</p>
         
         <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px; margin: 20px 0;">
           <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;">
@@ -152,7 +153,7 @@ export class NotificationService {
         </p>
 
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
-        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">© ${new Date().getFullYear()} Navya Collection Marketplace Governance Engine</p>
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">© ${new Date().getFullYear()} JiivaaKart Marketplace Governance Engine</p>
       </div>
     `;
 
@@ -162,7 +163,7 @@ export class NotificationService {
         await axios.post(
           `${emailConfig.API_URL}${emailConfig.EMAIL_ENDPOINT}`,
           {
-            sender: { name: 'Navya Seller Onboarding', email: emailConfig.SENDER_EMAIL },
+            sender: { name: 'JiivaaKart Seller Onboarding', email: emailConfig.SENDER_EMAIL },
             to: [{ email: adminEmail, name: 'Marketplace Admin' }],
             subject: `🚨 [New Seller Application] ${options.shopName} (${options.sellerName})`,
             htmlContent,
@@ -225,13 +226,14 @@ export class NotificationService {
 
     const htmlContent = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
-        <div style="text-align: center; margin-bottom: 24px; background-color: #0f172a; padding: 20px; border-radius: 12px;">
-          <h2 style="color: #f59e0b; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px;">NAVYA COLLECTION ADMIN GOVERNANCE</h2>
+        <div style="text-align: center; margin-bottom: 24px; background-color: #0A2342; padding: 20px; border-radius: 12px;">
+          <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 40px; width: auto; object-fit: contain; margin: 0 auto 8px auto; display: block;" />
+          <h2 style="color: #F28C28; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px;">JIIVAAKART ADMIN GOVERNANCE</h2>
           <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">New Product Approval Required</p>
         </div>
         
         <p style="font-size: 15px; color: #1e293b; font-weight: 600;">Hello Administrator,</p>
-        <p style="font-size: 14px; color: #475569; line-height: 1.5;">A boutique merchant partner has submitted a new product listing for your review and approval before going live on the marketplace:</p>
+        <p style="font-size: 14px; color: #475569; line-height: 1.5;">A boutique merchant partner has submitted a new product listing for your review and approval before going live on the JiivaaKart marketplace:</p>
         
         <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px; margin: 20px 0;">
           <table style="width: 100%; border-collapse: collapse; font-size: 13px; color: #334155;">
@@ -281,7 +283,7 @@ export class NotificationService {
         </p>
 
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
-        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">© ${new Date().getFullYear()} Navya Collection Marketplace Governance Engine</p>
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">© ${new Date().getFullYear()} JiivaaKart Marketplace Governance Engine</p>
       </div>
     `;
 
@@ -292,7 +294,7 @@ export class NotificationService {
           `${emailConfig.API_URL}${emailConfig.EMAIL_ENDPOINT}`,
           {
             sender: {
-              name: 'Navya Product Governance',
+              name: 'JiivaaKart Product Governance',
               email:
                 process.env.BREVO_SENDER_EMAIL ||
                 emailConfig.SENDER_EMAIL ||
@@ -344,7 +346,7 @@ export class NotificationService {
       case 'APPROVED':
         title = '🎉 Boutique Seller Application Approved!';
         message = `Congratulations! Your boutique store "${shopName}" has been approved. You can now list products and manage orders from your Seller Dashboard.`;
-        emailSubject = `🎉 Application Approved! Welcome to Navya Collection Merchant Network`;
+        emailSubject = `🎉 Application Approved! Welcome to JiivaaKart Merchant Network`;
         statusBgColor = '#059669';
         break;
       case 'UNDER_REVIEW':
@@ -390,7 +392,8 @@ export class NotificationService {
         const htmlContent = `
           <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
             <div style="text-align: center; margin-bottom: 24px; background-color: ${statusBgColor}; padding: 20px; border-radius: 12px;">
-              <h2 style="color: #ffffff; font-size: 20px; font-weight: 800; margin: 0;">NAVYA COLLECTION MARKETPLACE</h2>
+              <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 40px; width: auto; object-fit: contain; margin: 0 auto 8px auto; display: block;" />
+              <h2 style="color: #ffffff; font-size: 20px; font-weight: 800; margin: 0;">JIIVAAKART MARKETPLACE</h2>
               <p style="color: #f8fafc; font-size: 12px; margin-top: 4px; font-weight: 600;">Status Update: ${status}</p>
             </div>
             
@@ -408,7 +411,7 @@ export class NotificationService {
             }
 
             <div style="text-align: center; margin: 28px 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com'}${status === 'APPROVED' ? '/seller/dashboard' : '/become-seller'}" style="background-color: #0f172a; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 14px; font-weight: 700; border-radius: 50px; display: inline-block;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com'}${status === 'APPROVED' ? '/seller/dashboard' : '/become-seller'}" style="background-color: #0A2342; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 14px; font-weight: 700; border-radius: 50px; display: inline-block;">
                 ${status === 'APPROVED' ? 'Access Seller Dashboard →' : 'View Application Status →'}
               </a>
             </div>
@@ -421,7 +424,7 @@ export class NotificationService {
         await axios.post(
           `${emailConfig.API_URL}${emailConfig.EMAIL_ENDPOINT}`,
           {
-            sender: { name: 'Navya Merchant Team', email: emailConfig.SENDER_EMAIL },
+            sender: { name: 'JiivaaKart Merchant Team', email: emailConfig.SENDER_EMAIL },
             to: [{ email, name: shopName }],
             subject: emailSubject,
             htmlContent,
@@ -455,7 +458,7 @@ export class NotificationService {
     return this.sendNotification({
       userId: sellerUserId,
       title: '✅ Product Approved & Live',
-      message: `Your product listing "${productName}" has been reviewed and approved. It is now live on the Navya Collection Multi-Vendor Marketplace.`,
+      message: `Your product listing "${productName}" has been reviewed and approved. It is now live on the JiivaaKart Multi-Vendor Marketplace.`,
       type: 'PROMOTION',
       link: '/seller/products',
     });
