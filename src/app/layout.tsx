@@ -115,7 +115,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className="min-h-screen bg-background font-sans text-foreground antialiased overflow-x-hidden max-w-full"
         suppressHydrationWarning
       >
-        <GoogleAnalytics />
+        <GoogleAnalytics
+          gaMeasurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-Z60T8WT006'}
+        />
         <AuthProvider>
           <QueryProvider>
             <ThemeProvider>
