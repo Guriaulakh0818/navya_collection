@@ -7,10 +7,7 @@ import { MetadataRoute } from 'next';
  * declare explicit noindex meta tags so search engines can read the directives without crawl blocks.
  */
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store').replace(
-    /\/+$/,
-    '',
-  );
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com').replace(/\/+$/, '');
 
   return {
     rules: [

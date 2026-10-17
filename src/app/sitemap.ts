@@ -14,10 +14,7 @@ import { prisma } from '@/lib/prisma';
  * - Active Public Marketplace Products (status === 'active', deletedAt: null)
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://navyacollection.store').replace(
-    /\/+$/,
-    '',
-  );
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com').replace(/\/+$/, '');
 
   const now = new Date();
 
