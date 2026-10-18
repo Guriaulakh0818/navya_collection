@@ -81,7 +81,7 @@ export default function SellerAgreementPage() {
           {/* Quick Summary Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-              <Percent className="w-5 h-5 text-amber-600" />
+              <Percent className="w-5 h-5 text-orange" />
               <h3 className="font-bold text-navy text-sm">10% Platform Commission</h3>
               <p className="text-[11px] text-slate-600">
                 Standard marketplace service fee (+ 18% GST on commission) upon successful delivery.
@@ -109,7 +109,7 @@ export default function SellerAgreementPage() {
           <div className="space-y-6 text-sm text-slate-700 leading-relaxed font-sans">
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-amber-600" />
+                <Building2 className="w-5 h-5 text-orange" />
                 1. Seller Onboarding, KYC &amp; Documentation
               </h2>
               <p>To operate a storefront on JiivaaKart, the merchant must provide:</p>
@@ -132,7 +132,7 @@ export default function SellerAgreementPage() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <IndianRupee className="w-5 h-5 text-amber-600" />
+                <IndianRupee className="w-5 h-5 text-orange" />
                 2. Invoicing, Commission &amp; Tax Deductions (GST TCS &amp; TDS 194-O)
               </h2>
               <p>
@@ -166,7 +166,7 @@ export default function SellerAgreementPage() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <Truck className="w-5 h-5 text-amber-600" />
+                <Truck className="w-5 h-5 text-orange" />
                 3. Order Fulfillment, Dispatch SLA &amp; Inventory Rules
               </h2>
               <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
@@ -191,7 +191,7 @@ export default function SellerAgreementPage() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <Scale className="w-5 h-5 text-amber-600" />
+                <Scale className="w-5 h-5 text-orange" />
                 4. Customer Returns vs. RTO Logistics Policy (BM-01 &amp; BM-04)
               </h2>
               <p className="text-xs sm:text-sm">

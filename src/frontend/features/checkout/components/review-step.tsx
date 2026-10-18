@@ -549,9 +549,9 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
           {previewData.warnings.map((w, idx) => (
             <div
               key={idx}
-              className="p-3 sm:p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2 break-words"
+              className="p-3 sm:p-3.5 rounded-2xl bg-orange/5 border border-orange/20 text-navy text-xs flex items-start gap-2 break-words"
             >
-              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+              <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-orange" />
               <span>{w}</span>
             </div>
           ))}
@@ -786,13 +786,15 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
         {selectedPaymentMethod === 'COD' &&
           previewData.codFee !== undefined &&
           previewData.codFee > 0 && (
-            <div className="rounded-xl bg-amber-50 border border-amber-200/80 p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900">
+            <div className="rounded-xl bg-orange/5 border border-orange/20 p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-navy">
               <span className="font-medium">
                 COD Handling Fee (1.5%):{' '}
-                <strong className="font-extrabold">₹{previewData.codFee.toFixed(2)}</strong> (Added
-                to total payable)
+                <strong className="font-extrabold text-orange">
+                  ₹{previewData.codFee.toFixed(2)}
+                </strong>{' '}
+                (Added to total payable)
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300 self-start sm:self-auto">
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-orange/10 text-orange px-2 py-0.5 rounded-full border border-orange/30 self-start sm:self-auto">
                 100% Non-refundable
               </span>
             </div>

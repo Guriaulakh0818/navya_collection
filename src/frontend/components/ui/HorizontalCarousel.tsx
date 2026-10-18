@@ -86,7 +86,7 @@ export function HorizontalCarousel({
                 aria-label="Scroll left"
                 className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-700 shadow-xs transition-all ${
                   canScrollLeft
-                    ? 'hover:bg-amber-500 hover:text-slate-950 hover:border-amber-500 cursor-pointer active:scale-95'
+                    ? 'hover:bg-navy hover:text-white hover:border-navy cursor-pointer active:scale-95'
                     : 'opacity-30 cursor-not-allowed'
                 }`}
               >
@@ -99,7 +99,7 @@ export function HorizontalCarousel({
                 aria-label="Scroll right"
                 className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-700 shadow-xs transition-all ${
                   canScrollRight
-                    ? 'hover:bg-amber-500 hover:text-slate-950 hover:border-amber-500 cursor-pointer active:scale-95'
+                    ? 'hover:bg-navy hover:text-white hover:border-navy cursor-pointer active:scale-95'
                     : 'opacity-30 cursor-not-allowed'
                 }`}
               >
@@ -110,7 +110,7 @@ export function HorizontalCarousel({
             {actionLink && (
               <Link
                 href={actionLink}
-                className="text-[10px] sm:text-xs text-amber-700 font-extrabold flex items-center gap-0.5 hover:text-amber-600 transition-colors shrink-0 ml-0.5"
+                className="text-[10px] sm:text-xs text-orange font-extrabold flex items-center gap-0.5 hover:text-orange-600 transition-colors shrink-0 ml-0.5"
               >
                 <span>{actionText}</span>
                 <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />

@@ -179,7 +179,7 @@ export function SellerProductList() {
 
           <Link
             href="/seller/products/new"
-            className="px-5 py-2.5 bg-navy hover:bg-navy/90 text-white font-bold text-xs rounded-xl shadow-md shadow-navy/20 transition-all flex items-center gap-2"
+            className="px-5 py-2.5 bg-orange hover:bg-orange/90 text-white font-bold text-xs rounded-xl shadow-md shadow-orange/20 transition-all flex items-center gap-2"
           >
             <Plus className="w-4 h-4" /> Add New Product
           </Link>
@@ -362,7 +362,7 @@ export function SellerProductList() {
                             Return (3d) • Repl (7d)
                           </span>
                         ) : p.returnPolicyType === 'REPLACEMENT_ONLY' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold rounded-full bg-blue-50 text-blue-800 border border-blue-300">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold rounded-full bg-navy/10 text-navy border border-navy/20">
                             Replacement Only (7d)
                           </span>
                         ) : (
@@ -380,7 +380,7 @@ export function SellerProductList() {
                               : p.status === 'draft'
                                 ? 'bg-slate-100 text-slate-700 border-slate-200'
                                 : p.status === 'pending_approval'
-                                  ? 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse'
+                                  ? 'bg-orange/10 text-orange border-orange/30 animate-pulse'
                                   : 'bg-rose-50 text-rose-700 border-rose-200'
                           }`}
                         >

@@ -275,8 +275,8 @@ export function MarketplaceCatalogContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 space-y-4">
         <div className="bg-gradient-to-r from-navy via-navy/90 to-slate-900 rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden shadow-lg border border-navy/20">
           <div className="relative z-10 space-y-3 max-w-2xl">
-            <span className="px-3 py-1 bg-amber-500/20 text-amber-300 font-extrabold text-[11px] uppercase tracking-wider rounded-full border border-amber-500/30 inline-flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span className="px-3 py-1 bg-orange/20 text-orange font-extrabold text-[11px] uppercase tracking-wider rounded-full border border-orange/30 inline-flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-orange" />
               Verified Boutique Marketplace
             </span>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
@@ -288,7 +288,7 @@ export function MarketplaceCatalogContent() {
             </p>
           </div>
 
-          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-amber-500/10 to-transparent pointer-events-none hidden md:block" />
+          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-orange/10 to-transparent pointer-events-none hidden md:block" />
         </div>
 
         {/* 2. SEARCH & VIEW SWITCHER BAR */}
@@ -445,7 +445,7 @@ export function MarketplaceCatalogContent() {
                         <span className="text-base font-black text-navy font-mono">
                           ₹{Number(product.price || 0).toLocaleString('en-IN')}
                         </span>
-                        <span className="text-xs text-amber-700 font-extrabold group-hover:translate-x-1 transition-transform">
+                        <span className="text-xs text-orange font-extrabold group-hover:translate-x-1 transition-transform">
                           Buy Now →
                         </span>
                       </div>
@@ -495,7 +495,7 @@ export function MarketplaceCatalogContent() {
                     <Link
                       key={shop.id}
                       href={`/shop/${shop.slug}`}
-                      className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-amber-500 hover:shadow-xl transition-all flex flex-col justify-between"
+                      className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-orange hover:shadow-xl transition-all flex flex-col justify-between"
                     >
                       {/* Cover Banner - Permanently Style That Speaks */}
                       <div className="h-32 bg-slate-100 relative overflow-hidden">
@@ -513,7 +513,7 @@ export function MarketplaceCatalogContent() {
                       {/* Profile Overlay & Info */}
                       <div className="p-6 -mt-10 relative z-10 space-y-4">
                         <div className="flex items-end justify-between gap-3">
-                          <div className="w-16 h-16 rounded-2xl bg-white border-2 border-amber-500/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-lg">
+                          <div className="w-16 h-16 rounded-2xl bg-white border-2 border-orange/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-lg">
                             {shopLogo ? (
                               <Image
                                 src={shopLogo}
@@ -523,7 +523,7 @@ export function MarketplaceCatalogContent() {
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <Building2 className="w-8 h-8 text-amber-600" />
+                              <Building2 className="w-8 h-8 text-orange" />
                             )}
                           </div>
 
@@ -534,7 +534,7 @@ export function MarketplaceCatalogContent() {
                         </div>
 
                         <div>
-                          <h3 className="font-extrabold text-navy text-base group-hover:text-amber-600 transition-colors line-clamp-1">
+                          <h3 className="font-extrabold text-navy text-base group-hover:text-orange transition-colors line-clamp-1">
                             {shop.name}
                           </h3>
                         </div>
@@ -560,7 +560,7 @@ export function MarketplaceCatalogContent() {
                           ) : null}
 
                           <span className="flex items-center gap-1 font-bold text-slate-900">
-                            <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
+                            <ShoppingBag className="w-3.5 h-3.5 text-orange" />
                             {productCount} Items
                           </span>
                         </div>

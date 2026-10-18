@@ -292,7 +292,7 @@ export default async function CityMarketplacePage({ params }: Props) {
       {/* Hero Header */}
       <section className="bg-gradient-to-br from-navy to-[#183A73] text-white py-10 md:py-14 px-4 sm:px-6">
         <div className="mx-auto max-w-7xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-bold border border-white/10 backdrop-blur-xs">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-orange text-xs font-bold border border-white/20 backdrop-blur-xs">
             <MapPin className="w-3.5 h-3.5" />
             <span>Local Marketplace Discovery</span>
           </div>
@@ -311,7 +311,7 @@ export default async function CityMarketplacePage({ params }: Props) {
         {cityCategories.length > 0 && (
           <div className="space-y-3">
             <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-              <Package className="w-4 h-4 text-amber-600" />
+              <Package className="w-4 h-4 text-orange" />
               Categories Available in {cityName}
             </h2>
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
@@ -319,7 +319,7 @@ export default async function CityMarketplacePage({ params }: Props) {
                 <Link
                   key={cat.slug}
                   href={`/category/${cat.slug}`}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-amber-500 hover:text-amber-600 shadow-2xs transition-all shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:border-orange hover:text-orange shadow-2xs transition-all shrink-0"
                 >
                   <span>{cat.name}</span>
                   <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
@@ -336,7 +336,7 @@ export default async function CityMarketplacePage({ params }: Props) {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-navy flex items-center gap-2">
-                <Store className="w-5 h-5 text-amber-600" />
+                <Store className="w-5 h-5 text-orange" />
                 Verified Partner Boutiques in {cityName}
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -351,7 +351,7 @@ export default async function CityMarketplacePage({ params }: Props) {
               <Link
                 key={shop.id}
                 href={`/shop/${shop.slug}`}
-                className="group bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md hover:border-amber-300 transition-all flex flex-col justify-between space-y-4"
+                className="group bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md hover:border-orange transition-all flex flex-col justify-between space-y-4"
               >
                 <div className="flex items-start gap-3.5">
                   <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 relative overflow-hidden">
@@ -369,7 +369,7 @@ export default async function CityMarketplacePage({ params }: Props) {
                   </div>
                   <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <h3 className="font-bold text-navy text-base group-hover:text-amber-600 transition-colors truncate">
+                      <h3 className="font-bold text-navy text-base group-hover:text-orange transition-colors truncate">
                         {shop.name}
                       </h3>
                       {shop.verificationBadge && shop.verificationBadge !== 'NONE' && (
@@ -396,7 +396,7 @@ export default async function CityMarketplacePage({ params }: Props) {
                   <span className="font-semibold text-slate-600">
                     {shop._count?.products || 0} Products
                   </span>
-                  <span className="font-bold text-amber-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                  <span className="font-bold text-orange group-hover:translate-x-1 transition-transform flex items-center gap-1">
                     Visit Store <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
@@ -411,7 +411,7 @@ export default async function CityMarketplacePage({ params }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-navy flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-amber-600" />
+                  <Sparkles className="w-5 h-5 text-orange" />
                   Popular Products from {cityName} Stores
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">

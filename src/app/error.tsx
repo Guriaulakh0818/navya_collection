@@ -18,7 +18,7 @@ export default function GlobalErrorPage({
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-6 font-sans">
       <div className="bg-white border border-slate-200 rounded-3xl p-8 max-w-lg w-full text-center space-y-6 shadow-xl">
-        <div className="w-16 h-16 bg-amber-50 border border-amber-200 rounded-3xl flex items-center justify-center mx-auto text-amber-600">
+        <div className="w-16 h-16 bg-orange/10 border border-orange/20 rounded-3xl flex items-center justify-center mx-auto text-orange">
           <AlertCircle className="w-8 h-8" />
         </div>
 
@@ -33,7 +33,7 @@ export default function GlobalErrorPage({
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
             onClick={() => reset()}
-            className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="flex-1 py-3 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <RefreshCw className="w-4 h-4" /> Try Again
           </button>

@@ -57,8 +57,8 @@ export default function AboutPage() {
       <div className="mx-auto max-w-5xl px-4 md:px-6 py-8 space-y-12">
         {/* Hero Banner with Direct Entity Definition */}
         <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-12 shadow-xs text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
-            <Sparkles className="w-4 h-4 text-amber-600" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange/10 border border-orange/20 text-navy text-xs font-bold">
+            <Sparkles className="w-4 h-4 text-orange" />
             Fashion Marketplace for Local Stores
           </div>
           <h1 className="font-heading text-3xl sm:text-5xl font-black text-navy tracking-tight max-w-2xl mx-auto leading-tight">
@@ -74,7 +74,7 @@ export default function AboutPage() {
         {/* Core Pillars */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700">
+            <div className="w-12 h-12 rounded-2xl bg-orange/10 border border-orange/20 flex items-center justify-center text-orange">
               <Store className="w-6 h-6" />
             </div>
             <h3 className="font-heading text-xl font-bold text-navy">Local Store Empowerment</h3>
@@ -110,8 +110,8 @@ export default function AboutPage() {
         {/* Mission & Seller Community */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gradient-to-br from-navy to-[#1e3a8a] text-white rounded-3xl p-8 shadow-md space-y-4">
-            <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-widest">
-              <Heart className="w-4 h-4 fill-amber-400" /> Our Vision
+            <div className="flex items-center gap-2 text-orange font-bold text-xs uppercase tracking-widest">
+              <Heart className="w-4 h-4 fill-orange" /> Our Vision
             </div>
             <h2 className="font-heading text-2xl font-extrabold">Decentralized Fashion Access</h2>
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans">
@@ -130,7 +130,7 @@ export default function AboutPage() {
           </div>
 
           <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 text-amber-600 font-bold text-xs uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-orange font-bold text-xs uppercase tracking-widest">
               <Users className="w-4 h-4" /> Partner Network
             </div>
             <h2 className="font-heading text-2xl font-extrabold text-navy">Sell on JiivaaKart</h2>
@@ -142,7 +142,7 @@ export default function AboutPage() {
             <div className="pt-2">
               <Link
                 href="/become-seller"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs shadow-xs transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange hover:bg-orange/90 text-white font-extrabold text-xs shadow-xs transition-all cursor-pointer"
               >
                 Register Your Boutique &rarr;
               </Link>
@@ -151,9 +151,9 @@ export default function AboutPage() {
         </div>
 
         {/* Quick FAQ Link */}
-        <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-orange/5 border border-orange/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-orange/10 text-orange flex items-center justify-center shrink-0">
               <HelpCircle className="w-5 h-5" />
             </div>
             <div>

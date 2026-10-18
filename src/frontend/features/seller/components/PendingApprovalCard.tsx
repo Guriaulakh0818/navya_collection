@@ -38,19 +38,19 @@ export function PendingApprovalCard({
       {/* Top Banner Status */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0 shadow-xs">
+          <div className="w-12 h-12 rounded-xl bg-orange/10 border border-orange/20 flex items-center justify-center text-orange shrink-0 shadow-xs">
             <Clock className="w-7 h-7 animate-pulse" />
           </div>
           <div>
             <h2 className="text-xl font-extrabold text-navy flex items-center gap-2">
               Application Under Review
-              <span className="px-2.5 py-0.5 text-xs font-extrabold rounded-full bg-amber-50 text-amber-800 border border-amber-300">
+              <span className="px-2.5 py-0.5 text-xs font-extrabold rounded-full bg-orange/10 text-navy border border-orange/30">
                 PENDING APPROVAL
               </span>
             </h2>
             <p className="text-sm text-slate-600 mt-0.5 font-medium">
               Ref ID:{' '}
-              <span className="font-mono text-amber-800 font-bold">{shopId.substring(0, 16)}</span>
+              <span className="font-mono text-orange font-bold">{shopId.substring(0, 16)}</span>
             </p>
           </div>
         </div>
@@ -60,7 +60,7 @@ export function PendingApprovalCard({
           disabled={isRefreshing}
           className="px-4 py-2 text-xs font-extrabold rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-navy transition-all flex items-center gap-2 cursor-pointer shadow-xs active:scale-95"
         >
-          <RefreshCw className={`w-4 h-4 text-amber-700 ${isRefreshing ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 text-orange ${isRefreshing ? 'animate-spin' : ''}`} />
           {isRefreshing ? 'Refreshing Status...' : 'Check Approval Status'}
         </button>
       </div>
@@ -68,8 +68,8 @@ export function PendingApprovalCard({
       {/* Main Details Body */}
       <div className="py-6 space-y-6">
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-4 shadow-xs">
-          <h3 className="text-sm font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-            <Building2 className="w-4 h-4" />
+          <h3 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-orange" />
             Submitted Merchant Application Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -108,11 +108,11 @@ export function PendingApprovalCard({
               <span>
                 <strong className="text-navy font-bold">Expected Timeline:</strong> Approvals are
                 typically completed within{' '}
-                <strong className="text-amber-800 font-bold">24 to 48 business hours</strong>.
+                <strong className="text-orange font-bold">24 to 48 business hours</strong>.
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
+              <ShieldCheck className="w-5 h-5 text-navy shrink-0 mt-0.5" />
               <span>
                 <strong className="text-navy font-bold">Dashboard Unlock:</strong> Once approved,
                 your Seller Dashboard will automatically activate, allowing catalog creation and
@@ -128,9 +128,9 @@ export function PendingApprovalCard({
         <div className="flex flex-wrap items-center gap-4">
           <a
             href="mailto:helpdesk@jiivaakart.com"
-            className="flex items-center gap-1.5 text-slate-700 hover:text-amber-700 font-bold transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-slate-700 hover:text-orange font-bold transition-colors cursor-pointer"
           >
-            <Mail className="w-4 h-4 text-amber-700" />
+            <Mail className="w-4 h-4 text-orange" />
             helpdesk@jiivaakart.com
           </a>
           <a
@@ -140,13 +140,13 @@ export function PendingApprovalCard({
             className="flex items-center gap-1.5 text-slate-700 hover:text-emerald-700 font-bold transition-colors cursor-pointer"
             title="Chat on WhatsApp"
           >
-            <Phone className="w-4 h-4 text-amber-700" />
+            <Phone className="w-4 h-4 text-orange" />
             +91 9053883125
           </a>
         </div>
         <Link
           href="/"
-          className="text-amber-700 hover:text-amber-600 font-extrabold underline underline-offset-4"
+          className="text-orange hover:text-orange/80 font-extrabold underline underline-offset-4"
         >
           Return to Customer Storefront ↗
         </Link>

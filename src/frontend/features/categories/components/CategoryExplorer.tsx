@@ -325,7 +325,7 @@ export function CategoryExplorer({
                             </span>
                           </div>
                           {spot.badge && (
-                            <span className="absolute top-1.5 right-1.5 bg-amber-400 text-slate-950 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
+                            <span className="absolute top-1.5 right-1.5 bg-orange text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
                               {spot.badge}
                             </span>
                           )}

@@ -272,14 +272,14 @@ export function LoginForm({ initialUser }: LoginFormProps) {
   return (
     <div>
       {activeUser && step === 'email' && (
-        <div className="mb-6 rounded-2xl bg-amber-50 border border-amber-200/80 p-4 text-center">
-          <p className="text-xs font-medium text-amber-900">
+        <div className="mb-6 rounded-2xl bg-orange/5 border border-orange/20 p-4 text-center">
+          <p className="text-xs font-medium text-navy">
             You are currently signed in as{' '}
             <strong className="font-extrabold text-navy">
               {activeUser.name || activeUser.email || 'User'}
             </strong>
             {activeUser.email && (
-              <span className="block text-[11px] font-mono text-amber-700 font-normal mt-0.5">
+              <span className="block text-[11px] font-mono text-orange font-normal mt-0.5">
                 {maskEmail(activeUser.email)}
               </span>
             )}

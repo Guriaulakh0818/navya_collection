@@ -259,7 +259,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     const currentStock = activeVariant?.stock ?? product.stock ?? 0;
     if (currentStock <= 0) return { label: 'Out of Stock', color: 'bg-rose-500' };
     if (currentStock <= (product.lowStockThreshold || 5)) {
-      return { label: `Only ${currentStock} left in stock!`, color: 'bg-amber-500' };
+      return { label: `Only ${currentStock} left in stock!`, color: 'bg-orange' };
     }
     return { label: 'In Stock', color: 'bg-emerald-600' };
   }, [activeVariant, product]);
@@ -499,7 +499,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
           <div className="space-y-1.5 sm:space-y-2 border-b border-slate-100 pb-2.5 sm:pb-3">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               {product.brand && (
-                <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-amber-500/10 text-amber-900 font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wider rounded-full border border-amber-500/20">
+                <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-orange/10 text-orange font-extrabold text-[10px] sm:text-[11px] uppercase tracking-wider rounded-full border border-orange/20">
                   {product.brand}
                 </span>
               )}
@@ -509,7 +509,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 </span>
               )}
               {discountPercent && (
-                <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-amber-500 text-slate-950 font-black text-[10px] sm:text-[11px] uppercase tracking-wider rounded-full shadow-2xs">
+                <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-orange text-white font-black text-[10px] sm:text-[11px] uppercase tracking-wider rounded-full shadow-2xs">
                   {discountPercent}% OFF
                 </span>
               )}
@@ -530,16 +530,16 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 {/* Rating & Boutique Pills in 1 compact line */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                   {product.shop && (
-                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-amber-50 border border-amber-200 rounded-md text-[11px] sm:text-xs text-amber-900 font-bold shadow-2xs">
-                      <Building2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-600 shrink-0" />
+                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-orange/5 border border-orange/20 rounded-md text-[11px] sm:text-xs text-navy font-bold shadow-2xs">
+                      <Building2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange shrink-0" />
                       <span>
-                        Boutique: <strong className="text-navy">{product.shop.name}</strong>
+                        Boutique: <strong className="text-orange">{product.shop.name}</strong>
                       </span>
                     </div>
                   )}
 
                   {reviewsList.length > 0 && product.rating ? (
-                    <div className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-amber-600 font-bold bg-amber-50/60 border border-amber-200/60 px-2 py-0.5 rounded-md">
+                    <div className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-navy font-bold bg-navy/5 border border-navy/15 px-2 py-0.5 rounded-md shadow-2xs">
                       <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-500 text-amber-500" />
                       <span>{Number(product.rating).toFixed(1)}</span>
                       <span className="text-slate-400 font-normal">({reviewsList.length})</span>
@@ -648,7 +648,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                       {activeVariant?.stock !== undefined &&
                         activeVariant.stock <= (product.lowStockThreshold || 5) &&
                         activeVariant.stock > 0 && (
-                          <span className="text-[10px] font-extrabold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded-full border border-amber-200 animate-pulse">
+                          <span className="text-[10px] font-extrabold text-orange bg-orange/10 px-1.5 py-0.2 rounded-full border border-orange/20 animate-pulse">
                             Only {activeVariant.stock} left!
                           </span>
                         )}
@@ -656,7 +656,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                     <button
                       type="button"
                       onClick={() => setIsSizeGuideOpen(true)}
-                      className="inline-flex items-center text-xs font-bold text-amber-700 hover:text-amber-800 gap-1 cursor-pointer transition-colors"
+                      className="inline-flex items-center text-xs font-bold text-orange hover:text-orange/80 gap-1 cursor-pointer transition-colors"
                     >
                       <HelpCircle className="h-3.5 w-3.5" /> Size Chart Guide
                     </button>
@@ -761,7 +761,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                   <span className="font-mono text-sm sm:text-base font-black text-white leading-none">
                     {currentVariantQuantity}
                   </span>
-                  <span className="text-[8.5px] sm:text-[9px] font-bold text-amber-400 uppercase tracking-wider">
+                  <span className="text-[8.5px] sm:text-[9px] font-bold text-white uppercase tracking-wider">
                     in cart
                   </span>
                 </div>
@@ -795,7 +795,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               disabled={stockStatus.label === 'Out of Stock'}
               className="flex-1 min-w-0 h-[42px] sm:h-[46px] px-2 xs:px-3 sm:px-6 bg-navy hover:bg-navy-hover text-white rounded-xl sm:rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-1 sm:gap-2 cursor-pointer text-center active:scale-98 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange shrink-0" />
               <span className="truncate">Buy Now</span>
             </button>
 
@@ -831,7 +831,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
           {/* Value Props & Assurance Cards */}
           <div className="grid grid-cols-2 gap-2 pt-2 sm:pt-3 border-t border-slate-100 text-xs">
             <div className="flex items-center gap-2 p-2 sm:p-2.5 rounded-lg bg-slate-50/80 border border-slate-200/80">
-              <Truck className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <Truck className="w-3.5 h-3.5 text-orange shrink-0" />
               <div>
                 <strong className="block text-navy font-bold text-[10.5px] sm:text-[11px] leading-tight">
                   Free Delivery
@@ -861,7 +861,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       <section className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-5 space-y-2.5 shadow-xs">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
           <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-navy flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600" /> Product Specifications
+            <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange" /> Product Specifications
             &amp; Details
           </h2>
           <span className="text-[10px] sm:text-[11px] text-slate-400 font-bold hidden sm:inline">
@@ -912,7 +912,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 placeholder="e.g. Ananya Sharma"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-amber-500 focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
               />
             </div>
             <div>
@@ -920,7 +920,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               <select
                 value={newRating}
                 onChange={(e) => setNewRating(Number(e.target.value))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-extrabold focus:bg-white focus:border-amber-500 focus:outline-none cursor-pointer"
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-extrabold focus:bg-white focus:border-orange focus:outline-none cursor-pointer"
               >
                 <option value={5}>⭐⭐⭐⭐⭐ 5 - Excellent</option>
                 <option value={4}>⭐⭐⭐⭐ 4 - Very Good</option>
@@ -940,14 +940,14 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               rows={2}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-amber-500 focus:outline-none"
+              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
               required
             />
           </div>
 
           <button
             type="submit"
-            className="px-4 sm:px-5 py-2 bg-navy hover:bg-navy-hover text-white text-xs font-extrabold rounded-lg shadow-xs transition-all cursor-pointer"
+            className="px-4 sm:px-5 py-2 bg-orange hover:bg-orange/90 text-white text-xs font-extrabold rounded-lg shadow-xs transition-all cursor-pointer"
           >
             Submit Verified Review
           </button>

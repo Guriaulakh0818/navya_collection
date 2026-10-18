@@ -42,7 +42,7 @@ const FAQ_SECTIONS = [
   {
     title: 'About JiivaaKart & Marketplace Model',
     icon: Store,
-    accent: 'text-orange bg-amber-50 border-amber-200',
+    accent: 'text-orange bg-orange/10 border-orange/20',
     items: [
       {
         question: 'What is JiivaaKart?',
@@ -194,8 +194,8 @@ export default function FaqPage() {
       <div className="mx-auto max-w-5xl px-4 md:px-6 py-8 space-y-10">
         {/* Header Hero */}
         <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-12 shadow-xs text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
-            <HelpCircle className="w-4 h-4 text-amber-600" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange/10 border border-orange/20 text-navy text-xs font-bold">
+            <HelpCircle className="w-4 h-4 text-orange" />
             Knowledge Base &amp; AEO Answers
           </div>
           <h1 className="font-heading text-3xl sm:text-5xl font-black text-navy tracking-tight max-w-2xl mx-auto leading-tight">
@@ -243,7 +243,7 @@ export default function FaqPage() {
                         <div className="pt-1">
                           <Link
                             href={item.link.href}
-                            className="inline-flex items-center text-xs font-bold text-amber-700 hover:text-amber-800 underline"
+                            className="inline-flex items-center text-xs font-bold text-orange hover:text-orange-600 underline"
                           >
                             {item.link.label} &rarr;
                           </Link>
@@ -268,7 +268,7 @@ export default function FaqPage() {
           </div>
           <Link
             href="/contact"
-            className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs shadow-xs transition-all shrink-0 cursor-pointer"
+            className="px-6 py-3 rounded-xl bg-orange hover:bg-orange/90 text-white font-extrabold text-xs shadow-xs transition-all shrink-0 cursor-pointer"
           >
             Contact Customer Support &rarr;
           </Link>

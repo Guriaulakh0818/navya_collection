@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
           <div className="space-y-6 text-sm text-slate-700 leading-relaxed font-sans">
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <Eye className="w-5 h-5 text-amber-600" />
+                <Eye className="w-5 h-5 text-orange" />
                 1. Overview & Commitment
               </h2>
               <p>
@@ -87,7 +87,7 @@ export default function PrivacyPolicyPage() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <Database className="w-5 h-5 text-amber-600" />
+                <Database className="w-5 h-5 text-orange" />
                 2. Information We Collect
               </h2>
               <ul className="list-disc pl-5 space-y-2">
@@ -104,7 +104,7 @@ export default function PrivacyPolicyPage() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <Lock className="w-5 h-5 text-amber-600" />
+                <Lock className="w-5 h-5 text-orange" />
                 3. Payment Information Security
               </h2>
               <p>
@@ -117,7 +117,7 @@ export default function PrivacyPolicyPage() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <BellRing className="w-5 h-5 text-amber-600" />
+                <BellRing className="w-5 h-5 text-orange" />
                 4. Purpose of Data Processing
               </h2>
               <p>We process your personal information exclusively for:</p>

@@ -5,6 +5,8 @@ export interface AutoCategorizeResult {
   categoryIds: string[];
   matchedLabels: string[];
   matchedRules: string[];
+  suggestedProductType?: string;
+  departmentGroup?: 'group_men' | 'group_women' | 'group_kids' | 'group_spotlight' | 'group_shops';
 }
 
 export interface ProductInputForCategorization {
@@ -472,10 +474,147 @@ export function autoCategorizeProduct(
     })
     .filter(Boolean);
 
+  // Compute suggested Product Type & Department Group for dynamic Category Engine synchronization
+  let suggestedProductType = 'women_sarees';
+  let departmentGroup:
+    'group_men' | 'group_women' | 'group_kids' | 'group_spotlight' | 'group_shops' = 'group_women';
+
+  if (assignedSet.has('group_men') || gender === 'men') {
+    departmentGroup = 'group_men';
+    if (
+      assignedSet.has('cat_men_formal_shirts') ||
+      hasWord(text, /formal\s+shirt|office\s+shirt/i)
+    ) {
+      suggestedProductType = 'men_formal_shirts';
+    } else if (assignedSet.has('cat_men_shirts') || isShirt) {
+      suggestedProductType = 'men_shirts';
+    } else if (assignedSet.has('cat_men_polos') || isPolo) {
+      suggestedProductType = 'men_polos';
+    } else if (assignedSet.has('cat_men_tshirts') || isTShirt) {
+      suggestedProductType = 'men_tshirts';
+    } else if (assignedSet.has('cat_men_hoodies') || isHoodie) {
+      suggestedProductType = 'men_hoodies';
+    } else if (
+      assignedSet.has('cat_men_jackets') ||
+      hasWord(text, /jackets?|bomber|leather\s+jacket/i)
+    ) {
+      suggestedProductType = 'men_jackets';
+    } else if (assignedSet.has('cat_men_jeans') || hasWord(text, /jeans|denim/i)) {
+      suggestedProductType = 'men_jeans';
+    } else if (assignedSet.has('cat_men_trousers') || hasWord(text, /trousers?|formal\s+pants/i)) {
+      suggestedProductType = 'men_trousers';
+    } else if (assignedSet.has('cat_men_chinos') || hasWord(text, /chinos?/i)) {
+      suggestedProductType = 'men_chinos';
+    } else if (assignedSet.has('cat_men_cargos') || hasWord(text, /cargos?|cargo\s+pants/i)) {
+      suggestedProductType = 'men_cargo_pants';
+    } else if (assignedSet.has('cat_men_shorts') || hasWord(text, /shorts?/i)) {
+      suggestedProductType = 'men_shorts';
+    } else if (assignedSet.has('cat_men_trackpants') || hasWord(text, /track\s*pants?|joggers?/i)) {
+      suggestedProductType = 'men_track_pants';
+    } else if (assignedSet.has('cat_men_kurtas') || hasWord(text, /\bkurta\b/i)) {
+      suggestedProductType = 'men_kurtas';
+    } else if (
+      assignedSet.has('cat_men_kurta_sets') ||
+      hasWord(text, /kurta\s+set|kurta\s+pajama/i)
+    ) {
+      suggestedProductType = 'men_kurta_sets';
+    } else if (assignedSet.has('cat_men_sherwanis') || hasWord(text, /sherwani/i)) {
+      suggestedProductType = 'men_sherwanis';
+    } else if (
+      assignedSet.has('cat_men_nehru_jackets') ||
+      hasWord(text, /nehru\s+jacket|bandhgala|modi\s+jacket/i)
+    ) {
+      suggestedProductType = 'men_nehru_jackets';
+    } else if (assignedSet.has('cat_men_suits') || hasWord(text, /\bsuits?\b/i)) {
+      suggestedProductType = 'men_suits';
+    } else if (assignedSet.has('cat_men_blazers') || hasWord(text, /blazers?/i)) {
+      suggestedProductType = 'men_blazers';
+    } else {
+      suggestedProductType = 'men_shirts';
+    }
+  } else if (assignedSet.has('group_kids') || gender === 'kids') {
+    departmentGroup = 'group_kids';
+    if (assignedSet.has('cat_kids_baby_sets') || hasWord(text, /baby|infant|newborn|romper/i)) {
+      suggestedProductType = 'kids_baby_clothing';
+    } else if (
+      assignedSet.has('cat_kids_girls_dresses') ||
+      hasWord(text, /girl|girls|frock|princess/i)
+    ) {
+      suggestedProductType = 'kids_girls_clothing';
+    } else if (
+      assignedSet.has('cat_kids_ethnic_wear') ||
+      hasWord(text, /ethnic|kurta|lehenga|dhoti/i)
+    ) {
+      suggestedProductType = 'kids_ethnic_wear';
+    } else if (hasWord(text, /teen|teens/i)) {
+      suggestedProductType = 'kids_teens';
+    } else {
+      suggestedProductType = 'kids_boys_clothing';
+    }
+  } else {
+    departmentGroup = 'group_women';
+    if (
+      assignedSet.has('cat_women_sarees') ||
+      hasWord(
+        text,
+        /saree|sari|banarasi|kanjeevaram|chanderi|paithani|silk\s+saree|georgette\s+saree/i,
+      )
+    ) {
+      suggestedProductType = 'women_sarees';
+    } else if (assignedSet.has('cat_women_lehengas') || hasWord(text, /lehenga|choli|ghagra/i)) {
+      suggestedProductType = 'women_lehengas';
+    } else if (
+      assignedSet.has('cat_women_kurta_sets') ||
+      hasWord(text, /kurta\s+set|suit\s+set|salwar\s+suit|anarkali\s+set|sharara/i)
+    ) {
+      suggestedProductType = 'women_kurta_sets';
+    } else if (
+      assignedSet.has('cat_women_kurtas') ||
+      hasWord(text, /kurti|kurta|anarkali|tunic/i)
+    ) {
+      suggestedProductType = 'women_kurtas';
+    } else if (
+      assignedSet.has('cat_women_dresses') ||
+      hasWord(text, /dress|gowns?|maxi|midi|bodycon|frock/i)
+    ) {
+      suggestedProductType = 'women_dresses';
+    } else if (assignedSet.has('cat_women_jumpsuits') || hasWord(text, /jumpsuit|romper/i)) {
+      suggestedProductType = 'women_jumpsuits';
+    } else if (assignedSet.has('cat_women_skirts') || hasWord(text, /skirts?/i)) {
+      suggestedProductType = 'women_skirts';
+    } else if (assignedSet.has('cat_women_coords') || hasWord(text, /co-?ord|coord|two\s+piece/i)) {
+      suggestedProductType = 'women_coords';
+    } else if (
+      assignedSet.has('cat_women_tops') ||
+      hasWord(text, /top|tops|blouse|crop\s+top|t-?shirt|tee/i)
+    ) {
+      suggestedProductType = 'women_tops_tees';
+    } else if (assignedSet.has('cat_women_handbags') || hasWord(text, /handbag|bag|tote|purse/i)) {
+      suggestedProductType = 'women_handbags';
+    } else if (hasWord(text, /sling\s+bag|crossbody/i)) {
+      suggestedProductType = 'women_sling_bags';
+    } else if (
+      assignedSet.has('cat_women_jewellery') ||
+      hasWord(text, /jewellery|jewelry|necklace|earring|jhumka|bangle/i)
+    ) {
+      suggestedProductType = 'women_jewellery';
+    } else if (hasWord(text, /watch|watches/i)) {
+      suggestedProductType = 'women_watches';
+    } else if (hasWord(text, /maternity|feeding|pregnancy/i)) {
+      suggestedProductType = 'women_maternity';
+    } else if (hasWord(text, /activewear|gym|tights|leggings/i)) {
+      suggestedProductType = 'women_activewear';
+    } else {
+      suggestedProductType = 'women_sarees';
+    }
+  }
+
   return {
     primaryCategoryId,
     categoryIds,
     matchedLabels,
     matchedRules: Array.from(new Set(matchedRules.filter(Boolean))),
+    suggestedProductType,
+    departmentGroup,
   };
 }

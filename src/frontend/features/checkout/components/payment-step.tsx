@@ -84,7 +84,7 @@ export function PaymentStep() {
                       {method.name}
                     </p>
                     {method.id === 'cod' && (
-                      <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 inline-block mt-0.5">
+                      <span className="text-[10px] font-bold text-orange bg-orange/10 px-2 py-0.5 rounded-md border border-orange/20 inline-block mt-0.5">
                         1.5% COD fee applies • Non-refundable
                       </span>
                     )}

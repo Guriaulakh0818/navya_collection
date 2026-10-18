@@ -85,12 +85,12 @@ export default function CancellationPolicyPage() {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2">
-              <div className="flex items-center gap-2 text-amber-800 font-bold text-sm">
-                <Clock className="w-5 h-5 text-amber-600" />
+            <div className="p-5 rounded-2xl bg-orange/5 border border-orange/20 space-y-2">
+              <div className="flex items-center gap-2 text-navy font-bold text-sm">
+                <Clock className="w-5 h-5 text-orange" />
                 After Order Dispatch (In-Transit)
               </div>
-              <p className="text-xs text-amber-950 leading-relaxed">
+              <p className="text-xs text-slate-700 leading-relaxed font-medium">
                 Once a consignment is handed over to the courier partner
                 (Shiprocket/Delhivery/Bluedart), in-app cancellation is locked. You may decline
                 delivery at doorstep upon courier arrival, and a refund will trigger upon package
@@ -103,7 +103,7 @@ export default function CancellationPolicyPage() {
           <div className="space-y-6 text-sm text-slate-700 leading-relaxed font-sans">
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+                <AlertTriangle className="w-5 h-5 text-orange" />
                 1. Seller Order Acceptance Window &amp; Auto-Cancellation Rule
               </h2>
               <p>
@@ -129,7 +129,7 @@ export default function CancellationPolicyPage() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <RotateCcw className="w-5 h-5 text-amber-600" />
+                <RotateCcw className="w-5 h-5 text-orange" />
                 2. Refund Processing Timelines
               </h2>
               <ul className="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
@@ -150,7 +150,7 @@ export default function CancellationPolicyPage() {
 
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-amber-600" />
+                <ShieldCheck className="w-5 h-5 text-emerald-600" />
                 3. Cancellation of Custom Tailored Items
               </h2>
               <p className="text-xs sm:text-sm">

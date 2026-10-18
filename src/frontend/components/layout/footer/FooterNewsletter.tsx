@@ -81,8 +81,8 @@ export function FooterNewsletter() {
       </div>
 
       {errorMsg && (
-        <div className="p-3 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-extrabold flex items-center gap-2 shadow-xs animate-in fade-in duration-200">
-          <span className="text-amber-400">⚠️</span>
+        <div className="p-3 rounded-xl bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-extrabold flex items-center gap-2 shadow-xs animate-in fade-in duration-200">
+          <span>⚠️</span>
           <span>{errorMsg}</span>
         </div>
       )}

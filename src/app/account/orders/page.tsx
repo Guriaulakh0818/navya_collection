@@ -11,7 +11,8 @@ import type { Order } from '@/features/orders/types/orders.types';
 const STATUS_STYLE: Record<Order['status'], string> = {
   Delivered: 'rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700',
   Shipped: 'rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700',
-  Processing: 'rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700',
+  Processing:
+    'rounded-full bg-orange/10 px-3 py-1 text-xs font-semibold text-orange border border-orange/30',
   'Out for Delivery': 'rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700',
   Cancelled: 'rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700',
 };

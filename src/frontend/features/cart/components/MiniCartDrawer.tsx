@@ -63,7 +63,7 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-6 py-16 text-center h-full">
           <div className="h-16 w-16 rounded-full bg-brand-divider flex items-center justify-center text-brand-muted mb-4">
-            <ShoppingBag className="h-8 w-8 text-amber-500" />
+            <ShoppingBag className="h-8 w-8 text-orange" />
           </div>
           <h3 className="font-heading text-xl font-bold text-navy">Your cart is empty</h3>
           <p className="mt-1 text-xs text-brand-muted max-w-xs">
@@ -114,10 +114,10 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
                 {/* Shop Header */}
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-amber-600" />
+                    <Building2 className="w-4 h-4 text-orange" />
                     <span className="font-bold text-xs text-navy truncate">{group.shopName}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-amber-600 font-mono">
+                  <span className="text-[10px] font-bold text-orange font-mono">
                     Subtotal: {formatPrice(group.subtotal)}
                   </span>
                 </div>

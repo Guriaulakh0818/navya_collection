@@ -80,7 +80,7 @@ export default async function OrderSuccessPage({ params }: { params: Promise<{ i
                     className={
                       order.paymentStatus === 'PAID'
                         ? 'text-emerald-600 font-extrabold'
-                        : 'text-amber-600 font-extrabold'
+                        : 'text-orange font-extrabold'
                     }
                   >
                     {order.paymentStatus}
@@ -177,7 +177,7 @@ export default async function OrderSuccessPage({ params }: { params: Promise<{ i
           </Link>
 
           <Link href="/shop">
-            <button className="rounded-full bg-navy text-white hover:bg-navy/90 font-bold text-xs px-6 py-2.5 shadow-md transition cursor-pointer flex items-center gap-2">
+            <button className="rounded-full bg-orange text-white hover:bg-orange/90 font-bold text-xs px-6 py-2.5 shadow-md shadow-orange/20 transition cursor-pointer flex items-center gap-2">
               <ShoppingBag className="h-4 w-4" /> Continue Shopping
             </button>
           </Link>

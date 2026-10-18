@@ -278,6 +278,16 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   const [selectedColors, setSelectedColors] = useState<string[]>(
     Array.from(new Set(initialVariants.map((v: any) => v.color).filter(Boolean))),
   );
+  const [colorPhotos, setColorPhotos] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    (initialVariants || []).forEach((v: any) => {
+      const img = v.attributes?.imageUrl || v.imageUrl || v.image;
+      if (v.color && img && !initial[v.color]) {
+        initial[v.color] = img;
+      }
+    });
+    return initial;
+  });
   const [selectedSizes, setSelectedSizes] = useState<string[]>(
     Array.from(new Set(initialVariants.map((v: any) => v.size).filter(Boolean))),
   );
@@ -334,7 +344,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     );
   }, [currentDepartmentDef, activeSubId]);
 
-  const handleProductTypeChange = (newPtId: string) => {
+  const handleProductTypeChange = (newPtId: string, silent = false) => {
     const targetTemplate = resolveAttributeTemplate(undefined, newPtId);
     const targetSizes = resolveSizeSystem(undefined, newPtId);
 
@@ -360,7 +370,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       return prev.filter((sz) => targetSizes.includes(sz));
     });
 
-    showToast(`Attribute Template loaded: ${targetTemplate.name}`, 'success');
+    if (!silent) {
+      showToast(`Attribute Template loaded: ${targetTemplate.name}`, 'success');
+    }
   };
 
   // Live Pricing Floors & Auto-calculated Discount %
@@ -500,6 +512,13 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         Array.from(new Set(loadedVariants.map((v: any) => v.color).filter(Boolean))),
       );
       setSelectedSizes(Array.from(new Set(loadedVariants.map((v: any) => v.size).filter(Boolean))));
+      const loadedColorPhotos: Record<string, string> = {};
+      loadedVariants.forEach((v: any) => {
+        if (v.color && v.imageUrl && !loadedColorPhotos[v.color]) {
+          loadedColorPhotos[v.color] = v.imageUrl;
+        }
+      });
+      setColorPhotos(loadedColorPhotos);
     }
     setIsLoadingProduct(false);
   }, [initialData]);
@@ -606,6 +625,13 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             setSelectedSizes(
               Array.from(new Set(loadedVariants.map((v: any) => v.size).filter(Boolean))),
             );
+            const loadedColorPhotos: Record<string, string> = {};
+            loadedVariants.forEach((v: any) => {
+              if (v.color && v.imageUrl && !loadedColorPhotos[v.color]) {
+                loadedColorPhotos[v.color] = v.imageUrl;
+              }
+            });
+            setColorPhotos(loadedColorPhotos);
           }
         } else {
           showToast(data.message || 'Could not load product details.', 'error');
@@ -662,12 +688,29 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       fabric: formData.fabric,
       occasion: formData.occasion,
     });
+
+    // 1. Assign auto-detected categories
     setSelectedCategoryIds(res.categoryIds);
     if (res.categoryIds.length > 0) {
       setFormData((fd) => ({ ...fd, categoryId: res.categoryIds[0] }));
     }
+
+    // 2. Synchronize Department Tab in Category Mapping Browser so seller sees checked items
+    if (res.departmentGroup) {
+      setSelectedMainCat(res.departmentGroup);
+      const found = CATEGORY_TAXONOMY.find((c) => c.id === res.departmentGroup);
+      if (found && found.sections.length > 0) {
+        setSelectedSectionId(found.sections[0].id);
+      }
+    }
+
+    // 3. Synchronize Category Engine: Department, Subcategory, Product Type & Attribute Template
+    if (res.suggestedProductType) {
+      handleProductTypeChange(res.suggestedProductType, true);
+    }
+
     showToast(
-      `⚡ Auto-detected ${res.categoryIds.length} categories (${res.matchedLabels.slice(0, 3).join(', ')}...)`,
+      `⚡ Auto-detected ${res.categoryIds.length} categories & set template to "${res.matchedLabels[0] || 'Garment'}"`,
       'success',
     );
   };
@@ -823,6 +866,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         const targetVariant = formData.variants[index];
         const targetColor = targetVariant?.color;
 
+        if (targetColor) {
+          setColorPhotos((cp) => ({ ...cp, [targetColor]: uploadedUrl }));
+        }
+
         setFormData((prev) => {
           const updatedVariants = prev.variants.map((v: any, i: number) => {
             if (i === index) return { ...v, imageUrl: uploadedUrl };
@@ -861,6 +908,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     const targetVariant = formData.variants[index];
     const targetColor = targetVariant?.color;
 
+    if (targetColor && imageUrl) {
+      setColorPhotos((cp) => ({ ...cp, [targetColor]: imageUrl }));
+    }
+
     setFormData((prev) => ({
       ...prev,
       variants: prev.variants.map((v: any, i: number) => {
@@ -880,6 +931,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
   const handleApplyImageToAllColorVariants = (color: string, imageUrl: string) => {
     if (!color || !imageUrl) return;
+    setColorPhotos((cp) => ({ ...cp, [color]: imageUrl }));
     setFormData((prev) => ({
       ...prev,
       variants: prev.variants.map((v: any) => (v.color === color ? { ...v, imageUrl } : v)),
@@ -925,6 +977,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         const colorExisting = formData.variants.find((v: any) => v.color === clr && v.imageUrl);
         const fallbackImg =
           existing?.imageUrl ||
+          colorPhotos[clr] ||
           colorExisting?.imageUrl ||
           formData.images[cIdx]?.imageUrl ||
           (colors.length === 1 ? primaryImg : '');
@@ -941,6 +994,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       colors.forEach((clr, cIdx) => {
         const colorExisting = formData.variants.find((v: any) => v.color === clr && v.imageUrl);
         const fallbackImg =
+          colorPhotos[clr] ||
           colorExisting?.imageUrl ||
           formData.images[cIdx]?.imageUrl ||
           (colors.length === 1 ? primaryImg : '');
@@ -952,7 +1006,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             price: existing?.price ?? basePrice ?? 0,
             stock: existing?.stock ?? baseStock ?? 10,
             sku: existing?.sku || '',
-            imageUrl: existing?.imageUrl || fallbackImg,
+            imageUrl: existing?.imageUrl || colorPhotos[clr] || fallbackImg,
           });
         });
       });
@@ -991,6 +1045,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         stock: 10,
         sku: '',
         imageUrl:
+          colorPhotos[color] ||
           colorExisting?.imageUrl ||
           (selectedColors.length === 1 ? primaryImg : '') ||
           formData.images[0]?.imageUrl ||
@@ -1022,7 +1077,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           price: existing?.price ?? Number(formData.price) ?? 0,
           stock: existing?.stock ?? 10,
           sku: existing?.sku || '',
-          imageUrl: existing?.imageUrl || colorExisting?.imageUrl || '',
+          imageUrl: existing?.imageUrl || colorPhotos[clr] || colorExisting?.imageUrl || '',
         });
       });
     });
@@ -1077,6 +1132,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         data.data?.secure_url;
 
       if (data.success && uploadedUrl) {
+        setColorPhotos((prev) => ({ ...prev, [color]: uploadedUrl }));
         setFormData((prev) => {
           const updatedVariants = prev.variants.map((v: any) =>
             v.color === color ? { ...v, imageUrl: uploadedUrl } : v,
@@ -1094,7 +1150,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             images: updatedImages,
           };
         });
-        showToast(`Photo for ${color} uploaded and linked to all its sizes!`, 'success');
+        showToast(`Photo for ${color} uploaded and linked to all variants!`, 'success');
       } else {
         showToast(data.message || 'Server error: please try again after sometime', 'error');
       }
@@ -1106,6 +1162,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   };
 
   const handleAssignGalleryImageToColor = (color: string, imageUrl: string) => {
+    if (imageUrl) {
+      setColorPhotos((prev) => ({ ...prev, [color]: imageUrl }));
+    } else {
+      setColorPhotos((prev) => {
+        const next = { ...prev };
+        delete next[color];
+        return next;
+      });
+    }
     setFormData((prev) => ({
       ...prev,
       variants: prev.variants.map((v: any) => (v.color === color ? { ...v, imageUrl } : v)),
@@ -1418,7 +1483,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   if (isLoadingProduct) {
     return (
       <div className="min-h-[500px] flex flex-col items-center justify-center p-8 bg-white rounded-3xl border border-slate-200 shadow-xs max-w-6xl mx-auto my-8">
-        <div className="w-12 h-12 border-4 border-navy border-t-amber-500 rounded-full animate-spin mb-4" />
+        <div className="w-12 h-12 border-4 border-navy border-t-orange rounded-full animate-spin mb-4" />
         <h3 className="text-base font-bold text-slate-800">Loading Product Details...</h3>
         <p className="text-xs text-slate-500 mt-1">
           Retrieving product catalog information, variants matrix, and images...
@@ -1446,7 +1511,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               {productId ? 'Edit Product' : 'Add New Product'}
             </h1>
             <p className="text-xs text-slate-500">
-              Template: <strong className="text-amber-700">{activeTemplate.name}</strong> • Size
+              Template: <strong className="text-orange">{activeTemplate.name}</strong> • Size
               System:{' '}
               <span className="font-mono text-slate-700 font-bold">
                 {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name}
@@ -1459,13 +1524,13 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto px-6 py-2.5 bg-navy hover:bg-navy-hover text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
+            className="w-full sm:w-auto px-6 py-2.5 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
           >
             {isSubmitting ? (
               <span>Saving...</span>
             ) : (
               <>
-                <Send className="w-4 h-4 text-amber-400" />{' '}
+                <Send className="w-4 h-4 text-white" />{' '}
                 {productId ? 'Update Listing' : 'Submit for Approval'}
               </>
             )}
@@ -1496,7 +1561,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4 text-amber-600" /> Section 1: Common Product Information
+            <ShoppingBag className="w-4 h-4 text-orange" /> Section 1: Common Product Information
           </h2>
           <span className="text-[11px] font-bold text-slate-400">Step 1 of 5</span>
         </div>
@@ -1530,11 +1595,11 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           </div>
 
           {/* DYNAMIC CATEGORY & GARMENT TYPE SELECTOR */}
-          <div className="md:col-span-2 bg-gradient-to-br from-amber-50/80 via-slate-50 to-white p-5 rounded-2xl border-2 border-amber-200/80 space-y-4 shadow-2xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/50 pb-3">
+          <div className="md:col-span-2 bg-gradient-to-br from-orange-50/30 via-slate-50/60 to-white p-5 rounded-2xl border border-orange/20 space-y-4 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange/15 pb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-slate-950">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-navy text-white">
                     Category Engine
                   </span>
                   <h3 className="text-sm font-extrabold text-navy">
@@ -1546,11 +1611,21 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                   configure its size system.
                 </p>
               </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-xl border border-amber-300 text-xs font-bold text-navy shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>
-                  Active Template: <strong className="text-amber-800">{activeTemplate.name}</strong>
-                </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleAutoDetectCategories}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                  title="Auto-detect garment and category from title"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> Auto-Detect
+                </button>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-xl border border-slate-200 text-xs font-bold text-navy shadow-2xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>
+                    Active Template: <strong className="text-orange">{activeTemplate.name}</strong>
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -1602,7 +1677,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                       onClick={() => setActiveSubId(sub.id)}
                       className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                         isSubActive
-                          ? 'bg-amber-500 text-slate-950 shadow-xs font-black ring-2 ring-amber-500/20'
+                          ? 'bg-orange text-white shadow-xs font-black ring-2 ring-orange/20'
                           : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
                       }`}
                     >
@@ -1679,7 +1754,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               <button
                 type="button"
                 onClick={handleAutoDetectCategories}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-[11px] rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-orange hover:bg-orange/90 text-white font-extrabold text-[11px] rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
               >
                 <Sparkles className="w-3.5 h-3.5" /> Auto-Detect Categories
               </button>
@@ -1742,7 +1817,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                       key={cat.id}
                       className={`flex items-center gap-2 p-2 rounded-lg border text-[11px] font-semibold cursor-pointer transition-colors ${
                         isChecked
-                          ? 'border-navy bg-navy/5 text-navy font-bold'
+                          ? 'border-orange bg-orange/5 text-navy font-bold shadow-2xs'
                           : 'border-slate-100 hover:bg-slate-50 text-slate-700'
                       }`}
                     >
@@ -1750,7 +1825,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => toggleCategory(cat.id)}
-                        className="rounded text-navy focus:ring-navy h-3.5 w-3.5"
+                        className="rounded text-orange focus:ring-orange h-3.5 w-3.5 cursor-pointer"
                       />
                       <span className="truncate">{cat.name}</span>
                     </label>
@@ -1880,7 +1955,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                   key={idx}
                   className={`group relative aspect-3/4 rounded-2xl overflow-hidden border-2 transition-all bg-white shadow-xs ${
                     img.isPrimary
-                      ? 'border-amber-500 ring-2 ring-amber-500/20'
+                      ? 'border-orange ring-2 ring-orange/20'
                       : 'border-slate-200 hover:border-slate-400'
                   }`}
                 >
@@ -1890,7 +1965,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                     className="w-full h-full object-cover"
                   />
                   {img.isPrimary && (
-                    <span className="absolute top-2 left-2 bg-amber-500 text-slate-950 font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-xs">
+                    <span className="absolute top-2 left-2 bg-orange text-white font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-xs">
                       Main Photo
                     </span>
                   )}
@@ -1910,7 +1985,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                         {linkedColors.map((c: any) => (
                           <span
                             key={c}
-                            className="bg-navy/90 text-amber-300 font-bold text-[8px] px-1.5 py-0.5 rounded shadow-xs"
+                            className="bg-navy/90 text-orange font-bold text-[8px] px-1.5 py-0.5 rounded shadow-xs"
                           >
                             ✓ {c}
                           </span>
@@ -1925,7 +2000,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                         <button
                           type="button"
                           onClick={() => handleSetPrimaryImage(idx)}
-                          className="p-1.5 bg-white text-navy hover:text-amber-600 rounded-lg text-xs font-bold shadow-xs cursor-pointer"
+                          className="p-1.5 bg-white text-navy hover:text-orange rounded-lg text-xs font-bold shadow-xs cursor-pointer"
                           title="Set as Main Photo"
                         >
                           ★
@@ -1978,7 +2053,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                           }));
                           showToast('Applied this photo to all variants!', 'success');
                         }}
-                        className="w-full text-center px-1.5 py-0.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[8px] uppercase tracking-wider rounded shadow-xs cursor-pointer"
+                        className="w-full text-center px-1.5 py-0.5 bg-orange hover:bg-orange/90 text-white font-black text-[8px] uppercase tracking-wider rounded shadow-xs cursor-pointer"
                         title="Apply to all variants"
                       >
                         All Variants
@@ -1997,11 +2072,11 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <Layers className="w-4 h-4 text-amber-600" /> Section 2: Dynamic Category Attributes
+              <Layers className="w-4 h-4 text-orange" /> Section 2: Dynamic Category Attributes
             </h2>
             <p className="text-[11px] text-slate-500">
               Active Category Template:{' '}
-              <strong className="text-amber-700">{activeTemplate.name}</strong>
+              <strong className="text-orange">{activeTemplate.name}</strong>
             </p>
           </div>
           <span className="text-[11px] font-bold text-slate-400">Step 2 of 5</span>
@@ -2065,15 +2140,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-            <Percent className="w-4 h-4 text-amber-600" /> Section 3: Pricing, GST Taxation &
-            Inventory
+            <Percent className="w-4 h-4 text-orange" /> Section 3: Pricing, GST Taxation & Inventory
           </h2>
           <span className="text-[11px] font-bold text-slate-400">Step 3 of 5</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-          <div className="bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200 space-y-1">
-            <label className="block font-bold text-amber-950 uppercase tracking-wider text-[10px]">
+          <div className="bg-orange-50/30 p-3.5 rounded-2xl border border-orange/20 space-y-1">
+            <label className="block font-bold text-navy uppercase tracking-wider text-[10px]">
               Selling Price (₹) <span className="text-rose-500">*</span>
             </label>
             <input
@@ -2083,9 +2157,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               placeholder="e.g. 1499"
               value={formData.price || ''}
               onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-              className="w-full bg-white border border-amber-300 rounded-xl px-3 py-2 text-navy font-mono font-extrabold text-base focus:outline-none"
+              className="w-full bg-white border border-slate-200 focus:border-orange rounded-xl px-3 py-2 text-navy font-mono font-extrabold text-base focus:outline-none transition-all"
             />
-            <p className="text-[10px] text-amber-800">Final price customer pays</p>
+            <p className="text-[10px] text-slate-500">Final price customer pays</p>
           </div>
 
           <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
@@ -2264,8 +2338,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-            <Truck className="w-4 h-4 text-amber-600" /> Section 4: Shipping & Packaging
-            Specifications
+            <Truck className="w-4 h-4 text-orange" /> Section 4: Shipping & Packaging Specifications
           </h2>
           <span className="text-[11px] font-bold text-slate-400">Step 4 of 5</span>
         </div>
@@ -2354,8 +2427,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
           <div>
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <RotateCcw className="w-4 h-4 text-amber-600" /> Section 4B: Return & Replacement
-              Policy <span className="text-rose-500">*</span>
+              <RotateCcw className="w-4 h-4 text-orange" /> Section 4B: Return & Replacement Policy{' '}
+              <span className="text-rose-500">*</span>
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Select one of the 3 standardized marketplace policy options. Window durations are
@@ -2371,7 +2444,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             onClick={() => setFormData({ ...formData, returnPolicyType: 'RETURN_AND_REPLACEMENT' })}
             className={`p-5 rounded-2xl border-2 cursor-pointer transition-all relative ${
               formData.returnPolicyType === 'RETURN_AND_REPLACEMENT'
-                ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500/20 shadow-xs'
+                ? 'border-orange bg-orange/5 ring-2 ring-orange/20 shadow-xs'
                 : 'border-slate-200 bg-white hover:bg-slate-50'
             }`}
           >
@@ -2382,7 +2455,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                   formData.returnPolicyType === 'RETURN_AND_REPLACEMENT'
-                    ? 'border-amber-600 bg-amber-600 text-white'
+                    ? 'border-orange bg-orange text-white'
                     : 'border-slate-300 bg-white'
                 }`}
               >
@@ -2413,18 +2486,18 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             onClick={() => setFormData({ ...formData, returnPolicyType: 'REPLACEMENT_ONLY' })}
             className={`p-5 rounded-2xl border-2 cursor-pointer transition-all relative ${
               formData.returnPolicyType === 'REPLACEMENT_ONLY'
-                ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500/20 shadow-xs'
+                ? 'border-orange bg-orange/5 ring-2 ring-orange/20 shadow-xs'
                 : 'border-slate-200 bg-white hover:bg-slate-50'
             }`}
           >
             <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-navy/10 text-navy border border-navy/20">
                 Option B • Size/Defect Exchange
               </span>
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                   formData.returnPolicyType === 'REPLACEMENT_ONLY'
-                    ? 'border-amber-600 bg-amber-600 text-white'
+                    ? 'border-orange bg-orange text-white'
                     : 'border-slate-300 bg-white'
                 }`}
               >
@@ -2455,7 +2528,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             onClick={() => setFormData({ ...formData, returnPolicyType: 'NONE' })}
             className={`p-5 rounded-2xl border-2 cursor-pointer transition-all relative ${
               formData.returnPolicyType === 'NONE'
-                ? 'border-amber-500 bg-amber-50/40 ring-2 ring-amber-500/20 shadow-xs'
+                ? 'border-orange bg-orange/5 ring-2 ring-orange/20 shadow-xs'
                 : 'border-slate-200 bg-white hover:bg-slate-50'
             }`}
           >
@@ -2466,7 +2539,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                   formData.returnPolicyType === 'NONE'
-                    ? 'border-amber-600 bg-amber-600 text-white'
+                    ? 'border-orange bg-orange text-white'
                     : 'border-slate-300 bg-white'
                 }`}
               >
@@ -2505,7 +2578,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <Boxes className="w-4 h-4 text-amber-600" /> Section 5: Dynamic Product Variant Matrix
+              <Boxes className="w-4 h-4 text-orange" /> Section 5: Dynamic Product Variant Matrix
             </h2>
             <p className="text-[11px] text-slate-500">
               Color-first grouped matrix with variant-specific photos and category sizes (
@@ -2535,7 +2608,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             >
               <div className="flex items-center justify-between">
                 <span>{mode.label}</span>
-                {variantMode === mode.id && <CheckCircle2 className="w-4 h-4 text-amber-400" />}
+                {variantMode === mode.id && <CheckCircle2 className="w-4 h-4 text-orange" />}
               </div>
             </button>
           ))}
@@ -2555,7 +2628,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                       Step 1: Select Available Sizes (
                       {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name})
                     </label>
-                    <span className="text-[11px] text-amber-800 font-bold">
+                    <span className="text-[11px] text-navy font-bold">
                       System: {activeTemplate.sizeSystemId}
                     </span>
                   </div>
@@ -2570,7 +2643,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                           onClick={() => handleToggleSize(sz)}
                           className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                             isSelected
-                              ? 'bg-amber-500 text-slate-950 shadow-xs ring-2 ring-amber-500/20 font-black'
+                              ? 'bg-orange text-white shadow-xs ring-2 ring-orange/20 font-black'
                               : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                           }`}
                         >
@@ -2674,7 +2747,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                           const firstWithImg = formData.variants.find(
                             (v: any) => v.color === clr && v.imageUrl,
                           );
-                          const colorImgUrl = firstWithImg?.imageUrl || '';
+                          const colorImgUrl = colorPhotos[clr] || firstWithImg?.imageUrl || '';
                           const hex = COLOR_HEX_MAP[clr] || '#94a3b8';
 
                           return (
@@ -2719,12 +2792,12 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                   <div className="flex items-center gap-1.5">
                                     <label className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-navy border border-slate-200 rounded text-[10px] font-bold cursor-pointer transition-colors shadow-2xs">
                                       {colorUploading === clr ? (
-                                        <span className="text-amber-600 font-bold animate-pulse">
+                                        <span className="text-orange font-bold animate-pulse">
                                           Uploading...
                                         </span>
                                       ) : (
                                         <>
-                                          <Upload className="w-2.5 h-2.5 text-amber-600" />
+                                          <Upload className="w-2.5 h-2.5 text-orange" />
                                           <span>{colorImgUrl ? 'Change' : 'Upload'}</span>
                                         </>
                                       )}
@@ -2796,7 +2869,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                             }
                                             className={`relative w-6 h-7 rounded border overflow-hidden cursor-pointer transition-all ${
                                               isSelected
-                                                ? 'border-amber-500 ring-2 ring-amber-500/50 scale-105 shadow-2xs'
+                                                ? 'border-orange ring-2 ring-orange/50 scale-105 shadow-2xs'
                                                 : 'border-slate-200 hover:border-slate-400 opacity-60 hover:opacity-100'
                                             }`}
                                             title={`Click to assign Photo ${iIdx + 1} to ${clr}`}
@@ -2825,9 +2898,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 {selectedSizes.length > 0 && (
                   <div className="space-y-4 pt-1">
                     {/* Quick Actions Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-2.5 bg-amber-500/10 border border-amber-500/20 p-3 rounded-2xl">
-                      <div className="flex items-center gap-1.5 text-amber-900 font-bold text-xs">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <div className="flex flex-wrap items-center justify-between gap-2.5 bg-orange/5 border border-orange/20 p-3 rounded-2xl">
+                      <div className="flex items-center gap-1.5 text-navy font-bold text-xs">
+                        <Sparkles className="w-3.5 h-3.5 text-orange" />
                         <span>Quick Actions for All Sizes:</span>
                       </div>
 
@@ -2866,7 +2939,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                             {/* Size Header */}
                             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                               <div className="flex items-center gap-2.5">
-                                <span className="inline-flex items-center justify-center bg-navy text-amber-400 font-black text-xs px-3 py-1 rounded-xl shadow-2xs">
+                                <span className="inline-flex items-center justify-center bg-navy text-white font-black text-xs px-3 py-1 rounded-xl shadow-2xs">
                                   Size: {sz}
                                 </span>
                                 <span className="text-xs text-slate-500 font-semibold">
@@ -2910,7 +2983,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                       onClick={() => handleToggleColorForSize(sz, clr)}
                                       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                                         isColorInSize
-                                          ? 'bg-amber-500 text-slate-950 font-black ring-1 ring-amber-500 shadow-2xs'
+                                          ? 'bg-orange text-white font-black ring-1 ring-orange shadow-2xs'
                                           : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
                                       }`}
                                     >
@@ -2950,19 +3023,105 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                       return (
                                         <tr key={v.color} className="hover:bg-slate-50/50">
                                           <td className="py-2 px-3">
-                                            {v.imageUrl ? (
-                                              <div className="w-8 h-10 rounded-md border border-slate-200 overflow-hidden bg-slate-50 shrink-0 shadow-2xs">
-                                                <img
-                                                  src={v.imageUrl}
-                                                  alt=""
-                                                  className="w-full h-full object-cover"
-                                                />
+                                            <div className="flex items-center gap-2">
+                                              <div className="relative w-8 h-10 rounded-md border border-slate-200 overflow-hidden bg-slate-50 shrink-0 shadow-2xs flex items-center justify-center group">
+                                                {v.imageUrl ? (
+                                                  <>
+                                                    <img
+                                                      src={v.imageUrl}
+                                                      alt=""
+                                                      className="w-full h-full object-cover"
+                                                    />
+                                                    <button
+                                                      type="button"
+                                                      onClick={() =>
+                                                        handleAssignGalleryImageToVariant(
+                                                          globalIndex,
+                                                          '',
+                                                        )
+                                                      }
+                                                      className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center text-[9px] font-bold shadow-xs cursor-pointer opacity-80 hover:opacity-100 transition-opacity"
+                                                      title="Remove photo"
+                                                    >
+                                                      ×
+                                                    </button>
+                                                  </>
+                                                ) : (
+                                                  <ImageIcon className="w-3.5 h-3.5 text-slate-300" />
+                                                )}
                                               </div>
-                                            ) : (
-                                              <div className="w-8 h-10 rounded-md border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-slate-300 shrink-0">
-                                                <ImageIcon className="w-3.5 h-3.5 opacity-40" />
+
+                                              <div className="flex flex-col gap-1">
+                                                <label className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white hover:bg-slate-100 text-navy border border-slate-200 rounded text-[9px] font-bold cursor-pointer transition-colors shadow-2xs">
+                                                  {variantUploadingIndex === globalIndex ? (
+                                                    <span className="text-orange font-bold animate-pulse">
+                                                      ...
+                                                    </span>
+                                                  ) : (
+                                                    <>
+                                                      <Upload className="w-2.5 h-2.5 text-orange" />
+                                                      <span>
+                                                        {v.imageUrl ? 'Change' : 'Upload'}
+                                                      </span>
+                                                    </>
+                                                  )}
+                                                  <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    disabled={variantUploadingIndex === globalIndex}
+                                                    onChange={(e) => {
+                                                      const file = e.target.files?.[0];
+                                                      if (file)
+                                                        handleVariantImageUpload(globalIndex, file);
+                                                      e.target.value = '';
+                                                    }}
+                                                    className="hidden"
+                                                  />
+                                                </label>
+
+                                                {formData.images.length > 0 && (
+                                                  <select
+                                                    defaultValue=""
+                                                    onChange={(e) => {
+                                                      const val = e.target.value;
+                                                      if (val === '__CLEAR__') {
+                                                        handleAssignGalleryImageToVariant(
+                                                          globalIndex,
+                                                          '',
+                                                        );
+                                                      } else if (val) {
+                                                        handleAssignGalleryImageToVariant(
+                                                          globalIndex,
+                                                          val,
+                                                        );
+                                                      }
+                                                      e.target.value = '';
+                                                    }}
+                                                    className="text-[9px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-1 py-0.5 max-w-[80px] outline-none cursor-pointer"
+                                                    title="Pick photo from gallery"
+                                                  >
+                                                    <option value="" disabled>
+                                                      Gallery ▾
+                                                    </option>
+                                                    {formData.images.map(
+                                                      (img: any, iIdx: number) => (
+                                                        <option key={iIdx} value={img.imageUrl}>
+                                                          Photo {iIdx + 1}
+                                                        </option>
+                                                      ),
+                                                    )}
+                                                    {v.imageUrl && (
+                                                      <option
+                                                        value="__CLEAR__"
+                                                        className="text-rose-600 font-semibold"
+                                                      >
+                                                        ✕ Clear
+                                                      </option>
+                                                    )}
+                                                  </select>
+                                                )}
                                               </div>
-                                            )}
+                                            </div>
                                           </td>
                                           <td className="py-2 px-3 font-bold text-navy">
                                             <div className="flex items-center gap-1.5">
@@ -3067,7 +3226,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                     <label className="block font-bold text-navy uppercase tracking-wider text-xs">
                       Select Available Sizes ({SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name})
                     </label>
-                    <span className="text-[11px] text-amber-800 font-bold">
+                    <span className="text-[11px] text-navy font-bold">
                       System: {activeTemplate.sizeSystemId}
                     </span>
                   </div>
@@ -3082,7 +3241,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                           onClick={() => handleToggleSize(sz)}
                           className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                             isSelected
-                              ? 'bg-amber-500 text-slate-950 shadow-xs ring-2 ring-amber-500/20 font-black'
+                              ? 'bg-orange text-white shadow-xs ring-2 ring-orange/20 font-black'
                               : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                           }`}
                         >
@@ -3151,7 +3310,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                       <span>Uploading...</span>
                                     ) : (
                                       <>
-                                        <Upload className="w-2.5 h-2.5 text-amber-600" />
+                                        <Upload className="w-2.5 h-2.5 text-orange" />
                                         <span>{v.imageUrl ? 'Change' : 'Upload'}</span>
                                       </>
                                     )}
@@ -3374,7 +3533,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                         <span>Uploading...</span>
                                       ) : (
                                         <>
-                                          <Upload className="w-3 h-3 text-amber-600" />
+                                          <Upload className="w-3 h-3 text-orange" />
                                           <span>{v.imageUrl ? 'Change' : 'Upload'}</span>
                                         </>
                                       )}
@@ -3385,6 +3544,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                         onChange={(e) => {
                                           const file = e.target.files?.[0];
                                           if (file) handleVariantImageUpload(idx, file);
+                                          e.target.value = '';
                                         }}
                                         className="hidden"
                                       />
@@ -3565,13 +3725,13 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2.5 bg-navy hover:bg-navy-hover text-white font-extrabold text-xs rounded-xl transition-all flex items-center gap-2 shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
+            className="px-6 py-2.5 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl transition-all flex items-center gap-2 shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
           >
             {isSubmitting ? (
               <span>Saving...</span>
             ) : (
               <>
-                <Send className="w-4 h-4 text-amber-400" />{' '}
+                <Send className="w-4 h-4 text-white" />{' '}
                 {productId ? 'Update Listing' : 'Submit for Approval'}
               </>
             )}

@@ -223,7 +223,7 @@ function OrderSummary() {
           <div className="flex justify-between items-center text-slate-600">
             <span className="flex items-center gap-1.5 font-medium">
               COD Handling Fee (1.5%)
-              <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+              <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-orange/10 text-orange border border-orange/20">
                 Non-refundable
               </span>
             </span>

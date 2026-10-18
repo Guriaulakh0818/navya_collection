@@ -254,7 +254,7 @@ export default function OrderDetailPage() {
     return (
       <ProtectedRoute>
         <div className="mx-auto max-w-6xl px-4 py-20 text-center">
-          <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 border-3 border-orange border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm font-semibold text-slate-600">Loading order details...</p>
         </div>
       </ProtectedRoute>
@@ -270,7 +270,7 @@ export default function OrderDetailPage() {
           <p className="text-sm text-slate-600 mb-6">
             The order you are looking for does not exist or has been removed.
           </p>
-          <Button asChild className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl">
+          <Button asChild className="bg-orange hover:bg-orange/90 text-white rounded-xl">
             <Link href="/account/orders">Back to My Orders</Link>
           </Button>
         </div>
@@ -370,7 +370,7 @@ export default function OrderDetailPage() {
                       ? 'bg-rose-50 text-rose-700 border border-rose-300'
                       : order.status === 'RTO' || order.status === 'Returned'
                         ? 'bg-purple-50 text-purple-700 border border-purple-300'
-                        : 'bg-amber-50 text-amber-800 border border-amber-300'
+                        : 'bg-orange/10 text-orange border border-orange/30'
                 }`}
               >
                 {order.status === 'RTO' ? 'Returned to Origin' : order.status}
@@ -420,21 +420,21 @@ export default function OrderDetailPage() {
 
         {/* Active Return Requests Notice (Section 4, 5) */}
         {returnRequests.length > 0 && (
-          <div className="rounded-3xl border border-amber-200 bg-amber-50/60 p-5 space-y-3">
-            <h3 className="font-bold text-amber-950 text-sm flex items-center gap-2">
-              <RotateCcw className="w-4 h-4 text-amber-700" />
+          <div className="rounded-3xl border border-orange/20 bg-orange/5 p-5 space-y-3">
+            <h3 className="font-bold text-navy text-sm flex items-center gap-2">
+              <RotateCcw className="w-4 h-4 text-orange" />
               Active Return & Replacement Requests ({returnRequests.length})
             </h3>
             <div className="space-y-2">
               {returnRequests.map((req) => (
                 <div
                   key={req.id}
-                  className="rounded-2xl border border-amber-200 bg-white p-4 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  className="rounded-2xl border border-orange/20 bg-white p-4 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-navy">{req.requestNumber || req.id}</span>
-                      <span className="rounded bg-amber-100 text-amber-900 px-2 py-0.5 text-[10px] font-extrabold">
+                      <span className="rounded bg-orange/10 text-orange border border-orange/20 px-2 py-0.5 text-[10px] font-extrabold">
                         {req.type}
                       </span>
                       <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-800">
@@ -491,7 +491,7 @@ export default function OrderDetailPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
-              <Truck className="w-5 h-5 text-amber-600" />
+              <Truck className="w-5 h-5 text-orange" />
               {hasMultipleShipments
                 ? `Order Shipments (${order.shipments.length} Packages from Multiple Boutiques)`
                 : 'Shipment & Delivery Details'}
@@ -507,7 +507,7 @@ export default function OrderDetailPage() {
                 {/* Shipment Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center font-bold text-amber-800 text-xs">
+                    <div className="w-10 h-10 rounded-2xl bg-orange/10 border border-orange/20 flex items-center justify-center font-bold text-orange text-xs">
                       #{idx + 1}
                     </div>
                     <div>
@@ -516,7 +516,7 @@ export default function OrderDetailPage() {
                           {shipment.shipmentNumber}
                         </h3>
                         <span className="text-[11px] font-bold text-slate-400">•</span>
-                        <span className="text-xs font-bold text-amber-700 flex items-center gap-1">
+                        <span className="text-xs font-bold text-orange flex items-center gap-1">
                           <Building2 className="w-3.5 h-3.5" />
                           {shipment.shopName} ({shipment.pickupCity})
                         </span>
@@ -541,11 +541,11 @@ export default function OrderDetailPage() {
                                   shipment.status === 'RTO_IN_TRANSIT'
                                 ? 'bg-orange-50 text-orange-700 border border-orange-300'
                                 : shipment.status === 'UNDELIVERED'
-                                  ? 'bg-amber-50 text-amber-800 border border-amber-300'
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-300'
                                   : shipment.status === 'IN_TRANSIT' ||
                                       shipment.status === 'SHIPPED'
                                     ? 'bg-sky-50 text-sky-700 border border-sky-300'
-                                    : 'bg-amber-50 text-amber-800 border border-amber-300'
+                                    : 'bg-orange/10 text-orange border border-orange/30'
                       }`}
                     >
                       {shipment.status === 'RTO_INITIATED'
@@ -589,8 +589,8 @@ export default function OrderDetailPage() {
                         className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-amber-50/50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0">
-                            <Package className="w-5 h-5 text-amber-600" />
+                          <div className="w-12 h-12 rounded-xl bg-orange/10 border border-orange/20 flex items-center justify-center text-orange shrink-0">
+                            <Package className="w-5 h-5 text-orange" />
                           </div>
                           <div>
                             <p className="text-xs font-bold text-navy">{item.name}</p>
@@ -652,7 +652,7 @@ export default function OrderDetailPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => openReturnModal(matchedOrderItem)}
-                              className="rounded-xl border-amber-300 text-amber-900 hover:bg-amber-50 text-xs font-bold"
+                              className="rounded-xl border-orange/30 text-orange hover:bg-orange/5 text-xs font-bold"
                             >
                               <RotateCcw className="w-3.5 h-3.5 mr-1" />
                               Return / Replacement
@@ -677,8 +677,8 @@ export default function OrderDetailPage() {
                       className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-amber-50 border border-slate-100 flex items-center justify-center shrink-0">
-                          <Package className="w-5 h-5 text-amber-600" />
+                        <div className="w-12 h-12 rounded-xl bg-orange/10 border border-orange/20 flex items-center justify-center text-orange shrink-0">
+                          <Package className="w-5 h-5 text-orange" />
                         </div>
                         <div>
                           <p className="text-xs font-bold text-navy">{item.name}</p>
@@ -731,7 +731,7 @@ export default function OrderDetailPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => openReturnModal(item)}
-                            className="rounded-xl border-amber-300 text-amber-900 hover:bg-amber-50 text-xs font-bold"
+                            className="rounded-xl border-orange/30 text-orange hover:bg-orange/5 text-xs font-bold"
                           >
                             <RotateCcw className="w-3.5 h-3.5 mr-1" />
                             Return / Replacement
@@ -751,7 +751,7 @@ export default function OrderDetailPage() {
           {/* Delivery Address */}
           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-3">
             <h3 className="font-heading text-base font-bold text-navy flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-amber-600" />
+              <MapPin className="w-4 h-4 text-orange" />
               Customer Delivery Address
             </h3>
             {order.address && (
@@ -795,7 +795,9 @@ export default function OrderDetailPage() {
               </div>
               <div className="border-t border-slate-100 pt-2 flex justify-between font-bold text-navy text-sm">
                 <span>Grand Total</span>
-                <span className="text-amber-800">₹{order.total.toLocaleString('en-IN')}</span>
+                <span className="text-orange font-bold font-mono">
+                  ₹{order.total.toLocaleString('en-IN')}
+                </span>
               </div>
             </div>
           </div>
@@ -807,7 +809,7 @@ export default function OrderDetailPage() {
             <div className="relative w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl space-y-5">
               <div className="flex items-center justify-between border-b pb-3">
                 <h3 className="font-heading text-lg font-black text-navy flex items-center gap-2">
-                  <RotateCcw className="w-5 h-5 text-amber-600" />
+                  <RotateCcw className="w-5 h-5 text-orange" />
                   Raise Return / Replacement Request
                 </h3>
                 <button
@@ -867,8 +869,8 @@ export default function OrderDetailPage() {
                     </div>
                   )}
 
-                  <div className="rounded-2xl bg-amber-50/50 border border-amber-100 p-3 flex items-center gap-3">
-                    <Package className="w-8 h-8 text-amber-600 shrink-0" />
+                  <div className="rounded-2xl bg-orange/5 border border-orange/20 p-3 flex items-center gap-3">
+                    <Package className="w-8 h-8 text-orange shrink-0" />
                     <div>
                       <p className="font-bold text-navy text-xs">{selectedItemForReturn.name}</p>
                       <p className="text-slate-500 text-[11px]">
@@ -888,7 +890,7 @@ export default function OrderDetailPage() {
                         value={returnQuantity}
                         onChange={(e) => setReturnQuantity(Number(e.target.value))}
                         aria-label="Select quantity to return"
-                        className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-medium text-slate-800 focus:border-amber-500 focus:outline-none"
+                        className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-medium text-slate-800 focus:border-orange focus:outline-none"
                       >
                         {Array.from(
                           { length: selectedItemForReturn.quantity },
@@ -915,7 +917,7 @@ export default function OrderDetailPage() {
                         onClick={() => setRequestType('RETURN')}
                         className={`rounded-xl border p-2.5 text-center font-bold transition-colors ${
                           requestType === 'RETURN'
-                            ? 'border-amber-600 bg-amber-50 text-amber-900'
+                            ? 'border-orange bg-orange/5 text-orange'
                             : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                         } ${
                           selectedItemForReturn.policyType === 'REPLACEMENT_ONLY' ||
@@ -936,7 +938,7 @@ export default function OrderDetailPage() {
                         onClick={() => setRequestType('EXCHANGE')}
                         className={`rounded-xl border p-2.5 text-center font-bold transition-colors ${
                           requestType === 'EXCHANGE'
-                            ? 'border-amber-600 bg-amber-50 text-amber-900'
+                            ? 'border-orange bg-orange/5 text-orange'
                             : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                         } ${
                           selectedItemForReturn.policyType === 'NONE' ||
@@ -949,7 +951,7 @@ export default function OrderDetailPage() {
                       </button>
                     </div>
                     {selectedItemForReturn.policyType === 'REPLACEMENT_ONLY' && (
-                      <p className="mt-1 text-[10px] text-amber-700">
+                      <p className="mt-1 text-[10px] text-orange">
                         * Seller policy allows Replacement Only for this product.
                       </p>
                     )}
@@ -964,7 +966,7 @@ export default function OrderDetailPage() {
                       value={returnReason}
                       onChange={(e) => setReturnReason(e.target.value)}
                       aria-label="Reason for return or replacement request"
-                      className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-medium text-slate-800 focus:border-amber-500 focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs font-medium text-slate-800 focus:border-orange focus:outline-none"
                     >
                       <option value="Damaged or Defective Item">Damaged or Defective Item</option>
                       <option value="Wrong Item or Size Received">
@@ -990,13 +992,13 @@ export default function OrderDetailPage() {
                       onChange={(e) => setDetailedReason(e.target.value)}
                       rows={3}
                       placeholder="Please describe the issue in detail..."
-                      className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-amber-500 focus:outline-none"
+                      className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-orange focus:outline-none"
                     />
                   </div>
 
                   {/* COD Refund Destination Details (BM-08 Section 6) */}
                   {order.paymentMethod === 'COD' && requestType === 'RETURN' && (
-                    <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 space-y-3">
+                    <div className="rounded-xl border border-orange/20 bg-orange/5 p-3 space-y-3">
                       <div>
                         <p className="font-bold text-navy text-xs">COD Refund Destination</p>
                         <p className="text-slate-500 text-[11px]">
@@ -1011,7 +1013,7 @@ export default function OrderDetailPage() {
                           onClick={() => setRefundMethod('UPI')}
                           className={`rounded-lg border p-2 text-center font-bold text-xs transition-colors ${
                             refundMethod === 'UPI'
-                              ? 'border-amber-600 bg-white text-amber-900 shadow-sm'
+                              ? 'border-orange bg-white text-orange shadow-sm font-bold'
                               : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
                           }`}
                         >
@@ -1022,7 +1024,7 @@ export default function OrderDetailPage() {
                           onClick={() => setRefundMethod('BANK')}
                           className={`rounded-lg border p-2 text-center font-bold text-xs transition-colors ${
                             refundMethod === 'BANK'
-                              ? 'border-amber-600 bg-white text-amber-900 shadow-sm'
+                              ? 'border-orange bg-white text-orange shadow-sm font-bold'
                               : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-white'
                           }`}
                         >
@@ -1041,7 +1043,7 @@ export default function OrderDetailPage() {
                             value={upiId}
                             onChange={(e) => setUpiId(e.target.value)}
                             required
-                            className="w-full rounded-lg border border-slate-300 p-2 text-xs focus:border-amber-500 focus:outline-none bg-white"
+                            className="w-full rounded-lg border border-slate-300 p-2 text-xs focus:border-orange focus:outline-none bg-white"
                           />
                         </div>
                       ) : (
@@ -1056,7 +1058,7 @@ export default function OrderDetailPage() {
                               value={accountHolderName}
                               onChange={(e) => setAccountHolderName(e.target.value)}
                               required
-                              className="w-full rounded-lg border border-slate-300 p-2 text-xs focus:border-amber-500 focus:outline-none bg-white"
+                              className="w-full rounded-lg border border-slate-300 p-2 text-xs focus:border-orange focus:outline-none bg-white"
                             />
                           </div>
                           <div>
@@ -1069,7 +1071,7 @@ export default function OrderDetailPage() {
                               value={bankAccountNumber}
                               onChange={(e) => setBankAccountNumber(e.target.value)}
                               required
-                              className="w-full rounded-lg border border-slate-300 p-2 text-xs focus:border-amber-500 focus:outline-none bg-white"
+                              className="w-full rounded-lg border border-slate-300 p-2 text-xs focus:border-orange focus:outline-none bg-white"
                             />
                           </div>
                           <div>
@@ -1082,7 +1084,7 @@ export default function OrderDetailPage() {
                               value={bankIfsc}
                               onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
                               required
-                              className="w-full rounded-lg border border-slate-300 p-2 text-xs focus:border-amber-500 focus:outline-none bg-white uppercase"
+                              className="w-full rounded-lg border border-slate-300 p-2 text-xs focus:border-orange focus:outline-none bg-white uppercase"
                             />
                           </div>
                         </div>
@@ -1146,7 +1148,7 @@ export default function OrderDetailPage() {
                     <Button
                       type="submit"
                       disabled={isSubmittingReturn || isUploading}
-                      className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold"
+                      className="rounded-xl bg-orange hover:bg-orange/90 text-white text-xs font-bold"
                     >
                       {isSubmittingReturn ? (
                         <RefreshCw className="w-4 h-4 animate-spin mr-1" />

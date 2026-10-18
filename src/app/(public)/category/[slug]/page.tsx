@@ -843,12 +843,12 @@ export default async function CategoryPage({ params }: Props) {
                     className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all border shadow-2xs ${
                       isActive
                         ? 'bg-navy text-white border-navy shadow-xs scale-105'
-                        : 'bg-white text-slate-700 border-slate-200 hover:border-amber-500 hover:text-amber-600'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-orange hover:text-orange'
                     }`}
                   >
                     <span>{sub.name}</span>
                     {sub.badge && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase bg-amber-400 text-slate-950">
+                      <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase bg-orange text-white">
                         {sub.badge}
                       </span>
                     )}

@@ -57,8 +57,8 @@ export default function ReturnPolicyPage() {
         <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-xs space-y-8">
           {/* Header */}
           <div className="border-b border-slate-200 pb-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold mb-3">
-              <RefreshCw className="w-4 h-4 text-amber-600" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange/10 border border-orange/20 text-navy text-xs font-bold mb-3">
+              <RefreshCw className="w-4 h-4 text-orange" />
               Buyer Protection: 3-Day Returns &amp; 7-Day Replacements
             </div>
             <h1 className="font-heading text-3xl sm:text-4xl font-extrabold text-navy">
@@ -72,7 +72,7 @@ export default function ReturnPolicyPage() {
           {/* Key Return Highlights Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3">
-              <Clock className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+              <Clock className="w-6 h-6 text-orange shrink-0 mt-0.5" />
               <div>
                 <h3 className="font-bold text-navy text-sm">3-Day Return / 7-Day Exchange</h3>
                 <p className="text-xs text-slate-600 mt-1">
@@ -143,7 +143,10 @@ export default function ReturnPolicyPage() {
               <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-sm">
                 <li>
                   Log in to your account and navigate to{' '}
-                  <Link href="/account/orders" className="text-amber-700 font-bold underline">
+                  <Link
+                    href="/account/orders"
+                    className="text-orange font-bold underline hover:text-orange-600"
+                  >
                     My Orders
                   </Link>
                   .

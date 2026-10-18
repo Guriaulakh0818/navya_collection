@@ -22,7 +22,7 @@ export function ProductRating({ rating, reviewCount, className }: ProductRatingP
 
   return (
     <div className={className || 'flex items-center gap-1.5 text-xs text-slate-600 font-medium'}>
-      <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md text-amber-800 font-extrabold text-[11px] shadow-xs">
+      <div className="flex items-center gap-1 bg-navy/5 border border-navy/15 px-2 py-0.5 rounded-md text-navy font-extrabold text-[11px] shadow-2xs">
         <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
         <span>{formattedRating}</span>
       </div>

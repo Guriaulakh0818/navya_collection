@@ -101,7 +101,7 @@ export function ProductReviewsSection({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2">
-            <MessageSquare className="w-6 h-6 text-amber-600" />
+            <MessageSquare className="w-6 h-6 text-orange" />
             Customer Ratings & Reviews
           </h2>
           <p className="text-xs text-slate-500 mt-1">
@@ -111,7 +111,7 @@ export function ProductReviewsSection({
 
         <button
           onClick={() => setShowReviewModal(true)}
-          className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all"
+          className="px-6 py-3 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange/20 transition-all cursor-pointer"
         >
           Write a Review ★
         </button>
@@ -123,7 +123,7 @@ export function ProductReviewsSection({
       {/* REVIEWS LIST */}
       {isLoading ? (
         <div className="p-12 text-center text-slate-500 flex items-center justify-center gap-2">
-          <div className="w-5 h-5 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-orange border-t-transparent rounded-full animate-spin" />
           Loading reviews...
         </div>
       ) : reviews.length === 0 ? (
@@ -142,7 +142,7 @@ export function ProductReviewsSection({
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-100 border border-amber-500/30 flex items-center justify-center text-amber-600 font-bold">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 border border-orange/30 flex items-center justify-center text-orange font-bold">
                     {r.user?.name ? (
                       r.user.name.charAt(0).toUpperCase()
                     ) : (
@@ -181,8 +181,8 @@ export function ProductReviewsSection({
 
               {/* Seller Reply Box */}
               {r.sellerReply && (
-                <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-amber-200 space-y-1">
-                  <div className="flex items-center gap-2 text-amber-700 text-xs font-bold">
+                <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-orange/20 space-y-1">
+                  <div className="flex items-center gap-2 text-orange text-xs font-bold">
                     <Building2 className="w-4 h-4" /> Merchant Store Response
                   </div>
                   <p className="text-xs text-slate-600 italic">{r.sellerReply}</p>
@@ -205,7 +205,7 @@ export function ProductReviewsSection({
             </button>
 
             <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
-              <Sparkles className="w-6 h-6 text-amber-600" />
+              <Sparkles className="w-6 h-6 text-orange" />
               <div>
                 <h3 className="font-extrabold text-navy text-base">Write a Review</h3>
                 <p className="text-xs text-slate-500">
@@ -258,7 +258,7 @@ export function ProductReviewsSection({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold rounded-xl shadow-md transition-all disabled:opacity-50"
+                  className="flex-1 py-3 bg-orange hover:bg-orange/90 text-white font-extrabold rounded-xl shadow-md shadow-orange/20 transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? 'Posting...' : 'Submit Review ✓'}
                 </button>

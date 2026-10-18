@@ -88,7 +88,7 @@ export function ShopProfileStorefront({
             Marketplace Shops
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <span className="text-amber-800 font-bold truncate">{shop.name}</span>
+          <span className="text-orange font-bold truncate">{shop.name}</span>
         </div>
       </div>
 
@@ -110,7 +110,7 @@ export function ShopProfileStorefront({
         <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-md backdrop-blur-xl space-y-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white border-2 border-amber-300 overflow-hidden shrink-0 flex items-center justify-center shadow-md select-none">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white border-2 border-orange/30 overflow-hidden shrink-0 flex items-center justify-center shadow-md select-none">
                 <Image
                   src={
                     shop.slug === 'navya-collection'
@@ -129,7 +129,7 @@ export function ShopProfileStorefront({
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-navy tracking-tight">
                     {shop.name}
                   </h1>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-50 text-amber-800 border border-amber-300 flex items-center gap-1 shadow-xs">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-xs">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                     {shop.verificationBadge || 'VERIFIED MERCHANT'}
                   </span>
@@ -141,7 +141,7 @@ export function ShopProfileStorefront({
 
                 <div className="flex items-center gap-4 mt-3 text-xs text-slate-600 flex-wrap">
                   {shop.rating && shop.rating > 0 && shop.reviewCount && shop.reviewCount > 0 ? (
-                    <span className="flex items-center gap-1 font-extrabold text-amber-700">
+                    <span className="flex items-center gap-1 font-extrabold text-orange">
                       <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
                       {Number(shop.rating).toFixed(1)} ({shop.reviewCount}{' '}
                       {shop.reviewCount === 1 ? 'Review' : 'Reviews'})
@@ -151,12 +151,12 @@ export function ShopProfileStorefront({
                   )}
                   {(shop.city || shop.state) && (
                     <span className="flex items-center gap-1 text-slate-500 font-medium">
-                      <MapPin className="w-3.5 h-3.5 text-amber-600" />
+                      <MapPin className="w-3.5 h-3.5 text-orange" />
                       {[shop.city, shop.state].filter(Boolean).join(', ')}
                     </span>
                   )}
                   <span className="flex items-center gap-1 text-slate-500 font-mono font-bold">
-                    <ShoppingBag className="w-3.5 h-3.5 text-amber-600" />
+                    <ShoppingBag className="w-3.5 h-3.5 text-orange" />
                     {products.length} Products Available
                   </span>
                 </div>
@@ -177,7 +177,7 @@ export function ShopProfileStorefront({
               onClick={() => setActiveTab('catalog')}
               className={`pb-3 border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer ${
                 activeTab === 'catalog'
-                  ? 'border-amber-500 text-amber-800 font-black'
+                  ? 'border-orange text-orange font-black'
                   : 'border-transparent text-slate-500 hover:text-navy'
               }`}
             >
@@ -187,7 +187,7 @@ export function ShopProfileStorefront({
               onClick={() => setActiveTab('policies')}
               className={`pb-3 border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer ${
                 activeTab === 'policies'
-                  ? 'border-amber-500 text-amber-800 font-black'
+                  ? 'border-orange text-orange font-black'
                   : 'border-transparent text-slate-500 hover:text-navy'
               }`}
             >
@@ -197,7 +197,7 @@ export function ShopProfileStorefront({
               onClick={() => setActiveTab('contact')}
               className={`pb-3 border-b-2 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer ${
                 activeTab === 'contact'
-                  ? 'border-amber-500 text-amber-800 font-black'
+                  ? 'border-orange text-orange font-black'
                   : 'border-transparent text-slate-500 hover:text-navy'
               }`}
             >
@@ -254,7 +254,7 @@ export function ShopProfileStorefront({
                   className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all border cursor-pointer ${
                     selectedCategory === 'all'
                       ? 'bg-navy text-white border-navy shadow-xs'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-amber-50 hover:text-amber-900'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-orange/5 hover:text-orange'
                   }`}
                 >
                   All Products
@@ -266,7 +266,7 @@ export function ShopProfileStorefront({
                     className={`px-3 py-1.5 rounded-full text-xs font-extrabold transition-all border cursor-pointer ${
                       selectedCategory === cat.slug
                         ? 'bg-navy text-white border-navy shadow-xs'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-amber-50 hover:text-amber-900'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-orange/5 hover:text-orange'
                     }`}
                   >
                     {cat.name}
@@ -278,7 +278,7 @@ export function ShopProfileStorefront({
             {/* Products Grid */}
             {isLoadingCatalog ? (
               <div className="p-12 text-center text-slate-600 flex items-center justify-center gap-2 font-semibold text-xs">
-                <div className="w-5 h-5 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-orange border-t-transparent rounded-full animate-spin" />
                 Filtering shop products...
               </div>
             ) : products.length === 0 ? (
@@ -327,7 +327,7 @@ export function ShopProfileStorefront({
                         <span className="text-base font-black text-navy font-mono">
                           ₹{Number(product.price || 0).toLocaleString('en-IN')}
                         </span>
-                        <span className="text-xs text-amber-700 font-extrabold group-hover:translate-x-1 transition-transform">
+                        <span className="text-xs text-orange font-extrabold group-hover:translate-x-1 transition-transform">
                           Buy Now →
                         </span>
                       </div>
@@ -343,14 +343,14 @@ export function ShopProfileStorefront({
         {activeTab === 'policies' && (
           <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
             <h2 className="text-base font-extrabold text-navy uppercase tracking-wider flex items-center gap-2">
-              <Truck className="w-5 h-5 text-amber-600" />
+              <Truck className="w-5 h-5 text-orange" />
               Boutique Shipping & Return Guarantee
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
               <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3">
                 <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                  <Truck className="w-4 h-4 text-amber-600" /> Express Shipping Policy
+                  <Truck className="w-4 h-4 text-orange" /> Express Shipping Policy
                 </h3>
                 <p className="text-slate-600 leading-relaxed font-medium">
                   {shop.shippingPolicy ||
@@ -360,8 +360,8 @@ export function ShopProfileStorefront({
 
               <div className="p-6 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-3">
                 <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-amber-600" /> 3-Day Return &amp; 7-Day
-                  Replacement Policy
+                  <FileText className="w-4 h-4 text-orange" /> 3-Day Return &amp; 7-Day Replacement
+                  Policy
                 </h3>
                 <p className="text-slate-600 leading-relaxed font-medium">
                   {shop.returnPolicy ||
@@ -376,7 +376,7 @@ export function ShopProfileStorefront({
         {activeTab === 'contact' && (
           <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
             <h2 className="text-base font-extrabold text-navy uppercase tracking-wider flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-amber-600" />
+              <Building2 className="w-5 h-5 text-orange" />
               Primary Warehouse Location & Contact Details
             </h2>
 
@@ -395,7 +395,7 @@ export function ShopProfileStorefront({
                   </span>
                   <span>
                     Pincode:{' '}
-                    <strong className="text-amber-800 font-mono font-bold">
+                    <strong className="text-navy font-mono font-bold">
                       {shop.pincode || 'N/A'}
                     </strong>
                   </span>
@@ -429,7 +429,7 @@ export function ShopProfileStorefront({
           <section className="space-y-6 pt-6 border-t border-slate-200">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-extrabold text-navy tracking-tight flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-600" />
+                <Sparkles className="w-5 h-5 text-orange" />
                 Explore Recommended Items From Other Boutiques
               </h2>
             </div>
@@ -474,7 +474,7 @@ export function ShopProfileStorefront({
                       <span className="text-base font-black text-navy font-mono">
                         ₹{Number(rel.price || 0).toLocaleString('en-IN')}
                       </span>
-                      <span className="text-xs text-amber-700 font-extrabold group-hover:translate-x-1 transition-transform">
+                      <span className="text-xs text-orange font-extrabold group-hover:translate-x-1 transition-transform">
                         View Item →
                       </span>
                     </div>

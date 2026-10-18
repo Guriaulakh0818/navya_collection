@@ -66,7 +66,7 @@ export default function MultiVendorCartPage() {
           className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3.5"
         />
         <div className="mx-auto max-w-4xl px-4 py-16 sm:py-20 text-center space-y-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-50 border-2 border-amber-200 rounded-3xl flex items-center justify-center mx-auto text-amber-600 shadow-xs">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange/10 border-2 border-orange/20 rounded-3xl flex items-center justify-center mx-auto text-orange shadow-xs">
             <ShoppingBag className="h-8 w-8 sm:h-10 sm:w-10" />
           </div>
           <h1 className="text-xl sm:text-3xl font-extrabold text-navy">
@@ -154,9 +154,9 @@ export default function MultiVendorCartPage() {
                 className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-shadow space-y-3 sm:space-y-4"
               >
                 {/* Shop Header (100% Responsive layout for mobile 320px-414px) */}
-                <div className="bg-amber-50/70 border-b border-amber-200/70 p-3 sm:p-5 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2.5 sm:gap-4">
+                <div className="bg-orange/5 border-b border-orange/20 p-3 sm:p-5 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2.5 sm:gap-4">
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 w-full xs:w-auto">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border border-amber-300 overflow-hidden shrink-0 flex items-center justify-center text-amber-700 shadow-xs relative">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border border-orange/30 overflow-hidden shrink-0 flex items-center justify-center text-orange shadow-xs relative">
                       {group.shopLogo ? (
                         <Image
                           src={group.shopLogo}
@@ -174,7 +174,7 @@ export default function MultiVendorCartPage() {
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         <Link
                           href={`/shop/${group.shopSlug || ''}`}
-                          className="font-extrabold text-navy text-xs sm:text-sm hover:text-amber-700 transition-colors flex items-center gap-1 truncate max-w-[140px] xs:max-w-[180px] sm:max-w-none"
+                          className="font-extrabold text-navy text-xs sm:text-sm hover:text-orange transition-colors flex items-center gap-1 truncate max-w-[140px] xs:max-w-[180px] sm:max-w-none"
                         >
                           <span className="truncate">{group.shopName}</span>
                           <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0" />
@@ -189,7 +189,7 @@ export default function MultiVendorCartPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between xs:block w-full xs:w-auto text-left xs:text-right pt-1.5 xs:pt-0 border-t xs:border-t-0 border-amber-200/60">
+                  <div className="flex items-center justify-between xs:block w-full xs:w-auto text-left xs:text-right pt-1.5 xs:pt-0 border-t xs:border-t-0 border-orange/20">
                     <span className="text-[9px] sm:text-[10px] uppercase text-slate-500 font-extrabold block">
                       Shop Subtotal
                     </span>
@@ -385,7 +385,7 @@ export default function MultiVendorCartPage() {
 
                 <div className="flex justify-between text-slate-700 font-medium">
                   <span>Standard Delivery</span>
-                  <span className="font-mono text-amber-700 font-extrabold">
+                  <span className="font-mono text-navy font-extrabold">
                     {shippingTotal === 0 ? 'FREE' : formatPrice(shippingTotal)}
                   </span>
                 </div>

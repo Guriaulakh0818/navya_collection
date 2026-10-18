@@ -233,8 +233,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         onDragLeave={handleDragLeave}
         className={`relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
           isDragging
-            ? 'border-amber-500 bg-amber-500/10 scale-[1.01]'
-            : 'border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 hover:border-amber-500'
+            ? 'border-orange bg-orange/10 scale-[1.01]'
+            : 'border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 hover:border-orange'
         }`}
       >
         <input
@@ -248,7 +248,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
         <div className="flex flex-col items-center justify-center space-y-2 pointer-events-none">
           <svg
-            className="w-10 h-10 text-amber-500"
+            className="w-10 h-10 text-orange"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -261,14 +261,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             />
           </svg>
           <div className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            <span className="text-amber-600 dark:text-amber-400 font-semibold">
-              Click to upload
-            </span>{' '}
+            <span className="text-orange dark:text-orange-400 font-semibold">Click to upload</span>{' '}
             or drag and drop
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             JPG, PNG, WEBP, AVIF up to{' '}
-            <span className="font-semibold text-amber-600">{maxSizeLabel}</span> (Folder:{' '}
+            <span className="font-semibold text-orange">{maxSizeLabel}</span> (Folder:{' '}
             <span className="font-mono">{folder}</span>)
           </p>
         </div>
@@ -276,20 +274,20 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
       {/* Upload Queue & Progress Indicator */}
       {isUploading && (
-        <div className="w-full space-y-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg">
-          <div className="flex justify-between items-center text-xs text-amber-900 dark:text-amber-200 font-medium">
+        <div className="w-full space-y-2 p-3 bg-orange/5 border border-orange/20 rounded-lg">
+          <div className="flex justify-between items-center text-xs text-navy font-medium">
             <span>Uploading to Cloudinary... ({uploadProgress}%)</span>
             <button
               type="button"
               onClick={handleCancelUpload}
-              className="text-red-600 hover:text-red-800 underline text-xs font-semibold"
+              className="text-rose-600 hover:text-rose-800 underline text-xs font-semibold cursor-pointer"
             >
               Cancel Upload
             </button>
           </div>
-          <div className="w-full h-2 bg-amber-200 dark:bg-amber-900 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-amber-500 to-amber-600 transition-all duration-300"
+              className="h-full bg-gradient-to-r from-orange to-orange-400 transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
@@ -318,7 +316,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               key={img.id || idx}
               className={`group relative rounded-xl border p-2 bg-white dark:bg-slate-900 overflow-hidden shadow-sm transition-all duration-200 ${
                 img.isPrimary
-                  ? 'border-amber-500 ring-2 ring-amber-500/20'
+                  ? 'border-orange ring-2 ring-orange/20'
                   : 'border-slate-200 dark:border-slate-800'
               }`}
             >
@@ -333,7 +331,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
                 {/* Primary Badge */}
                 {img.isPrimary && (
-                  <span className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+                  <span className="absolute top-2 left-2 bg-orange text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
                     PRIMARY
                   </span>
                 )}
@@ -368,9 +366,9 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                   type="button"
                   onClick={() => handleSetPrimary(idx)}
                   disabled={img.isPrimary}
-                  className={`px-2 py-1 rounded font-medium transition ${
+                  className={`px-2 py-1 rounded font-medium transition cursor-pointer ${
                     img.isPrimary
-                      ? 'text-amber-600 bg-amber-50 dark:bg-amber-950/30'
+                      ? 'text-orange bg-orange/10'
                       : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
                   }`}
                 >

@@ -256,11 +256,11 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
                 return (
                   <div
                     key={off.id}
-                    className="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-4 space-y-1.5 shadow-xs"
+                    className="rounded-2xl border-2 border-orange/30 bg-orange/5 p-4 space-y-1.5 shadow-xs"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-black text-slate-950 bg-amber-400 px-2.5 py-0.5 rounded-lg text-xs tracking-wider uppercase">
+                        <span className="font-black text-white bg-orange px-2.5 py-0.5 rounded-lg text-xs tracking-wider uppercase">
                           {off.firstOrderOnly ? 'First Order' : 'Store Deal'}
                         </span>
                         {isEligible ? (

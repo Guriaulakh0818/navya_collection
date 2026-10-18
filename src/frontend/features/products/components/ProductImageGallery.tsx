@@ -37,7 +37,7 @@ export function ProductImageGallery({
       <div
         className={
           className ||
-          'relative aspect-[3/4] rounded-3xl overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-amber-50 flex items-center justify-center p-8 border border-slate-200'
+          'relative aspect-[3/4] rounded-3xl overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-orange-50/20 flex items-center justify-center p-8 border border-slate-200'
         }
       >
         <div className="text-center space-y-2">

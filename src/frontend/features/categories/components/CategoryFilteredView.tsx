@@ -611,11 +611,11 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
     return (
       <div className="space-y-8 max-w-5xl mx-auto py-6">
         <div className="relative overflow-hidden bg-gradient-to-br from-navy via-[#1e3a6c] to-[#0f2142] text-white rounded-3xl p-8 sm:p-12 shadow-xl border border-white/10 text-center space-y-6">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-orange/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-gold text-xs font-black uppercase tracking-widest shadow-xs">
-            <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-xs font-black uppercase tracking-widest shadow-xs">
+            <Sparkles className="w-4 h-4 text-orange animate-pulse" />
             <span>Curated Boutique Collection</span>
           </div>
 
@@ -626,7 +626,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
             <p className="text-sm sm:text-base text-slate-200/90 leading-relaxed font-medium">
               Verified boutique designers and regional textile artisans are currently preparing
               handcrafted, exclusive season releases for{' '}
-              <strong className="text-gold font-bold">{category.name}</strong>.
+              <strong className="text-white font-bold">{category.name}</strong>.
             </p>
           </div>
 
@@ -651,7 +651,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
             </Link>
             <Link
               href="/category"
-              className="px-5 py-2.5 rounded-full bg-gold text-navy font-extrabold text-xs shadow-md hover:bg-amber-400 transition-all"
+              className="px-5 py-2.5 rounded-full bg-orange text-white font-extrabold text-xs shadow-md shadow-orange/20 hover:bg-orange/90 transition-all"
             >
               Browse All Categories
             </Link>

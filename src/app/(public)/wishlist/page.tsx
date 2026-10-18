@@ -52,15 +52,15 @@ export default function MultiVendorWishlistPage() {
           className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4"
         />
         <div className="mx-auto max-w-md px-4 py-20 text-center space-y-4">
-          <div className="w-16 h-16 bg-white border border-slate-200 rounded-3xl flex items-center justify-center mx-auto text-amber-600 shadow-sm">
-            <Heart className="h-8 w-8 text-amber-600" />
+          <div className="w-16 h-16 bg-white border border-slate-200 rounded-3xl flex items-center justify-center mx-auto text-rose-500 shadow-sm">
+            <Heart className="h-8 w-8 text-rose-500" />
           </div>
           <h1 className="text-2xl font-extrabold text-navy">Login Required for Wishlist</h1>
           <p className="text-xs text-slate-500">
             Please log in to view and sync your saved boutique favorites across devices.
           </p>
           <Button
-            className="mt-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-8 py-3 text-xs shadow-md"
+            className="mt-4 rounded-2xl bg-orange hover:bg-orange/90 text-white font-extrabold px-8 py-3 text-xs shadow-md shadow-orange/20 cursor-pointer"
             asChild
           >
             <Link href="/login">Login / Register →</Link>
@@ -82,8 +82,8 @@ export default function MultiVendorWishlistPage() {
           className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4"
         />
         <div className="mx-auto max-w-md px-4 py-20 text-center space-y-4">
-          <div className="w-16 h-16 bg-white border border-slate-200 rounded-3xl flex items-center justify-center mx-auto text-amber-600 shadow-sm">
-            <Heart className="h-8 w-8 text-amber-600" />
+          <div className="w-16 h-16 bg-white border border-slate-200 rounded-3xl flex items-center justify-center mx-auto text-rose-500 shadow-sm">
+            <Heart className="h-8 w-8 text-rose-500" />
           </div>
           <h1 className="text-2xl font-extrabold text-navy">Your Wishlist is Empty</h1>
           <p className="text-xs text-slate-500">
@@ -91,7 +91,7 @@ export default function MultiVendorWishlistPage() {
             stores.
           </p>
           <Button
-            className="mt-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-8 py-3 text-xs shadow-md"
+            className="mt-4 rounded-2xl bg-orange hover:bg-orange/90 text-white font-extrabold px-8 py-3 text-xs shadow-md shadow-orange/20 cursor-pointer"
             asChild
           >
             <Link href="/shop">Browse Marketplace Stores</Link>
@@ -117,7 +117,7 @@ export default function MultiVendorWishlistPage() {
         <div className="flex items-center justify-between border-b border-slate-200 pb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-              <Heart className="w-7 h-7 text-amber-600 fill-amber-600" />
+              <Heart className="w-7 h-7 text-rose-500 fill-rose-500" />
               Saved Boutique Favorites ({items.length})
             </h1>
             <p className="text-xs text-slate-500 mt-1">
@@ -139,7 +139,7 @@ export default function MultiVendorWishlistPage() {
           {items.map((item) => (
             <div
               key={item.productId}
-              className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-amber-500/50 hover:shadow-xl transition-all flex flex-col justify-between shadow-sm"
+              className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-orange hover:shadow-xl transition-all flex flex-col justify-between shadow-sm"
             >
               <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden">
                 {item.image ? (
@@ -157,8 +157,8 @@ export default function MultiVendorWishlistPage() {
                 )}
 
                 {/* Shop Badge Pill */}
-                <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-bold text-amber-700 border border-slate-200 flex items-center gap-1 shadow-xs">
-                  <Building2 className="w-3 h-3 text-amber-600" />
+                <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-bold text-orange border border-slate-200 flex items-center gap-1 shadow-xs">
+                  <Building2 className="w-3 h-3 text-orange" />
                   {item.shopName || 'Boutique Partner'}
                 </div>
 
@@ -174,11 +174,11 @@ export default function MultiVendorWishlistPage() {
 
               <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-bold text-navy text-sm line-clamp-1 group-hover:text-amber-600 transition-colors">
+                  <h3 className="font-bold text-navy text-sm line-clamp-1 group-hover:text-orange transition-colors">
                     {item.name}
                   </h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-base font-extrabold text-amber-600 font-mono">
+                    <span className="text-base font-extrabold text-navy font-mono">
                       {formatPrice(item.price)}
                     </span>
                     <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
@@ -189,7 +189,7 @@ export default function MultiVendorWishlistPage() {
 
                 <Button
                   onClick={() => handleMoveToCart(item)}
-                  className="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl transition-all shadow-md shadow-orange/20 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <ShoppingBag className="w-4 h-4" /> Move to Bag →
                 </Button>

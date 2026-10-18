@@ -63,7 +63,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               </span>
             )}
             {(!t.variant || t.variant === 'info') && (
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-slate-950 font-extrabold text-[10px]">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange text-white font-extrabold text-[10px]">
                 ℹ
               </span>
             )}
