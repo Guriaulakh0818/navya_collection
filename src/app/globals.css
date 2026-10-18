@@ -4,25 +4,36 @@
 
 @layer base {
   :root {
+    --brand-primary: #183a73;
+    --brand-primary-dark: #09172e;
+    --brand-accent: #f15a25;
+    --brand-background: #fafafa;
+    --brand-surface: #ffffff;
+    --brand-foreground: #1e1e1e;
+    --brand-muted: #6b7280;
+    --brand-border: #e5e7eb;
+    --brand-divider: #f3f4f6;
+    --brand-warning: #f59e0b;
+
     --background: 0 0% 98%;
     --foreground: 0 0% 12%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 12%;
-    --primary: 213 74% 15%;
+    --primary: 218 66% 27%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 30 89% 55%;
+    --secondary: 16 88% 54%;
     --secondary-foreground: 0 0% 100%;
     --muted: 215 14% 47%;
     --muted-foreground: 215 14% 47%;
-    --accent: 30 89% 55%;
+    --accent: 16 88% 54%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 214 14% 91%;
     --input: 214 14% 91%;
-    --ring: 213 74% 15%;
+    --ring: 218 66% 27%;
     --radius: 0.75rem;
 
     --font-heading: var(--font-dm-sans), 'DM Sans', sans-serif;
@@ -52,7 +63,7 @@
 }
 
 ::selection {
-  background-color: #0a2342;
+  background-color: #183a73;
   color: #ffffff;
 }
 
@@ -99,7 +110,7 @@ input[readonly] {
 /* Custom scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #0a2342 #e5e7eb;
+  scrollbar-color: #183a73 #e5e7eb;
 }
 
 *::-webkit-scrollbar {
@@ -113,7 +124,7 @@ input[readonly] {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #0a2342;
+  background: #183a73;
   border-radius: 9999px;
 }
 

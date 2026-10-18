@@ -348,7 +348,7 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
             contact: address?.mobile || customer?.mobile || '',
           },
           theme: {
-            color: '#0A2342',
+            color: '#183A73',
           },
           retry: {
             enabled: true,

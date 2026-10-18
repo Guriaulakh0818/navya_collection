@@ -229,12 +229,12 @@ export class OrderEmailNotificationService {
             <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
               
               <!-- Header -->
-              <div style="background: linear-gradient(135deg, #0A2342 0%, #061527 100%); padding: 28px 24px; text-align: center;">
+              <div style="background: linear-gradient(135deg, #183A73 0%, #09172E 100%); padding: 28px 24px; text-align: center;">
                 <div style="text-align: center; margin-bottom: 8px;">
                   <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 44px; width: auto; object-fit: contain; margin: 0 auto; display: block;" />
                 </div>
                 <h1 style="color: #ffffff; font-size: 24px; font-weight: 900; margin: 6px 0 0 0; letter-spacing: 2px;">JIIVAAKART</h1>
-                <p style="color: #F28C28; font-size: 11px; font-weight: 800; letter-spacing: 4px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
+                <p style="color: #F15A25; font-size: 11px; font-weight: 800; letter-spacing: 4px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
               </div>
 
               <!-- Main Content -->
@@ -302,7 +302,7 @@ export class OrderEmailNotificationService {
 
               <!-- Footer -->
               <div style="background-color: #f8fafc; padding: 24px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
-                <p style="margin: 0 0 8px 0; color: #64748b;">Need help with this order? Contact our concierge team at <a href="mailto:support@jiivaakart.com" style="color: #0A2342; text-decoration: none; font-weight: 600;">support@jiivaakart.com</a></p>
+                <p style="margin: 0 0 8px 0; color: #64748b;">Need help with this order? Contact our concierge team at <a href="mailto:support@jiivaakart.com" style="color: #183A73; text-decoration: none; font-weight: 600;">support@jiivaakart.com</a></p>
                 <p style="margin: 0;">© ${new Date().getFullYear()} JiivaaKart Private Limited. All rights reserved.</p>
               </div>
             </div>
@@ -424,12 +424,12 @@ export class OrderEmailNotificationService {
             <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
               
               <!-- Header -->
-              <div style="background-color: #0A2342; padding: 28px 24px; text-align: center; border-bottom: 4px solid #F28C28;">
+              <div style="background-color: #183A73; padding: 28px 24px; text-align: center; border-bottom: 4px solid #F15A25;">
                 <div style="text-align: center; margin-bottom: 8px;">
                   <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 40px; width: auto; object-fit: contain; margin: 0 auto; display: block;" />
                 </div>
                 <h1 style="color: #ffffff; font-size: 22px; font-weight: 800; margin: 6px 0 0 0; letter-spacing: 1px;">JIIVAAKART SELLER HUB</h1>
-                <p style="color: #F28C28; font-size: 12px; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 2px;">New Order Notification</p>
+                <p style="color: #F15A25; font-size: 12px; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 2px;">New Order Notification</p>
               </div>
 
               <!-- Main Content -->
@@ -556,11 +556,11 @@ export class OrderEmailNotificationService {
         <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
           <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
             
-            <div style="background-color: #0A2342; padding: 24px; text-align: center;">
+            <div style="background-color: #183A73; padding: 24px; text-align: center;">
               <div style="text-align: center; margin-bottom: 8px;">
                 <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 40px; width: auto; object-fit: contain; margin: 0 auto; display: block;" />
               </div>
-              <h2 style="color: #F28C28; font-size: 20px; font-weight: 800; margin: 6px 0 0 0; letter-spacing: 1px;">JIIVAAKART ADMIN GOVERNANCE</h2>
+              <h2 style="color: #F15A25; font-size: 20px; font-weight: 800; margin: 6px 0 0 0; letter-spacing: 1px;">JIIVAAKART ADMIN GOVERNANCE</h2>
               <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">New Marketplace Transaction Placed</p>
             </div>
 
@@ -762,12 +762,12 @@ export class OrderEmailNotificationService {
             <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
               
               <!-- Header -->
-              <div style="background: linear-gradient(135deg, #0A2342 0%, #061527 100%); padding: 28px 24px; text-align: center;">
+              <div style="background: linear-gradient(135deg, #183A73 0%, #09172E 100%); padding: 28px 24px; text-align: center;">
                 <div style="text-align: center; margin-bottom: 8px;">
                   <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 44px; width: auto; object-fit: contain; margin: 0 auto; display: block;" />
                 </div>
                 <h1 style="color: #ffffff; font-size: 24px; font-weight: 900; margin: 6px 0 0 0; letter-spacing: 2px;">JIIVAAKART</h1>
-                <p style="color: #F28C28; font-size: 11px; font-weight: 800; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
+                <p style="color: #F15A25; font-size: 11px; font-weight: 800; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
               </div>
 
               <!-- Main Content -->
@@ -793,7 +793,7 @@ export class OrderEmailNotificationService {
 
               <!-- Footer -->
               <div style="background-color: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0;">
-                <p style="margin: 0 0 6px 0; color: #64748b;">Have a question? We're here to help: <a href="mailto:support@jiivaakart.com" style="color: #0A2342; text-decoration: none; font-weight: 600;">support@jiivaakart.com</a></p>
+                <p style="margin: 0 0 6px 0; color: #64748b;">Have a question? We're here to help: <a href="mailto:support@jiivaakart.com" style="color: #183A73; text-decoration: none; font-weight: 600;">support@jiivaakart.com</a></p>
                 <p style="margin: 0;">© ${new Date().getFullYear()} JiivaaKart Private Limited. All rights reserved.</p>
               </div>
             </div>

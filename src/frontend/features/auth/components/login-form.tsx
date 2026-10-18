@@ -275,7 +275,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
         <div className="mb-6 rounded-2xl bg-amber-50 border border-amber-200/80 p-4 text-center">
           <p className="text-xs font-medium text-amber-900">
             You are currently signed in as{' '}
-            <strong className="font-extrabold text-[#183A73]">
+            <strong className="font-extrabold text-navy">
               {activeUser.name || activeUser.email || 'User'}
             </strong>
             {activeUser.email && (
@@ -288,7 +288,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
             <Button
               type="button"
               onClick={() => router.push('/account')}
-              className="w-full sm:w-auto rounded-full bg-[#183A73] text-white font-bold text-xs px-4 py-2"
+              className="w-full sm:w-auto rounded-full bg-navy text-white font-bold text-xs px-4 py-2"
             >
               Go to My Account
             </Button>
@@ -308,10 +308,10 @@ export function LoginForm({ initialUser }: LoginFormProps) {
 
       {/* Dynamic Header based on Step */}
       <div className="text-center mb-6">
-        <span className="inline-block bg-[#183A73]/10 text-[#183A73] px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider mb-2">
+        <span className="inline-block bg-navy/10 text-navy px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider mb-2">
           {step === 'email' ? 'Step 1 of 2' : 'Step 2 of 2'}
         </span>
-        <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-[#183A73]">
+        <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-navy">
           {step === 'email' ? 'Welcome Back' : 'Enter Verification Code'}
         </h1>
         <p className="mt-1.5 text-xs sm:text-sm font-medium text-slate-600">
@@ -322,8 +322,8 @@ export function LoginForm({ initialUser }: LoginFormProps) {
 
         {step === 'otp' && (
           <div className="mt-3 flex items-center justify-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50/80 px-4 py-1.5 text-xs font-semibold text-[#183A73] max-w-full overflow-hidden shadow-xs">
-              <Mail className="h-4 w-4 text-[#183A73] shrink-0" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50/80 px-4 py-1.5 text-xs font-semibold text-navy max-w-full overflow-hidden shadow-xs">
+              <Mail className="h-4 w-4 text-navy shrink-0" />
               <span className="truncate max-w-full font-semibold">{maskEmail(email)}</span>
             </div>
           </div>
@@ -340,10 +340,10 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           className="space-y-5"
         >
           <div>
-            <label className="block text-xs font-extrabold uppercase tracking-wider text-[#183A73] mb-1.5">
+            <label className="block text-xs font-extrabold uppercase tracking-wider text-navy mb-1.5">
               Email Address
             </label>
-            <div className="relative flex items-center rounded-2xl border border-slate-200 bg-white shadow-xs focus-within:ring-2 focus-within:ring-[#183A73] focus-within:border-[#183A73] transition-all">
+            <div className="relative flex items-center rounded-2xl border border-slate-200 bg-white shadow-xs focus-within:ring-2 focus-within:ring-navy focus-within:border-navy transition-all">
               <span className="inline-flex items-center pl-4 text-slate-400">
                 <Mail className="h-5 w-5 text-slate-400" />
               </span>
@@ -382,7 +382,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
               handleSendOtp(e);
             }}
             disabled={isSubmitting}
-            className="w-full rounded-2xl bg-[#183A73] hover:bg-[#183A73]/90 text-white font-extrabold text-xs tracking-wider uppercase py-3.5 h-12 shadow-md transition-all active:scale-[0.98] cursor-pointer"
+            className="w-full rounded-2xl bg-navy hover:bg-navy-700 text-white font-extrabold text-xs tracking-wider uppercase py-3.5 h-12 shadow-md transition-all active:scale-[0.98] cursor-pointer"
           >
             {isSubmitting ? (
               <Loader size="sm" light text="Sending Code..." />
@@ -438,7 +438,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
         >
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-[#183A73]">
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-navy">
                 6-Digit Verification Code
               </label>
             </div>
@@ -451,10 +451,10 @@ export function LoginForm({ initialUser }: LoginFormProps) {
               maxLength={6}
               autoFocus
               required
-              className={`mt-1.5 text-center text-2xl font-black tracking-[0.4em] h-13 rounded-2xl transition-all text-[#183A73] ${
+              className={`mt-1.5 text-center text-2xl font-black tracking-[0.4em] h-13 rounded-2xl transition-all text-navy ${
                 otpError
                   ? 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 focus:ring-2 focus:ring-rose-500 focus:border-rose-500'
-                  : 'border-slate-200 focus:ring-2 focus:ring-[#183A73]'
+                  : 'border-slate-200 focus:ring-2 focus:ring-navy'
               }`}
             />
 
@@ -487,7 +487,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-2xl bg-[#F15A25] hover:bg-[#F15A25]/90 text-white font-extrabold text-xs tracking-wider uppercase py-3.5 h-12 shadow-md transition-all active:scale-[0.98] cursor-pointer"
+            className="w-full rounded-2xl bg-orange hover:bg-orange-600 text-white font-extrabold text-xs tracking-wider uppercase py-3.5 h-12 shadow-md transition-all active:scale-[0.98] cursor-pointer"
           >
             {isSubmitting ? (
               <Loader size="sm" light text="Verifying Code..." />
@@ -500,7 +500,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
             <button
               type="button"
               onClick={handleResetStep}
-              className="inline-flex items-center gap-1.5 font-bold text-slate-600 hover:text-[#183A73] hover:underline cursor-pointer py-1 transition-colors"
+              className="inline-flex items-center gap-1.5 font-bold text-slate-600 hover:text-navy hover:underline cursor-pointer py-1 transition-colors"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Change email</span>
@@ -515,7 +515,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
                 setResendCooldown(60);
                 handleSendOtp(e);
               }}
-              className="inline-flex items-center gap-1.5 font-extrabold text-[#F15A25] hover:text-[#F15A25]/80 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer py-1 transition-colors"
+              className="inline-flex items-center gap-1.5 font-extrabold text-orange hover:text-orange-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer py-1 transition-colors"
             >
               <RotateCw className={`h-3.5 w-3.5 ${isSubmitting ? 'animate-spin' : ''}`} />
               <span>

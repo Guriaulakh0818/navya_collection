@@ -121,12 +121,12 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-[#0A2342]/10 text-[#0A2342] font-extrabold shadow-xs'
-                    : 'text-slate-700 hover:bg-slate-50 hover:text-[#0A2342]'
+                    ? 'bg-navy/10 text-navy font-extrabold shadow-xs'
+                    : 'text-slate-700 hover:bg-slate-50 hover:text-navy'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`h-4 w-4 ${isSelected ? 'text-[#0A2342]' : 'text-slate-400'}`} />
+                  <Icon className={`h-4 w-4 ${isSelected ? 'text-navy' : 'text-slate-400'}`} />
                   <span>{item.label}</span>
                 </div>
                 <ChevronRight className="h-4 w-4 text-slate-400" />
@@ -141,9 +141,9 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
             <Link
               href="/seller/dashboard"
               onClick={onClose}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-extrabold text-xs tracking-wider uppercase py-3 rounded-2xl text-center shadow-md transition-all active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 bg-orange hover:bg-orange-600 text-white font-extrabold text-xs tracking-wider uppercase py-3 rounded-2xl text-center shadow-md transition-all active:scale-[0.98]"
             >
-              <Store className="w-4 h-4 text-slate-950 shrink-0" />
+              <Store className="w-4 h-4 text-white shrink-0" />
               <span className="truncate">SELLER DASHBOARD ({shopName})</span>
             </Link>
           )}
@@ -151,7 +151,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
           <Link
             href={user ? '/account' : '/login'}
             onClick={onClose}
-            className="w-full flex items-center justify-center gap-2 bg-[#183A73] hover:bg-[#183A73]/90 text-white font-extrabold text-xs tracking-wider uppercase py-3 rounded-2xl text-center shadow-md transition-all active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-2 bg-navy hover:bg-navy-700 text-white font-extrabold text-xs tracking-wider uppercase py-3 rounded-2xl text-center shadow-md transition-all active:scale-[0.98]"
           >
             <User className="w-4 h-4 text-white shrink-0" />
             <span className="truncate">

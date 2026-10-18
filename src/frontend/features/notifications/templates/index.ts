@@ -10,9 +10,9 @@ export function renderWelcomeEmail(vars: NotificationTemplateVariables): {
   const subject = 'Welcome to JiivaaKart! ✨';
   const body = `
     <span class="badge">Welcome Offer Inside</span>
-    <h2 style="font-size: 22px; color: #0A2342; margin-top: 0;">Welcome to JiivaaKart, ${name}!</h2>
+    <h2 style="font-size: 22px; color: #183A73; margin-top: 0;">Welcome to JiivaaKart, ${name}!</h2>
     <p>We are thrilled to have you join India's premier fashion marketplace.</p>
-    <p>As a special welcome gift, use coupon code <strong style="color: #F28C28; background: #FFF7ED; padding: 2px 8px; border-radius: 4px;">FIRST200</strong> on your first order above ₹999 to get instant ₹200 OFF!</p>
+    <p>As a special welcome gift, use coupon code <strong style="color: #F15A25; background: #FEF4F0; padding: 2px 8px; border-radius: 4px;">FIRST200</strong> on your first order above ₹999 to get instant ₹200 OFF!</p>
     <div style="text-align: center;">
       <a href="https://jiivaakart.com/shop" class="button">Explore Shop Collection →</a>
     </div>

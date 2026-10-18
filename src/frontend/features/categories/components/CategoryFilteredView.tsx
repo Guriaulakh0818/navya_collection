@@ -660,7 +660,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
 
         <div className="bg-gradient-to-r from-amber-500/10 via-orange/10 to-amber-500/10 border border-amber-300/80 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
           <div className="space-y-2 text-center md:text-left">
-            <span className="text-[11px] font-black uppercase tracking-wider text-[#F15A25] bg-[#F15A25]/10 px-3 py-1 rounded-full">
+            <span className="text-[11px] font-black uppercase tracking-wider text-orange bg-orange/10 px-3 py-1 rounded-full">
               Boutique Merchants Wanted
             </span>
             <h3 className="text-lg sm:text-xl font-extrabold text-navy font-heading">
@@ -674,7 +674,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
           </div>
           <Link
             href="/seller/register"
-            className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#F15A25] hover:bg-[#d94817] text-white text-xs font-black rounded-2xl shadow-lg shrink-0 transition-all hover:scale-105"
+            className="inline-flex items-center gap-2 px-6 py-3.5 bg-orange hover:bg-[#d94817] text-white text-xs font-black rounded-2xl shadow-lg shrink-0 transition-all hover:scale-105"
           >
             <span>Register as a Seller</span>
             <ArrowRight className="w-4 h-4" />
@@ -693,12 +693,12 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
           <button
             type="button"
             onClick={() => setIsMobileFilterOpen(true)}
-            className="lg:hidden inline-flex items-center gap-2 px-3.5 py-2 bg-[#F15A25] text-white text-xs font-bold rounded-xl shadow-xs active:scale-95 transition-transform"
+            className="lg:hidden inline-flex items-center gap-2 px-3.5 py-2 bg-orange text-white text-xs font-bold rounded-xl shadow-xs active:scale-95 transition-transform"
           >
             <SlidersHorizontal className="w-4 h-4" />
             <span>Filters</span>
             {activeFilterCount > 0 && (
-              <span className="h-4.5 w-4.5 rounded-full bg-white text-[#F15A25] text-[10px] font-black flex items-center justify-center">
+              <span className="h-4.5 w-4.5 rounded-full bg-white text-orange text-[10px] font-black flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
@@ -707,10 +707,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
           <p className="text-xs sm:text-sm text-slate-600 font-medium">
             Showing <strong className="text-navy">{filteredProducts.length}</strong> products
             {activeFilterCount > 0 && (
-              <span className="text-[#F15A25] font-bold">
-                {' '}
-                ({activeFilterCount} active filters)
-              </span>
+              <span className="text-orange font-bold"> ({activeFilterCount} active filters)</span>
             )}
           </p>
         </div>
@@ -741,8 +738,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
       {/* Active Filter Pills Bar */}
       {activeFilterCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 p-3 bg-orange-50/70 border border-orange-200/80 rounded-2xl">
-          <span className="text-xs font-black text-[#F15A25] flex items-center gap-1.5 shrink-0">
-            <Filter className="w-3.5 h-3.5 text-[#F15A25]" /> Active Filters ({activeFilterCount}):
+          <span className="text-xs font-black text-orange flex items-center gap-1.5 shrink-0">
+            <Filter className="w-3.5 h-3.5 text-orange" /> Active Filters ({activeFilterCount}):
           </span>
 
           {selectedProductTypes.map((id) => (
@@ -752,7 +749,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
               className="inline-flex items-center gap-1 px-2.5 py-1 bg-white text-navy font-bold text-[11px] rounded-full border border-orange-200 shadow-2xs hover:bg-orange-100/50 transition-colors cursor-pointer"
             >
               <span>Type: {PRODUCT_TYPE_OPTIONS.find((p) => p.id === id)?.label || id}</span>
-              <X className="w-3 h-3 text-[#F15A25]" />
+              <X className="w-3 h-3 text-orange" />
             </button>
           ))}
 
@@ -763,7 +760,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
               className="inline-flex items-center gap-1 px-2.5 py-1 bg-white text-navy font-bold text-[11px] rounded-full border border-orange-200 shadow-2xs hover:bg-orange-100/50 transition-colors cursor-pointer"
             >
               <span>Fabric: {FABRIC_OPTIONS.find((f) => f.id === id)?.label || id}</span>
-              <X className="w-3 h-3 text-[#F15A25]" />
+              <X className="w-3 h-3 text-orange" />
             </button>
           ))}
 
@@ -778,7 +775,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 style={{ background: COLOR_OPTIONS.find((c) => c.id === id)?.hex || id }}
               />
               <span>Color: {COLOR_OPTIONS.find((c) => c.id === id)?.label || id}</span>
-              <X className="w-3 h-3 text-[#F15A25]" />
+              <X className="w-3 h-3 text-orange" />
             </button>
           ))}
 
@@ -789,7 +786,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
               className="inline-flex items-center gap-1 px-2.5 py-1 bg-white text-navy font-bold text-[11px] rounded-full border border-orange-200 shadow-2xs hover:bg-orange-100/50 transition-colors cursor-pointer"
             >
               <span>Size: {sz}</span>
-              <X className="w-3 h-3 text-[#F15A25]" />
+              <X className="w-3 h-3 text-orange" />
             </button>
           ))}
 
@@ -801,7 +798,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
             >
               <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
               <span>{RATING_OPTIONS.find((r) => r.id === id)?.label || id}</span>
-              <X className="w-3 h-3 text-[#F15A25]" />
+              <X className="w-3 h-3 text-orange" />
             </button>
           ))}
 
@@ -822,16 +819,16 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
               onClick={() => toggleArrayItem(id, selectedShops, setSelectedShops)}
               className="inline-flex items-center gap-1 px-2.5 py-1 bg-white text-navy font-bold text-[11px] rounded-full border border-orange-200 shadow-2xs hover:bg-orange-100/50 transition-colors cursor-pointer"
             >
-              <Store className="w-3 h-3 text-[#F15A25]" />
+              <Store className="w-3 h-3 text-orange" />
               <span>Shop: {availableShops.find((s) => s.id === id)?.name || id}</span>
-              <X className="w-3 h-3 text-[#F15A25]" />
+              <X className="w-3 h-3 text-orange" />
             </button>
           ))}
 
           <button
             type="button"
             onClick={handleClearAllFilters}
-            className="text-xs font-black text-[#F15A25] hover:text-[#d94817] underline underline-offset-2 ml-auto shrink-0 cursor-pointer flex items-center gap-1"
+            className="text-xs font-black text-orange hover:text-[#d94817] underline underline-offset-2 ml-auto shrink-0 cursor-pointer flex items-center gap-1"
           >
             <RotateCcw className="w-3 h-3" />
             <span>Clear All</span>
@@ -848,7 +845,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
             <div className="border-b border-slate-100 pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-[#F15A25] shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-orange shrink-0">
                     <SlidersHorizontal className="w-4 h-4 stroke-[2.5]" />
                   </div>
                   <div>
@@ -864,7 +861,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 <button
                   type="button"
                   onClick={handleClearAllFilters}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#F15A25] hover:text-[#d94817] transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-orange hover:text-[#d94817] transition-colors cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Clear All</span>
@@ -875,12 +872,12 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
               {activeFilterCount > 0 && (
                 <div className="mt-3 flex items-center justify-between bg-orange-50/90 border border-orange-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 transition-all">
                   <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-[#F15A25] text-white text-[11px] font-black flex items-center justify-center shadow-2xs">
+                    <span className="w-5 h-5 rounded-full bg-orange text-white text-[11px] font-black flex items-center justify-center shadow-2xs">
                       {activeFilterCount}
                     </span>
                     <span className="text-navy font-bold">Filters Applied</span>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-[#F15A25]" />
+                  <ChevronRight className="w-3.5 h-3.5 text-orange" />
                 </div>
               )}
             </div>
@@ -893,10 +890,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <Shirt className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Product Type
                   </span>
                 </div>
@@ -916,7 +913,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                       onClick={() => setProductTypeViewMode('cards')}
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-md cursor-pointer transition-colors ${
                         productTypeViewMode === 'cards'
-                          ? 'bg-[#F15A25] text-white'
+                          ? 'bg-orange text-white'
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
                     >
@@ -927,7 +924,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                       onClick={() => setProductTypeViewMode('list')}
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-md cursor-pointer transition-colors ${
                         productTypeViewMode === 'list'
-                          ? 'bg-[#F15A25] text-white'
+                          ? 'bg-orange text-white'
                           : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                       }`}
                     >
@@ -950,19 +947,19 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                             }
                             className={`relative flex flex-col items-center justify-center p-2.5 rounded-2xl border transition-all text-center cursor-pointer ${
                               active
-                                ? 'border-[#F15A25] bg-orange-50/50 ring-1 ring-[#F15A25]/40 shadow-xs'
+                                ? 'border-orange bg-orange-50/50 ring-1 ring-orange/40 shadow-xs'
                                 : 'border-slate-200 hover:border-slate-300 bg-white'
                             }`}
                           >
                             {active && (
-                              <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 rounded-full bg-[#F15A25] text-white flex items-center justify-center shadow-xs">
+                              <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 rounded-full bg-orange text-white flex items-center justify-center shadow-xs">
                                 <Check className="w-2.5 h-2.5 stroke-[3]" />
                               </span>
                             )}
                             <div
                               className={`w-8 h-8 rounded-xl flex items-center justify-center mb-1.5 transition-colors ${
                                 active
-                                  ? 'bg-white text-[#F15A25] shadow-xs'
+                                  ? 'bg-white text-orange shadow-xs'
                                   : 'bg-slate-50 text-slate-600'
                               }`}
                             >
@@ -999,8 +996,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                               <span
                                 className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
                                   checked
-                                    ? 'bg-[#F15A25] border-[#F15A25] text-white shadow-xs'
-                                    : 'border-slate-300 bg-white group-hover:border-[#F15A25]'
+                                    ? 'bg-orange border-orange text-white shadow-xs'
+                                    : 'border-slate-300 bg-white group-hover:border-orange'
                                 }`}
                               >
                                 {checked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1033,10 +1030,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <Layers className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Fabric / Material
                   </span>
                 </div>
@@ -1065,8 +1062,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           <span
                             className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
                               checked
-                                ? 'bg-[#F15A25] border-[#F15A25] text-white shadow-xs'
-                                : 'border-slate-300 bg-white group-hover:border-[#F15A25]'
+                                ? 'bg-orange border-orange text-white shadow-xs'
+                                : 'border-slate-300 bg-white group-hover:border-orange'
                             }`}
                           >
                             {checked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1090,7 +1087,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                     <button
                       type="button"
                       onClick={() => setShowAllFabrics(!showAllFabrics)}
-                      className="text-xs font-bold text-[#F15A25] hover:text-[#d94817] pt-1 flex items-center gap-1 cursor-pointer pl-1"
+                      className="text-xs font-bold text-orange hover:text-[#d94817] pt-1 flex items-center gap-1 cursor-pointer pl-1"
                     >
                       <span>
                         {showAllFabrics
@@ -1116,10 +1113,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <Palette className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Color
                   </span>
                 </div>
@@ -1141,13 +1138,13 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                         onClick={() => toggleArrayItem(co.id, selectedColors, setSelectedColors)}
                         className={`relative flex flex-col items-center justify-center p-2 rounded-2xl border transition-all text-center cursor-pointer ${
                           active
-                            ? 'border-[#F15A25] bg-orange-50/50 ring-1 ring-[#F15A25]/40 shadow-xs'
+                            ? 'border-orange bg-orange-50/50 ring-1 ring-orange/40 shadow-xs'
                             : 'border-slate-200 hover:border-slate-300 bg-white'
                         }`}
                         title={co.label}
                       >
                         {active && (
-                          <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#F15A25] text-white flex items-center justify-center shadow-xs">
+                          <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-orange text-white flex items-center justify-center shadow-xs">
                             <Check className="w-2.5 h-2.5 stroke-[3]" />
                           </span>
                         )}
@@ -1173,10 +1170,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <Ruler className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Size
                   </span>
                 </div>
@@ -1198,7 +1195,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                         onClick={() => toggleArrayItem(sz, selectedSizes, setSelectedSizes)}
                         className={`px-3 py-1.5 text-xs font-black rounded-xl border transition-all cursor-pointer ${
                           active
-                            ? 'border-[#F15A25] text-[#F15A25] bg-orange-50/70 shadow-xs ring-1 ring-[#F15A25]/30'
+                            ? 'border-orange text-orange bg-orange-50/70 shadow-xs ring-1 ring-orange/30'
                             : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                         }`}
                       >
@@ -1218,10 +1215,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <IndianRupee className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Price
                   </span>
                 </div>
@@ -1249,7 +1246,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           placeholder="500"
                           value={customMinPrice}
                           onChange={(e) => setCustomMinPrice(e.target.value)}
-                          className="w-full pl-7 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-navy outline-none focus:border-[#F15A25] focus:bg-white transition-all"
+                          className="w-full pl-7 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-navy outline-none focus:border-orange focus:bg-white transition-all"
                         />
                       </div>
                     </div>
@@ -1266,7 +1263,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           placeholder="2000"
                           value={customMaxPrice}
                           onChange={(e) => setCustomMaxPrice(e.target.value)}
-                          className="w-full pl-7 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-navy outline-none focus:border-[#F15A25] focus:bg-white transition-all"
+                          className="w-full pl-7 pr-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-navy outline-none focus:border-orange focus:bg-white transition-all"
                         />
                       </div>
                     </div>
@@ -1294,7 +1291,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                             );
                             setCustomMaxPrice(String(m.value));
                           }}
-                          className="hover:text-[#F15A25] transition-colors cursor-pointer"
+                          className="hover:text-orange transition-colors cursor-pointer"
                         >
                           {m.label}
                         </button>
@@ -1322,8 +1319,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                             <span
                               className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
                                 checked
-                                  ? 'bg-[#F15A25] border-[#F15A25] text-white shadow-xs'
-                                  : 'border-slate-300 bg-white group-hover:border-[#F15A25]'
+                                  ? 'bg-orange border-orange text-white shadow-xs'
+                                  : 'border-slate-300 bg-white group-hover:border-orange'
                               }`}
                             >
                               {checked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1352,10 +1349,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <Star className="w-3.5 h-3.5 fill-[#F15A25]" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Customer Ratings
                   </span>
                 </div>
@@ -1384,8 +1381,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           <span
                             className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
                               checked
-                                ? 'bg-[#F15A25] border-[#F15A25] text-white shadow-xs'
-                                : 'border-slate-300 bg-white group-hover:border-[#F15A25]'
+                                ? 'bg-orange border-orange text-white shadow-xs'
+                                : 'border-slate-300 bg-white group-hover:border-orange'
                             }`}
                           >
                             {checked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1447,7 +1444,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                       <span
                         className={`w-4.5 h-4.5 rounded-md border mt-0.5 flex items-center justify-center transition-all shrink-0 ${
                           isNavyaAssuredOnly
-                            ? 'bg-[#F15A25] border-[#F15A25] text-white shadow-xs'
+                            ? 'bg-orange border-orange text-white shadow-xs'
                             : 'border-emerald-300 bg-white'
                         }`}
                       >
@@ -1488,10 +1485,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <Store className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Shop / Store
                   </span>
                 </div>
@@ -1520,8 +1517,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           <span
                             className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
                               checked
-                                ? 'bg-[#F15A25] border-[#F15A25] text-white shadow-xs'
-                                : 'border-slate-300 bg-white group-hover:border-[#F15A25]'
+                                ? 'bg-orange border-orange text-white shadow-xs'
+                                : 'border-slate-300 bg-white group-hover:border-orange'
                             }`}
                           >
                             {checked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1552,10 +1549,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <Sparkles className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Occasion
                   </span>
                 </div>
@@ -1586,8 +1583,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           <span
                             className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
                               checked
-                                ? 'bg-[#F15A25] border-[#F15A25] text-white shadow-xs'
-                                : 'border-slate-300 bg-white group-hover:border-[#F15A25]'
+                                ? 'bg-orange border-orange text-white shadow-xs'
+                                : 'border-slate-300 bg-white group-hover:border-orange'
                             }`}
                           >
                             {checked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1615,10 +1612,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <Tag className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Discount
                   </span>
                 </div>
@@ -1649,15 +1646,15 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           <span
                             className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
                               checked
-                                ? 'bg-[#F15A25] border-[#F15A25] text-white shadow-xs'
-                                : 'border-slate-300 bg-white group-hover:border-[#F15A25]'
+                                ? 'bg-orange border-orange text-white shadow-xs'
+                                : 'border-slate-300 bg-white group-hover:border-orange'
                             }`}
                           >
                             {checked && <Check className="w-3 h-3 stroke-[3]" />}
                           </span>
                           <span
                             className={`text-xs truncate ${
-                              checked ? 'font-bold text-[#F15A25]' : 'font-medium'
+                              checked ? 'font-bold text-orange' : 'font-medium'
                             }`}
                           >
                             {doItem.label}
@@ -1678,10 +1675,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <Scissors className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Print Type
                   </span>
                 </div>
@@ -1712,8 +1709,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           <span
                             className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
                               checked
-                                ? 'bg-[#F15A25] border-[#F15A25] text-white shadow-xs'
-                                : 'border-slate-300 bg-white group-hover:border-[#F15A25]'
+                                ? 'bg-orange border-orange text-white shadow-xs'
+                                : 'border-slate-300 bg-white group-hover:border-orange'
                             }`}
                           >
                             {checked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1741,10 +1738,10 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-[#F15A25] flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="w-7 h-7 rounded-xl bg-orange-50 border border-orange-100 text-orange flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
                     <Gift className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-[#F15A25] transition-colors">
+                  <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
                     Country of Origin
                   </span>
                 </div>
@@ -1773,8 +1770,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           <span
                             className={`w-4.5 h-4.5 rounded-md border flex items-center justify-center transition-all shrink-0 ${
                               checked
-                                ? 'bg-[#F15A25] border-[#F15A25] text-white shadow-xs'
-                                : 'border-slate-300 bg-white group-hover:border-[#F15A25]'
+                                ? 'bg-orange border-orange text-white shadow-xs'
+                                : 'border-slate-300 bg-white group-hover:border-orange'
                             }`}
                           >
                             {checked && <Check className="w-3 h-3 stroke-[3]" />}
@@ -1806,7 +1803,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
             </div>
           ) : (
             <div className="bg-white border border-slate-200/90 rounded-3xl p-8 sm:p-14 text-center space-y-4 shadow-xs my-4">
-              <div className="w-16 h-16 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center text-[#F15A25] font-bold mx-auto shadow-xs text-2xl">
+              <div className="w-16 h-16 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange font-bold mx-auto shadow-xs text-2xl">
                 🛍️
               </div>
               <div className="space-y-1 max-w-md mx-auto">
@@ -1822,7 +1819,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 <button
                   type="button"
                   onClick={handleClearAllFilters}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F15A25] hover:bg-[#d94817] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-orange hover:bg-[#d94817] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   Clear All Filters
@@ -1850,7 +1847,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
               <button
                 type="button"
                 onClick={handleClearAllFilters}
-                className="text-xs font-bold text-[#F15A25] underline cursor-pointer"
+                className="text-xs font-bold text-orange underline cursor-pointer"
               >
                 Clear All
               </button>
@@ -1876,7 +1873,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                   >
                     <span className="truncate">{tab.label}</span>
                     {tab.count > 0 && (
-                      <span className="h-4 w-4 rounded-full bg-[#F15A25] text-white text-[9px] font-black flex items-center justify-center shrink-0 ml-1">
+                      <span className="h-4 w-4 rounded-full bg-orange text-white text-[9px] font-black flex items-center justify-center shrink-0 ml-1">
                         {tab.count}
                       </span>
                     )}
@@ -1906,12 +1903,12 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           }
                           className={`relative flex flex-col items-center justify-center p-2.5 rounded-2xl border transition-all text-center ${
                             active
-                              ? 'border-[#F15A25] bg-orange-50/50 ring-1 ring-[#F15A25]/40 shadow-xs'
+                              ? 'border-orange bg-orange-50/50 ring-1 ring-orange/40 shadow-xs'
                               : 'border-slate-200 bg-white'
                           }`}
                         >
                           {active && (
-                            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#F15A25] text-white flex items-center justify-center">
+                            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-orange text-white flex items-center justify-center">
                               <Check className="w-2.5 h-2.5 stroke-[3]" />
                             </span>
                           )}
@@ -1969,7 +1966,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           onClick={() => toggleArrayItem(co.id, selectedColors, setSelectedColors)}
                           className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center ${
                             active
-                              ? 'border-[#F15A25] bg-orange-50/50 ring-1 ring-[#F15A25]'
+                              ? 'border-orange bg-orange-50/50 ring-1 ring-orange'
                               : 'border-slate-200'
                           }`}
                         >
@@ -2001,7 +1998,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                           onClick={() => toggleArrayItem(sz, selectedSizes, setSelectedSizes)}
                           className={`px-3 py-1.5 rounded-xl border text-xs font-bold ${
                             active
-                              ? 'border-[#F15A25] bg-orange-50 text-[#F15A25]'
+                              ? 'border-orange bg-orange-50 text-orange'
                               : 'border-slate-200 bg-white text-slate-700'
                           }`}
                         >
@@ -2048,9 +2045,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                         >
                           <span
                             className={`w-4 h-4 rounded border flex items-center justify-center ${
-                              checked
-                                ? 'bg-[#F15A25] border-[#F15A25] text-white'
-                                : 'border-slate-300'
+                              checked ? 'bg-orange border-orange text-white' : 'border-slate-300'
                             }`}
                           >
                             {checked && <Check className="w-2.5 h-2.5" />}
@@ -2206,7 +2201,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                         }
                         className="flex items-center justify-between py-1 cursor-pointer text-xs"
                       >
-                        <span className={checked ? 'font-bold text-[#F15A25]' : 'text-slate-700'}>
+                        <span className={checked ? 'font-bold text-orange' : 'text-slate-700'}>
                           {doItem.label}
                         </span>
                       </label>
@@ -2252,7 +2247,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
             <button
               type="button"
               onClick={() => setIsMobileFilterOpen(false)}
-              className="w-2/3 py-3 bg-[#F15A25] hover:bg-[#d94e1d] text-white rounded-xl text-xs font-black shadow-md active:scale-98 transition-transform cursor-pointer"
+              className="w-2/3 py-3 bg-orange hover:bg-[#d94e1d] text-white rounded-xl text-xs font-black shadow-md active:scale-98 transition-transform cursor-pointer"
             >
               Apply ({filteredProducts.length} Items)
             </button>

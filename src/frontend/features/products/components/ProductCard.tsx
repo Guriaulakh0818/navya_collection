@@ -100,7 +100,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="p-2 sm:p-2.5 flex-1 flex flex-col justify-between space-y-1.5 bg-white">
         <div>
           <Link href={`/product/${product.slug}`}>
-            <h3 className="font-bold text-navy text-xs sm:text-sm group-hover:text-amber-600 transition-colors line-clamp-1 leading-snug">
+            <h3 className="font-bold text-navy text-xs sm:text-sm group-hover:text-orange transition-colors line-clamp-1 leading-snug">
               {product.name}
             </h3>
           </Link>
@@ -116,7 +116,7 @@ export function ProductCard({ product }: ProductCardProps) {
                   onMouseLeave={() => setHoveredImage(null)}
                   className={`w-4 h-5 rounded-md overflow-hidden border transition-transform hover:scale-110 shrink-0 ${
                     hoveredImage === cv.imageUrl
-                      ? 'border-amber-500 ring-1 ring-amber-500'
+                      ? 'border-orange ring-1 ring-orange'
                       : 'border-slate-200'
                   }`}
                   title={cv.color}

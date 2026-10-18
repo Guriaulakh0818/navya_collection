@@ -116,7 +116,7 @@ export function CategoryExplorer({
               placeholder="Search sarees, kurtas, lehengas, shirts, heels..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 bg-slate-100/80 hover:bg-slate-100 focus:bg-white text-xs sm:text-sm font-semibold rounded-2xl border border-transparent focus:border-[#183A73] focus:ring-2 focus:ring-[#183A73]/20 transition-all outline-none text-slate-800 placeholder:text-slate-400"
+              className="w-full pl-10 pr-10 py-2.5 bg-slate-100/80 hover:bg-slate-100 focus:bg-white text-xs sm:text-sm font-semibold rounded-2xl border border-transparent focus:border-navy focus:ring-2 focus:ring-navy/20 transition-all outline-none text-slate-800 placeholder:text-slate-400"
             />
             {searchQuery && (
               <button
@@ -138,7 +138,7 @@ export function CategoryExplorer({
           <div className="flex-1 p-4 sm:p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm sm:text-base font-extrabold text-navy flex items-center gap-2">
-                <Search className="h-4 w-4 text-[#F15A25]" />
+                <Search className="h-4 w-4 text-orange" />
                 Search Results for &quot;{searchQuery}&quot;
               </h2>
               <span className="text-xs text-slate-500 font-medium">
@@ -165,7 +165,7 @@ export function CategoryExplorer({
                         ? `/shop?${item.queryParam}`
                         : `/category/${item.slug}`
                     }
-                    className="group flex flex-col items-center text-center p-2.5 rounded-2xl bg-white border border-slate-200/90 hover:border-[#183A73] hover:shadow-md transition-all active:scale-95"
+                    className="group flex flex-col items-center text-center p-2.5 rounded-2xl bg-white border border-slate-200/90 hover:border-navy hover:shadow-md transition-all active:scale-95"
                   >
                     <div className="relative w-full aspect-square rounded-xl bg-slate-100 overflow-hidden mb-2">
                       <Image
@@ -176,12 +176,12 @@ export function CategoryExplorer({
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       {item.badge && (
-                        <span className="absolute top-1 right-1 bg-[#F15A25] text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
+                        <span className="absolute top-1 right-1 bg-orange text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
                           {item.badge}
                         </span>
                       )}
                     </div>
-                    <span className="text-[11px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-[#183A73]">
+                    <span className="text-[11px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-navy">
                       {item.name}
                     </span>
                     <span className="text-[9px] text-slate-400 font-medium mt-0.5">
@@ -208,20 +208,20 @@ export function CategoryExplorer({
                       onClick={() => handleSelectGroup(group.id)}
                       className={`relative flex flex-col items-center justify-center p-2.5 rounded-2xl text-center transition-all cursor-pointer ${
                         isActive
-                          ? 'bg-white text-[#183A73] font-black shadow-sm ring-1 ring-slate-200/80'
+                          ? 'bg-white text-navy font-black shadow-sm ring-1 ring-slate-200/80'
                           : 'text-slate-600 hover:bg-white/60 hover:text-navy font-semibold'
                       }`}
                     >
                       {/* Active Left Indicator Pill */}
                       {isActive && (
-                        <div className="absolute left-1 top-2 bottom-2 w-1 rounded-full bg-[#183A73]" />
+                        <div className="absolute left-1 top-2 bottom-2 w-1 rounded-full bg-navy" />
                       )}
 
                       {/* Icon Avatar */}
                       <div
                         className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden mb-1.5 transition-all ${
                           isActive
-                            ? 'ring-2 ring-[#183A73] shadow-xs scale-105'
+                            ? 'ring-2 ring-navy shadow-xs scale-105'
                             : 'opacity-90 group-hover:opacity-100'
                         }`}
                       >
@@ -243,7 +243,7 @@ export function CategoryExplorer({
 
                       {/* Optional Badge */}
                       {group.badge && (
-                        <span className="mt-1 bg-[#F15A25] text-white text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider scale-90">
+                        <span className="mt-1 bg-orange text-white text-[8px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider scale-90">
                           {group.badge}
                         </span>
                       )}
@@ -294,8 +294,8 @@ export function CategoryExplorer({
               {activeGroup.spotlights && activeGroup.spotlights.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[#183A73] flex items-center gap-1.5">
-                      <Sparkles className="h-4 w-4 text-[#F15A25]" /> In the Spotlight
+                    <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5">
+                      <Sparkles className="h-4 w-4 text-orange" /> In the Spotlight
                     </h2>
                   </div>
 
@@ -351,7 +351,7 @@ export function CategoryExplorer({
                     className="space-y-3 pt-2 border-t border-slate-100 first:border-t-0"
                   >
                     <div className="flex items-center justify-between">
-                      <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[#183A73]">
+                      <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy">
                         {section.title}
                       </h2>
                       <span className="text-[11px] text-slate-400 font-medium">
@@ -371,7 +371,7 @@ export function CategoryExplorer({
                           <Link
                             key={item.id}
                             href={targetHref}
-                            className="group flex flex-col items-center text-center p-2 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-[#183A73] hover:shadow-md transition-all active:scale-95"
+                            className="group flex flex-col items-center text-center p-2 rounded-2xl bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-navy hover:shadow-md transition-all active:scale-95"
                           >
                             <div className="relative w-full aspect-square rounded-xl bg-slate-100/90 overflow-hidden mb-1.5">
                               <Image
@@ -382,12 +382,12 @@ export function CategoryExplorer({
                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                               />
                               {item.badge && (
-                                <span className="absolute top-1 right-1 bg-[#F15A25] text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
+                                <span className="absolute top-1 right-1 bg-orange text-white text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase shadow-xs">
                                   {item.badge}
                                 </span>
                               )}
                             </div>
-                            <span className="text-[10.5px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-[#183A73]">
+                            <span className="text-[10.5px] sm:text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-navy">
                               {item.name}
                             </span>
                           </Link>
@@ -399,13 +399,13 @@ export function CategoryExplorer({
                         <button
                           type="button"
                           onClick={() => toggleSection(section.id)}
-                          className="flex flex-col items-center justify-center p-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 text-[#183A73] transition-all cursor-pointer active:scale-95"
+                          className="flex flex-col items-center justify-center p-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 text-navy transition-all cursor-pointer active:scale-95"
                         >
                           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-2xs mb-1">
                             {isExpanded ? (
-                              <ChevronUp className="h-5 w-5 text-[#183A73]" />
+                              <ChevronUp className="h-5 w-5 text-navy" />
                             ) : (
-                              <ChevronDown className="h-5 w-5 text-[#183A73]" />
+                              <ChevronDown className="h-5 w-5 text-navy" />
                             )}
                           </div>
                           <span className="text-[10px] font-black uppercase tracking-wider">

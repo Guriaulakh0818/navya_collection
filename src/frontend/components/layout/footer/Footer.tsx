@@ -10,7 +10,7 @@ import { FooterNewsletter } from './FooterNewsletter';
 
 export function Footer() {
   return (
-    <footer className="bg-navy text-white pt-12 sm:pt-16 pb-8 border-t border-navy-500/20 overflow-hidden">
+    <footer className="bg-navy-900 text-white pt-12 sm:pt-16 pb-8 border-t border-navy-800 overflow-hidden">
       <div className="mx-auto max-w-[1440px] px-4 md:px-6">
         {/* Brand Value Props Banner (Desktop: 3 Columns Row, Mobile: Horizontal Swipe Slider with Arrows) */}
         <div className="relative pb-8 mb-8 border-b border-white/10">

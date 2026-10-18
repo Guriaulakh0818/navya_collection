@@ -910,7 +910,7 @@ export function SellerRegistrationWizard() {
                 <div
                   className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold mb-1.5 shrink-0 transition-all ${
                     isActive
-                      ? 'bg-amber-500 text-slate-950 shadow-xs'
+                      ? 'bg-orange text-white shadow-xs'
                       : isCompleted
                         ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                         : 'bg-slate-200 text-slate-600'
@@ -954,7 +954,7 @@ export function SellerRegistrationWizard() {
                     type="button"
                     onClick={handleSendEmailOtp}
                     disabled={isSendingOtp}
-                    className="px-4 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-sm rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer"
+                    className="px-4 py-3 bg-navy hover:bg-navy-700 text-white font-extrabold text-sm rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 cursor-pointer"
                   >
                     {isSendingOtp ? 'Sending...' : isOtpSent ? 'Resend' : 'Send Code'}
                   </button>
@@ -1347,7 +1347,7 @@ export function SellerRegistrationWizard() {
                   type="button"
                   onClick={handleVerifyPan}
                   disabled={isVerifyingPan || formData.businessType.pan.length !== 10}
-                  className="px-4 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 flex items-center gap-1.5 shrink-0 cursor-pointer"
+                  className="px-4 py-3 bg-navy hover:bg-navy-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 flex items-center gap-1.5 shrink-0 cursor-pointer"
                 >
                   {isVerifyingPan ? (
                     <>
@@ -1416,7 +1416,7 @@ export function SellerRegistrationWizard() {
                   type="button"
                   onClick={handleVerifyGst}
                   disabled={isVerifyingGst || formData.businessType.gstin.length !== 15}
-                  className="px-4 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 flex items-center gap-1.5 shrink-0 cursor-pointer"
+                  className="px-4 py-3 bg-navy hover:bg-navy-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 flex items-center gap-1.5 shrink-0 cursor-pointer"
                 >
                   {isVerifyingGst ? (
                     <>
@@ -1636,7 +1636,7 @@ export function SellerRegistrationWizard() {
                   type="button"
                   onClick={() => handleLookupIfsc()}
                   disabled={isVerifyingIfsc || formData.bankDetails.ifscCode.length !== 11}
-                  className="px-3.5 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 flex items-center gap-1 shrink-0 cursor-pointer"
+                  className="px-3.5 py-3 bg-navy hover:bg-navy-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50 flex items-center gap-1 shrink-0 cursor-pointer"
                 >
                   {isVerifyingIfsc ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1982,7 +1982,7 @@ export function SellerRegistrationWizard() {
           <button
             type="button"
             onClick={handleNextStep}
-            className="px-6 py-3.5 text-xs md:text-sm font-extrabold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20 transition-all active:scale-95 cursor-pointer"
+            className="px-6 py-3.5 text-xs md:text-sm font-extrabold rounded-xl bg-orange hover:bg-orange-600 text-white shadow-md shadow-orange/20 transition-all active:scale-95 cursor-pointer"
           >
             Next Step →
           </button>

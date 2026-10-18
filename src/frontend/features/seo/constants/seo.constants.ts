@@ -8,7 +8,7 @@ export const SEO_CONSTANTS = {
   SITE_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com',
   DEFAULT_OG_IMAGE: 'https://jiivaakart.com/og-image.jpg',
   TWITTER_HANDLE: undefined,
-  THEME_COLOR: '#0A2342',
+  THEME_COLOR: '#183A73',
   DEFAULT_LOCALE: 'en_IN',
   ORGANIZATION: {
     NAME: 'JiivaaKart',

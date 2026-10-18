@@ -104,9 +104,9 @@ export class NotificationService {
 
     const htmlContent = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
-        <div style="text-align: center; margin-bottom: 24px; background-color: #0A2342; padding: 20px; border-radius: 12px;">
+        <div style="text-align: center; margin-bottom: 24px; background-color: #183A73; padding: 20px; border-radius: 12px;">
           <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 40px; width: auto; object-fit: contain; margin: 0 auto 8px auto; display: block;" />
-          <h2 style="color: #F28C28; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px;">JIIVAAKART ADMIN GOVERNANCE</h2>
+          <h2 style="color: #F15A25; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px;">JIIVAAKART ADMIN GOVERNANCE</h2>
           <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">New Merchant Onboarding Submission Alert</p>
         </div>
         
@@ -226,9 +226,9 @@ export class NotificationService {
 
     const htmlContent = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
-        <div style="text-align: center; margin-bottom: 24px; background-color: #0A2342; padding: 20px; border-radius: 12px;">
+        <div style="text-align: center; margin-bottom: 24px; background-color: #183A73; padding: 20px; border-radius: 12px;">
           <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 40px; width: auto; object-fit: contain; margin: 0 auto 8px auto; display: block;" />
-          <h2 style="color: #F28C28; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px;">JIIVAAKART ADMIN GOVERNANCE</h2>
+          <h2 style="color: #F15A25; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: 1px;">JIIVAAKART ADMIN GOVERNANCE</h2>
           <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">New Product Approval Required</p>
         </div>
         
@@ -411,7 +411,7 @@ export class NotificationService {
             }
 
             <div style="text-align: center; margin: 28px 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com'}${status === 'APPROVED' ? '/seller/dashboard' : '/become-seller'}" style="background-color: #0A2342; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 14px; font-weight: 700; border-radius: 50px; display: inline-block;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com'}${status === 'APPROVED' ? '/seller/dashboard' : '/become-seller'}" style="background-color: #183A73; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 14px; font-weight: 700; border-radius: 50px; display: inline-block;">
                 ${status === 'APPROVED' ? 'Access Seller Dashboard →' : 'View Application Status →'}
               </a>
             </div>

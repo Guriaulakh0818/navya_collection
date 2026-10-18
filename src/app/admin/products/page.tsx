@@ -412,7 +412,7 @@ export default function AdminProductsPage() {
               onClick={handleAutoCategorizeAll}
               title="Automatically categorize all products based on title & price"
             >
-              <Sparkles className="h-3.5 w-3.5 text-[#F15A25]" />
+              <Sparkles className="h-3.5 w-3.5 text-orange" />
               {isAutoCategorizing ? 'Categorizing...' : '⚡ Auto-Categorize All'}
             </Button>
             <Button
@@ -669,7 +669,7 @@ export default function AdminProductsPage() {
                               }}
                               title="Move / Assign Product Categories"
                             >
-                              <FolderTree className="h-3.5 w-3.5 mr-1 text-[#F15A25]" /> Move /
+                              <FolderTree className="h-3.5 w-3.5 mr-1 text-orange" /> Move /
                               Categories
                             </Button>
                           )}
@@ -761,7 +761,7 @@ export default function AdminProductsPage() {
                     className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-full hover:bg-amber-200 cursor-pointer border border-amber-300/80 transition-colors shadow-2xs"
                     title="Auto-detect categories using title & taxonomy"
                   >
-                    <Sparkles className="h-3 w-3 text-[#F15A25]" />⚡ Auto-Detect
+                    <Sparkles className="h-3 w-3 text-orange" />⚡ Auto-Detect
                   </button>
                   {selectedCategoryIds.length > 0 && (
                     <button
@@ -787,7 +787,7 @@ export default function AdminProductsPage() {
                         key={id}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-navy text-white text-[11px] font-bold shadow-2xs"
                       >
-                        <FolderTree className="h-3 w-3 text-[#F15A25]" />
+                        <FolderTree className="h-3 w-3 text-orange" />
                         <span className="truncate max-w-[150px]">{label}</span>
                         <button
                           type="button"
@@ -998,7 +998,7 @@ export default function AdminProductsPage() {
                     className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-full hover:bg-amber-200 cursor-pointer border border-amber-300/80 transition-colors shadow-2xs"
                     title="Auto-detect categories from product title & price"
                   >
-                    <Sparkles className="h-3 w-3 text-[#F15A25]" />⚡ Auto-Detect
+                    <Sparkles className="h-3 w-3 text-orange" />⚡ Auto-Detect
                   </button>
                   {newProductCategoryIds.length > 0 && (
                     <button
@@ -1193,7 +1193,7 @@ export default function AdminProductsPage() {
               </span>
               <div className="flex flex-wrap gap-1.5">
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-navy text-white text-[11px] font-bold">
-                  <FolderTree className="h-3 w-3 text-[#F15A25]" />
+                  <FolderTree className="h-3 w-3 text-orange" />
                   {selectedProductForDetails.category?.name || 'Primary Category'}
                 </span>
                 {selectedProductForDetails.metaKeywords &&

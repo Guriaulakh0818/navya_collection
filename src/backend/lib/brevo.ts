@@ -46,15 +46,15 @@ export async function sendEmailOtp(toEmail: string, otp: string): Promise<EmailR
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff;">
       <div style="text-align: center; margin-bottom: 24px;">
         <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 44px; width: auto; object-fit: contain; margin: 0 auto 8px auto; display: block;" />
-        <h1 style="color: #0A2342; font-size: 24px; font-weight: 800; letter-spacing: 2px; margin: 0;">JIIVAAKART</h1>
-        <p style="color: #F28C28; font-size: 11px; font-weight: 700; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
+        <h1 style="color: #183A73; font-size: 24px; font-weight: 800; letter-spacing: 2px; margin: 0;">JIIVAAKART</h1>
+        <p style="color: #F15A25; font-size: 11px; font-weight: 700; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Style That Speaks</p>
       </div>
       
       <p style="font-size: 15px; color: #1e1e1e; font-weight: 500;">Hello,</p>
       <p style="font-size: 14px; color: #4b5563; line-height: 1.5;">Use the single-use 6-digit verification code below to sign in to your JiivaaKart account:</p>
       
-      <div style="background-color: #FAFAFA; border: 2px dashed #0A2342; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
-        <span style="font-size: 34px; font-weight: 800; letter-spacing: 10px; color: #F28C28; font-family: monospace;">${otp}</span>
+      <div style="background-color: #FAFAFA; border: 2px dashed #183A73; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0;">
+        <span style="font-size: 34px; font-weight: 800; letter-spacing: 10px; color: #F15A25; font-family: monospace;">${otp}</span>
       </div>
       
       <p style="font-size: 12px; color: #6b7280; margin-bottom: 20px;">This code is valid for <strong>5 minutes</strong>. For your security, do not share this verification code with anyone.</p>
@@ -170,15 +170,15 @@ export async function sendAdminInvitationEmail(
           <div style="font-family: Arial, sans-serif; max-width: 540px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
             <div style="text-align: center; margin-bottom: 24px;">
               <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 40px; width: auto; object-fit: contain; margin: 0 auto 8px auto; display: block;" />
-              <h2 style="color: #0A2342; font-size: 22px; font-weight: 800; margin: 0;">JIIVAAKART ADMIN</h2>
-              <p style="color: #F28C28; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 4px;">Role: ${role}</p>
+              <h2 style="color: #183A73; font-size: 22px; font-weight: 800; margin: 0;">JIIVAAKART ADMIN</h2>
+              <p style="color: #F15A25; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 4px;">Role: ${role}</p>
             </div>
             
             <p style="font-size: 14px; color: #1e293b;">Hello <strong>${name}</strong>,</p>
             <p style="font-size: 14px; color: #475569; line-height: 1.6;">Your request for access to the JiivaaKart Admin Console has been approved by the Owner. Click the button below to set up your admin password and activate your account:</p>
             
             <div style="text-align: center; margin: 28px 0;">
-              <a href="${inviteUrl}" style="background-color: #0A2342; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 14px; font-weight: 700; border-radius: 50px; display: inline-block; box-shadow: 0 4px 12px rgba(10, 35, 66, 0.2);">Set Up Admin Password & Sign In</a>
+              <a href="${inviteUrl}" style="background-color: #183A73; color: #ffffff; text-decoration: none; padding: 14px 28px; font-size: 14px; font-weight: 700; border-radius: 50px; display: inline-block; box-shadow: 0 4px 12px rgba(24, 58, 115, 0.2);">Set Up Admin Password & Sign In</a>
             </div>
             
             <p style="font-size: 12px; color: #64748b;">If you did not request this access, please ignore this email.</p>
@@ -236,8 +236,8 @@ export async function sendAdminAccessGrantedEmail(
           <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 20px; background-color: #ffffff;">
             <div style="text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9;">
               <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 44px; width: auto; object-fit: contain; margin: 0 auto 8px auto; display: block;" />
-              <h2 style="color: #0A2342; font-size: 24px; font-weight: 800; margin: 0;">JIIVAAKART MARKETPLACE</h2>
-              <p style="color: #F28C28; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 4px; letter-spacing: 2px;">Admin Team Access Granted</p>
+              <h2 style="color: #183A73; font-size: 24px; font-weight: 800; margin: 0;">JIIVAAKART MARKETPLACE</h2>
+              <p style="color: #F15A25; font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 4px; letter-spacing: 2px;">Admin Team Access Granted</p>
             </div>
             
             <p style="font-size: 15px; color: #0f172a;">Hello <strong>${name || 'Team Member'}</strong>,</p>
@@ -251,7 +251,7 @@ export async function sendAdminAccessGrantedEmail(
             </div>
 
             <div style="text-align: center; margin: 28px 0;">
-              <a href="${loginUrl}" style="background-color: #0A2342; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 14px; font-weight: 800; border-radius: 50px; display: inline-block; box-shadow: 0 4px 14px rgba(10, 35, 66, 0.25);">Login to Admin Console →</a>
+              <a href="${loginUrl}" style="background-color: #183A73; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 14px; font-weight: 800; border-radius: 50px; display: inline-block; box-shadow: 0 4px 14px rgba(24, 58, 115, 0.25);">Login to Admin Console →</a>
             </div>
 
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />

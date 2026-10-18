@@ -77,7 +77,7 @@ export default function MultiVendorCartPage() {
             stores.
           </p>
           <Button
-            className="mt-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange hover:from-amber-600 hover:to-orange/90 text-white font-extrabold px-6 sm:px-8 py-3 text-xs shadow-md shadow-orange/20 cursor-pointer"
+            className="mt-3 rounded-2xl bg-orange hover:bg-orange-600 text-white font-extrabold px-6 sm:px-8 py-3 text-xs shadow-md shadow-orange/25 cursor-pointer"
             asChild
           >
             <Link href="/shop">Explore Boutique Collection</Link>
@@ -126,7 +126,8 @@ export default function MultiVendorCartPage() {
                   {unavailableItems.length} item(s) in your shopping bag are currently unavailable
                 </p>
                 <p className="text-rose-700 text-[11px] sm:text-xs">
-                  Unavailable items are excluded from your payable subtotal. You can remove them and proceed with your available items.
+                  Unavailable items are excluded from your payable subtotal. You can remove them and
+                  proceed with your available items.
                 </p>
               </div>
             </div>
@@ -250,7 +251,8 @@ export default function MultiVendorCartPage() {
                               )}
                               {item.isAvailable === false ? (
                                 <span className="text-rose-800 text-[9px] sm:text-[10px] font-extrabold bg-rose-100 border border-rose-300 px-2 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs">
-                                  <AlertCircle className="w-2.5 h-2.5 text-rose-600" /> Currently unavailable
+                                  <AlertCircle className="w-2.5 h-2.5 text-rose-600" /> Currently
+                                  unavailable
                                 </span>
                               ) : (
                                 <span className="text-emerald-700 text-[9px] sm:text-[10px] font-extrabold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
@@ -295,7 +297,9 @@ export default function MultiVendorCartPage() {
                                     ? 'border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300'
                                     : 'border-slate-200 text-slate-700 hover:bg-slate-100'
                                 }`}
-                                aria-label={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
+                                aria-label={
+                                  item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'
+                                }
                                 title={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
                               >
                                 {item.quantity <= 1 ? (
@@ -406,7 +410,7 @@ export default function MultiVendorCartPage() {
                 className={`w-full py-3.5 sm:py-4 font-extrabold text-xs sm:text-sm rounded-xl sm:rounded-2xl transition-all flex items-center justify-center gap-2 ${
                   availableItems.length === 0
                     ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
-                    : 'bg-gradient-to-r from-amber-500 to-orange hover:from-amber-600 hover:to-orange/90 text-white shadow-md shadow-orange/20 active:scale-95 cursor-pointer'
+                    : 'bg-orange hover:bg-orange-600 text-white shadow-md shadow-orange/25 active:scale-95 cursor-pointer'
                 }`}
               >
                 {availableItems.length > 0 ? (

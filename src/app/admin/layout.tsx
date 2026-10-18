@@ -198,12 +198,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
 
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-navy text-white transition-transform duration-300 lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-50 w-64 bg-navy-900 text-white transition-transform duration-300 lg:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="flex h-16 items-center justify-center border-b border-white/10">
-            <h1 className="font-heading text-xl font-bold text-gold tracking-wide">
+            <h1 className="font-heading text-xl font-bold text-orange tracking-wide">
               JiivaaKart Admin
             </h1>
           </div>
@@ -216,9 +216,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-white/10 text-gold'
+                      ? 'bg-orange text-white font-bold shadow-xs'
                       : 'text-white/70 hover:bg-white/5 hover:text-white'
                   }`}
                   onClick={() => setSidebarOpen(false)}
@@ -232,7 +232,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
             <div className="flex items-center gap-3 mb-3">
-              <div className="h-8 w-8 rounded-full bg-gold/20 text-gold flex items-center justify-center font-bold">
+              <div className="h-8 w-8 rounded-full bg-orange/20 text-orange flex items-center justify-center font-bold">
                 <span className="text-sm">{user?.name?.[0] || 'A'}</span>
               </div>
               <div className="overflow-hidden">

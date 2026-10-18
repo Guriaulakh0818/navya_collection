@@ -782,7 +782,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 type="button"
                 onClick={handleAddToCart}
                 disabled={stockStatus.label === 'Out of Stock'}
-                className="flex-1 min-w-0 h-[42px] sm:h-[46px] px-2 xs:px-3 sm:px-6 rounded-xl sm:rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-98 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed bg-orange hover:bg-amber-600 text-white"
+                className="flex-1 min-w-0 h-[42px] sm:h-[46px] px-2 xs:px-3 sm:px-6 rounded-xl sm:rounded-2xl font-extrabold text-[11px] xs:text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-98 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed bg-orange hover:bg-orange-600 text-white"
               >
                 <ShoppingBag className="w-4 h-4 shrink-0" />
                 <span className="truncate">Add to Cart</span>

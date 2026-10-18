@@ -50,9 +50,12 @@ export const BRAND_IDENTITY = {
   brandName: 'JiivaaKart',
   tagline: 'Style That Speaks',
   colors: {
-    navy: '#0A2342',
-    navyDark: '#051329',
-    orange: '#F28C28',
+    navy: '#183A73',
+    navyDark: '#09172E',
+    orange: '#F15A25',
     white: '#FFFFFF',
+    background: '#FAFAFA',
+    muted: '#6B7280',
+    border: '#E5E7EB',
   },
 } as const;

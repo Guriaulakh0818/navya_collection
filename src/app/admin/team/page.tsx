@@ -261,7 +261,7 @@ export default function AdminTeamPage() {
             <Button
               type="submit"
               disabled={isInviting}
-              className="bg-navy hover:bg-navy-hover text-white text-xs font-extrabold px-6 py-2.5 rounded-xl shadow-md cursor-pointer gap-2"
+              className="bg-navy hover:bg-navy-700 text-white text-xs font-extrabold px-6 py-2.5 rounded-xl shadow-md cursor-pointer gap-2"
             >
               {isInviting ? (
                 <>

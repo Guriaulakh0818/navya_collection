@@ -57,8 +57,8 @@ export async function POST(req: Request) {
               <div style="font-family: Arial, sans-serif; padding: 28px; background-color: #f8fafc; color: #0f172a; border-radius: 16px; border: 1px solid #e2e8f0; max-width: 600px; margin: 0 auto;">
                 <div style="text-align: center; margin-bottom: 20px;">
                   <img src="https://jiivaakart.com/logos/jiivaakart-primary.png" alt="JiivaaKart" style="height: 44px; width: auto; object-fit: contain; margin: 0 auto 8px auto; display: block;" />
-                  <h1 style="color: #0A2342; font-size: 24px; font-weight: 900; margin: 0;">JIIVAAKART</h1>
-                  <p style="color: #F28C28; font-size: 11px; font-weight: 800; tracking: 3px; margin: 4px 0 0 0; text-transform: uppercase;">VIP Club Membership Confirmed</p>
+                  <h1 style="color: #183A73; font-size: 24px; font-weight: 900; margin: 0;">JIIVAAKART</h1>
+                  <p style="color: #F15A25; font-size: 11px; font-weight: 800; tracking: 3px; margin: 4px 0 0 0; text-transform: uppercase;">VIP Club Membership Confirmed</p>
                 </div>
 
                 <h2 style="color: #0f172a; font-size: 18px; margin-top: 0;">Welcome to our VIP Fashion Family! 🎉</h2>
@@ -68,7 +68,7 @@ export async function POST(req: Request) {
 
                 <div style="background-color: #ffffff; padding: 20px; border-radius: 16px; border: 2px dashed #f59e0b; text-align: center; margin: 24px 0;">
                   <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: 800; color: #b45309; text-transform: uppercase; letter-spacing: 1px;">Your Exclusive 15% OFF Promo Code:</p>
-                  <span style="font-size: 28px; font-weight: 900; color: #0A2342; font-family: monospace; letter-spacing: 4px; display: inline-block; padding: 6px 16px; background-color: #fef3c7; border-radius: 8px;">NAVYA15VIP</span>
+                  <span style="font-size: 28px; font-weight: 900; color: #183A73; font-family: monospace; letter-spacing: 4px; display: inline-block; padding: 6px 16px; background-color: #fef3c7; border-radius: 8px;">NAVYA15VIP</span>
                   <div style="margin: 12px 0 0 0; font-size: 12px; color: #78350f; font-weight: 600; background-color: #fffbe6; padding: 8px; border-radius: 6px; text-align: left;">
                     <p style="margin: 0 0 4px 0;">📌 <strong>Valid ONLY on Non-Discounted Products</strong> (Full-price items).</p>
                     <p style="margin: 0;">📌 <strong>Order Amount must be greater than ₹3,000</strong>.</p>
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
                 </div>
 
                 <div style="text-align: center; margin-top: 24px;">
-                  <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com'}/shop" style="background-color: #0A2342; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 14px; font-weight: 800; border-radius: 50px; display: inline-block; shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                  <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://jiivaakart.com'}/shop" style="background-color: #F15A25; color: #ffffff; text-decoration: none; padding: 14px 32px; font-size: 14px; font-weight: 800; border-radius: 50px; display: inline-block; shadow: 0 4px 6px rgba(0,0,0,0.1);">
                     Shop Latest Collection Now 🛍️
                   </a>
                 </div>
