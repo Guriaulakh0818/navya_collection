@@ -187,7 +187,7 @@ export default function SellerOrdersPage() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <h1 className="text-2xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-            <Package className="w-6 h-6 text-amber-600" />
+            <Package className="w-6 h-6 text-orange" />
             Vendor Orders & Dispatch Center
           </h1>
           <p className="text-xs text-slate-500 mt-1 font-medium">
@@ -203,7 +203,7 @@ export default function SellerOrdersPage() {
             placeholder="Search Order # or Buyer..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs text-navy focus:bg-white focus:border-amber-500 focus:outline-none transition-all"
+            className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs text-navy focus:bg-white focus:border-orange focus:outline-none transition-all"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
         </form>
@@ -238,7 +238,7 @@ export default function SellerOrdersPage() {
       <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
         {isLoading ? (
           <div className="py-20 text-center">
-            <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <div className="w-8 h-8 border-3 border-orange border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="text-xs font-semibold text-slate-500">Loading orders & settlements...</p>
           </div>
         ) : orders.length === 0 ? (
@@ -318,7 +318,7 @@ export default function SellerOrdersPage() {
                           Gross:{' '}
                           {formatPrice(settlement?.grossProductValue || order.totalAmount || 0)}
                         </div>
-                        <div className="text-amber-800 text-[11px]">
+                        <div className="text-slate-600 text-[11px]">
                           Commission (10% MRP): -
                           {formatPrice(
                             settlement?.commissionAmount ??
@@ -351,7 +351,7 @@ export default function SellerOrdersPage() {
                                 ? 'text-emerald-700'
                                 : settlement?.status === 'ON_HOLD'
                                   ? 'text-rose-700'
-                                  : 'text-amber-700'
+                                  : 'text-orange'
                             }`}
                           >
                             {settlement?.status || 'PENDING'}
@@ -381,7 +381,7 @@ export default function SellerOrdersPage() {
                                 : order.status === 'CONFIRMED'
                                   ? 'bg-blue-50 text-blue-800 border-blue-300'
                                   : order.status === 'PROCESSING'
-                                    ? 'bg-amber-50 text-amber-900 border-amber-300'
+                                    ? 'bg-orange/10 text-orange border-orange/30'
                                     : order.status === 'CANCELLED'
                                       ? 'bg-rose-50 text-rose-800 border-rose-300'
                                       : 'bg-slate-100 text-slate-700 border-slate-200'
@@ -397,10 +397,10 @@ export default function SellerOrdersPage() {
                           {/* Packing Proof Button (Section 9) */}
                           <button
                             onClick={() => openPackingProofModal(order)}
-                            className="p-1.5 inline-flex bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 border border-slate-200 rounded-xl transition-colors shadow-2xs"
+                            className="p-1.5 inline-flex bg-slate-100 hover:bg-orange/10 text-slate-700 hover:text-orange border border-slate-200 rounded-xl transition-colors shadow-2xs cursor-pointer"
                             title="Upload/View Packing Proof (Photo/Video)"
                           >
-                            <Camera className="w-4 h-4 text-amber-700" />
+                            <Camera className="w-4 h-4 text-orange" />
                           </button>
 
                           {/* Status Transition Select Dropdown */}
@@ -410,7 +410,7 @@ export default function SellerOrdersPage() {
                               disabled={updatingOrderId === order.id}
                               onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
                               aria-label="Update vendor order status"
-                              className="appearance-none bg-navy hover:bg-slate-800 disabled:opacity-60 border border-slate-700 hover:border-amber-500 rounded-xl pl-2.5 pr-6 py-1.5 text-[11px] font-bold text-amber-300 focus:border-amber-500 focus:outline-none shadow-xs transition-colors cursor-pointer"
+                              className="appearance-none bg-navy hover:bg-slate-800 disabled:opacity-60 border border-slate-700 hover:border-orange rounded-xl pl-2.5 pr-6 py-1.5 text-[11px] font-bold text-orange-200 focus:border-orange focus:outline-none shadow-xs transition-colors cursor-pointer"
                             >
                               <option value="PENDING" className="bg-slate-900 text-white">
                                 Pending
@@ -437,10 +437,10 @@ export default function SellerOrdersPage() {
                           <Link
                             href={`/seller/orders/${order.id}/invoice`}
                             target="_blank"
-                            className="p-1.5 inline-flex bg-slate-100 hover:bg-amber-50 text-slate-700 hover:text-amber-900 border border-slate-200 rounded-xl transition-colors shadow-2xs"
+                            className="p-1.5 inline-flex bg-slate-100 hover:bg-navy/10 text-slate-700 hover:text-navy border border-slate-200 rounded-xl transition-colors shadow-2xs"
                             title="Print Tax Invoice"
                           >
-                            <FileText className="w-4 h-4 text-amber-600" />
+                            <FileText className="w-4 h-4 text-navy" />
                           </Link>
 
                           {/* Track Button */}
@@ -468,7 +468,7 @@ export default function SellerOrdersPage() {
           <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-xl w-full space-y-5 shadow-2xl relative">
             <div className="flex items-center justify-between border-b pb-3">
               <div className="flex items-center gap-2">
-                <Camera className="w-5 h-5 text-amber-600" />
+                <Camera className="w-5 h-5 text-orange" />
                 <h3 className="font-extrabold text-navy text-base">
                   Packing Proof Evidence — Order #
                   {proofOrder.vendorOrderNumber || proofOrder.id.slice(0, 8)}
@@ -494,7 +494,7 @@ export default function SellerOrdersPage() {
                 onClick={() => setSelectedProofType('PRODUCT_CONDITION')}
                 className={`p-3 rounded-2xl border font-bold text-center transition-colors ${
                   selectedProofType === 'PRODUCT_CONDITION'
-                    ? 'border-amber-600 bg-amber-50 text-amber-950'
+                    ? 'border-orange bg-orange/10 text-navy font-black'
                     : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -509,7 +509,7 @@ export default function SellerOrdersPage() {
                 onClick={() => setSelectedProofType('PACKED_PARCEL')}
                 className={`p-3 rounded-2xl border font-bold text-center transition-colors ${
                   selectedProofType === 'PACKED_PARCEL'
-                    ? 'border-amber-600 bg-amber-50 text-amber-950'
+                    ? 'border-orange bg-orange/10 text-navy font-black'
                     : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -521,8 +521,8 @@ export default function SellerOrdersPage() {
             </div>
 
             {/* Upload Area */}
-            <div className="rounded-2xl border border-dashed border-amber-300 bg-amber-50/40 p-4 text-center space-y-2">
-              <div className="mx-auto w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700">
+            <div className="rounded-2xl border border-dashed border-orange/30 bg-orange/5 p-4 text-center space-y-2">
+              <div className="mx-auto w-10 h-10 rounded-full bg-orange/10 flex items-center justify-center text-orange">
                 <UploadCloud className="w-5 h-5" />
               </div>
               <p className="text-xs font-bold text-navy">Upload Photo or Video (Up to 50MB)</p>
@@ -531,7 +531,7 @@ export default function SellerOrdersPage() {
               </p>
 
               <div className="pt-2">
-                <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 text-xs shadow-xs transition-colors">
+                <label className="cursor-pointer inline-flex items-center gap-2 rounded-xl bg-orange hover:bg-orange/90 text-white font-bold px-4 py-2 text-xs shadow-xs transition-colors">
                   {isUploadingProof ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
@@ -558,9 +558,7 @@ export default function SellerOrdersPage() {
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-navy flex items-center justify-between">
                 <span>Recorded Evidence ({proofsList.length})</span>
-                {isLoadingProofs && (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600" />
-                )}
+                {isLoadingProofs && <RefreshCw className="w-3.5 h-3.5 animate-spin text-orange" />}
               </h4>
 
               {proofsList.length === 0 ? (
@@ -625,7 +623,7 @@ export default function SellerOrdersPage() {
             </button>
 
             <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <Truck className="w-6 h-6 text-amber-400" />
+              <Truck className="w-6 h-6 text-orange" />
               <div>
                 <h3 className="font-extrabold text-white text-base">Shipment Tracking Timeline</h3>
                 <p className="text-xs text-slate-400 font-mono">

@@ -58,7 +58,7 @@ export default function PrintableShippingLabelPage({ params }: LabelPageProps) {
       {/* Print Action Header */}
       <div className="flex items-center justify-between w-full max-w-md border-b pb-4 print:hidden">
         <div className="flex items-center gap-2">
-          <Truck className="w-5 h-5 text-amber-600" />
+          <Truck className="w-5 h-5 text-orange" />
           <h1 className="text-sm font-bold text-slate-900">4x6 Shipping Label Preview</h1>
         </div>
 

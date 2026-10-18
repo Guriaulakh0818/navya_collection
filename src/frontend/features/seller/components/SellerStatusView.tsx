@@ -111,9 +111,9 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
       default:
         return {
           label: 'PENDING APPROVAL',
-          color: 'bg-amber-50 text-amber-800 border-amber-300',
+          color: 'bg-orange/10 text-navy border-orange/30',
           icon: Clock,
-          iconColor: 'text-amber-600',
+          iconColor: 'text-orange',
           title: 'Registration Submitted Successfully',
           desc: 'Your merchant application has been saved permanently in our database and queued for review.',
         };
@@ -145,7 +145,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
               {shop?.slug && (
                 <span className="text-xs font-mono text-slate-500 font-bold">
                   Ref ID:{' '}
-                  <span className="text-amber-800 font-extrabold">{shop.id.substring(0, 16)}</span>
+                  <span className="text-orange font-extrabold">{shop.id.substring(0, 16)}</span>
                 </span>
               )}
             </div>
@@ -163,7 +163,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             disabled={isRefreshing}
             className="px-4 py-2.5 text-xs font-extrabold rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-navy transition-all flex items-center gap-2 cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
           >
-            <RefreshCw className={`w-4 h-4 text-amber-700 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 text-orange ${isRefreshing ? 'animate-spin' : ''}`} />
             {isRefreshing ? 'Checking Database...' : 'Refresh Status'}
           </button>
         </div>
@@ -173,8 +173,8 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Merchant & Store Summary */}
         <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-6 space-y-4 shadow-xs">
-          <h2 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-amber-600" />
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-orange" />
             Registered Store Details
           </h2>
           <div className="space-y-3 text-sm">
@@ -221,8 +221,8 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
 
         {/* Timeline & SLA Details */}
         <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-6 space-y-4 shadow-xs">
-          <h2 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-600" />
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+            <Clock className="w-4 h-4 text-orange" />
             Submission Metadata & Timeline
           </h2>
           <div className="space-y-3 text-sm">
@@ -236,7 +236,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
               <span className="text-slate-500 block text-xs font-semibold">
                 Expected Review Time
               </span>
-              <span className="font-extrabold text-amber-800">24 to 48 business hours</span>
+              <span className="font-extrabold text-orange">24 to 48 business hours</span>
             </div>
             <div>
               <span className="text-slate-500 block text-xs font-semibold">Marketplace Region</span>
@@ -274,7 +274,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             {onStartNew && (
               <button
                 onClick={onStartNew}
-                className="px-5 py-3 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                className="px-5 py-3 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95"
               >
                 <FileEdit className="w-4 h-4" />
                 Edit / Resubmit Application
@@ -284,7 +284,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
               onClick={() => setShowSupportModal(true)}
               className="px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
             >
-              <Mail className="w-4 h-4 text-amber-400" />
+              <Mail className="w-4 h-4 text-orange" />
               Contact Merchant Helpdesk
             </button>
           </div>
@@ -330,8 +330,8 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
               </p>
             </div>
 
-            <div className="p-4 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
-              <div className="w-7 h-7 rounded-lg bg-amber-200 text-amber-900 font-extrabold flex items-center justify-center">
+            <div className="p-4 bg-orange/5 border border-orange/20 rounded-xl space-y-2">
+              <div className="w-7 h-7 rounded-lg bg-orange/20 text-orange font-black flex items-center justify-center">
                 2
               </div>
               <h4 className="font-extrabold text-navy">Admin Document Audit</h4>
@@ -358,16 +358,16 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
         <div className="flex flex-wrap items-center gap-4">
           <button
             onClick={() => setShowSupportModal(!showSupportModal)}
-            className="flex items-center gap-1.5 text-navy font-extrabold hover:text-amber-700 cursor-pointer"
+            className="flex items-center gap-1.5 text-navy font-extrabold hover:text-orange cursor-pointer"
           >
-            <HelpCircle className="w-4 h-4 text-amber-600" />
+            <HelpCircle className="w-4 h-4 text-orange" />
             Contact Support Team
           </button>
           <a
             href="mailto:helpdesk@jiivaakart.com"
-            className="flex items-center gap-1.5 text-slate-700 hover:text-amber-700 font-bold transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-slate-700 hover:text-orange font-bold transition-colors cursor-pointer"
           >
-            <Mail className="w-4 h-4 text-amber-600" />
+            <Mail className="w-4 h-4 text-orange" />
             helpdesk@jiivaakart.com
           </a>
           <a
@@ -377,14 +377,14 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             className="flex items-center gap-1.5 text-slate-700 hover:text-emerald-700 font-bold transition-colors cursor-pointer"
             title="Chat on WhatsApp"
           >
-            <Phone className="w-4 h-4 text-amber-600" />
+            <Phone className="w-4 h-4 text-emerald-600" />
             +91 9053883125
           </a>
         </div>
 
         <Link
           href="/"
-          className="text-amber-700 hover:text-amber-600 font-extrabold underline underline-offset-4"
+          className="text-orange hover:text-orange/80 font-extrabold underline underline-offset-4"
         >
           Back to Storefront ↗
         </Link>
@@ -395,7 +395,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
           <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <h3 className="text-lg font-extrabold text-navy flex items-center gap-2">
-              <Mail className="w-5 h-5 text-amber-600" />
+              <Mail className="w-5 h-5 text-orange" />
               JiivaaKart Merchant Partner Support
             </h3>
             <p className="text-xs text-slate-600">
@@ -426,7 +426,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Operating Hours:</span>
-                <span className="font-bold text-amber-800">10:00 AM – 7:00 PM IST</span>
+                <span className="font-bold text-navy">10:00 AM – 7:00 PM IST</span>
               </div>
             </div>
 

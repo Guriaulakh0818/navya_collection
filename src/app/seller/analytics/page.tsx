@@ -53,7 +53,7 @@ export default function SellerAnalyticsPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-            <BarChart3 className="w-7 h-7 text-amber-600" />
+            <BarChart3 className="w-7 h-7 text-orange" />
             Merchant Sales & Revenue Analytics
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -65,9 +65,9 @@ export default function SellerAnalyticsPage() {
         <div className="flex items-center gap-2 bg-white border border-slate-200 p-1 rounded-2xl shadow-xs">
           <button
             onClick={() => setPeriod('weekly')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               period === 'weekly'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
+                ? 'bg-orange text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -75,9 +75,9 @@ export default function SellerAnalyticsPage() {
           </button>
           <button
             onClick={() => setPeriod('monthly')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               period === 'monthly'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
+                ? 'bg-orange text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -85,9 +85,9 @@ export default function SellerAnalyticsPage() {
           </button>
           <button
             onClick={() => setPeriod('yearly')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               period === 'yearly'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
+                ? 'bg-orange text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -98,15 +98,15 @@ export default function SellerAnalyticsPage() {
 
       {/* METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-amber-50 border border-amber-200 rounded-3xl p-6 space-y-2 shadow-sm">
-          <div className="flex items-center justify-between text-amber-700">
+        <div className="bg-orange/5 border border-orange/20 rounded-3xl p-6 space-y-2 shadow-sm">
+          <div className="flex items-center justify-between text-navy">
             <span className="text-xs font-bold uppercase tracking-wider">Gross GMV Sales</span>
-            <IndianRupee className="w-5 h-5 text-amber-600" />
+            <IndianRupee className="w-5 h-5 text-orange" />
           </div>
-          <p className="text-2xl font-extrabold text-amber-700 font-mono">
+          <p className="text-2xl font-extrabold text-orange font-mono">
             ₹{Number(summary.totalGrossRevenue || 0).toLocaleString('en-IN')}
           </p>
-          <span className="text-[10px] text-amber-700">Total Customer Paid GMV</span>
+          <span className="text-[10px] text-slate-500">Total Customer Paid GMV</span>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-2 shadow-sm">
@@ -149,7 +149,7 @@ export default function SellerAnalyticsPage() {
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-extrabold text-navy tracking-tight flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-amber-600" /> Disbursal & Revenue Growth Trend (
+            <TrendingUp className="w-5 h-5 text-orange" /> Disbursal & Revenue Growth Trend (
             {period.toUpperCase()})
           </h2>
           <span className="text-xs text-slate-500 font-mono">Dynamic Real-Time Aggregation</span>
@@ -171,7 +171,7 @@ export default function SellerAnalyticsPage() {
                   </div>
 
                   <div
-                    className="w-full max-w-[36px] bg-gradient-to-t from-amber-600 to-amber-400 rounded-t-xl group-hover:brightness-110 transition-all shadow-xs"
+                    className="w-full max-w-[36px] bg-gradient-to-t from-orange to-orange-400 rounded-t-xl group-hover:brightness-110 transition-all shadow-xs"
                     style={{ height: `${heightPct}%` }}
                   />
                   <span className="text-[9px] text-slate-500 font-mono truncate max-w-[40px]">
@@ -189,7 +189,7 @@ export default function SellerAnalyticsPage() {
         {/* TOP SELLING PRODUCTS LEADERBOARD */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
           <h2 className="text-base font-extrabold text-navy flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-600" /> Best-Selling Products Leaderboard
+            <Sparkles className="w-5 h-5 text-orange" /> Best-Selling Products Leaderboard
           </h2>
 
           {topSellingProducts.length === 0 ? (
@@ -202,7 +202,7 @@ export default function SellerAnalyticsPage() {
                   className="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-200"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-800 font-mono text-xs font-bold flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-full bg-orange/10 text-orange font-mono text-xs font-bold flex items-center justify-center">
                       #{idx + 1}
                     </span>
                     <div>
@@ -214,7 +214,7 @@ export default function SellerAnalyticsPage() {
                   </div>
 
                   <div className="text-right">
-                    <span className="font-extrabold text-amber-700 text-xs font-mono block">
+                    <span className="font-extrabold text-orange text-xs font-mono block">
                       {p.totalQuantity} Sold
                     </span>
                     <span className="text-[10px] text-slate-500 font-mono">
@@ -256,7 +256,7 @@ export default function SellerAnalyticsPage() {
                     className={`px-3 py-1 rounded-full text-[10px] font-extrabold font-mono ${
                       p.stock === 0
                         ? 'bg-rose-100 text-rose-700 border border-rose-300'
-                        : 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : 'bg-orange/10 text-orange border border-orange/30'
                     }`}
                   >
                     {p.stock === 0 ? 'OUT OF STOCK' : `ONLY ${p.stock} LEFT`}

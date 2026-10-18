@@ -48,7 +48,7 @@ export default function SellerPayoutLedgerPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-            <IndianRupee className="w-7 h-7 text-amber-600" />
+            <IndianRupee className="w-7 h-7 text-orange" />
             Merchant Earnings & Settlement Ledger
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -59,9 +59,9 @@ export default function SellerPayoutLedgerPage() {
 
         <button
           onClick={() => alert('Payout Statement downloaded as CSV.')}
-          className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-amber-700 font-bold text-xs rounded-xl flex items-center gap-2 transition-all shadow-xs"
+          className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-navy font-bold text-xs rounded-xl flex items-center gap-2 transition-all shadow-xs cursor-pointer"
         >
-          <Download className="w-4 h-4" /> Download Statement CSV
+          <Download className="w-4 h-4 text-navy" /> Download Statement CSV
         </button>
       </div>
 
@@ -92,9 +92,9 @@ export default function SellerPayoutLedgerPage() {
         <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-1 shadow-sm">
           <div className="flex items-center justify-between text-slate-500">
             <span className="text-[11px] font-bold uppercase tracking-wider">Commission</span>
-            <PieChart className="w-4 h-4 text-amber-600" />
+            <PieChart className="w-4 h-4 text-orange" />
           </div>
-          <p className="text-xl font-extrabold text-amber-700 font-mono">
+          <p className="text-xl font-extrabold text-orange font-mono">
             - ₹{Number(summary.commissionAmount || 0).toLocaleString('en-IN')}
           </p>
           <span className="text-[10px] text-slate-400">10% of MRP</span>
@@ -137,13 +137,13 @@ export default function SellerPayoutLedgerPage() {
       {/* ORDERS SETTLEMENT LEDGER */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
         <h2 className="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-          <FileText className="w-5 h-5 text-amber-600" /> Vendor Sub-Orders Settlement Ledger (BM-03
+          <FileText className="w-5 h-5 text-navy" /> Vendor Sub-Orders Settlement Ledger (BM-03
           Authoritative)
         </h2>
 
         {isLoading ? (
           <div className="p-12 text-center text-slate-600 flex items-center justify-center gap-2">
-            <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-orange border-t-transparent rounded-full animate-spin" />
             <span className="font-semibold text-xs">Loading payout ledger...</span>
           </div>
         ) : orders.length === 0 ? (
@@ -177,7 +177,7 @@ export default function SellerPayoutLedgerPage() {
 
                   return (
                     <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-3 py-4 font-mono font-bold text-amber-700">
+                      <td className="px-3 py-4 font-mono font-bold text-navy">
                         {order.vendorOrderNumber}
                       </td>
                       <td className="px-3 py-4 text-slate-500">
@@ -189,7 +189,7 @@ export default function SellerPayoutLedgerPage() {
                       <td className="px-3 py-4 text-right font-extrabold text-slate-900 font-mono">
                         ₹{sp.toLocaleString('en-IN')}
                       </td>
-                      <td className="px-3 py-4 text-right font-bold text-amber-700 font-mono">
+                      <td className="px-3 py-4 text-right font-bold text-orange font-mono">
                         - ₹{comm.toLocaleString('en-IN')}
                       </td>
                       <td className="px-3 py-4 text-right font-medium text-indigo-700 font-mono">

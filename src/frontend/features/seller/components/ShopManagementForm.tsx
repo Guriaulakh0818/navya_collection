@@ -345,11 +345,11 @@ export function ShopManagementForm() {
         {activeTab === 'branding' && (
           <div className="space-y-6">
             <h2 className="text-sm font-bold uppercase tracking-wider text-navy flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-amber-600" /> Shop Logo Avatar
+              <ImageIcon className="w-4 h-4 text-orange" /> Shop Logo Avatar
             </h2>
 
             {/* Permanent Banner Display Badge */}
-            <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-3">
+            <div className="p-4 rounded-2xl bg-orange/5 border border-orange/20 space-y-3">
               <div>
                 <p className="text-xs font-extrabold text-navy">
                   ✨ Permanent Luxury Storefront Banner
@@ -359,7 +359,7 @@ export function ShopManagementForm() {
                   SPEAKS.&quot; brand background banner.
                 </p>
               </div>
-              <div className="relative w-full h-28 rounded-xl overflow-hidden border border-amber-200/80 shadow-xs">
+              <div className="relative w-full h-28 rounded-xl overflow-hidden border border-orange/20 shadow-xs">
                 <Image
                   src="/images/default-shop-banner.png"
                   alt="Official Banner"
@@ -386,7 +386,7 @@ export function ShopManagementForm() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Building2 className="w-8 h-8 text-amber-600" />
+                    <Building2 className="w-8 h-8 text-orange" />
                   )}
                   <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-all">
                     <Upload className="w-5 h-5 text-white" />
@@ -423,8 +423,8 @@ export function ShopManagementForm() {
         {/* TAB 2: IDENTITY & UNIQUE URL */}
         {activeTab === 'identity' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-amber-600 flex items-center gap-2">
-              <LinkIcon className="w-4 h-4 text-amber-600" /> Boutique Name & Unique Storefront URL
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <LinkIcon className="w-4 h-4 text-orange" /> Boutique Name & Unique Storefront URL
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -444,7 +444,7 @@ export function ShopManagementForm() {
                       .replace(/^-+|-+$/g, '');
                     setFormData({ ...formData, name: val, slug: autoSlug });
                   }}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none font-bold shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-orange focus:ring-2 focus:ring-orange/20 focus:outline-none font-bold shadow-xs"
                 />
               </div>
 
@@ -465,7 +465,7 @@ export function ShopManagementForm() {
                         slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''),
                       })
                     }
-                    className="w-full bg-white border border-slate-200 rounded-b-xl sm:rounded-b-none sm:rounded-r-xl px-3 py-2.5 sm:py-3 text-amber-700 font-mono font-extrabold focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none shadow-xs text-xs"
+                    className="w-full bg-white border border-slate-200 rounded-b-xl sm:rounded-b-none sm:rounded-r-xl px-3 py-2.5 sm:py-3 text-orange font-mono font-extrabold focus:border-orange focus:ring-2 focus:ring-orange/20 focus:outline-none shadow-xs text-xs"
                   />
                 </div>
               </div>
@@ -476,8 +476,8 @@ export function ShopManagementForm() {
         {/* TAB 3: ADDRESS & CONTACT */}
         {activeTab === 'address' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-amber-600 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-amber-600" /> Contact Information & Warehouse Address
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-orange" /> Contact Information & Warehouse Address
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -496,7 +496,7 @@ export function ShopManagementForm() {
                       ownerName: e.target.value,
                     })
                   }
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:outline-none font-bold shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-orange focus:outline-none font-bold shadow-xs"
                 />
                 <span className="text-[10px] text-slate-400 mt-1 block">
                   This owner name is synced with Shiprocket logistics pickup hubs, official
@@ -512,7 +512,7 @@ export function ShopManagementForm() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:outline-none font-semibold shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-orange focus:outline-none font-semibold shadow-xs"
                 />
               </div>
 
@@ -524,7 +524,7 @@ export function ShopManagementForm() {
                   type="text"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:outline-none font-semibold shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-orange focus:outline-none font-semibold shadow-xs"
                 />
               </div>
 
@@ -537,7 +537,7 @@ export function ShopManagementForm() {
                   placeholder="e.g. Shop No. 1, Main Market Road, Mandi Adampur"
                   value={formData.fullAddress}
                   onChange={(e) => setFormData({ ...formData, fullAddress: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:outline-none font-semibold shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-orange focus:outline-none font-semibold shadow-xs"
                 />
                 <span className="text-[10px] text-slate-400 mt-1 block">
                   Please include Shop/Plot/House number or Road name for automated Shiprocket pickup
@@ -553,7 +553,7 @@ export function ShopManagementForm() {
                   type="text"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:outline-none font-semibold shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-orange focus:outline-none font-semibold shadow-xs"
                 />
               </div>
 
@@ -566,14 +566,14 @@ export function ShopManagementForm() {
                     type="text"
                     value={formData.state}
                     onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:outline-none font-semibold shadow-xs"
+                    className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-orange focus:outline-none font-semibold shadow-xs"
                   />
                   <input
                     type="text"
                     maxLength={6}
                     value={formData.pincode}
                     onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                    className="w-28 bg-white border border-slate-200 rounded-xl px-3 py-3 text-amber-700 font-mono text-center font-bold shadow-xs"
+                    className="w-28 bg-white border border-slate-200 rounded-xl px-3 py-3 text-orange font-mono text-center font-bold shadow-xs"
                   />
                 </div>
               </div>
@@ -586,7 +586,7 @@ export function ShopManagementForm() {
           <div className="space-y-6">
             <div>
               <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-amber-600" /> Seller Tax & Bank Payout Details
+                <ShieldCheck className="w-4 h-4 text-orange" /> Seller Tax & Bank Payout Details
               </h2>
               <p className="text-xs text-slate-500 mt-1">
                 Required for statutory compliance, GST/TCS documentation, and direct bank settlement
@@ -608,7 +608,7 @@ export function ShopManagementForm() {
                   onChange={(e) =>
                     setFormData({ ...formData, gstin: e.target.value.toUpperCase() })
                   }
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono focus:border-amber-500 focus:outline-none uppercase shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono focus:border-orange focus:outline-none uppercase shadow-xs"
                 />
                 <span className="text-[10px] text-slate-400 mt-1 block">
                   Exempted if turnover &lt; ₹40L and only selling within your state.
@@ -628,7 +628,7 @@ export function ShopManagementForm() {
                   onChange={(e) =>
                     setFormData({ ...formData, panNumber: e.target.value.toUpperCase() })
                   }
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono focus:border-amber-500 focus:outline-none uppercase shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono focus:border-orange focus:outline-none uppercase shadow-xs"
                 />
               </div>
 
@@ -642,7 +642,7 @@ export function ShopManagementForm() {
                   placeholder="Name as registered with Bank"
                   value={formData.bankAccountHolder}
                   onChange={(e) => setFormData({ ...formData, bankAccountHolder: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-amber-500 focus:outline-none shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-orange focus:outline-none shadow-xs"
                 />
               </div>
 
@@ -656,7 +656,7 @@ export function ShopManagementForm() {
                   placeholder="e.g. HDFC Bank / SBI"
                   value={formData.bankName}
                   onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-amber-500 focus:outline-none shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-orange focus:outline-none shadow-xs"
                 />
               </div>
 
@@ -670,7 +670,7 @@ export function ShopManagementForm() {
                   placeholder="Bank Account Number"
                   value={formData.bankAccountNumber}
                   onChange={(e) => setFormData({ ...formData, bankAccountNumber: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono font-semibold focus:border-amber-500 focus:outline-none shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono font-semibold focus:border-orange focus:outline-none shadow-xs"
                 />
               </div>
 
@@ -687,13 +687,13 @@ export function ShopManagementForm() {
                   onChange={(e) =>
                     setFormData({ ...formData, bankIfscCode: e.target.value.toUpperCase() })
                   }
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono focus:border-amber-500 focus:outline-none uppercase shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono focus:border-orange focus:outline-none uppercase shadow-xs"
                 />
               </div>
             </div>
 
             {/* Payout Information Note */}
-            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-1">
+            <div className="p-4 rounded-2xl bg-orange/5 border border-orange/20 text-xs text-slate-800 space-y-1">
               <div className="flex items-center gap-2 font-bold text-navy">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 Automated Settlement Schedule: Weekly (T+7 Days)
@@ -710,8 +710,8 @@ export function ShopManagementForm() {
         {/* TAB 5: BOUTIQUE POLICIES */}
         {activeTab === 'policies' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-amber-600 flex items-center gap-2">
-              <Truck className="w-4 h-4 text-amber-600" /> Shipping & Return Policies
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <Truck className="w-4 h-4 text-orange" /> Shipping & Return Policies
             </h2>
 
             <div className="space-y-4 text-xs">
@@ -723,7 +723,7 @@ export function ShopManagementForm() {
                   rows={3}
                   value={formData.shippingPolicy}
                   onChange={(e) => setFormData({ ...formData, shippingPolicy: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:border-amber-500 focus:outline-none font-medium shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:border-orange focus:outline-none font-medium shadow-xs"
                 />
               </div>
 
@@ -735,7 +735,7 @@ export function ShopManagementForm() {
                   rows={3}
                   value={formData.returnPolicy}
                   onChange={(e) => setFormData({ ...formData, returnPolicy: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:border-amber-500 focus:outline-none font-medium shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:border-orange focus:outline-none font-medium shadow-xs"
                 />
               </div>
             </div>
@@ -745,8 +745,8 @@ export function ShopManagementForm() {
         {/* TAB 5: SEO METADATA */}
         {activeTab === 'seo' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-amber-600 flex items-center gap-2">
-              <Globe className="w-4 h-4 text-amber-600" /> SEO Search Engine Optimization
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <Globe className="w-4 h-4 text-orange" /> SEO Search Engine Optimization
             </h2>
 
             <div className="space-y-4 text-xs">
@@ -758,7 +758,7 @@ export function ShopManagementForm() {
                   type="text"
                   value={formData.metaTitle}
                   onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-amber-500 focus:outline-none font-semibold shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:border-orange focus:outline-none font-semibold shadow-xs"
                 />
               </div>
 
@@ -770,7 +770,7 @@ export function ShopManagementForm() {
                   rows={3}
                   value={formData.metaDescription}
                   onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:border-amber-500 focus:outline-none font-medium shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 focus:border-orange focus:outline-none font-medium shadow-xs"
                 />
               </div>
             </div>
@@ -780,16 +780,16 @@ export function ShopManagementForm() {
         {/* TAB 6: VACATION & TEMPORARY CLOSURE MODE */}
         {activeTab === 'vacation' && (
           <div className="space-y-6">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-amber-600 flex items-center gap-2">
-              <Palmtree className="w-5 h-5 text-amber-600" /> Temporary Store Closure & Vacation
-              Mode Settings
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <Palmtree className="w-5 h-5 text-orange" /> Temporary Store Closure & Vacation Mode
+              Settings
             </h2>
 
             {/* Status Switcher Card */}
             <div
               className={`p-6 rounded-2xl border transition-all ${
                 formData.isClosed
-                  ? 'bg-amber-50/80 border-amber-300'
+                  ? 'bg-orange/5 border-orange/20'
                   : 'bg-emerald-50/60 border-emerald-200'
               }`}
             >
@@ -797,7 +797,7 @@ export function ShopManagementForm() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`w-3 h-3 rounded-full ${formData.isClosed ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'}`}
+                      className={`w-3 h-3 rounded-full ${formData.isClosed ? 'bg-orange animate-ping' : 'bg-emerald-500'}`}
                     />
                     <h3 className="font-black text-navy text-base">
                       {formData.isClosed
@@ -819,7 +819,7 @@ export function ShopManagementForm() {
                   className={`px-5 py-2.5 rounded-xl font-extrabold text-xs transition-all shadow-xs cursor-pointer disabled:opacity-50 ${
                     formData.isClosed
                       ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : 'bg-amber-500 hover:bg-amber-600 text-slate-950'
+                      : 'bg-orange hover:bg-orange/90 text-white'
                   }`}
                 >
                   {isSaving
@@ -835,13 +835,13 @@ export function ShopManagementForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs pt-2">
               <div>
                 <label className="flex text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-amber-600" /> Reopening Date (Optional)
+                  <Calendar className="w-4 h-4 text-orange" /> Reopening Date (Optional)
                 </label>
                 <input
                   type="date"
                   value={formData.closedUntil}
                   onChange={(e) => setFormData({ ...formData, closedUntil: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-amber-500 focus:outline-none shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-orange focus:outline-none shadow-xs"
                 />
 
                 {/* Date Quick Presets */}
@@ -875,7 +875,7 @@ export function ShopManagementForm() {
                 <select
                   value={formData.closedReason}
                   onChange={(e) => setFormData({ ...formData, closedReason: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-amber-500 focus:outline-none shadow-xs cursor-pointer"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-orange focus:outline-none shadow-xs cursor-pointer"
                 >
                   <option value="Festival Vacation">Festival Vacation / Holidays</option>
                   <option value="Personal Leave">Personal Leave / Out of Station</option>
@@ -894,7 +894,7 @@ export function ShopManagementForm() {
                   placeholder="e.g. Our boutique is closed for festive holidays until 15th Oct. Orders placed will be dispatched immediately upon reopening."
                   value={formData.vacationMessage}
                   onChange={(e) => setFormData({ ...formData, vacationMessage: e.target.value })}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-3.5 text-slate-900 font-medium focus:border-amber-500 focus:outline-none shadow-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3.5 text-slate-900 font-medium focus:border-orange focus:outline-none shadow-xs"
                 />
               </div>
             </div>
@@ -906,7 +906,7 @@ export function ShopManagementForm() {
           <button
             type="submit"
             disabled={isSaving}
-            className="w-full sm:w-auto px-8 py-3.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto px-8 py-3.5 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             <Save className="w-4 h-4 shrink-0" />
             <span>{isSaving ? 'Saving Customizations...' : 'Save Boutique Customization ✓'}</span>

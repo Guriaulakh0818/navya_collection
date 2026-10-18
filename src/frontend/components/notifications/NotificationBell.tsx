@@ -103,7 +103,7 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-extrabold text-slate-950 shadow-sm animate-pulse">
+          <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-orange px-1 text-[10px] font-extrabold text-white shadow-xs">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -115,7 +115,7 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
           {/* Header */}
           <div className="p-3.5 sm:p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+              <Sparkles className="w-4 h-4 text-orange shrink-0" />
               <h3 className="font-extrabold text-navy text-sm">Notification Center</h3>
             </div>
 
@@ -123,7 +123,7 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-[11px] text-amber-600 hover:underline flex items-center gap-1 font-bold cursor-pointer"
+                  className="text-[11px] text-orange hover:underline flex items-center gap-1 font-bold cursor-pointer"
                 >
                   <CheckCheck className="w-3.5 h-3.5" /> Mark All Read
                 </button>
@@ -153,7 +153,7 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
                   onClick={() => !n.isRead && markSingleAsRead(n.id)}
                   className={`p-3 rounded-2xl transition-all cursor-pointer space-y-1 ${
                     !n.isRead
-                      ? 'bg-amber-50/80 border border-amber-200'
+                      ? 'bg-orange/5 border border-orange/20'
                       : 'bg-slate-50/50 hover:bg-slate-100'
                   }`}
                 >
@@ -175,7 +175,7 @@ export function NotificationBell({ userId, className }: NotificationBellProps) {
                     <Link
                       href={n.link}
                       onClick={() => setIsOpen(false)}
-                      className="text-[10px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-0.5 pt-1"
+                      className="text-[10px] text-orange hover:text-orange-600 font-bold flex items-center gap-0.5 pt-1"
                     >
                       View Details <ChevronRight className="w-3 h-3" />
                     </Link>

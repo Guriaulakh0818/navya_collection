@@ -56,7 +56,7 @@ export function BecomeSellerContent() {
   if (isLoadingStatus) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 space-y-4">
-        <Loader2 className="w-10 h-10 text-amber-600 animate-spin" />
+        <Loader2 className="w-10 h-10 text-orange animate-spin" />
         <p className="text-sm font-extrabold text-navy">Checking seller registration status...</p>
       </div>
     );
@@ -79,14 +79,14 @@ export function BecomeSellerContent() {
     <div className="min-h-screen bg-slate-50 text-slate-900 py-12 px-4 sm:px-6 lg:px-8 font-sans">
       {/* Hero Header */}
       <div className="max-w-4xl mx-auto text-center space-y-4 mb-12">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-extrabold uppercase tracking-widest shadow-xs">
-          <Sparkles className="w-4 h-4 text-amber-600 animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange/10 border border-orange/20 text-orange text-xs font-extrabold uppercase tracking-widest shadow-xs">
+          <Sparkles className="w-4 h-4 text-orange animate-pulse" />
           Multi-Vendor Seller Network
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-navy tracking-tight leading-tight">
           Sell Your Fashion &amp; Apparel on <br className="hidden sm:inline" />
-          <span className="text-amber-600 font-extrabold">JiivaaKart Marketplace</span>
+          <span className="text-orange font-extrabold">JiivaaKart Marketplace</span>
         </h1>
 
         <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
@@ -102,8 +102,8 @@ export function BecomeSellerContent() {
 
       {/* Feature Highlights Grid (Placed below registration form as requested) */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-amber-500/50 hover:shadow-md transition-all shadow-xs space-y-3">
-          <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-orange/50 hover:shadow-md transition-all shadow-xs space-y-3">
+          <div className="w-11 h-11 rounded-xl bg-orange/10 border border-orange/20 flex items-center justify-center text-orange shadow-xs">
             <IndianRupee className="w-5 h-5" />
           </div>
           <div>
@@ -114,8 +114,8 @@ export function BecomeSellerContent() {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-amber-500/50 hover:shadow-md transition-all shadow-xs space-y-3">
-          <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-navy/40 hover:shadow-md transition-all shadow-xs space-y-3">
+          <div className="w-11 h-11 rounded-xl bg-navy/10 border border-navy/20 flex items-center justify-center text-navy shadow-xs">
             <Truck className="w-5 h-5" />
           </div>
           <div>
@@ -126,8 +126,8 @@ export function BecomeSellerContent() {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-amber-500/50 hover:shadow-md transition-all shadow-xs space-y-3">
-          <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-orange/50 hover:shadow-md transition-all shadow-xs space-y-3">
+          <div className="w-11 h-11 rounded-xl bg-orange/10 border border-orange/20 flex items-center justify-center text-orange shadow-xs">
             <Users className="w-5 h-5" />
           </div>
           <div>
@@ -138,8 +138,8 @@ export function BecomeSellerContent() {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-amber-500/50 hover:shadow-md transition-all shadow-xs space-y-3">
-          <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shadow-xs">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-navy/40 hover:shadow-md transition-all shadow-xs space-y-3">
+          <div className="w-11 h-11 rounded-xl bg-navy/10 border border-navy/20 flex items-center justify-center text-navy shadow-xs">
             <Store className="w-5 h-5" />
           </div>
           <div>

@@ -96,7 +96,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
         <div className="w-full max-w-4xl">
           <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-4">
             <h1 className="text-xl font-extrabold text-navy flex items-center gap-2">
-              <Store className="w-6 h-6 text-amber-600" />
+              <Store className="w-6 h-6 text-orange" />
               JiivaaKart Merchant Portal
             </h1>
             <button
@@ -224,7 +224,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center gap-3">
             <Link
               href="/seller/products/new"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs transition-all"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
               <span>+ Add Product</span>
@@ -233,7 +233,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
             <Link
               href={sellerData?.shop?.slug ? `/shop/${sellerData.shop.slug}` : '/shop'}
               target="_blank"
-              className="text-xs text-navy hover:text-amber-600 font-bold hidden sm:flex items-center gap-1 transition-colors bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200"
+              className="text-xs text-navy hover:text-orange font-bold hidden sm:flex items-center gap-1 transition-colors bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200"
             >
               <span>View Storefront</span> ↗
             </Link>

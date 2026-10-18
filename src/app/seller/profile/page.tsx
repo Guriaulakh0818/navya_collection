@@ -38,7 +38,7 @@ export default function SellerProfilePage() {
   if (isLoading) {
     return (
       <div className="p-12 text-center text-slate-400 flex items-center justify-center gap-2">
-        <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-orange border-t-transparent rounded-full animate-spin" />
         <span>Loading Merchant Profile...</span>
       </div>
     );
@@ -53,7 +53,7 @@ export default function SellerProfilePage() {
       {/* Header */}
       <div className="pb-6 border-b border-slate-200">
         <h1 className="text-2xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-          <User className="w-6 h-6 text-amber-600" />
+          <User className="w-6 h-6 text-orange" />
           Merchant Profile & Verification Identifiers
         </h1>
         <p className="text-xs text-slate-500 mt-1 font-medium">
@@ -65,12 +65,12 @@ export default function SellerProfilePage() {
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6">
         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 font-bold shadow-xs">
+            <div className="w-12 h-12 rounded-xl bg-orange/10 border border-orange/20 flex items-center justify-center text-orange font-bold shadow-xs">
               <Building2 className="w-6 h-6" />
             </div>
             <div>
               <h2 className="text-lg font-extrabold text-navy">{shop.name}</h2>
-              <span className="text-xs text-amber-700 font-mono font-bold">slug: {shop.slug}</span>
+              <span className="text-xs text-orange font-mono font-bold">slug: {shop.slug}</span>
             </div>
           </div>
 
@@ -83,8 +83,8 @@ export default function SellerProfilePage() {
         {/* Info Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
           <div className="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-            <h3 className="font-extrabold uppercase tracking-wider text-amber-700 flex items-center gap-2">
-              <User className="w-4 h-4 text-amber-600" /> Owner Account Information
+            <h3 className="font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <User className="w-4 h-4 text-orange" /> Owner Account Information
             </h3>
             <div>
               <span className="text-slate-500 block font-medium">Primary Account Holder</span>
@@ -103,8 +103,8 @@ export default function SellerProfilePage() {
           </div>
 
           <div className="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-            <h3 className="font-extrabold uppercase tracking-wider text-amber-700 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-amber-600" /> Legal Tax Identifiers
+            <h3 className="font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <FileText className="w-4 h-4 text-orange" /> Legal Tax Identifiers
             </h3>
             <div>
               <span className="text-slate-500 block font-medium">Legal Registered Name</span>
@@ -114,13 +114,13 @@ export default function SellerProfilePage() {
             </div>
             <div>
               <span className="text-slate-500 block font-medium">PAN Card Number</span>
-              <span className="font-mono font-extrabold text-amber-800">
+              <span className="font-mono font-extrabold text-navy">
                 {profile.panNumber || shop.panNumber || 'N/A'}
               </span>
             </div>
             <div>
               <span className="text-slate-500 block font-medium">GSTIN Tax Identifier</span>
-              <span className="font-mono font-extrabold text-amber-800">
+              <span className="font-mono font-extrabold text-navy">
                 {profile.gstin || shop.gstin || 'N/A'}
               </span>
             </div>
@@ -129,8 +129,8 @@ export default function SellerProfilePage() {
 
         {/* Warehouse Address */}
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
-          <h3 className="font-extrabold uppercase tracking-wider text-amber-700 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-amber-600" /> Primary Pickup Warehouse Address
+          <h3 className="font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-orange" /> Primary Pickup Warehouse Address
           </h3>
           <p className="text-slate-800 font-semibold">
             {profile.businessAddress || shop.fullAddress || 'N/A'}
@@ -144,7 +144,7 @@ export default function SellerProfilePage() {
             </span>
             <span>
               Pincode:{' '}
-              <strong className="text-amber-800 font-mono font-bold">
+              <strong className="text-navy font-mono font-bold">
                 {profile.pincode || shop.pincode}
               </strong>
             </span>

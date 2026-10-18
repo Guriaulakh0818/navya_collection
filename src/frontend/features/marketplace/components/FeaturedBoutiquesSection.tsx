@@ -58,7 +58,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 text-orange">
+          <div className="p-2 rounded-xl bg-orange/10 text-orange">
             <Store className="w-5 h-5" />
           </div>
           <div>
@@ -139,7 +139,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                 <div className="p-4 sm:p-5 -mt-8 relative z-10 space-y-3 flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex items-end justify-between gap-2 mb-2.5">
-                      <div className="w-13 h-13 rounded-2xl bg-white border-2 border-amber-500/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-md select-none">
+                      <div className="w-13 h-13 rounded-2xl bg-white border-2 border-orange/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-md select-none">
                         {shopLogo ? (
                           <Image
                             src={shopLogo}
@@ -200,7 +200,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
 
         {/* Right Editorial Promo Card (Real Stores, Real People, Real Fashion) */}
         <div className="lg:col-span-4 xl:col-span-3">
-          <div className="relative h-full min-h-[250px] lg:min-h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-gradient-to-br from-amber-50 to-orange-50 p-6 flex flex-col justify-between">
+          <div className="relative h-full min-h-[250px] lg:min-h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-gradient-to-br from-orange/10 to-navy-900/10 p-6 flex flex-col justify-between">
             <Image
               src="/images/editorial/boutique_merchant_promo.jpg"
               alt="Real Stores Real People Real Fashion"

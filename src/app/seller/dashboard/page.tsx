@@ -109,11 +109,11 @@ export default function SellerDashboardPage() {
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
               Pending Orders
             </span>
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600">
+            <div className="w-9 h-9 rounded-xl bg-orange/10 border border-orange/30 flex items-center justify-center text-orange">
               <Clock className="w-5 h-5" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-amber-600 tracking-tight">
+          <div className="text-2xl font-extrabold text-orange tracking-tight">
             {metrics.pendingOrders}
           </div>
           <p className="text-[11px] text-slate-500 mt-1">Orders awaiting dispatch & shipping</p>
@@ -141,7 +141,7 @@ export default function SellerDashboardPage() {
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
               Inventory Units
             </span>
-            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-600">
+            <div className="w-9 h-9 rounded-xl bg-navy/10 border border-navy/20 flex items-center justify-center text-navy">
               <Package className="w-5 h-5" />
             </div>
           </div>
@@ -208,10 +208,10 @@ export default function SellerDashboardPage() {
             <div>
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-slate-600 font-medium">Pending Dispatch</span>
-                <span className="text-amber-600 font-bold">12%</span>
+                <span className="text-orange font-bold">12%</span>
               </div>
               <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div className="bg-amber-500 h-full w-[12%]" />
+                <div className="bg-orange h-full w-[12%]" />
               </div>
             </div>
 
@@ -276,7 +276,7 @@ export default function SellerDashboardPage() {
                       ₹{Number(order.totalAmount || 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-3.5 px-6">
-                      <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/30">
+                      <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-orange/10 text-orange border border-orange/30">
                         {order.status || 'PENDING'}
                       </span>
                     </td>

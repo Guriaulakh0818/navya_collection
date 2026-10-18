@@ -8,29 +8,29 @@ const BUDGET_CARDS = [
     title: 'Under ₹499',
     href: '/shop?maxPrice=499',
     badge: 'POCKET FRIENDLY',
-    accent: 'from-amber-500/15 via-orange-500/10 to-transparent border-amber-300',
-    badgeBg: 'bg-amber-100 text-amber-900 border-amber-300',
+    accent: 'from-orange/10 via-orange/5 to-white border-orange/30',
+    badgeBg: 'bg-orange/10 text-orange border-orange/30',
   },
   {
     title: 'Under ₹999',
     href: '/shop?maxPrice=999',
     badge: 'MOST POPULAR',
-    accent: 'from-orange-500/15 via-amber-500/10 to-transparent border-orange-300',
-    badgeBg: 'bg-orange-100 text-orange-900 border-orange-300',
+    accent: 'from-navy/10 via-navy/5 to-white border-navy/20',
+    badgeBg: 'bg-navy/10 text-navy border-navy/20',
   },
   {
     title: 'Under ₹1,499',
     href: '/shop?maxPrice=1499',
     badge: 'FESTIVE PICKS',
-    accent: 'from-emerald-500/15 via-teal-500/10 to-transparent border-emerald-300',
-    badgeBg: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+    accent: 'from-emerald-500/10 via-emerald-500/5 to-white border-emerald-300',
+    badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   },
   {
     title: 'Premium Picks',
     href: '/shop?minPrice=1999',
     badge: 'BOUTIQUE LUXURY',
-    accent: 'from-indigo-500/15 via-navy-900/10 to-transparent border-indigo-300',
-    badgeBg: 'bg-indigo-100 text-indigo-900 border-indigo-300',
+    accent: 'from-navy-900/10 via-navy/5 to-white border-navy-900/30',
+    badgeBg: 'bg-navy-900 text-white border-navy-900',
   },
 ];
 
@@ -40,7 +40,7 @@ export function ShopByBudgetSection() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 sm:p-2 rounded-xl bg-amber-50 text-orange">
+          <div className="p-1.5 sm:p-2 rounded-xl bg-orange/10 text-orange">
             <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>

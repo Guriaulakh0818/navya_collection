@@ -92,7 +92,7 @@ export default function SellerSettingsPage() {
   if (isLoading) {
     return (
       <div className="p-12 text-center text-slate-400 flex items-center justify-center gap-2">
-        <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-orange border-t-transparent rounded-full animate-spin" />
         <span>Loading Settlement Settings...</span>
       </div>
     );
@@ -104,7 +104,7 @@ export default function SellerSettingsPage() {
       <div className="flex items-center justify-between pb-6 border-b border-slate-200">
         <div>
           <h1 className="text-2xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-            <Settings className="w-6 h-6 text-amber-600" />
+            <Settings className="w-6 h-6 text-orange" />
             Settlement Bank Account & Payout Settings
           </h1>
           <p className="text-xs text-slate-500 mt-1 font-medium">
@@ -130,8 +130,8 @@ export default function SellerSettingsPage() {
         onSubmit={handleSaveSettings}
         className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6"
       >
-        <h2 className="text-sm font-extrabold uppercase tracking-wider text-amber-600 flex items-center gap-2">
-          <Wallet className="w-4 h-4 text-amber-600" /> Direct Netbanking & Settlement Account
+        <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+          <Wallet className="w-4 h-4 text-orange" /> Direct Netbanking & Settlement Account
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -143,7 +143,7 @@ export default function SellerSettingsPage() {
               type="text"
               value={bankAccountHolder}
               onChange={(e) => setBankAccountHolder(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-amber-500 focus:outline-none shadow-xs"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-orange focus:outline-none shadow-xs"
             />
           </div>
 
@@ -155,7 +155,7 @@ export default function SellerSettingsPage() {
               type="text"
               value={bankName}
               onChange={(e) => setBankName(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-amber-500 focus:outline-none shadow-xs"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-semibold focus:border-orange focus:outline-none shadow-xs"
             />
           </div>
 
@@ -167,7 +167,7 @@ export default function SellerSettingsPage() {
               type="text"
               value={bankAccountNumber}
               onChange={(e) => setBankAccountNumber(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono font-bold focus:border-amber-500 focus:outline-none shadow-xs"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono font-bold focus:border-orange focus:outline-none shadow-xs"
             />
           </div>
 
@@ -179,7 +179,7 @@ export default function SellerSettingsPage() {
               type="text"
               value={bankIfscCode}
               onChange={(e) => setBankIfscCode(e.target.value.toUpperCase())}
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono uppercase font-bold focus:border-amber-500 focus:outline-none shadow-xs"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-mono uppercase font-bold focus:border-orange focus:outline-none shadow-xs"
             />
           </div>
 
@@ -191,7 +191,7 @@ export default function SellerSettingsPage() {
               type="text"
               value={upiId}
               onChange={(e) => setUpiId(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:border-amber-500 focus:outline-none font-mono text-amber-700 font-extrabold shadow-xs"
+              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 focus:border-orange focus:outline-none font-mono text-navy font-extrabold shadow-xs"
             />
           </div>
         </div>
@@ -200,7 +200,7 @@ export default function SellerSettingsPage() {
           <button
             type="submit"
             disabled={isSaving}
-            className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+            className="px-6 py-3 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange/20 transition-all flex items-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             <Save className="w-4 h-4" />
             {isSaving ? 'Saving Settlement Details...' : 'Save Bank & UPI Settings'}

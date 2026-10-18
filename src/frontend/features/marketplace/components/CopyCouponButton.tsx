@@ -21,7 +21,7 @@ export function CopyCouponButton({ code }: CopyCouponButtonProps) {
   return (
     <button
       onClick={handleCopy}
-      className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+      className="px-4 py-2 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
     >
       <Copy className="w-3.5 h-3.5" />
       {isCopied ? 'Copied ✓' : 'Copy Code'}

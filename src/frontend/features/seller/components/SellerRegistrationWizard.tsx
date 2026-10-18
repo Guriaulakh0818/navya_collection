@@ -826,9 +826,9 @@ export function SellerRegistrationWizard() {
     <div className="w-full max-w-4xl mx-auto my-8 bg-white border border-slate-200 rounded-3xl p-6 md:p-10 shadow-sm font-sans text-slate-900">
       {/* Draft Restored Banner */}
       {draftRestored && currentStep > 1 && (
-        <div className="mb-6 p-4 rounded-2xl bg-amber-50/80 border border-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
-          <div className="flex items-center gap-2.5 text-amber-900 font-semibold">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse" />
+        <div className="mb-6 p-4 rounded-2xl bg-orange/10 border border-orange/20 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+          <div className="flex items-center gap-2.5 text-navy font-semibold">
+            <span className="flex h-2.5 w-2.5 rounded-full bg-orange animate-pulse" />
             <span>
               <strong>Draft Restored:</strong> You are continuing from{' '}
               <strong>
@@ -871,7 +871,7 @@ export function SellerRegistrationWizard() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-              <Building2 className="w-8 h-8 text-amber-600" />
+              <Building2 className="w-8 h-8 text-orange" />
               Become a JiivaaKart Merchant Partner
             </h1>
             <p className="text-sm text-slate-600 font-medium mt-1">
@@ -901,7 +901,7 @@ export function SellerRegistrationWizard() {
                 key={step.id}
                 className={`flex flex-col items-center justify-start text-center p-2.5 rounded-2xl transition-all h-full min-h-[76px] border ${
                   isActive
-                    ? 'bg-amber-50 border-amber-300 text-amber-900 font-extrabold shadow-xs'
+                    ? 'bg-orange/10 border-orange/40 text-navy font-extrabold shadow-xs'
                     : isCompleted
                       ? 'bg-white border-slate-200 text-emerald-700 font-bold'
                       : 'bg-slate-50/50 border-slate-200 text-slate-500 font-medium'
@@ -931,7 +931,7 @@ export function SellerRegistrationWizard() {
       {currentStep === 1 && (
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
-            <Mail className="w-5 h-5 text-amber-600" />
+            <Mail className="w-5 h-5 text-orange" />
             Step 1: Email Verification
           </h2>
 
@@ -947,7 +947,7 @@ export function SellerRegistrationWizard() {
                   value={emailAddress}
                   onChange={(e) => setEmailAddress(e.target.value)}
                   disabled={isOtpVerified}
-                  className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                  className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
                 />
                 {!isOtpVerified && (
                   <button
@@ -973,7 +973,7 @@ export function SellerRegistrationWizard() {
                   placeholder="123456"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono text-center tracking-widest text-lg font-bold focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono text-center tracking-widest text-lg font-bold focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
                 />
                 <button
                   type="button"
@@ -994,7 +994,7 @@ export function SellerRegistrationWizard() {
                 </span>
                 <button
                   onClick={() => setIsOtpVerified(false)}
-                  className="text-xs text-amber-700 font-extrabold underline cursor-pointer"
+                  className="text-xs text-orange font-extrabold underline cursor-pointer"
                 >
                   Change
                 </button>
@@ -1008,7 +1008,7 @@ export function SellerRegistrationWizard() {
       {currentStep === 2 && (
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
-            <User className="w-5 h-5 text-amber-600" />
+            <User className="w-5 h-5 text-orange" />
             Step 2: Personal &amp; Contact Details
           </h2>
 
@@ -1027,7 +1027,7 @@ export function SellerRegistrationWizard() {
                     basicInfo: { ...prev.basicInfo, fullName: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -1072,7 +1072,7 @@ export function SellerRegistrationWizard() {
                       },
                     }));
                   }}
-                  className="w-full bg-white border border-slate-200 rounded-xl pl-16 pr-10 py-3 text-navy font-bold focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-16 pr-10 py-3 text-navy font-bold focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
                 />
                 {formData.basicInfo.mobile && (
                   <button
@@ -1109,7 +1109,7 @@ export function SellerRegistrationWizard() {
                     basicInfo: { ...prev.basicInfo, password: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
           </div>
@@ -1120,7 +1120,7 @@ export function SellerRegistrationWizard() {
       {currentStep === 3 && (
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-amber-600" />
+            <Building2 className="w-5 h-5 text-orange" />
             Step 3: Clothing Store Information
           </h2>
 
@@ -1139,7 +1139,7 @@ export function SellerRegistrationWizard() {
                     shopDetails: { ...prev.shopDetails, shopName: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -1157,7 +1157,7 @@ export function SellerRegistrationWizard() {
                     shopDetails: { ...prev.shopDetails, description: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -1166,7 +1166,7 @@ export function SellerRegistrationWizard() {
               <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
                 Shop Logo / Profile Photo (Optional)
               </label>
-              <div className="border-2 border-dashed border-slate-300 hover:border-amber-500 rounded-2xl p-4 bg-slate-50 flex items-center justify-between gap-4 transition-all">
+              <div className="border-2 border-dashed border-slate-300 hover:border-orange rounded-2xl p-4 bg-slate-50 flex items-center justify-between gap-4 transition-all">
                 <div className="flex items-center gap-3">
                   <div className="relative w-14 h-14 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
                     {formData.shopDetails.logo ? (
@@ -1178,7 +1178,7 @@ export function SellerRegistrationWizard() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <Building2 className="w-6 h-6 text-amber-600" />
+                      <Building2 className="w-6 h-6 text-orange" />
                     )}
                   </div>
                   <div>
@@ -1190,7 +1190,7 @@ export function SellerRegistrationWizard() {
                 </div>
 
                 <label className="px-3.5 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold text-xs rounded-xl cursor-pointer shadow-xs transition-all flex items-center gap-1.5 shrink-0">
-                  <Upload className="w-3.5 h-3.5 text-amber-600" />
+                  <Upload className="w-3.5 h-3.5 text-orange" />
                   <span>{formData.shopDetails.logo ? 'Change Logo' : 'Upload Logo'}</span>
                   <input
                     type="file"
@@ -1233,7 +1233,7 @@ export function SellerRegistrationWizard() {
                       },
                     }));
                   }}
-                  className="w-full bg-white border border-slate-200 rounded-xl pl-16 pr-10 py-3 text-navy font-bold focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-16 pr-10 py-3 text-navy font-bold focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
                 />
                 {formData.shopDetails.phone && (
                   <button
@@ -1261,11 +1261,11 @@ export function SellerRegistrationWizard() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
-              <FileText className="w-5 h-5 text-amber-600" />
+              <FileText className="w-5 h-5 text-orange" />
               Step 4: Business Structure &amp; Tax Identifiers (GSTIN/PAN)
             </h2>
-            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+            <div className="flex items-center gap-1 text-[11px] font-bold text-orange bg-orange/10 px-2.5 py-1 rounded-full border border-orange/20">
+              <ShieldCheck className="w-3.5 h-3.5 text-orange" />
               <span>Instant Tax KYC Enabled</span>
             </div>
           </div>
@@ -1283,7 +1283,7 @@ export function SellerRegistrationWizard() {
                     businessType: { ...prev.businessType, businessType: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-semibold focus:border-amber-500 focus:outline-none transition-all"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-semibold focus:border-orange focus:outline-none transition-all"
               >
                 <option value="PROPRIETORSHIP">Sole Proprietorship</option>
                 <option value="PARTNERSHIP">Partnership Firm</option>
@@ -1307,7 +1307,7 @@ export function SellerRegistrationWizard() {
                     businessType: { ...prev.businessType, legalName: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -1340,7 +1340,7 @@ export function SellerRegistrationWizard() {
                   className={`flex-1 bg-white border rounded-xl px-4 py-3 text-navy font-mono uppercase focus:outline-none transition-all placeholder:text-slate-400 ${
                     panVerifiedData?.isValid
                       ? 'border-emerald-400 bg-emerald-50/20'
-                      : 'border-slate-200 focus:border-amber-500'
+                      : 'border-slate-200 focus:border-orange'
                   }`}
                 />
                 <button
@@ -1409,7 +1409,7 @@ export function SellerRegistrationWizard() {
                   className={`flex-1 bg-white border rounded-xl px-4 py-3 text-navy font-mono uppercase focus:outline-none transition-all placeholder:text-slate-400 ${
                     gstVerifiedData?.isValid
                       ? 'border-emerald-400 bg-emerald-50/20'
-                      : 'border-slate-200 focus:border-amber-500'
+                      : 'border-slate-200 focus:border-orange'
                   }`}
                 />
                 <button
@@ -1458,7 +1458,7 @@ export function SellerRegistrationWizard() {
       {currentStep === 5 && (
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-amber-600" />
+            <MapPin className="w-5 h-5 text-orange" />
             Step 5: Pickup Warehouse &amp; Shop Address
           </h2>
 
@@ -1477,7 +1477,7 @@ export function SellerRegistrationWizard() {
                     address: { ...prev.address, fullAddress: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -1496,7 +1496,7 @@ export function SellerRegistrationWizard() {
                       address: { ...prev.address, city: e.target.value },
                     }))
                   }
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
                 />
               </div>
 
@@ -1514,7 +1514,7 @@ export function SellerRegistrationWizard() {
                       address: { ...prev.address, state: e.target.value },
                     }))
                   }
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
                 />
               </div>
 
@@ -1536,7 +1536,7 @@ export function SellerRegistrationWizard() {
                       },
                     }))
                   }
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-mono focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -1555,7 +1555,7 @@ export function SellerRegistrationWizard() {
                     address: { ...prev.address, landmark: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
           </div>
@@ -1567,11 +1567,11 @@ export function SellerRegistrationWizard() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
-              <Wallet className="w-5 h-5 text-amber-600" />
+              <Wallet className="w-5 h-5 text-orange" />
               Step 6: Bank Account &amp; UPI Settlement Details
             </h2>
-            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+            <div className="flex items-center gap-1 text-[11px] font-bold text-orange bg-orange/10 px-2.5 py-1 rounded-full border border-orange/20">
+              <ShieldCheck className="w-3.5 h-3.5 text-orange" />
               <span>Real-Time Bank Verification</span>
             </div>
           </div>
@@ -1591,7 +1591,7 @@ export function SellerRegistrationWizard() {
                     bankDetails: { ...prev.bankDetails, accountHolderName: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -1629,7 +1629,7 @@ export function SellerRegistrationWizard() {
                   className={`flex-1 bg-white border rounded-xl px-4 py-3 text-navy font-mono uppercase focus:outline-none transition-all placeholder:text-slate-400 ${
                     ifscVerifiedData?.isValid
                       ? 'border-emerald-400 bg-emerald-50/20'
-                      : 'border-slate-200 focus:border-amber-500'
+                      : 'border-slate-200 focus:border-orange'
                   }`}
                 />
                 <button
@@ -1674,7 +1674,7 @@ export function SellerRegistrationWizard() {
                     bankDetails: { ...prev.bankDetails, bankName: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -1700,7 +1700,7 @@ export function SellerRegistrationWizard() {
                 className={`w-full bg-white border rounded-xl px-4 py-3 text-navy font-mono focus:outline-none transition-all placeholder:text-slate-400 ${
                   bankVerifiedData?.isValid
                     ? 'border-emerald-400 bg-emerald-50/20'
-                    : 'border-slate-200 focus:border-amber-500'
+                    : 'border-slate-200 focus:border-orange'
                 }`}
               />
             </div>
@@ -1709,8 +1709,8 @@ export function SellerRegistrationWizard() {
             <div className="md:col-span-2 pt-1 pb-1">
               <div className="border border-slate-200 bg-slate-50/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-5 h-5 text-amber-700" />
+                  <div className="w-10 h-10 rounded-xl bg-orange/10 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-5 h-5 text-orange" />
                   </div>
                   <div>
                     <p className="text-xs font-extrabold text-navy">Verify Bank Account Details</p>
@@ -1742,7 +1742,7 @@ export function SellerRegistrationWizard() {
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <Sparkles className="w-3.5 h-3.5 text-orange" />
                       <span>Verify Account Now</span>
                     </>
                   )}
@@ -1777,7 +1777,7 @@ export function SellerRegistrationWizard() {
                     bankDetails: { ...prev.bankDetails, upiId: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
           </div>
@@ -1788,7 +1788,7 @@ export function SellerRegistrationWizard() {
       {currentStep === 7 && (
         <div className="space-y-6">
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
-            <FileCheck className="w-5 h-5 text-amber-600" />
+            <FileCheck className="w-5 h-5 text-orange" />
             Step 7: Upload Business Documents (Optional)
           </h2>
 
@@ -1807,7 +1807,7 @@ export function SellerRegistrationWizard() {
                     documents: { ...prev.documents, gstCertificate: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -1825,7 +1825,7 @@ export function SellerRegistrationWizard() {
                     documents: { ...prev.documents, panCard: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
@@ -1843,7 +1843,7 @@ export function SellerRegistrationWizard() {
                     documents: { ...prev.documents, shopPhoto: e.target.value },
                   }))
                 }
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-amber-500 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-navy font-medium focus:border-orange focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
           </div>
@@ -1878,9 +1878,7 @@ export function SellerRegistrationWizard() {
                 <span className="text-slate-500 block text-xs font-semibold">
                   Store Display Name
                 </span>
-                <span className="font-extrabold text-amber-700">
-                  {formData.shopDetails.shopName}
-                </span>
+                <span className="font-extrabold text-navy">{formData.shopDetails.shopName}</span>
               </div>
               <div>
                 <span className="text-slate-500 block text-xs font-semibold">
@@ -1947,7 +1945,7 @@ export function SellerRegistrationWizard() {
                     )}
                   </div>
                   {formData.bankDetails.upiId && (
-                    <div className="text-xs text-amber-700 font-mono font-bold">
+                    <div className="text-xs text-navy font-mono font-bold">
                       UPI: {formData.bankDetails.upiId}
                     </div>
                   )}
@@ -1955,7 +1953,7 @@ export function SellerRegistrationWizard() {
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold text-amber-900 shadow-xs">
+            <div className="p-4 rounded-xl bg-orange/10 border border-orange/20 text-xs font-bold text-navy shadow-xs">
               ⚡ By submitting this application, you agree to JiivaaKart Merchant Agreement terms,
               standard 10% platform commission, and quality standards.
             </div>

@@ -21,7 +21,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
     image: '/images/categories/category-women.jpg',
     href: '/category/women',
     badge: 'POPULAR',
-    badgeBg: 'bg-amber-600',
+    badgeBg: 'bg-orange',
     isSpecial: true,
   },
   {
@@ -30,7 +30,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
     image: '/images/categories/category-men.jpg',
     href: '/category/men',
     badge: 'STYLE',
-    badgeBg: 'bg-blue-600',
+    badgeBg: 'bg-navy',
     isSpecial: true,
   },
   {
@@ -47,7 +47,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
     image: '/images/categories/men-tshirts.jpg',
     href: '/category/men-t-shirts',
     badge: 'HOT',
-    badgeBg: 'bg-rose-600',
+    badgeBg: 'bg-orange',
   },
   {
     id: 'shirts',
@@ -61,7 +61,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
     image: '/images/categories/men-jeans.jpg',
     href: '/category/men-jeans',
     badge: 'BESTSELLER',
-    badgeBg: 'bg-indigo-600',
+    badgeBg: 'bg-navy',
   },
   {
     id: 'trousers',
@@ -97,7 +97,7 @@ export function ShopByCategorySection() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 text-orange">
+          <div className="p-2 rounded-xl bg-orange/10 text-orange">
             <ShoppingBag className="w-5 h-5" />
           </div>
           <div>
@@ -131,7 +131,7 @@ export function ShopByCategorySection() {
             <div
               className={`relative w-16 h-16 sm:w-20 sm:h-20 md:w-22 md:h-22 rounded-full p-1 border-2 transition-all duration-300 flex items-center justify-center ${
                 item.isSpecial
-                  ? 'border-amber-400 bg-amber-50/50 shadow-xs'
+                  ? 'border-orange/60 bg-orange/5 shadow-xs'
                   : 'border-slate-200/90 bg-white group-hover:border-orange group-hover:shadow-md'
               }`}
             >
@@ -149,7 +149,7 @@ export function ShopByCategorySection() {
               {item.badge && (
                 <span
                   className={`absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 sm:px-2 py-0.5 rounded-full text-white text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-xs whitespace-nowrap ${
-                    item.badgeBg || 'bg-rose-600'
+                    item.badgeBg || 'bg-orange'
                   }`}
                 >
                   {item.badge}
@@ -161,8 +161,8 @@ export function ShopByCategorySection() {
             <h3
               className={`mt-2 text-xs sm:text-sm font-extrabold transition-colors line-clamp-1 tracking-tight ${
                 item.isSpecial
-                  ? 'text-amber-900 group-hover:text-orange'
-                  : 'text-navy-900 group-hover:text-orange'
+                  ? 'text-navy-900 group-hover:text-orange font-black'
+                  : 'text-slate-800 group-hover:text-orange'
               }`}
             >
               {item.name}

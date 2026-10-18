@@ -8,14 +8,14 @@ import { BRAND_ASSETS } from '@/shared/config/brand-assets';
 
 export function SellerStorySection() {
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-50/90 via-orange-50/60 to-amber-100/40 border border-amber-200/90 p-6 sm:p-8 lg:p-10 my-8 sm:my-12 shadow-xs">
+    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange/10 via-white to-slate-50 border border-orange/20 p-6 sm:p-8 lg:p-10 my-8 sm:my-12 shadow-xs">
       {/* Background Soft Glow */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-orange/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         {/* Left Headline & Description */}
         <div className="lg:col-span-6 space-y-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-amber-300 text-amber-900 text-[10px] font-black uppercase tracking-wider shadow-2xs">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 border border-orange/30 text-navy text-[10px] font-black uppercase tracking-wider shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-orange" />
             <span>Merchant Partner Onboarding</span>
           </div>
@@ -45,16 +45,16 @@ export function SellerStorySection() {
         {/* Right Flow Diagram & Badge */}
         <div className="lg:col-span-6 flex flex-col sm:flex-row items-center justify-center lg:justify-end gap-4">
           {/* Flow Stepper Container */}
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-amber-200/80 p-4 sm:p-5 shadow-sm flex items-center justify-center gap-3 sm:gap-4">
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-sm flex items-center justify-center gap-3 sm:gap-4">
             {/* Step 1: Your Store */}
             <div className="flex flex-col items-center text-center space-y-1.5 min-w-[72px]">
-              <div className="w-12 h-12 rounded-2xl bg-amber-100/80 border border-amber-300 flex items-center justify-center text-orange shadow-2xs">
+              <div className="w-12 h-12 rounded-2xl bg-orange/10 border border-orange/30 flex items-center justify-center text-orange shadow-2xs">
                 <Store className="w-6 h-6" />
               </div>
               <span className="text-[11px] font-extrabold text-navy-900">Your Store</span>
             </div>
 
-            <ArrowRight className="w-4 h-4 text-amber-400 shrink-0" />
+            <ArrowRight className="w-4 h-4 text-orange shrink-0" />
 
             {/* Step 2: JiivaaKart Platform */}
             <div className="flex flex-col items-center text-center space-y-1.5 min-w-[72px]">
@@ -71,7 +71,7 @@ export function SellerStorySection() {
               <span className="text-[11px] font-extrabold text-navy-900">JiivaaKart Platform</span>
             </div>
 
-            <ArrowRight className="w-4 h-4 text-amber-400 shrink-0" />
+            <ArrowRight className="w-4 h-4 text-orange shrink-0" />
 
             {/* Step 3: Pan India Customers */}
             <div className="flex flex-col items-center text-center space-y-1.5 min-w-[72px]">
@@ -83,7 +83,7 @@ export function SellerStorySection() {
           </div>
 
           {/* Script Callout Tag */}
-          <div className="bg-white/80 border border-amber-300/80 rounded-2xl px-4 py-3 shadow-2xs text-center sm:text-left">
+          <div className="bg-white/80 border border-orange/30 rounded-2xl px-4 py-3 shadow-2xs text-center sm:text-left">
             <p className="font-serif italic text-sm font-bold text-navy-900 leading-tight">
               Local Businesses
             </p>

@@ -8,7 +8,7 @@ const WORKFLOW_STEPS = [
     description:
       'Browse clothing stores, regional artisans, and independent fashion boutiques across India.',
     icon: Store,
-    accent: 'text-orange bg-amber-50 border-amber-200',
+    accent: 'text-orange bg-orange/10 border-orange/20',
   },
   {
     step: '02',
@@ -16,7 +16,7 @@ const WORKFLOW_STEPS = [
     description:
       'Select authentic ethnic wear, western outfits, and accessories with clear pricing and size charts.',
     icon: ShoppingBag,
-    accent: 'text-blue-600 bg-blue-50 border-blue-200',
+    accent: 'text-navy bg-navy/10 border-navy/20',
   },
   {
     step: '03',
@@ -32,7 +32,7 @@ const WORKFLOW_STEPS = [
     description:
       'Partner boutiques pack your order, dispatched via verified logistics with end-to-end tracking.',
     icon: Truck,
-    accent: 'text-purple-600 bg-purple-50 border-purple-200',
+    accent: 'text-navy-900 bg-slate-100 border-slate-200',
   },
 ];
 

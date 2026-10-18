@@ -18,7 +18,7 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
     <HorizontalCarousel
       title="Featured Shops"
       subtitle="Handpicked, verified shops showcasing exclusive collections."
-      icon={<Store className="w-5 h-5 text-amber-600" />}
+      icon={<Store className="w-5 h-5 text-orange" />}
       actionLink="/shop?view=shops"
       actionText="View All Shops"
       className="my-6 md:my-8"
@@ -39,7 +39,7 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
           <Link
             key={shop.id}
             href={`/shop/${shop.slug}`}
-            className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-amber-500/50 hover:shadow-xl transition-all shadow-xs flex flex-col justify-between w-[260px] xs:w-[285px] sm:w-[320px] shrink-0 snap-start"
+            className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-orange/50 hover:shadow-xl transition-all shadow-xs flex flex-col justify-between w-[260px] xs:w-[285px] sm:w-[320px] shrink-0 snap-start"
           >
             {/* Cover Banner - Permanently Style That Speaks */}
             <div className="h-28 sm:h-32 bg-slate-900 relative overflow-hidden select-none">
@@ -57,7 +57,7 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
             {/* Profile Overlay & Info */}
             <div className="p-4 sm:p-5 -mt-8 relative z-10 space-y-3">
               <div className="flex items-end justify-between gap-2">
-                <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-500/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-md select-none">
+                <div className="w-14 h-14 rounded-2xl bg-white border-2 border-orange/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-md select-none">
                   {shopLogo ? (
                     <Image
                       src={shopLogo}
@@ -67,7 +67,7 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
                       className="w-full h-full object-cover select-none overflow-hidden [text-indent:-9999px]"
                     />
                   ) : (
-                    <Building2 className="w-7 h-7 text-amber-600" />
+                    <Building2 className="w-7 h-7 text-orange" />
                   )}
                 </div>
 
@@ -78,7 +78,7 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
               </div>
 
               <div>
-                <h3 className="font-extrabold text-navy text-sm sm:text-base group-hover:text-amber-600 transition-colors line-clamp-1">
+                <h3 className="font-extrabold text-navy text-sm sm:text-base group-hover:text-orange transition-colors line-clamp-1">
                   {shop.name}
                 </h3>
               </div>
@@ -95,7 +95,7 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
                 </span>
 
                 <span className="flex items-center gap-1 font-extrabold text-slate-800">
-                  <ShoppingBag className="w-3 h-3 text-amber-600" />
+                  <ShoppingBag className="w-3 h-3 text-orange" />
                   {productCount} Items
                 </span>
               </div>

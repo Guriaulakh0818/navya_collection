@@ -5,9 +5,9 @@ import Link from 'next/link';
 
 export function MarketplaceHero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-amber-50/30 rounded-3xl border border-slate-200/90 shadow-xs p-5 sm:p-7 md:p-8 my-3 sm:my-4">
+    <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-orange/5 rounded-3xl border border-slate-200/90 shadow-xs p-5 sm:p-7 md:p-8 my-3 sm:my-4">
       {/* Background Glows */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-orange/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-navy-900/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 space-y-3.5 sm:space-y-4">
@@ -20,11 +20,11 @@ export function MarketplaceHero() {
         {/* Headline & Subtitle */}
         <div className="space-y-1.5 sm:space-y-2">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[38px] xl:text-[42px] font-black tracking-tight text-navy-900 leading-tight font-sans">
-            Har Gali Ka Style, Ab India Ke{' '}
-            <span className="text-orange">Har Shehar Tak.</span>
+            Har Gali Ka Style, Ab India Ke <span className="text-orange">Har Shehar Tak.</span>
           </h1>
           <p className="text-xs sm:text-sm md:text-base text-slate-600 font-medium leading-relaxed whitespace-normal md:whitespace-nowrap">
-            Discover fashion from verified local boutiques and clothing stores — trendy, affordable and uniquely Indian.
+            Discover fashion from verified local boutiques and clothing stores — trendy, affordable
+            and uniquely Indian.
           </p>
         </div>
 

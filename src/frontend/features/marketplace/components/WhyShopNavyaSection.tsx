@@ -7,19 +7,19 @@ const TRUST_FEATURES = [
     title: 'Verified Local Stores',
     description: 'Authentic boutiques from across India',
     icon: Store,
-    accent: 'text-orange bg-amber-50 border-amber-200',
+    accent: 'text-orange bg-orange/10 border-orange/20',
   },
   {
     title: 'Unique & Trendy Styles',
     description: "Discover styles you won't find everywhere",
     icon: Gem,
-    accent: 'text-amber-600 bg-amber-50 border-amber-200',
+    accent: 'text-navy bg-navy/10 border-navy/20',
   },
   {
     title: 'Pan-India Delivery',
     description: 'Your local store, delivered to your doorstep',
     icon: Truck,
-    accent: 'text-blue-600 bg-blue-50 border-blue-200',
+    accent: 'text-navy bg-navy/10 border-navy/20',
   },
   {
     title: 'Hassle-Free Returns',
@@ -31,7 +31,7 @@ const TRUST_FEATURES = [
     title: 'Secure Payments',
     description: 'COD, UPI, Cards & more',
     icon: ShieldCheck,
-    accent: 'text-purple-600 bg-purple-50 border-purple-200',
+    accent: 'text-orange bg-orange/10 border-orange/20',
   },
 ];
 
@@ -40,7 +40,7 @@ export function WhyShopNavyaSection() {
     <section className="space-y-4 sm:space-y-5 my-8 sm:my-10">
       {/* Header */}
       <div className="flex items-center gap-2.5">
-        <div className="p-2 rounded-xl bg-amber-50 text-orange">
+        <div className="p-2 rounded-xl bg-orange/10 text-orange">
           <ShoppingBag className="w-5 h-5" />
         </div>
         <div>

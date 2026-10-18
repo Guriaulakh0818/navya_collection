@@ -65,7 +65,7 @@ export default function PrintableInvoicePage({ params }: InvoicePageProps) {
       {/* Print Action Header */}
       <div className="flex items-center justify-between border-b pb-4 print:hidden">
         <div className="flex items-center gap-2">
-          <Building2 className="w-5 h-5 text-amber-600" />
+          <Building2 className="w-5 h-5 text-navy" />
           <h1 className="text-lg font-bold text-slate-900">GST Tax Invoice Preview</h1>
         </div>
 
@@ -203,7 +203,7 @@ export default function PrintableInvoicePage({ params }: InvoicePageProps) {
             </div>
             <div className="flex justify-between text-sm font-extrabold text-slate-900 pt-2 border-t border-slate-300">
               <span>Grand Total:</span>
-              <span className="font-mono text-amber-700">
+              <span className="font-mono text-navy font-black">
                 ₹{grandTotal.toLocaleString('en-IN')}
               </span>
             </div>

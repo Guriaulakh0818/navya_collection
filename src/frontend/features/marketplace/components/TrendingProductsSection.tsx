@@ -62,7 +62,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-50 text-orange">
+          <div className="p-2 rounded-xl bg-orange/10 text-orange">
             <Zap className="w-5 h-5 fill-orange" />
           </div>
           <div>
