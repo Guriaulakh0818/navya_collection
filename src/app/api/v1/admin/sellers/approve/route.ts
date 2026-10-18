@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
           userId: targetShop.ownerId,
           type: 'SYSTEM',
           title: '🎉 Shop Approved & Activated!',
-          message: `Congratulations! Your shop "${targetShop.name}" has been approved by Navya Collection Admin. Your seller dashboard is now active.`,
+          message: `Congratulations! Your shop "${targetShop.name}" has been approved by JiivaaKart Admin. Your seller dashboard is now active.`,
         },
       });
 

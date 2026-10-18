@@ -20,6 +20,21 @@ export const metadata: Metadata = {
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,
     type: 'website',
+    images: [
+      {
+        url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `Return Policy - ${SEO_CONSTANTS.SITE_NAME}`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `Return, Replacement & Refund Policy | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      '3-Day hassle-free return and 7-day size replacement policy for JiivaaKart multi-vendor fashion marketplace orders across India.',
+    images: [SEO_CONSTANTS.DEFAULT_OG_IMAGE],
   },
 };
 

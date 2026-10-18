@@ -20,6 +20,21 @@ export const metadata: Metadata = {
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,
     type: 'website',
+    images: [
+      {
+        url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `Shipping Policy - ${SEO_CONSTANTS.SITE_NAME}`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `Shipping Policy & Delivery Information | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      'Shipping rates, delivery timelines, multi-seller fulfillment, and tracking information for JiivaaKart marketplace orders across India.',
+    images: [SEO_CONSTANTS.DEFAULT_OG_IMAGE],
   },
 };
 

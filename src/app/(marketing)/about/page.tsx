@@ -20,6 +20,21 @@ export const metadata: Metadata = {
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,
     type: 'website',
+    images: [
+      {
+        url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `About Us - ${SEO_CONSTANTS.SITE_NAME}`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `About Us | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      'Learn about JiivaaKart — a fashion marketplace connecting customers across India with verified local clothing stores, designer boutiques, and regional fashion creators.',
+    images: [SEO_CONSTANTS.DEFAULT_OG_IMAGE],
   },
 };
 

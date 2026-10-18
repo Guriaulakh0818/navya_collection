@@ -35,9 +35,9 @@ export default function MultiVendorWishlistPage() {
       price: item.price,
       quantity: 1,
       image: item.image,
-      shopId: item.shopId || 'navya-boutique',
-      shopName: item.shopName || 'Navya Collection Boutique',
-      shopSlug: item.shopSlug || 'navya-collection',
+      shopId: item.shopId || 'default-boutique',
+      shopName: item.shopName || 'JiivaaKart Boutique',
+      shopSlug: item.shopSlug || 'default-boutique',
       shopLogo: item.shopLogo,
     });
 

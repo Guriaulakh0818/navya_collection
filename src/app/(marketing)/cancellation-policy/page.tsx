@@ -3,16 +3,50 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: 'Order Cancellation Policy | JiivaaKart',
+  title: `Order Cancellation Policy | ${SEO_CONSTANTS.SITE_NAME}`,
   description:
     'Guidelines, timelines, and refund procedures for order cancellations before and after dispatch on JiivaaKart.',
+  alternates: {
+    canonical: `${SEO_CONSTANTS.SITE_URL}/cancellation-policy`,
+  },
+  openGraph: {
+    title: `Order Cancellation Policy | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      'Guidelines, timelines, and refund procedures for order cancellations before and after dispatch on JiivaaKart.',
+    url: `${SEO_CONSTANTS.SITE_URL}/cancellation-policy`,
+    siteName: SEO_CONSTANTS.SITE_NAME,
+    locale: SEO_CONSTANTS.DEFAULT_LOCALE,
+    type: 'website',
+    images: [
+      {
+        url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `Cancellation Policy - ${SEO_CONSTANTS.SITE_NAME}`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `Order Cancellation Policy | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      'Guidelines, timelines, and refund procedures for order cancellations before and after dispatch on JiivaaKart.',
+    images: [SEO_CONSTANTS.DEFAULT_OG_IMAGE],
+  },
 };
 
 export default function CancellationPolicyPage() {
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: SEO_CONSTANTS.SITE_URL },
+    { name: 'Cancellation Policy', url: `${SEO_CONSTANTS.SITE_URL}/cancellation-policy` },
+  ]);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
+      <JsonLd data={breadcrumbSchema} />
       <Breadcrumb
         items={[{ label: 'Home', href: '/' }, { label: 'Cancellation Policy' }]}
         className="mx-auto max-w-5xl px-4 md:px-6 py-4"

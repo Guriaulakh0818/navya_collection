@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
             userId: product.shop.ownerId,
             type: 'SYSTEM',
             title: '🎉 Product Listing Approved!',
-            message: `Congratulations! Your product "${product.name}" has been approved by admin and is now live on Navya Collection.`,
+            message: `Congratulations! Your product "${product.name}" has been approved by admin and is now live on JiivaaKart.`,
           },
         });
       }

@@ -18,6 +18,21 @@ export const metadata: Metadata = {
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,
     type: 'website',
+    images: [
+      {
+        url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `Contact Us - ${SEO_CONSTANTS.SITE_NAME}`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `Contact Us | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      'Get in touch with JiivaaKart customer support for order assistance, shipping inquiries, and boutique partner onboarding.',
+    images: [SEO_CONSTANTS.DEFAULT_OG_IMAGE],
   },
 };
 

@@ -18,6 +18,21 @@ export const metadata: Metadata = {
     siteName: SEO_CONSTANTS.SITE_NAME,
     locale: SEO_CONSTANTS.DEFAULT_LOCALE,
     type: 'website',
+    images: [
+      {
+        url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `Become a Seller - ${SEO_CONSTANTS.SITE_NAME}`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `Become a Seller | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      'Join JiivaaKart as a boutique partner or fashion creator. Showcase your clothing products to customers across India with integrated order and shipping management.',
+    images: [SEO_CONSTANTS.DEFAULT_OG_IMAGE],
   },
 };
 

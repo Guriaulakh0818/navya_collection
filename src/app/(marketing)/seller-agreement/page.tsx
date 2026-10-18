@@ -12,16 +12,50 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: 'Seller Marketplace Agreement & Terms | JiivaaKart',
+  title: `Seller Marketplace Agreement & Terms | ${SEO_CONSTANTS.SITE_NAME}`,
   description:
     'Standard Merchant Terms and Conditions, Commission Slabs, Payout Schedules (T+7), Statutory Tax Deductions (TCS & TDS), and Seller Responsibilities on JiivaaKart.',
+  alternates: {
+    canonical: `${SEO_CONSTANTS.SITE_URL}/seller-agreement`,
+  },
+  openGraph: {
+    title: `Seller Marketplace Agreement & Terms | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      'Standard Merchant Terms and Conditions, Commission Slabs, Payout Schedules (T+7), Statutory Tax Deductions (TCS & TDS), and Seller Responsibilities on JiivaaKart.',
+    url: `${SEO_CONSTANTS.SITE_URL}/seller-agreement`,
+    siteName: SEO_CONSTANTS.SITE_NAME,
+    locale: SEO_CONSTANTS.DEFAULT_LOCALE,
+    type: 'website',
+    images: [
+      {
+        url: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `Seller Agreement - ${SEO_CONSTANTS.SITE_NAME}`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `Seller Marketplace Agreement & Terms | ${SEO_CONSTANTS.SITE_NAME}`,
+    description:
+      'Standard Merchant Terms and Conditions, Commission Slabs, Payout Schedules (T+7), Statutory Tax Deductions (TCS & TDS), and Seller Responsibilities on JiivaaKart.',
+    images: [SEO_CONSTANTS.DEFAULT_OG_IMAGE],
+  },
 };
 
 export default function SellerAgreementPage() {
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: SEO_CONSTANTS.SITE_URL },
+    { name: 'Seller Agreement', url: `${SEO_CONSTANTS.SITE_URL}/seller-agreement` },
+  ]);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-20">
+      <JsonLd data={breadcrumbSchema} />
       <Breadcrumb
         items={[{ label: 'Home', href: '/' }, { label: 'Seller Agreement' }]}
         className="mx-auto max-w-5xl px-4 md:px-6 py-4"
