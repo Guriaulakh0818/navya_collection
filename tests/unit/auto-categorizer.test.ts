@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { getFlattenedCategoryOptions } from '@/config/categories.config';
-import { autoCategorizeProduct } from '@/shared/utils/auto-categorizer';
+import { getFlattenedCategoryOptions } from '../../src/config/categories.config';
+import { autoCategorizeProduct } from '../../src/shared/utils/auto-categorizer';
 
 describe('Auto-Categorizer Production-Level Test Suite', () => {
   const flattenedCategories = getFlattenedCategoryOptions();
-  const validCategoryIds = new Set(flattenedCategories.map((c) => c.id));
+  const validCategoryIds = new Set(flattenedCategories.map((c: { id: string }) => c.id));
 
   const verifyAllIdsValid = (categoryIds: string[]) => {
     categoryIds.forEach((id) => {
