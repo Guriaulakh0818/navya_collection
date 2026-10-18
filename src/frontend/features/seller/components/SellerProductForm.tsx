@@ -686,6 +686,17 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       }
       return;
     }
+
+    // Determine user's active department choice:
+    let userSelectedGender: 'men' | 'women' | 'kids' = 'women';
+    if (activeDeptId === 'dept_men' || selectedMainCat === 'group_men') {
+      userSelectedGender = 'men';
+    } else if (activeDeptId === 'dept_kids' || selectedMainCat === 'group_kids') {
+      userSelectedGender = 'kids';
+    } else {
+      userSelectedGender = 'women';
+    }
+
     const res = autoCategorizeProduct({
       name: formData.name,
       description: formData.description,
@@ -693,6 +704,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
       fabric: formData.fabric,
       occasion: formData.occasion,
+      gender: userSelectedGender,
     });
 
     // 1. Assign auto-detected categories
@@ -702,11 +714,26 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     }
 
     // 2. Synchronize Department Tab in Category Mapping Browser so seller sees checked items
-    const deptGroup = res.departmentGroup || 'group_women';
+    const deptGroup =
+      res.departmentGroup ||
+      (userSelectedGender === 'men'
+        ? 'group_men'
+        : userSelectedGender === 'kids'
+          ? 'group_kids'
+          : 'group_women');
     setSelectedMainCat(deptGroup);
     const found = CATEGORY_TAXONOMY.find((c) => c.id === deptGroup);
     if (found && found.sections.length > 0) {
       setSelectedSectionId(found.sections[0].id);
+    }
+
+    // Synchronize Step 1 Department in Category Engine
+    if (deptGroup === 'group_men') {
+      setActiveDeptId('dept_men');
+    } else if (deptGroup === 'group_kids') {
+      setActiveDeptId('dept_kids');
+    } else {
+      setActiveDeptId('dept_women');
     }
 
     // 3. Synchronize Category Engine: Department, Subcategory, Product Type & Attribute Template
@@ -715,7 +742,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     }
 
     showToast(
-      `⚡ Auto-detected ${res.categoryIds.length} categories & set template to "${res.matchedLabels[0] || 'Garment'}"`,
+      `⚡ Auto-detected ${res.categoryIds.length} categories for ${
+        deptGroup === 'group_men' ? 'Men' : deptGroup === 'group_kids' ? 'Kids' : 'Women'
+      } & set template to "${res.matchedLabels[0] || 'Garment'}"`,
       'success',
     );
   };
@@ -725,6 +754,35 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     const found = CATEGORY_TAXONOMY.find((c) => c.id === mainId);
     if (found && found.sections.length > 0) {
       setSelectedSectionId(found.sections[0].id);
+    }
+    // Synchronize Step 1 Department in Category Engine
+    if (mainId === 'group_men') {
+      setActiveDeptId('dept_men');
+      const dept = CATEGORY_ENGINE_TAXONOMY.find((d) => d.id === 'dept_men');
+      if (dept && dept.subCategories.length > 0) {
+        setActiveSubId(dept.subCategories[0].id);
+        if (dept.subCategories[0].productTypes.length > 0) {
+          handleProductTypeChange(dept.subCategories[0].productTypes[0].id, true);
+        }
+      }
+    } else if (mainId === 'group_kids') {
+      setActiveDeptId('dept_kids');
+      const dept = CATEGORY_ENGINE_TAXONOMY.find((d) => d.id === 'dept_kids');
+      if (dept && dept.subCategories.length > 0) {
+        setActiveSubId(dept.subCategories[0].id);
+        if (dept.subCategories[0].productTypes.length > 0) {
+          handleProductTypeChange(dept.subCategories[0].productTypes[0].id, true);
+        }
+      }
+    } else if (mainId === 'group_women') {
+      setActiveDeptId('dept_women');
+      const dept = CATEGORY_ENGINE_TAXONOMY.find((d) => d.id === 'dept_women');
+      if (dept && dept.subCategories.length > 0) {
+        setActiveSubId(dept.subCategories[0].id);
+        if (dept.subCategories[0].productTypes.length > 0) {
+          handleProductTypeChange(dept.subCategories[0].productTypes[0].id, true);
+        }
+      }
     }
   };
 
@@ -1650,7 +1708,18 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                       onClick={() => {
                         setActiveDeptId(dept.id);
                         if (dept.subCategories.length > 0) {
-                          setActiveSubId(dept.subCategories[0].id);
+                          const firstSub = dept.subCategories[0];
+                          setActiveSubId(firstSub.id);
+                          if (firstSub.productTypes.length > 0) {
+                            handleProductTypeChange(firstSub.productTypes[0].id, true);
+                          }
+                        }
+                        if (dept.id === 'dept_men') {
+                          setSelectedMainCat('group_men');
+                        } else if (dept.id === 'dept_kids') {
+                          setSelectedMainCat('group_kids');
+                        } else {
+                          setSelectedMainCat('group_women');
                         }
                       }}
                       className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
@@ -1679,7 +1748,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                     <button
                       key={sub.id}
                       type="button"
-                      onClick={() => setActiveSubId(sub.id)}
+                      onClick={() => {
+                        setActiveSubId(sub.id);
+                        if (
+                          sub.productTypes.length > 0 &&
+                          !sub.productTypes.some((pt) => pt.id === formData.productType)
+                        ) {
+                          handleProductTypeChange(sub.productTypes[0].id, true);
+                        }
+                      }}
                       className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                         isSubActive
                           ? 'bg-orange text-white shadow-xs font-black ring-2 ring-orange/20'

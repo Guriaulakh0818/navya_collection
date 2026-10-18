@@ -150,4 +150,36 @@ describe('Auto-Categorizer Production-Level Test Suite', () => {
       verifyAllIdsValid(res.categoryIds);
     });
   });
+
+  it('strictly respects explicit user-selected department (Men vs Women vs Kids)', () => {
+    // 1. User selected Men and typed "Cotton Casual T-Shirt"
+    const menRes = autoCategorizeProduct({
+      name: 'Cotton Casual T-Shirt',
+      gender: 'men',
+    });
+    expect(menRes.departmentGroup).toBe('group_men');
+    expect(menRes.suggestedProductType).toBe('men_tshirts');
+    expect(menRes.categoryIds).toContain('cat_men_tshirts');
+    expect(menRes.categoryIds).toContain('cat_men_topwear');
+    verifyAllIdsValid(menRes.categoryIds);
+
+    // 2. User selected Kids and typed "Cotton Casual T-Shirt"
+    const kidsRes = autoCategorizeProduct({
+      name: 'Cotton Casual T-Shirt',
+      gender: 'kids',
+    });
+    expect(kidsRes.departmentGroup).toBe('group_kids');
+    expect(kidsRes.categoryIds).toContain('cat_kids_all_fashion');
+    verifyAllIdsValid(kidsRes.categoryIds);
+
+    // 3. User selected Women and typed "Cotton Casual T-Shirt"
+    const womenRes = autoCategorizeProduct({
+      name: 'Cotton Casual T-Shirt',
+      gender: 'women',
+    });
+    expect(womenRes.departmentGroup).toBe('group_women');
+    expect(womenRes.suggestedProductType).toBe('women_tops_tees');
+    expect(womenRes.categoryIds).toContain('cat_women_tops_tees');
+    verifyAllIdsValid(womenRes.categoryIds);
+  });
 });

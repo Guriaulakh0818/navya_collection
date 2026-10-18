@@ -48,19 +48,26 @@ export function autoCategorizeProduct(
     if (
       hasWord(
         text,
-        /\b(women|woman|ladies|girl|girls|female|mrs|miss|saree|sari|lehenga|kurti|anarkali|choli|bra|bras|pantie|panties|lingerie|camisole|petticoat)\b/i,
+        /\b(women|woman|ladies|female|mrs|miss|saree|sari|lehenga|kurti|anarkali|choli|bra|bras|pantie|panties|lingerie|camisole|petticoat)\b/i,
       )
     ) {
       gender = 'women';
     } else if (
       hasWord(
         text,
-        /\b(men|man|gents|boy|boys|male|mr|sherwani|dhoti|kurta\s+pajama|nehru\s+jacket|bandhgala|boxers?|briefs?)\b/i,
+        /\b(men|man|gents|male|mr|sherwani|dhoti|kurta\s+pajama|nehru\s+jacket|bandhgala|boxers?|briefs?)\b/i,
       )
     ) {
       gender = 'men';
-    } else if (hasWord(text, /\b(kids?|baby|infant|toddler|newborn|children|frock|romper)\b/i)) {
+    } else if (
+      hasWord(
+        text,
+        /\b(kids?|baby|infant|toddler|newborn|children|frock|romper|girls?\s+clothing|boys?\s+clothing)\b/i,
+      )
+    ) {
       gender = 'kids';
+    } else {
+      gender = 'women';
     }
   }
 
@@ -115,7 +122,7 @@ export function autoCategorizeProduct(
   // =========================================================================
   // 1. WOMEN'S CATEGORIES
   // =========================================================================
-  if (gender === 'women' || (!gender && !isShirt && !isPolo)) {
+  if (gender === 'women') {
     departmentGroup = 'group_women';
 
     // 1A. Indian Ethnic Wear
@@ -160,11 +167,12 @@ export function autoCategorizeProduct(
 
     // 1B. Western Wear
     if (
-      hasWord(
+      isTShirt ||
+      (hasWord(
         text,
-        /\b(crop\s+top|blouses?|peplum|tank\s+top|tunic\s+top|ruffle\s+top|corset|camisole\s+top)\b/i,
+        /\b(crop\s+top|blouses?|peplum|tank\s+top|tunic\s+top|ruffle\s+top|corset|camisole\s+top|tees?|t-?shirts?)\b/i,
       ) &&
-      !hasWord(text, 'saree blouse')
+        !hasWord(text, 'saree blouse'))
     ) {
       assignedSet.add('cat_women_tops_tees');
       assignedSet.add('cat_women_western_wear');
@@ -407,10 +415,7 @@ export function autoCategorizeProduct(
   // =========================================================================
   // 2. MEN'S CATEGORIES
   // =========================================================================
-  if (
-    gender === 'men' ||
-    (!gender && (isShirt || isTShirt || isPolo || isSweatshirt || isSweater || isHoodie))
-  ) {
+  if (gender === 'men') {
     departmentGroup = 'group_men';
 
     if (isShirt) {
@@ -569,13 +574,7 @@ export function autoCategorizeProduct(
   // =========================================================================
   // 3. KIDS' CATEGORIES
   // =========================================================================
-  if (
-    gender === 'kids' ||
-    hasWord(
-      text,
-      /\b(kids|baby|infant|toddler|newborn|boys?\s+clothing|girls?\s+clothing|boys?\s+wear|girls?\s+wear)\b/i,
-    )
-  ) {
+  if (gender === 'kids') {
     departmentGroup = 'group_kids';
 
     if (hasWord(text, /\b(baby|infant|newborn|rompers?|onesies?)\b/i)) {
