@@ -90,6 +90,8 @@ export default async function MultiVendorMarketplaceHomePage() {
     name: SEO_CONSTANTS.SITE_NAME,
     url: SEO_CONSTANTS.SITE_URL,
     description: SEO_CONSTANTS.DEFAULT_DESCRIPTION,
+    logo: SEO_CONSTANTS.ORGANIZATION.LOGO,
+    image: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
     currenciesAccepted: 'INR',
     paymentAccepted: 'UPI, Credit Card, Debit Card, Net Banking, Cash on Delivery',
     priceRange: '₹₹',

@@ -24,6 +24,7 @@ export function generateOrganizationSchema(input?: OrganizationSchemaInput) {
       '@type': 'ImageObject',
       url: logo,
     },
+    image: SEO_CONSTANTS.DEFAULT_OG_IMAGE,
     contactPoint: [
       {
         '@type': 'ContactPoint',
