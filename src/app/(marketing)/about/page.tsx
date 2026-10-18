@@ -6,7 +6,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: `About Us | ${SEO_CONSTANTS.SITE_NAME}`,
+  title: 'About Us',
   description:
     'Learn about JiivaaKart — a fashion marketplace connecting customers across India with verified local clothing stores, designer boutiques, and regional fashion creators.',
   alternates: {

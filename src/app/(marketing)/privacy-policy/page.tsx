@@ -6,7 +6,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: `Privacy Policy | ${SEO_CONSTANTS.SITE_NAME}`,
+  title: 'Privacy Policy',
   description:
     'Comprehensive Privacy Policy of JiivaaKart multi-vendor marketplace in compliance with the Digital Personal Data Protection (DPDP) Act 2023 and Information Technology Act 2000.',
   alternates: {

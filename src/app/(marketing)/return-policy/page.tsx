@@ -6,7 +6,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: `Return, Replacement & Refund Policy | ${SEO_CONSTANTS.SITE_NAME}`,
+  title: 'Return, Replacement & Refund Policy',
   description:
     '3-Day hassle-free return and 7-day size replacement policy for JiivaaKart multi-vendor fashion marketplace orders across India.',
   alternates: {

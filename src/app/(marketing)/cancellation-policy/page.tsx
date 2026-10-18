@@ -6,7 +6,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: `Order Cancellation Policy | ${SEO_CONSTANTS.SITE_NAME}`,
+  title: 'Order Cancellation Policy',
   description:
     'Guidelines, timelines, and refund procedures for order cancellations before and after dispatch on JiivaaKart.',
   alternates: {

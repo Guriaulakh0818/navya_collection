@@ -6,7 +6,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { AEO_FACTS, generateFaqSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: `Frequently Asked Questions (FAQ) | ${SEO_CONSTANTS.SITE_NAME}`,
+  title: 'Frequently Asked Questions (FAQ)',
   description:
     'Find clear, factual answers about shopping, local boutiques, orders, payments, shipping, returns, and seller registration on JiivaaKart.',
   alternates: {

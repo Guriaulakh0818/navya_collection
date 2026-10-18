@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: `Contact Us | ${SEO_CONSTANTS.SITE_NAME}`,
+  title: 'Contact Us',
   description:
     'Get in touch with JiivaaKart customer support for order assistance, shipping inquiries, and boutique partner onboarding.',
   alternates: {

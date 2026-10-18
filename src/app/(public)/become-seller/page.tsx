@@ -4,7 +4,7 @@ import { BecomeSellerContent } from '@/frontend/features/seller/components/Becom
 import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: `Become a Seller | ${SEO_CONSTANTS.SITE_NAME}`,
+  title: 'Become a Seller',
   description:
     'Join JiivaaKart as a boutique partner or fashion creator. Showcase your clothing products to customers across India with integrated order and shipping management.',
   alternates: {

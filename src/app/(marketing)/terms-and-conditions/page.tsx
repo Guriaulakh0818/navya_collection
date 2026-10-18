@@ -6,7 +6,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: `Terms & Conditions | ${SEO_CONSTANTS.SITE_NAME}`,
+  title: 'Terms & Conditions',
   description:
     'Terms of Use and Conditions governing the JiivaaKart multi-vendor fashion marketplace for buyers and merchant sellers.',
   alternates: {

@@ -6,7 +6,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: `Shipping Policy & Delivery Information | ${SEO_CONSTANTS.SITE_NAME}`,
+  title: 'Shipping Policy & Delivery Information',
   description:
     'Shipping rates, delivery timelines, multi-seller fulfillment, and tracking information for JiivaaKart marketplace orders across India.',
   alternates: {

@@ -15,7 +15,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
 export const metadata: Metadata = {
-  title: `Seller Marketplace Agreement & Terms | ${SEO_CONSTANTS.SITE_NAME}`,
+  title: 'Seller Marketplace Agreement & Terms',
   description:
     'Standard Merchant Terms and Conditions, Commission Slabs, Payout Schedules (T+7), Statutory Tax Deductions (TCS & TDS), and Seller Responsibilities on JiivaaKart.',
   alternates: {
