@@ -678,6 +678,12 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   const handleAutoDetectCategories = () => {
     if (!formData.name.trim()) {
       showToast('Please enter a Product Name first to auto-detect categories.', 'error');
+      if (typeof document !== 'undefined') {
+        const titleInput = document.querySelector<HTMLInputElement>(
+          'input[placeholder*="Royal Blue"]',
+        );
+        titleInput?.focus();
+      }
       return;
     }
     const res = autoCategorizeProduct({
@@ -692,16 +698,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     // 1. Assign auto-detected categories
     setSelectedCategoryIds(res.categoryIds);
     if (res.categoryIds.length > 0) {
-      setFormData((fd) => ({ ...fd, categoryId: res.categoryIds[0] }));
+      setFormData((fd) => ({ ...fd, categoryId: res.primaryCategoryId || res.categoryIds[0] }));
     }
 
     // 2. Synchronize Department Tab in Category Mapping Browser so seller sees checked items
-    if (res.departmentGroup) {
-      setSelectedMainCat(res.departmentGroup);
-      const found = CATEGORY_TAXONOMY.find((c) => c.id === res.departmentGroup);
-      if (found && found.sections.length > 0) {
-        setSelectedSectionId(found.sections[0].id);
-      }
+    const deptGroup = res.departmentGroup || 'group_women';
+    setSelectedMainCat(deptGroup);
+    const found = CATEGORY_TAXONOMY.find((c) => c.id === deptGroup);
+    if (found && found.sections.length > 0) {
+      setSelectedSectionId(found.sections[0].id);
     }
 
     // 3. Synchronize Category Engine: Department, Subcategory, Product Type & Attribute Template
@@ -2247,14 +2252,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               </div>
             )}
 
-          {formData.compareAtPrice && Number(formData.price) > Number(formData.compareAtPrice) && (
-            <div className="col-span-full bg-rose-50 border border-rose-300 p-3 rounded-xl text-rose-800 text-xs font-semibold flex items-center gap-2">
-              <span className="text-rose-600 font-black">⚠️ Pricing Error:</span>
-              <span>
-                Selling price (₹{formData.price}) cannot exceed MRP (₹{formData.compareAtPrice}).
-              </span>
-            </div>
-          )}
+          {Number(formData.compareAtPrice) > 0 &&
+            Number(formData.price) > Number(formData.compareAtPrice) && (
+              <div className="col-span-full bg-rose-50 border border-rose-300 p-3 rounded-xl text-rose-800 text-xs font-semibold flex items-center gap-2">
+                <span className="text-rose-600 font-black">⚠️ Pricing Error:</span>
+                <span>
+                  Selling price (₹{formData.price}) cannot exceed MRP (₹{formData.compareAtPrice}).
+                </span>
+              </div>
+            )}
 
           <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
             <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">
