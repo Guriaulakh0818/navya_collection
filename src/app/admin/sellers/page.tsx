@@ -12,15 +12,15 @@ export const metadata: Metadata = {
 export default function AdminSellersPage() {
   return (
     <div className="p-6 md:p-8 space-y-8 bg-slate-50 min-h-screen text-slate-900">
-      {/* Top Banner Header - Navy & Amber Theme */}
+      {/* Top Banner Header - JiivaaKart Navy & Orange Theme */}
       <div className="bg-navy text-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-widest mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange/10 border border-orange/20 text-orange text-xs font-bold uppercase tracking-widest mb-2">
             <Sparkles className="w-3.5 h-3.5" />
             Marketplace Governance
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-            <Building2 className="w-7 h-7 text-amber-400" />
+            <Building2 className="w-7 h-7 text-orange" />
             Seller Approvals & Merchant Management
           </h1>
           <p className="text-xs md:text-sm text-slate-300 font-medium mt-1">

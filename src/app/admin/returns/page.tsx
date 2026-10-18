@@ -168,17 +168,17 @@ interface ReturnRequestData {
 }
 
 const STATUS_BADGES: Record<string, { bg: string; text: string; border: string }> = {
-  REQUESTED: { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-300' },
-  UNDER_REVIEW: { bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-300' },
+  REQUESTED: { bg: 'bg-orange/10', text: 'text-orange', border: 'border-orange/30' },
+  UNDER_REVIEW: { bg: 'bg-navy/10', text: 'text-navy', border: 'border-navy/30' },
   APPROVED: { bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-300' },
   REJECTED: { bg: 'bg-rose-50', text: 'text-rose-800', border: 'border-rose-300' },
-  PICKUP_PENDING: { bg: 'bg-purple-50', text: 'text-purple-800', border: 'border-purple-300' },
-  IN_TRANSIT: { bg: 'bg-indigo-50', text: 'text-indigo-800', border: 'border-indigo-300' },
+  PICKUP_PENDING: { bg: 'bg-navy/10', text: 'text-navy', border: 'border-navy/30' },
+  IN_TRANSIT: { bg: 'bg-navy/15', text: 'text-navy', border: 'border-navy/40' },
   RECEIVED: { bg: 'bg-teal-50', text: 'text-teal-800', border: 'border-teal-300' },
   VERIFIED: { bg: 'bg-cyan-50', text: 'text-cyan-800', border: 'border-cyan-300' },
-  REFUND_PENDING: { bg: 'bg-orange-50', text: 'text-orange-800', border: 'border-orange-300' },
+  REFUND_PENDING: { bg: 'bg-orange/10', text: 'text-orange', border: 'border-orange/30' },
   REFUNDED: { bg: 'bg-emerald-100', text: 'text-emerald-900', border: 'border-emerald-400' },
-  REPLACEMENT_PENDING: { bg: 'bg-amber-100', text: 'text-amber-900', border: 'border-amber-400' },
+  REPLACEMENT_PENDING: { bg: 'bg-orange/15', text: 'text-orange', border: 'border-orange/40' },
   REPLACED: { bg: 'bg-emerald-100', text: 'text-emerald-900', border: 'border-emerald-400' },
   CLOSED: { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-300' },
   CANCELLED: { bg: 'bg-gray-100', text: 'text-gray-500', border: 'border-gray-200' },
@@ -327,15 +327,15 @@ export default function AdminReturnsPage() {
           <p className="mt-1 text-xs text-gray-500">Across all marketplace sellers</p>
         </Card>
 
-        <Card className="border border-amber-200 bg-amber-50/50 p-5 shadow-sm">
+        <Card className="border border-orange/20 bg-orange/5 p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-amber-800">
+            <span className="text-xs font-semibold uppercase tracking-wider text-orange">
               Action Required
             </span>
-            <Clock className="h-5 w-5 text-amber-600" />
+            <Clock className="h-5 w-5 text-orange" />
           </div>
-          <p className="mt-2 text-2xl font-bold text-amber-900">{pendingCount}</p>
-          <p className="mt-1 text-xs text-amber-700">Requested or Under Review</p>
+          <p className="mt-2 text-2xl font-bold text-navy font-mono">{pendingCount}</p>
+          <p className="mt-1 text-xs text-orange/90">Requested or Under Review</p>
         </Card>
 
         <Card className="border border-emerald-200 bg-emerald-50/50 p-5 shadow-sm">
@@ -345,19 +345,21 @@ export default function AdminReturnsPage() {
             </span>
             <CheckCircle2 className="h-5 w-5 text-emerald-600" />
           </div>
-          <p className="mt-2 text-2xl font-bold text-emerald-900">{approvedCount}</p>
+          <p className="mt-2 text-2xl font-bold text-emerald-900 font-mono">{approvedCount}</p>
           <p className="mt-1 text-xs text-emerald-700">Settlements adjusted or on hold</p>
         </Card>
 
-        <Card className="border border-purple-200 bg-purple-50/50 p-5 shadow-sm">
+        <Card className="border border-navy/20 bg-navy/5 p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-purple-800">
+            <span className="text-xs font-semibold uppercase tracking-wider text-navy">
               Return Shipping Deductions
             </span>
-            <Truck className="h-5 w-5 text-purple-600" />
+            <Truck className="h-5 w-5 text-navy" />
           </div>
-          <p className="mt-2 text-2xl font-bold text-purple-900">{formatPrice(totalDeductions)}</p>
-          <p className="mt-1 text-xs text-purple-700">Actual Forward + Reverse Shipping</p>
+          <p className="mt-2 text-2xl font-bold text-navy font-mono">
+            {formatPrice(totalDeductions)}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">Actual Forward + Reverse Shipping</p>
         </Card>
       </div>
 
@@ -383,7 +385,7 @@ export default function AdminReturnsPage() {
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
               aria-label="Filter return requests by type"
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm focus:border-amber-500 focus:outline-none"
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm focus:border-orange focus:outline-none"
             >
               <option value="ALL">All Types</option>
               <option value="RETURN">Return Only</option>
@@ -397,7 +399,7 @@ export default function AdminReturnsPage() {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               aria-label="Filter return requests by status"
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm focus:border-amber-500 focus:outline-none"
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm focus:border-orange focus:outline-none"
             >
               <option value="ALL">All Statuses</option>
               <option value="REQUESTED">REQUESTED</option>
@@ -471,8 +473,8 @@ export default function AdminReturnsPage() {
                           <span
                             className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold ${
                               req.type === 'RETURN'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-blue-100 text-blue-800'
+                                ? 'bg-orange/10 text-orange'
+                                : 'bg-navy/10 text-navy'
                             }`}
                           >
                             {req.type}
@@ -536,7 +538,7 @@ export default function AdminReturnsPage() {
                           Fwd: {formatPrice(req.forwardShippingCost || 0)} + Rev:{' '}
                           {formatPrice(req.reverseShippingCost || 0)}
                         </div>
-                        <div className="text-[10px] text-purple-700 font-medium">
+                        <div className="text-[10px] text-navy font-semibold">
                           Seller Liability (Section 7)
                         </div>
                       </td>
@@ -655,7 +657,7 @@ export default function AdminReturnsPage() {
               {/* Seller & Settlement Liability */}
               <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4 space-y-2">
                 <h3 className="font-bold text-gray-900 flex items-center gap-1.5">
-                  <Shield className="h-4 w-4 text-amber-600" />
+                  <Shield className="h-4 w-4 text-orange" />
                   Seller & Settlement Safety
                 </h3>
                 <div className="grid grid-cols-2 gap-2 text-gray-600">
@@ -669,7 +671,7 @@ export default function AdminReturnsPage() {
                   </div>
                   <div>
                     <span className="font-semibold text-gray-700">Settlement:</span>{' '}
-                    <span className="font-bold text-amber-800">
+                    <span className="font-bold text-orange">
                       {selectedRequest.vendorOrder?.settlement?.status || 'PENDING'}
                     </span>
                   </div>
@@ -678,32 +680,32 @@ export default function AdminReturnsPage() {
                     {formatPrice(selectedRequest.vendorOrder?.settlement?.grossProductValue || 0)}
                   </div>
                 </div>
-                <div className="rounded border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-900">
-                  <strong>Return Rule (Section 1, 2, 7):</strong> Commission is 100% reversed.
-                  Seller bears actual forward + reverse shipping cost.
+                <div className="rounded border border-orange/20 bg-orange/5 p-2 text-[11px] text-navy">
+                  <strong className="text-orange">Return Rule (Section 1, 2, 7):</strong> Commission
+                  is 100% reversed. Seller bears actual forward + reverse shipping cost.
                 </div>
               </div>
             </div>
 
             {/* Transparent Financial Breakdown (Section 1, 2, 6, 15) */}
-            <div className="rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 space-y-3">
-              <div className="flex items-center justify-between border-b border-indigo-200/60 pb-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-950 flex items-center gap-1.5">
-                  <FileText className="h-4 w-4 text-indigo-600" />
+            <div className="rounded-xl border border-navy/20 bg-navy/5 p-4 space-y-3">
+              <div className="flex items-center justify-between border-b border-navy/15 pb-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-navy flex items-center gap-1.5">
+                  <FileText className="h-4 w-4 text-navy" />
                   Final Approved Return Financial Breakdown (Section 15)
                 </h3>
-                <span className="text-[10px] font-semibold text-indigo-700">
+                <span className="text-[10px] font-semibold text-slate-500">
                   Idempotent & Auditable Ledger Entries
                 </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                 {/* 1. Customer Refund */}
-                <div className="rounded-lg bg-white border border-indigo-100 p-2.5 space-y-1">
+                <div className="rounded-lg bg-white border border-slate-200 p-2.5 space-y-1">
                   <div className="text-[10px] font-semibold text-gray-500 uppercase">
                     Customer Refund
                   </div>
-                  <div className="text-sm font-black text-emerald-700">
+                  <div className="text-sm font-black text-emerald-700 font-mono">
                     {formatPrice(
                       selectedRequest.customerRefund?.amount || selectedRequest.refundAmount || 0,
                     )}
@@ -724,7 +726,7 @@ export default function AdminReturnsPage() {
                 </div>
 
                 {/* 2. JiivaaKart Platform Commission */}
-                <div className="rounded-lg bg-white border border-indigo-100 p-2.5 space-y-1">
+                <div className="rounded-lg bg-white border border-slate-200 p-2.5 space-y-1">
                   <div className="text-[10px] font-semibold text-gray-500 uppercase">
                     Commission Reversal
                   </div>
@@ -749,13 +751,13 @@ export default function AdminReturnsPage() {
                       )}
                     </span>
                   </div>
-                  <div className="text-[10px] text-indigo-700 font-medium">
+                  <div className="text-[10px] text-navy font-semibold">
                     JiivaaKart retains: ₹0.00 (100% reversed)
                   </div>
                 </div>
 
                 {/* 3. Actual Shipping Liability */}
-                <div className="rounded-lg bg-white border border-indigo-100 p-2.5 space-y-1">
+                <div className="rounded-lg bg-white border border-slate-200 p-2.5 space-y-1">
                   <div className="text-[10px] font-semibold text-gray-500 uppercase">
                     Return Shipping Liability
                   </div>
@@ -771,9 +773,9 @@ export default function AdminReturnsPage() {
                       {formatPrice(selectedRequest.reverseShippingCost ?? reverseCost ?? 0)}
                     </span>
                   </div>
-                  <div className="flex items-baseline justify-between font-bold text-purple-950 pt-0.5 border-t border-gray-100">
+                  <div className="flex items-baseline justify-between font-bold text-navy pt-0.5 border-t border-gray-100">
                     <span>Liability:</span>
-                    <span>
+                    <span className="text-rose-600">
                       {formatPrice(
                         selectedRequest.returnShippingDeduction ||
                           (selectedRequest.forwardShippingCost ?? forwardCost ?? 0) +
@@ -784,13 +786,13 @@ export default function AdminReturnsPage() {
                 </div>
 
                 {/* 4. Seller Settlement Impact / Final Adjustment */}
-                <div className="rounded-lg bg-white border border-indigo-100 p-2.5 space-y-1">
+                <div className="rounded-lg bg-white border border-slate-200 p-2.5 space-y-1">
                   <div className="text-[10px] font-semibold text-gray-500 uppercase">
                     Seller Final Impact
                   </div>
                   <div className="text-[11px] text-gray-600">
                     Settlement:{' '}
-                    <strong className="text-amber-800">
+                    <strong className="text-orange">
                       {selectedRequest.vendorOrder?.settlement?.status || 'PENDING'}
                     </strong>
                   </div>
@@ -939,13 +941,13 @@ export default function AdminReturnsPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-purple-900 mb-1">
+                  <label className="block font-semibold text-navy mb-1">
                     Total Return Deduction
                   </label>
-                  <div className="h-9 flex items-center px-3 rounded-md bg-purple-50 border border-purple-200 font-bold text-purple-950">
+                  <div className="h-9 flex items-center px-3 rounded-md bg-navy/5 border border-navy/20 font-bold text-navy font-mono">
                     {formatPrice((Number(forwardCost) || 0) + (Number(reverseCost) || 0))}
                   </div>
-                  <p className="mt-1 text-[10px] text-purple-700">
+                  <p className="mt-1 text-[10px] text-slate-500">
                     Forward + Reverse deducted from seller
                   </p>
                 </div>
@@ -958,7 +960,7 @@ export default function AdminReturnsPage() {
                     value={targetStatus}
                     onChange={(e) => setTargetStatus(e.target.value)}
                     aria-label="Update return request status"
-                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-800 shadow-sm focus:border-amber-500 focus:outline-none"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-800 shadow-sm focus:border-orange focus:outline-none"
                   >
                     <option value="REQUESTED">REQUESTED</option>
                     <option value="UNDER_REVIEW">UNDER_REVIEW</option>
@@ -998,7 +1000,7 @@ export default function AdminReturnsPage() {
                   onChange={(e) => setAdminNote(e.target.value)}
                   placeholder="Provide audit rationale for this decision..."
                   rows={2}
-                  className="w-full rounded-md border border-gray-300 bg-white p-2.5 text-xs text-gray-900 shadow-sm focus:border-amber-500 focus:outline-none"
+                  className="w-full rounded-md border border-gray-300 bg-white p-2.5 text-xs text-gray-900 shadow-sm focus:border-orange focus:outline-none"
                 />
               </div>
 

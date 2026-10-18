@@ -56,15 +56,15 @@ interface RealOrderData {
 
 const STATUS_STYLE: Record<string, string> = {
   PENDING:
-    'rounded-full bg-amber-50 text-amber-800 border border-amber-300 px-3 py-1 text-[11px] font-extrabold whitespace-nowrap',
+    'rounded-full bg-orange/10 text-orange border border-orange/30 px-3 py-1 text-[11px] font-extrabold whitespace-nowrap',
   CONFIRMED:
     'rounded-full bg-blue-50 text-blue-800 border border-blue-300 px-3 py-1 text-[11px] font-extrabold whitespace-nowrap',
   PROCESSING:
-    'rounded-full bg-amber-50 text-amber-900 border border-amber-400 px-3 py-1 text-[11px] font-extrabold whitespace-nowrap',
+    'rounded-full bg-navy/10 text-navy border border-navy/30 px-3 py-1 text-[11px] font-extrabold whitespace-nowrap',
   SHIPPED:
     'rounded-full bg-sky-50 text-sky-800 border border-sky-300 px-3 py-1 text-[11px] font-extrabold whitespace-nowrap',
   OUT_FOR_DELIVERY:
-    'rounded-full bg-indigo-50 text-indigo-800 border border-indigo-300 px-3 py-1 text-[11px] font-extrabold whitespace-nowrap',
+    'rounded-full bg-navy/5 text-navy border border-navy/20 px-3 py-1 text-[11px] font-extrabold whitespace-nowrap',
   DELIVERED:
     'rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 px-3 py-1 text-[11px] font-extrabold whitespace-nowrap',
   CANCELLED:
@@ -168,14 +168,14 @@ export default function AdminOrdersPage() {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Header Banner - Navy & Gold Luxury Theme */}
+      {/* Header Banner - Navy & Orange Theme */}
       <div className="bg-navy text-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest block mb-1">
+          <span className="text-[10px] font-extrabold text-orange uppercase tracking-widest block mb-1">
             Customer Fulfillment Desk
           </span>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <Package className="w-7 h-7 text-amber-400" /> Marketplace Orders Ledger
+            <Package className="w-7 h-7 text-orange" /> Marketplace Orders Ledger
           </h1>
           <p className="text-xs text-slate-300 font-medium mt-1">
             Real-time ledger fetching ALL customer orders placed across all boutique stores from
@@ -185,7 +185,7 @@ export default function AdminOrdersPage() {
 
         <div className="flex items-center gap-4">
           <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 shrink-0 text-right">
-            <span className="text-[10px] uppercase font-bold text-amber-300 block">
+            <span className="text-[10px] uppercase font-bold text-orange block">
               Total Revenue Collected
             </span>
             <span className="text-xl font-extrabold text-white font-mono">
@@ -212,7 +212,7 @@ export default function AdminOrdersPage() {
               placeholder="Search by order #, customer or mobile..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 rounded-xl text-xs bg-slate-50 border-slate-200 focus:bg-white focus:border-amber-500 font-semibold"
+              className="pl-10 rounded-xl text-xs bg-slate-50 border-slate-200 focus:bg-white focus:border-orange font-semibold"
             />
           </div>
 
@@ -273,7 +273,7 @@ export default function AdminOrdersPage() {
               ) : (
                 orders.map((order) => (
                   <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap font-mono font-bold text-amber-700">
+                    <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap font-mono font-bold text-navy">
                       {order.orderNumber}
                       <span className="block text-[10px] text-slate-500 font-sans font-medium">
                         {order.itemCount} item(s)
@@ -318,7 +318,7 @@ export default function AdminOrdersPage() {
                             variant="outline"
                             size="sm"
                             disabled={updatingId === order.id}
-                            className="rounded-xl text-xs font-bold border-amber-300 text-amber-900 bg-amber-50 hover:bg-amber-100 shadow-2xs cursor-pointer"
+                            className="rounded-xl text-xs font-bold border-navy/20 text-navy bg-navy/5 hover:bg-navy/10 shadow-2xs cursor-pointer"
                             onClick={() =>
                               handleUpdateStatus(order.id, NEXT_STATUS[order.orderStatus]!)
                             }

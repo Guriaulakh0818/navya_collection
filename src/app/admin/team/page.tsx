@@ -147,8 +147,8 @@ export default function AdminTeamPage() {
   if (!isOwner && !isLoading) {
     return (
       <div className="p-6 md:p-12 max-w-4xl mx-auto space-y-6">
-        <Card className="p-8 text-center space-y-4 border-amber-200 bg-amber-50/50 rounded-3xl shadow-sm">
-          <ShieldAlert className="w-14 h-14 text-amber-600 mx-auto" />
+        <Card className="p-8 text-center space-y-4 border-orange/20 bg-orange/5 rounded-3xl shadow-sm">
+          <ShieldAlert className="w-14 h-14 text-orange mx-auto" />
           <h2 className="text-2xl font-bold text-navy">Owner Governance Restricted</h2>
           <p className="text-xs md:text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
             Managing admin team members, assigning access roles, and delegating permissions are
@@ -169,7 +169,7 @@ export default function AdminTeamPage() {
       {/* Header Banner */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-navy text-white p-6 sm:p-8 rounded-3xl shadow-xl">
         <div>
-          <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-gold text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-orange text-xs font-bold uppercase tracking-wider mb-2">
             <Users className="h-4 w-4" />
             <span>Store Access Governance</span>
           </div>
@@ -326,7 +326,7 @@ export default function AdminTeamPage() {
 
                       <td className="py-4">
                         {isPrimaryOwner ? (
-                          <span className="px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded-full text-[11px] font-extrabold">
+                          <span className="px-3 py-1 bg-navy/10 text-navy border border-navy/30 rounded-full text-[11px] font-extrabold">
                             👑 OWNER
                           </span>
                         ) : (
@@ -374,7 +374,7 @@ export default function AdminTeamPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="rounded-xl text-[11px] h-7 text-amber-700 border-amber-300 bg-amber-50 hover:bg-amber-100 cursor-pointer font-bold"
+                                className="rounded-xl text-[11px] h-7 text-orange border-orange/30 bg-orange/5 hover:bg-orange/10 cursor-pointer font-bold"
                                 onClick={() => handleUpdateStatus(m.id, 'REJECTED')}
                               >
                                 Revoke Access

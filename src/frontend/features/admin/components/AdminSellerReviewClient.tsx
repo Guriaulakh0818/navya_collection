@@ -171,13 +171,13 @@ export function AdminSellerReviewClient({
         <div>
           <Link
             href="/admin/sellers"
-            className="inline-flex items-center gap-1.5 text-xs text-amber-700 font-bold hover:text-navy hover:underline mb-2 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-orange font-bold hover:text-navy hover:underline mb-2 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Sellers Governance
           </Link>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl md:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-              <Building2 className="w-8 h-8 text-amber-600 shrink-0" />
+              <Building2 className="w-8 h-8 text-navy shrink-0" />
               {shop.name}
             </h1>
             <span
@@ -185,17 +185,17 @@ export function AdminSellerReviewClient({
                 shop.status === 'APPROVED'
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                   : shop.status === 'PENDING_VERIFICATION'
-                    ? 'bg-amber-50 text-amber-800 border-amber-300 animate-pulse'
+                    ? 'bg-orange/10 text-orange border-orange/30 animate-pulse'
                     : shop.status === 'REJECTED'
                       ? 'bg-rose-50 text-rose-800 border-rose-300'
-                      : 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                      : 'bg-slate-100 text-slate-800 border-slate-300'
               }`}
             >
               {shop.status}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1 font-mono">
-            Shop ID: <span className="text-amber-800 font-bold">{shop.id}</span> | Submitted:{' '}
+            Shop ID: <span className="text-navy font-bold">{shop.id}</span> | Submitted:{' '}
             {submissionTime}
           </p>
         </div>
@@ -280,8 +280,8 @@ export function AdminSellerReviewClient({
       )}
 
       {actionMode === 'request_changes' && (
-        <div className="p-6 bg-indigo-50/80 border border-indigo-200 rounded-3xl space-y-4 shadow-sm">
-          <h3 className="text-sm font-extrabold text-indigo-900 uppercase tracking-wider">
+        <div className="p-6 bg-orange/5 border border-orange/20 rounded-3xl space-y-4 shadow-sm">
+          <h3 className="text-sm font-extrabold text-orange uppercase tracking-wider">
             Request Changes / Mark Under Review
           </h3>
           <div>
@@ -290,7 +290,7 @@ export function AdminSellerReviewClient({
               placeholder="Specify required changes or document clarifications for the seller..."
               value={changeNotes}
               onChange={(e) => setChangeNotes(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-900 font-medium focus:border-indigo-500 focus:outline-none shadow-xs"
+              className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-900 font-medium focus:border-orange focus:outline-none shadow-xs"
             />
           </div>
           <div className="flex gap-2 justify-end pt-2">
@@ -347,8 +347,8 @@ export function AdminSellerReviewClient({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Seller & Owner Profile */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-sm">
-          <h2 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-            <User className="w-4 h-4 text-amber-600" />
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+            <User className="w-4 h-4 text-orange" />
             Seller & Owner Details
           </h2>
           <div className="space-y-3 text-xs">
@@ -358,15 +358,14 @@ export function AdminSellerReviewClient({
             </div>
             <div className="flex justify-between border-b border-slate-100 pb-2">
               <span className="text-slate-500 font-medium">Email Address:</span>
-              <span className="font-bold text-amber-800 flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-amber-600" /> {owner.email}
+              <span className="font-bold text-navy flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5 text-navy" /> {owner.email}
               </span>
             </div>
             <div className="flex justify-between border-b border-slate-100 pb-2">
               <span className="text-slate-500 font-medium">Contact Mobile:</span>
               <span className="font-bold text-slate-900 flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-amber-600" />{' '}
-                {owner.mobile || shop.phone || 'N/A'}
+                <Phone className="w-3.5 h-3.5 text-navy" /> {owner.mobile || shop.phone || 'N/A'}
               </span>
             </div>
             <div className="flex justify-between border-b border-slate-100 pb-2">
@@ -380,8 +379,8 @@ export function AdminSellerReviewClient({
 
         {/* Business & Tax Details */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-sm">
-          <h2 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-amber-600" />
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+            <FileText className="w-4 h-4 text-orange" />
             Business & Tax Registrations
           </h2>
           <div className="space-y-3 text-xs">
@@ -391,13 +390,13 @@ export function AdminSellerReviewClient({
             </div>
             <div className="flex justify-between border-b border-slate-100 pb-2">
               <span className="text-slate-500 font-medium">PAN Number:</span>
-              <span className="font-mono font-extrabold text-amber-800">
+              <span className="font-mono font-extrabold text-navy">
                 {shop.panNumber || profile.panNumber || 'N/A'}
               </span>
             </div>
             <div className="flex justify-between border-b border-slate-100 pb-2">
               <span className="text-slate-500 font-medium">GSTIN Number:</span>
-              <span className="font-mono font-extrabold text-amber-800">
+              <span className="font-mono font-extrabold text-navy">
                 {shop.gstin || profile.gstin || 'N/A'}
               </span>
             </div>
@@ -412,8 +411,8 @@ export function AdminSellerReviewClient({
 
         {/* Pickup Address */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-sm">
-          <h2 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-amber-600" />
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-orange" />
             Pickup Warehouse Address
           </h2>
           <div className="space-y-2 text-xs">
@@ -435,7 +434,7 @@ export function AdminSellerReviewClient({
               </div>
               <div>
                 <span className="text-slate-500 block font-medium">Pincode</span>
-                <span className="font-mono font-extrabold text-amber-800">
+                <span className="font-mono font-extrabold text-navy">
                   {shop.pincode || profile.pincode || 'N/A'}
                 </span>
               </div>
@@ -445,8 +444,8 @@ export function AdminSellerReviewClient({
 
         {/* Settlement Bank Details */}
         <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-sm">
-          <h2 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-            <Wallet className="w-4 h-4 text-amber-600" />
+          <h2 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+            <Wallet className="w-4 h-4 text-orange" />
             Settlement Bank Account & UPI
           </h2>
           <div className="space-y-3 text-xs">
@@ -465,7 +464,7 @@ export function AdminSellerReviewClient({
             </div>
             <div className="flex justify-between border-b border-slate-100 pb-2">
               <span className="text-slate-500 font-medium">IFSC Code & UPI:</span>
-              <span className="font-mono font-extrabold text-amber-800">
+              <span className="font-mono font-extrabold text-navy">
                 {shop.bankIfscCode || profile.bankIfscCode || 'N/A'} | {profile.upiId || 'N/A'}
               </span>
             </div>
@@ -475,8 +474,8 @@ export function AdminSellerReviewClient({
 
       {/* UPLOADED DOCUMENTS SECTION */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-4 shadow-sm">
-        <h2 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-          <FileCheck className="w-4 h-4 text-amber-600" />
+        <h2 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+          <FileCheck className="w-4 h-4 text-orange" />
           Uploaded Documents & Verification Proofs ({documents.length})
         </h2>
 
@@ -495,7 +494,7 @@ export function AdminSellerReviewClient({
                   <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider block">
                     {doc.documentType}
                   </span>
-                  <span className="text-[10px] text-amber-700 font-bold block mt-0.5">
+                  <span className="text-[10px] text-navy font-bold block mt-0.5">
                     Status: {doc.status}
                   </span>
                 </div>
@@ -503,7 +502,7 @@ export function AdminSellerReviewClient({
                   href={doc.fileUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all shadow-xs"
+                  className="w-full py-2 bg-navy/5 hover:bg-navy/10 text-navy border border-navy/20 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all shadow-xs"
                 >
                   Inspect Document <ExternalLink className="w-3.5 h-3.5" />
                 </a>

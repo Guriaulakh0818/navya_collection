@@ -175,15 +175,15 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
         </div>
       )}
 
-      {/* HEADER BANNER - Deep Navy & Amber Theme */}
-      <div className="relative overflow-hidden rounded-3xl bg-navy border border-slate-200 p-6 md:p-8 text-white shadow-lg">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+      {/* HEADER BANNER - Royal Navy & Sunset Orange Theme */}
+      <div className="relative overflow-hidden rounded-3xl bg-navy border border-navy-800 p-6 md:p-8 text-white shadow-lg">
+        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 rounded-full bg-orange/10 blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-3">
-              <span className="px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Navya Governance Suite
+              <span className="px-3 py-1 bg-white/10 text-white border border-white/20 rounded-full text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 backdrop-blur-sm">
+                <ShieldCheck className="w-3.5 h-3.5 text-orange" />
+                JiivaaKart Governance Suite
               </span>
               <span className="flex items-center gap-1.5 text-xs text-slate-300 font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -193,7 +193,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight mt-3 text-white">
               Executive Governance Command Center
             </h1>
-            <p className="text-sm text-slate-300 mt-1 max-w-2xl font-medium">
+            <p className="text-sm text-slate-200 mt-1 max-w-2xl font-medium">
               Monitor multi-vendor marketplace revenue, seller onboarding approvals, catalog quality
               moderation, and financial payouts in real time.
             </p>
@@ -205,16 +205,14 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
               disabled={isRefreshing}
               className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold transition-all flex items-center gap-2 backdrop-blur-md cursor-pointer disabled:opacity-50"
             >
-              <RefreshCw
-                className={`w-4 h-4 text-amber-400 ${isRefreshing ? 'animate-spin' : ''}`}
-              />
+              <RefreshCw className={`w-4 h-4 text-orange ${isRefreshing ? 'animate-spin' : ''}`} />
               <span>{isRefreshing ? 'Updating...' : 'Sync Data'}</span>
             </button>
 
             <Link
               href="/"
               target="_blank"
-              className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-xs flex items-center gap-2"
+              className="px-4 py-2.5 bg-orange hover:bg-orange-600 text-white font-extrabold text-xs rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer active:scale-95"
             >
               <span>View Storefront</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -225,16 +223,16 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
 
       {/* URGENT GOVERNANCE ALERT BAR */}
       {(data.stats.pendingSellersCount > 0 || data.stats.pendingProductsCount > 0) && (
-        <div className="p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="p-5 bg-orange/5 border border-orange/20 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl">
+            <div className="p-2.5 bg-orange/15 text-orange rounded-xl">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-extrabold text-amber-900 dark:text-amber-300">
+              <h4 className="text-sm font-extrabold text-navy">
                 Action Required: Pending Approvals in Queue
               </h4>
-              <p className="text-xs text-amber-800/80 dark:text-amber-400/80 mt-0.5">
+              <p className="text-xs text-orange font-medium mt-0.5">
                 {data.stats.pendingSellersCount > 0 &&
                   `${data.stats.pendingSellersCount} Seller Application(s)`}
                 {data.stats.pendingSellersCount > 0 &&
@@ -248,7 +246,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           </div>
           <button
             onClick={() => setActiveTab('moderation')}
-            className="px-4 py-2 bg-amber-500 text-slate-950 font-extrabold text-xs rounded-xl hover:bg-amber-400 transition-all shrink-0"
+            className="px-4 py-2 bg-orange text-white font-extrabold text-xs rounded-xl hover:bg-orange-600 shadow-sm transition-all shrink-0 cursor-pointer active:scale-95"
           >
             Review Now →
           </button>
@@ -258,7 +256,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
       {/* 6 TOP KPI METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {/* Gross GMV */}
-        <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all">
+        <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Gross GMV
@@ -268,7 +266,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
             </div>
           </div>
           <div>
-            <p className="text-2xl font-black text-slate-900">
+            <p className="text-2xl font-black text-navy font-mono">
               ₹{Number(data?.stats?.totalRevenue || 0).toLocaleString('en-IN')}
             </p>
             <p className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1 mt-1">
@@ -278,40 +276,40 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
         </div>
 
         {/* Net Commission */}
-        <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all">
+        <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Net Commission
             </span>
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+            <div className="p-2 bg-navy/5 text-navy rounded-xl">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <p className="text-2xl font-black text-slate-900">
+            <p className="text-2xl font-black text-navy font-mono">
               ₹{Number(data?.stats?.adminCommissionEarned || 0).toLocaleString('en-IN')}
             </p>
-            <p className="text-[11px] font-semibold text-indigo-600 mt-1">Platform Revenue</p>
+            <p className="text-[11px] font-semibold text-slate-500 mt-1">Platform Revenue</p>
           </div>
         </div>
 
         {/* Pending Sellers */}
-        <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-amber-300 transition-all">
+        <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Seller Queue
             </span>
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+            <div className="p-2 bg-orange/10 text-orange rounded-xl">
               <Store className="w-4 h-4" />
             </div>
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <p className="text-2xl font-black text-slate-900">
+              <p className="text-2xl font-black text-navy font-mono">
                 {Number(data?.stats?.pendingSellersCount || 0)}
               </p>
               {Number(data?.stats?.pendingSellersCount || 0) > 0 && (
-                <span className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-[10px] font-extrabold">
+                <span className="px-2 py-0.5 bg-orange/10 text-orange border border-orange/20 rounded-full text-[10px] font-extrabold">
                   Action Needed
                 </span>
               )}
@@ -321,22 +319,22 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
         </div>
 
         {/* Pending Products */}
-        <div className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-amber-300 transition-all">
+        <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Product Queue
             </span>
-            <div className="p-2 bg-sky-50 text-sky-600 rounded-xl">
+            <div className="p-2 bg-navy/5 text-navy rounded-xl">
               <PackageCheck className="w-4 h-4" />
             </div>
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <p className="text-2xl font-black text-slate-900">
+              <p className="text-2xl font-black text-navy font-mono">
                 {Number(data?.stats?.pendingProductsCount || 0)}
               </p>
               {Number(data?.stats?.pendingProductsCount || 0) > 0 && (
-                <span className="px-2 py-0.5 bg-sky-100 text-sky-800 rounded-full text-[10px] font-extrabold">
+                <span className="px-2 py-0.5 bg-navy/10 text-navy border border-navy/20 rounded-full text-[10px] font-extrabold">
                   Review
                 </span>
               )}
@@ -348,21 +346,21 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
         {/* Active Boutiques */}
         <Link
           href="/admin/shops"
-          className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all cursor-pointer"
+          className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Active Stores
             </span>
-            <div className="p-2 bg-purple-50 text-purple-600 rounded-xl">
+            <div className="p-2 bg-navy/5 text-navy rounded-xl group-hover:bg-orange/10 group-hover:text-orange transition-colors">
               <Building2 className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <p className="text-2xl font-black text-slate-900">
+            <p className="text-2xl font-black text-navy font-mono">
               {Number(data?.stats?.activeShopsCount || 0)}
             </p>
-            <p className="text-[11px] font-semibold text-purple-600 mt-1">
+            <p className="text-[11px] font-bold text-navy group-hover:text-orange transition-colors mt-1">
               View All Shops ({Number(data?.stats?.activeShopsCount || 0)}) →
             </p>
           </div>
@@ -371,21 +369,23 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
         {/* Registered Customers */}
         <Link
           href="/admin/users"
-          className="p-5 bg-white border border-slate-200/80 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all cursor-pointer"
+          className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-3 relative overflow-hidden group hover:border-slate-300 transition-all cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Registered Users
             </span>
-            <div className="p-2 bg-rose-50 text-rose-600 rounded-xl">
+            <div className="p-2 bg-navy/5 text-navy rounded-xl group-hover:bg-orange/10 group-hover:text-orange transition-colors">
               <Users className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <p className="text-2xl font-black text-slate-900">
+            <p className="text-2xl font-black text-navy font-mono">
               {Number(data?.stats?.totalCustomersCount || 0)}
             </p>
-            <p className="text-[11px] font-semibold text-rose-600 mt-1">View Users Directory →</p>
+            <p className="text-[11px] font-bold text-navy group-hover:text-orange transition-colors mt-1">
+              View Users Directory →
+            </p>
           </div>
         </Link>
       </div>
@@ -396,14 +396,14 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           onClick={() => setActiveTab('moderation')}
           className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'moderation'
-              ? 'border-amber-500 text-amber-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-orange text-orange font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-navy'
           }`}
         >
           <ShieldAlert className="w-4 h-4 shrink-0" />
           <span>Moderation Queue</span>
           {(data.stats.pendingSellersCount > 0 || data.stats.pendingProductsCount > 0) && (
-            <span className="px-2 py-0.5 bg-amber-500 text-slate-950 text-[10px] font-extrabold rounded-full">
+            <span className="px-2 py-0.5 bg-orange text-white text-[10px] font-extrabold rounded-full">
               {data.stats.pendingSellersCount + data.stats.pendingProductsCount}
             </span>
           )}
@@ -413,8 +413,8 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           onClick={() => setActiveTab('financials')}
           className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'financials'
-              ? 'border-amber-500 text-amber-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-orange text-orange font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-navy'
           }`}
         >
           <DollarSign className="w-4 h-4 shrink-0" />
@@ -425,8 +425,8 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           onClick={() => setActiveTab('orders')}
           className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'orders'
-              ? 'border-amber-500 text-amber-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-orange text-orange font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-navy'
           }`}
         >
           <ShoppingBag className="w-4 h-4 shrink-0" />
@@ -437,8 +437,8 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           onClick={() => setActiveTab('modules')}
           className={`pb-3 px-4 font-bold text-xs flex items-center gap-2 border-b-2 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             activeTab === 'modules'
-              ? 'border-amber-500 text-amber-600 font-extrabold'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
+              ? 'border-orange text-orange font-extrabold'
+              : 'border-transparent text-slate-500 hover:text-navy'
           }`}
         >
           <Layers className="w-4 h-4 shrink-0" />
@@ -453,15 +453,10 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Store className="w-5 h-5 text-amber-600" />
-                <h3 className="font-extrabold text-base text-slate-900">
-                  Pending Seller Registrations
-                </h3>
+                <Store className="w-5 h-5 text-navy" />
+                <h3 className="font-extrabold text-base text-navy">Pending Seller Registrations</h3>
               </div>
-              <Link
-                href="/admin/sellers"
-                className="text-xs font-bold text-amber-600 hover:underline"
-              >
+              <Link href="/admin/sellers" className="text-xs font-bold text-orange hover:underline">
                 View All ({data.pendingSellers.length}) →
               </Link>
             </div>
@@ -483,10 +478,10 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                   >
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-slate-900 truncate">
+                        <span className="font-extrabold text-sm text-navy truncate">
                           {seller.name}
                         </span>
-                        <span className="px-2 py-0.5 bg-amber-100 text-amber-800 text-[10px] font-bold rounded-md uppercase">
+                        <span className="px-2 py-0.5 bg-orange/10 text-orange border border-orange/20 text-[10px] font-bold rounded-md uppercase">
                           {seller.status}
                         </span>
                       </div>
@@ -502,13 +497,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => handleQuickApproveSeller(seller.id, seller.name)}
-                        className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-xs"
+                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
                       >
                         Approve
                       </button>
                       <Link
                         href={`/admin/sellers/${seller.id}`}
-                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition-all flex items-center gap-1"
+                        className="px-3.5 py-1.5 bg-white hover:bg-slate-100 text-navy border border-slate-200 font-bold text-xs rounded-xl transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
                       >
                         <span>Inspect</span>
                         <ArrowUpRight className="w-3.5 h-3.5" />
@@ -524,14 +519,12 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <PackageCheck className="w-5 h-5 text-sky-600" />
-                <h3 className="font-extrabold text-base text-slate-900">
-                  Pending Product Moderation
-                </h3>
+                <PackageCheck className="w-5 h-5 text-navy" />
+                <h3 className="font-extrabold text-base text-navy">Pending Product Moderation</h3>
               </div>
               <Link
                 href="/admin/products"
-                className="text-xs font-bold text-sky-600 hover:underline"
+                className="text-xs font-bold text-orange hover:underline"
               >
                 Manage Catalog →
               </Link>
@@ -566,8 +559,8 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                         </div>
                       )}
                       <div className="space-y-0.5 min-w-0">
-                        <p className="font-bold text-xs text-slate-900 truncate">{prod.title}</p>
-                        <p className="text-[11px] text-amber-700 font-extrabold">
+                        <p className="font-bold text-xs text-navy truncate">{prod.title}</p>
+                        <p className="text-[11px] text-navy font-black font-mono">
                           ₹{Number(prod?.price || 0).toLocaleString('en-IN')}
                         </p>
                         <p className="text-[10px] text-slate-500 truncate">Shop: {prod.shopName}</p>
@@ -577,13 +570,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => handleQuickApproveProduct(prod.id, prod.title)}
-                        className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-xs"
+                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
                       >
                         Approve
                       </button>
                       <Link
                         href="/admin/products"
-                        className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl transition-all"
+                        className="px-3.5 py-1.5 bg-white hover:bg-slate-100 text-navy border border-slate-200 font-bold text-xs rounded-xl transition-all shadow-2xs cursor-pointer"
                       >
                         Inspect
                       </Link>
@@ -609,13 +602,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
             <div className="flex items-center gap-3">
               <Link
                 href="/admin/finance/commission"
-                className="px-4 py-2 bg-amber-50 text-amber-900 border border-amber-300 font-extrabold text-xs rounded-xl hover:bg-amber-100 transition-all cursor-pointer shadow-2xs"
+                className="px-4 py-2 bg-white text-navy border border-slate-200 font-extrabold text-xs rounded-xl hover:bg-slate-50 transition-all cursor-pointer shadow-2xs"
               >
                 Commission Rates
               </Link>
               <Link
                 href="/admin/finance/settlements"
-                className="px-4 py-2 bg-navy hover:bg-navy-hover text-white font-extrabold text-xs rounded-xl transition-all shadow-xs cursor-pointer"
+                className="px-4 py-2 bg-navy hover:bg-navy-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs cursor-pointer"
               >
                 Manage Payouts →
               </Link>
@@ -623,11 +616,11 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-slate-50 border border-slate-200 rounded-3xl space-y-2 hover:border-amber-300 transition-all shadow-xs">
+            <div className="p-6 bg-slate-50 border border-slate-200 rounded-3xl space-y-2 hover:border-navy transition-all shadow-xs">
               <p className="text-xs text-navy font-extrabold uppercase tracking-wider">
                 Gross Platform Sales (GMV)
               </p>
-              <p className="text-3xl font-black text-amber-600 font-mono">
+              <p className="text-3xl font-black text-navy font-mono">
                 ₹{Number(data?.stats?.totalRevenue || 0).toLocaleString('en-IN')}
               </p>
               <p className="text-[11px] text-slate-500 font-medium">
@@ -647,14 +640,14 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
               </p>
             </div>
 
-            <div className="p-6 bg-amber-50/60 border border-amber-200 rounded-3xl space-y-2 hover:border-amber-300 transition-all shadow-xs">
-              <p className="text-xs text-amber-900 font-extrabold uppercase tracking-wider">
+            <div className="p-6 bg-orange/5 border border-orange/20 rounded-3xl space-y-2 hover:border-orange transition-all shadow-xs">
+              <p className="text-xs text-orange font-extrabold uppercase tracking-wider">
                 Pending Seller Payout Balance
               </p>
-              <p className="text-3xl font-black text-amber-700 font-mono">
+              <p className="text-3xl font-black text-orange font-mono">
                 ₹{Number(data?.stats?.pendingPayoutsAmount || 0).toLocaleString('en-IN')}
               </p>
-              <p className="text-[11px] text-amber-700/80 font-medium">
+              <p className="text-[11px] text-slate-500 font-medium">
                 Balance queued for bi-weekly merchant bank transfer payouts.
               </p>
             </div>
@@ -667,7 +660,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
-              <h3 className="font-extrabold text-base text-slate-900">
+              <h3 className="font-extrabold text-base text-navy">
                 Recent Marketplace Orders Stream
               </h3>
               <p className="text-xs text-slate-500">
@@ -676,7 +669,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
             </div>
             <Link
               href="/admin/orders"
-              className="text-xs font-extrabold text-amber-600 hover:underline"
+              className="text-xs font-extrabold text-orange hover:underline"
             >
               View All Orders →
             </Link>
@@ -701,7 +694,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                     <td className="py-3 px-4 font-mono font-bold text-navy">{ord.orderNumber}</td>
                     <td className="py-3 px-4 font-semibold text-slate-800">{ord.customerName}</td>
                     <td className="py-3 px-4 text-slate-600">{ord.shopName}</td>
-                    <td className="py-3 px-4 font-bold text-slate-900">
+                    <td className="py-3 px-4 font-bold text-navy font-mono">
                       ₹{Number(ord?.totalAmount || 0).toLocaleString('en-IN')}
                     </td>
                     <td className="py-3 px-4">
@@ -718,7 +711,7 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
                               ? 'bg-sky-100 text-sky-800'
                               : ord.status === 'CANCELLED'
                                 ? 'bg-rose-100 text-rose-800'
-                                : 'bg-amber-100 text-amber-800'
+                                : 'bg-orange/10 text-orange'
                         }`}
                       >
                         {ord.status}
@@ -740,13 +733,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             href="/admin/sellers"
-            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-amber-500 hover:shadow-lg transition-all space-y-3 group"
+            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-navy hover:shadow-lg transition-all space-y-3 group"
           >
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl w-fit group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-navy/5 text-navy rounded-xl w-fit group-hover:bg-orange/10 group-hover:text-orange transition-all">
               <Store className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-amber-600 transition-colors">
+              <h4 className="font-extrabold text-sm text-navy group-hover:text-orange transition-colors">
                 Seller Onboarding & Directory
               </h4>
               <p className="text-xs text-slate-500 mt-1">
@@ -757,13 +750,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
 
           <Link
             href="/admin/products"
-            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-sky-500 hover:shadow-lg transition-all space-y-3 group"
+            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-navy hover:shadow-lg transition-all space-y-3 group"
           >
-            <div className="p-3 bg-sky-50 text-sky-600 rounded-xl w-fit group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-navy/5 text-navy rounded-xl w-fit group-hover:bg-orange/10 group-hover:text-orange transition-all">
               <PackageCheck className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-sky-600 transition-colors">
+              <h4 className="font-extrabold text-sm text-navy group-hover:text-orange transition-colors">
                 Product Catalog Moderation
               </h4>
               <p className="text-xs text-slate-500 mt-1">
@@ -774,13 +767,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
 
           <Link
             href="/admin/finance/commission"
-            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-emerald-500 hover:shadow-lg transition-all space-y-3 group"
+            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-navy hover:shadow-lg transition-all space-y-3 group"
           >
-            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl w-fit group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-navy/5 text-navy rounded-xl w-fit group-hover:bg-orange/10 group-hover:text-orange transition-all">
               <TrendingUp className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-emerald-600 transition-colors">
+              <h4 className="font-extrabold text-sm text-navy group-hover:text-orange transition-colors">
                 Commission Rates & Rules
               </h4>
               <p className="text-xs text-slate-500 mt-1">
@@ -791,13 +784,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
 
           <Link
             href="/admin/finance/settlements"
-            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-purple-500 hover:shadow-lg transition-all space-y-3 group"
+            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-navy hover:shadow-lg transition-all space-y-3 group"
           >
-            <div className="p-3 bg-purple-50 text-purple-600 rounded-xl w-fit group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-navy/5 text-navy rounded-xl w-fit group-hover:bg-orange/10 group-hover:text-orange transition-all">
               <DollarSign className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-purple-600 transition-colors">
+              <h4 className="font-extrabold text-sm text-navy group-hover:text-orange transition-colors">
                 Payout Settlements
               </h4>
               <p className="text-xs text-slate-500 mt-1">
@@ -808,13 +801,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
 
           <Link
             href="/admin/categories"
-            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-indigo-500 hover:shadow-lg transition-all space-y-3 group"
+            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-navy hover:shadow-lg transition-all space-y-3 group"
           >
-            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl w-fit group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-navy/5 text-navy rounded-xl w-fit group-hover:bg-orange/10 group-hover:text-orange transition-all">
               <Layers className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-indigo-600 transition-colors">
+              <h4 className="font-extrabold text-sm text-navy group-hover:text-orange transition-colors">
                 Category Architecture
               </h4>
               <p className="text-xs text-slate-500 mt-1">
@@ -825,13 +818,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
 
           <Link
             href="/admin/coupons"
-            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-rose-500 hover:shadow-lg transition-all space-y-3 group"
+            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-navy hover:shadow-lg transition-all space-y-3 group"
           >
-            <div className="p-3 bg-rose-50 text-rose-600 rounded-xl w-fit group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-navy/5 text-navy rounded-xl w-fit group-hover:bg-orange/10 group-hover:text-orange transition-all">
               <Tag className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-rose-600 transition-colors">
+              <h4 className="font-extrabold text-sm text-navy group-hover:text-orange transition-colors">
                 Promotions & Coupons
               </h4>
               <p className="text-xs text-slate-500 mt-1">
@@ -842,13 +835,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
 
           <Link
             href="/admin/reviews"
-            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-amber-500 hover:shadow-lg transition-all space-y-3 group"
+            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-navy hover:shadow-lg transition-all space-y-3 group"
           >
-            <div className="p-3 bg-amber-50 text-amber-600 rounded-xl w-fit group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-navy/5 text-navy rounded-xl w-fit group-hover:bg-orange/10 group-hover:text-orange transition-all">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-amber-600 transition-colors">
+              <h4 className="font-extrabold text-sm text-navy group-hover:text-orange transition-colors">
                 Customer Reviews & Ratings
               </h4>
               <p className="text-xs text-slate-500 mt-1">
@@ -859,13 +852,13 @@ export function AdminDashboardClient({ initialData }: AdminDashboardClientProps)
 
           <Link
             href="/admin/team"
-            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-teal-500 hover:shadow-lg transition-all space-y-3 group"
+            className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-navy hover:shadow-lg transition-all space-y-3 group"
           >
-            <div className="p-3 bg-teal-50 text-teal-600 rounded-xl w-fit group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-navy/5 text-navy rounded-xl w-fit group-hover:bg-orange/10 group-hover:text-orange transition-all">
               <Users className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-extrabold text-sm text-slate-900 group-hover:text-teal-600 transition-colors">
+              <h4 className="font-extrabold text-sm text-navy group-hover:text-orange transition-colors">
                 Team Roles & Security
               </h4>
               <p className="text-xs text-slate-500 mt-1">

@@ -408,7 +408,7 @@ export default function AdminProductsPage() {
             <Button
               variant="outline"
               disabled={isAutoCategorizing}
-              className="rounded-full border-amber-500/80 bg-amber-50/70 hover:bg-amber-100 text-amber-800 text-xs font-extrabold gap-1.5 cursor-pointer shadow-2xs"
+              className="rounded-full border-orange/30 bg-orange/5 hover:bg-orange/10 text-orange text-xs font-extrabold gap-1.5 cursor-pointer shadow-2xs"
               onClick={handleAutoCategorizeAll}
               title="Automatically categorize all products based on title & price"
             >
@@ -601,7 +601,7 @@ export default function AdminProductsPage() {
                             product.status === 'active'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : product.status === 'pending_approval'
-                                ? 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse'
+                                ? 'bg-orange/10 text-orange border-orange/30 animate-pulse'
                                 : product.status === 'draft'
                                   ? 'bg-slate-100 text-slate-700 border-slate-200'
                                   : 'bg-rose-50 text-rose-700 border-rose-200'
@@ -610,7 +610,7 @@ export default function AdminProductsPage() {
                           {product.status}
                         </span>
                         {product.variants && product.variants.length > 0 ? (
-                          <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 block mt-1 w-fit">
+                          <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-navy/5 text-navy border border-navy/20 block mt-1 w-fit">
                             {product.variants.length} Variants
                           </span>
                         ) : (
@@ -758,7 +758,7 @@ export default function AdminProductsPage() {
                   <button
                     type="button"
                     onClick={() => handleAutoCategorizeSingle(editingProductCategory)}
-                    className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-full hover:bg-amber-200 cursor-pointer border border-amber-300/80 transition-colors shadow-2xs"
+                    className="inline-flex items-center gap-1 text-[11px] font-extrabold text-orange bg-orange/10 px-2.5 py-0.5 rounded-full hover:bg-orange/20 cursor-pointer border border-orange/30 transition-colors shadow-2xs"
                     title="Auto-detect categories using title & taxonomy"
                   >
                     <Sparkles className="h-3 w-3 text-orange" />⚡ Auto-Detect
@@ -792,7 +792,7 @@ export default function AdminProductsPage() {
                         <button
                           type="button"
                           onClick={() => handleToggleCategory(id)}
-                          className="hover:text-amber-400 font-black text-xs leading-none cursor-pointer"
+                          className="hover:text-orange font-black text-xs leading-none cursor-pointer"
                         >
                           ×
                         </button>
@@ -906,7 +906,7 @@ export default function AdminProductsPage() {
                         key={opt.id}
                         className={`flex items-start gap-3 p-2.5 rounded-xl cursor-pointer transition-colors ${
                           isChecked
-                            ? 'bg-amber-50/70 border border-amber-300/80 font-bold text-navy'
+                            ? 'bg-orange/5 border border-orange/30 font-bold text-navy'
                             : 'hover:bg-slate-50 text-slate-700'
                         }`}
                       >
@@ -995,7 +995,7 @@ export default function AdminProductsPage() {
                   <button
                     type="button"
                     onClick={handleAutoDetectNewProduct}
-                    className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-700 bg-amber-100/80 px-2.5 py-0.5 rounded-full hover:bg-amber-200 cursor-pointer border border-amber-300/80 transition-colors shadow-2xs"
+                    className="inline-flex items-center gap-1 text-[11px] font-extrabold text-orange bg-orange/10 px-2.5 py-0.5 rounded-full hover:bg-orange/20 cursor-pointer border border-orange/30 transition-colors shadow-2xs"
                     title="Auto-detect categories from product title & price"
                   >
                     <Sparkles className="h-3 w-3 text-orange" />⚡ Auto-Detect
@@ -1031,7 +1031,7 @@ export default function AdminProductsPage() {
                           onClick={() =>
                             setNewProductCategoryIds((prev) => prev.filter((catId) => catId !== id))
                           }
-                          className="hover:text-amber-400 font-bold ml-0.5 cursor-pointer"
+                          className="hover:text-orange font-bold ml-0.5 cursor-pointer"
                         >
                           ×
                         </button>
@@ -1141,7 +1141,7 @@ export default function AdminProductsPage() {
                       className={`px-2 py-0.5 text-[10px] font-extrabold rounded-full border uppercase ${
                         selectedProductForDetails.status === 'active'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                          : 'bg-orange/10 text-orange border-orange/30'
                       }`}
                     >
                       {selectedProductForDetails.status}
@@ -1232,7 +1232,7 @@ export default function AdminProductsPage() {
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-1.5">
                           {variant.size && (
-                            <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-black font-mono">
+                            <span className="px-2 py-0.5 rounded-md bg-navy/5 border border-navy/20 text-navy text-[10px] font-black font-mono">
                               Size: {variant.size}
                             </span>
                           )}

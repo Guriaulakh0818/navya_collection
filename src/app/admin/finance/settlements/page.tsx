@@ -32,15 +32,15 @@ import { Input } from '@/components/ui/input';
 import { formatPrice } from '@/utils/format-price';
 
 const SETTLEMENT_STATUS_STYLE: Record<string, { bg: string; text: string; border: string }> = {
-  PENDING_SETTLEMENT: { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-300' },
+  PENDING_SETTLEMENT: { bg: 'bg-orange/10', text: 'text-orange', border: 'border-orange/30' },
   ELIGIBLE_FOR_SETTLEMENT: {
     bg: 'bg-emerald-50',
     text: 'text-emerald-800',
     border: 'border-emerald-300',
   },
   ON_HOLD: { bg: 'bg-rose-50', text: 'text-rose-800', border: 'border-rose-300' },
-  SETTLED: { bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-300' },
-  ADJUSTED: { bg: 'bg-purple-50', text: 'text-purple-800', border: 'border-purple-300' },
+  SETTLED: { bg: 'bg-navy/10', text: 'text-navy', border: 'border-navy/30' },
+  ADJUSTED: { bg: 'bg-navy/5', text: 'text-navy-700', border: 'border-navy/20' },
   CANCELLED: { bg: 'bg-gray-100', text: 'text-gray-500', border: 'border-gray-200' },
 };
 
@@ -176,7 +176,7 @@ export default function AdminManualSettlementsPage() {
           <Button
             onClick={handleRunCron}
             disabled={cronRunning}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm"
+            className="bg-orange hover:bg-orange/90 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm"
           >
             {cronRunning ? (
               <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -197,11 +197,11 @@ export default function AdminManualSettlementsPage() {
       </div>
 
       {cronResult && (
-        <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-medium flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-orange/5 border border-orange/20 text-navy text-xs font-medium flex items-center justify-between">
           <span>{cronResult}</span>
           <button
             onClick={() => setCronResult(null)}
-            className="text-indigo-400 hover:text-indigo-700"
+            className="text-orange hover:text-orange-dark font-bold"
           >
             &times;
           </button>
@@ -214,50 +214,50 @@ export default function AdminManualSettlementsPage() {
           <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
             Eligible for Settlement
           </span>
-          <p className="mt-1 text-2xl font-black text-emerald-950">
+          <p className="mt-1 text-2xl font-black text-emerald-950 font-mono">
             {formatPrice(summary.totalEligibleSettlement || 0)}
           </p>
           <p className="mt-1 text-[11px] text-emerald-700">7-day hold passed, no returns</p>
         </Card>
 
-        <Card className="border border-amber-200 bg-amber-50/40 p-4 shadow-sm">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800">
+        <Card className="border border-orange/20 bg-orange/5 p-4 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-orange">
             Pending 7-Day Hold
           </span>
-          <p className="mt-1 text-2xl font-black text-amber-950">
+          <p className="mt-1 text-2xl font-black text-navy font-mono">
             {formatPrice(summary.totalPendingSettlement || 0)}
           </p>
-          <p className="mt-1 text-[11px] text-amber-700">delivery + 7 days window</p>
+          <p className="mt-1 text-[11px] text-orange/90">delivery + 7 days window</p>
         </Card>
 
         <Card className="border border-rose-200 bg-rose-50/40 p-4 shadow-sm">
           <span className="text-[11px] font-bold uppercase tracking-wider text-rose-800">
             On Hold (Safety)
           </span>
-          <p className="mt-1 text-2xl font-black text-rose-950">
+          <p className="mt-1 text-2xl font-black text-rose-950 font-mono">
             {formatPrice(summary.totalOnHoldSettlement || 0)}
           </p>
           <p className="mt-1 text-[11px] text-rose-700">Active Return / Dispute blocking</p>
         </Card>
 
-        <Card className="border border-purple-200 bg-purple-50/40 p-4 shadow-sm">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-purple-800">
+        <Card className="border border-navy/20 bg-navy/5 p-4 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-navy">
             Return Shipping Deductions
           </span>
-          <p className="mt-1 text-2xl font-black text-purple-950">
+          <p className="mt-1 text-2xl font-black text-navy font-mono">
             {formatPrice(summary.totalReturnShippingDeductions || 0)}
           </p>
-          <p className="mt-1 text-[11px] text-purple-700">Actual Forward + Reverse</p>
+          <p className="mt-1 text-[11px] text-slate-500">Actual Forward + Reverse</p>
         </Card>
 
-        <Card className="border border-blue-200 bg-blue-50/40 p-4 shadow-sm">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800">
+        <Card className="border border-slate-200 bg-white p-4 shadow-sm">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
             Total Settled
           </span>
-          <p className="mt-1 text-2xl font-black text-blue-950">
+          <p className="mt-1 text-2xl font-black text-navy font-mono">
             {formatPrice(summary.totalSettled || 0)}
           </p>
-          <p className="mt-1 text-[11px] text-blue-700">Historical payouts completed</p>
+          <p className="mt-1 text-[11px] text-slate-500">Historical payouts completed</p>
         </Card>
       </div>
 
@@ -267,7 +267,7 @@ export default function AdminManualSettlementsPage() {
           onClick={() => setActiveTab('order-settlements')}
           className={`px-5 py-3 text-xs font-bold border-b-2 transition-colors ${
             activeTab === 'order-settlements'
-              ? 'border-indigo-600 text-indigo-600'
+              ? 'border-orange text-orange'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -277,7 +277,7 @@ export default function AdminManualSettlementsPage() {
           onClick={() => setActiveTab('pending')}
           className={`px-5 py-3 text-xs font-bold border-b-2 transition-colors ${
             activeTab === 'pending'
-              ? 'border-indigo-600 text-indigo-600'
+              ? 'border-orange text-orange'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -287,7 +287,7 @@ export default function AdminManualSettlementsPage() {
           onClick={() => setActiveTab('history')}
           className={`px-5 py-3 text-xs font-bold border-b-2 transition-colors ${
             activeTab === 'history'
-              ? 'border-indigo-600 text-indigo-600'
+              ? 'border-orange text-orange'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -317,7 +317,7 @@ export default function AdminManualSettlementsPage() {
                   value={settlementStatusFilter}
                   onChange={(e) => setSettlementStatusFilter(e.target.value)}
                   aria-label="Filter settlements by status"
-                  className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none"
+                  className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm focus:border-orange focus:outline-none"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="PENDING_SETTLEMENT">PENDING_SETTLEMENT (Within 7d)</option>
@@ -402,7 +402,7 @@ export default function AdminManualSettlementsPage() {
                                 ? new Date(set.deliveryDate).toLocaleDateString()
                                 : 'Pending'}
                             </div>
-                            <div className="text-indigo-900 font-semibold mt-0.5">
+                            <div className="text-navy font-semibold mt-0.5">
                               <span>Eligible:</span>{' '}
                               {set.settlementEligibilityDate
                                 ? new Date(set.settlementEligibilityDate).toLocaleDateString()
@@ -422,7 +422,7 @@ export default function AdminManualSettlementsPage() {
                                   {formatPrice(set.grossProductValue)}
                                 </span>
                               </div>
-                              <div className="flex justify-between gap-4 text-amber-700">
+                              <div className="flex justify-between gap-4 text-orange">
                                 <span>JiivaaKart Commission (10%):</span>
                                 <span>-{formatPrice(set.commissionAmount)}</span>
                               </div>
@@ -465,7 +465,7 @@ export default function AdminManualSettlementsPage() {
                               {formatPrice(set.netSettlementAmount)}
                             </div>
                             {set.adjustmentsList?.length > 0 && (
-                              <div className="text-[10px] text-purple-700 font-medium">
+                              <div className="text-[10px] text-navy font-medium">
                                 {set.adjustmentsList.length} adjustment(s) (
                                 {formatPrice(
                                   set.adjustmentsList.reduce(
@@ -540,10 +540,12 @@ export default function AdminManualSettlementsPage() {
                     <td className="px-4 py-3 font-semibold text-gray-900">
                       {formatPrice(shop.totalGrossGMV)}
                     </td>
-                    <td className="px-4 py-3 text-amber-700">
+                    <td className="px-4 py-3 text-orange font-medium">
                       -{formatPrice(shop.totalCommissionDeducted)}
                     </td>
-                    <td className="px-4 py-3 text-blue-700">{formatPrice(shop.totalPaidAmount)}</td>
+                    <td className="px-4 py-3 text-navy font-medium">
+                      {formatPrice(shop.totalPaidAmount)}
+                    </td>
                     <td className="px-4 py-3 text-sm font-black text-emerald-800">
                       {formatPrice(shop.pendingAmount)}
                     </td>

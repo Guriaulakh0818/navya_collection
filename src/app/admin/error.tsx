@@ -23,7 +23,7 @@ export default function AdminError({
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-4">
       <div className="w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-6 shadow-xl">
-        <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mx-auto text-amber-600">
+        <div className="w-16 h-16 bg-orange/10 border border-orange/30 rounded-2xl flex items-center justify-center mx-auto text-orange">
           <ShieldAlert className="w-8 h-8" />
         </div>
 
@@ -57,7 +57,7 @@ export default function AdminError({
                 reset();
               }
             }}
-            className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            className="flex-1 py-2.5 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Try Again</span>

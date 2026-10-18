@@ -247,8 +247,8 @@ export default function AdminOffersPage() {
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
             First-Order Promotions
           </span>
-          <p className="text-2xl font-black text-indigo-600">{firstOrderOffersCount}</p>
-          <span className="text-[11px] text-indigo-600 font-medium">Targets new buyers</span>
+          <p className="text-2xl font-black text-navy">{firstOrderOffersCount}</p>
+          <span className="text-[11px] text-slate-500 font-medium">Targets new buyers</span>
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-card space-y-1">
@@ -264,7 +264,7 @@ export default function AdminOffersPage() {
       <div className="rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-amber-500" /> Configured Promotions & Rules
+            <Sparkles className="h-5 w-5 text-orange" /> Configured Promotions & Rules
           </h2>
           <span className="text-xs font-medium text-slate-500">
             {offers.length} {offers.length === 1 ? 'offer' : 'offers'} found
@@ -334,19 +334,19 @@ export default function AdminOffersPage() {
                         </span>
                       )}
                       {isPercent && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-navy/10 text-navy border border-navy/20">
                           <Percent className="h-3 w-3" /> {offer.value}% Discount
                         </span>
                       )}
                       {isFlat && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-orange/10 text-orange border border-orange/20">
                           <Tag className="h-3 w-3" /> ₹{offer.value} Flat Off
                         </span>
                       )}
 
                       {/* First Order Badge */}
                       {offer.firstOrderOnly && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-orange/10 text-orange border border-orange/20">
                           ⭐ First Order Only
                         </span>
                       )}
@@ -545,17 +545,17 @@ export default function AdminOffersPage() {
               </div>
 
               {/* First Order Only Checkbox */}
-              <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex items-start gap-3">
+              <div className="p-3.5 rounded-2xl bg-orange/5 border border-orange/20 flex items-start gap-3">
                 <input
                   type="checkbox"
                   id="firstOrderOnly"
                   checked={formData.firstOrderOnly}
                   onChange={(e) => setFormData({ ...formData, firstOrderOnly: e.target.checked })}
-                  className="h-4 w-4 rounded accent-indigo-600 mt-0.5 cursor-pointer"
+                  className="h-4 w-4 rounded accent-orange mt-0.5 cursor-pointer"
                 />
                 <label htmlFor="firstOrderOnly" className="cursor-pointer space-y-0.5">
-                  <p className="font-bold text-indigo-950 text-xs sm:text-sm">First Order Only</p>
-                  <p className="text-[11px] text-indigo-700 leading-relaxed font-medium">
+                  <p className="font-bold text-navy text-xs sm:text-sm">First Order Only</p>
+                  <p className="text-[11px] text-orange leading-relaxed font-medium">
                     Only applies if the user is authenticated and has never placed an order before
                     (completed order count == 0).
                   </p>

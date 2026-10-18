@@ -183,7 +183,7 @@ export function SellerApprovalTable() {
               id: 'PENDING_VERIFICATION',
               label: 'Pending Approval',
               count: counts.PENDING_VERIFICATION,
-              color: 'text-amber-900 border-amber-300 bg-amber-50',
+              color: 'text-orange border-orange/30 bg-orange/10',
             },
             {
               id: 'APPROVED',
@@ -201,7 +201,7 @@ export function SellerApprovalTable() {
               id: 'SUSPENDED',
               label: 'Suspended Shops',
               count: counts.SUSPENDED,
-              color: 'text-indigo-900 border-indigo-300 bg-indigo-50',
+              color: 'text-slate-800 border-slate-300 bg-slate-100',
             },
             {
               id: 'ALL',
@@ -222,7 +222,7 @@ export function SellerApprovalTable() {
                 }`}
               >
                 <span>{tab.label}</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] bg-white border border-slate-200 text-amber-700 font-mono">
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-white border border-slate-200 text-navy font-mono font-bold">
                   {tab.count}
                 </span>
               </button>
@@ -239,7 +239,7 @@ export function SellerApprovalTable() {
               placeholder="Search by shop name, owner email, GSTIN, PAN..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:border-amber-500 focus:outline-none font-semibold"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:border-orange focus:outline-none font-semibold"
             />
           </div>
           <button
@@ -255,7 +255,7 @@ export function SellerApprovalTable() {
       <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="p-12 text-center text-slate-600 flex items-center justify-center gap-2 font-semibold text-xs">
-            <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-orange border-t-transparent rounded-full animate-spin" />
             Loading seller records...
           </div>
         ) : shops.length === 0 ? (
@@ -296,14 +296,14 @@ export function SellerApprovalTable() {
                       {/* Shop Info */}
                       <td className="py-3.5 px-4 border-r border-slate-200 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-xl bg-navy/5 border border-navy/20 flex items-center justify-center text-navy font-bold shrink-0">
                             <Building2 className="w-4 h-4" />
                           </div>
                           <div>
                             <span className="font-extrabold text-navy block text-sm">
                               {shop.name}
                             </span>
-                            <span className="text-[10px] text-amber-700 font-mono font-bold">
+                            <span className="text-[10px] text-slate-500 font-mono font-medium">
                               slug: {shop.slug}
                             </span>
                           </div>
@@ -329,7 +329,7 @@ export function SellerApprovalTable() {
                       <td className="py-3.5 px-4 border-r border-slate-200 whitespace-nowrap font-mono text-[11px]">
                         <div>
                           PAN:{' '}
-                          <span className="text-amber-800 font-extrabold">
+                          <span className="text-navy font-extrabold">
                             {shop.panNumber || profile.panNumber || 'N/A'}
                           </span>
                         </div>
@@ -358,10 +358,10 @@ export function SellerApprovalTable() {
                             shop.status === 'APPROVED'
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                               : shop.status === 'PENDING_VERIFICATION'
-                                ? 'bg-amber-50 text-amber-800 border-amber-300 animate-pulse'
+                                ? 'bg-orange/10 text-orange border-orange/30 animate-pulse'
                                 : shop.status === 'REJECTED'
                                   ? 'bg-rose-50 text-rose-800 border-rose-300'
-                                  : 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                                  : 'bg-slate-100 text-slate-800 border-slate-300'
                           }`}
                         >
                           {shop.status === 'APPROVED' && <CheckCircle2 className="w-3 h-3" />}
@@ -378,7 +378,7 @@ export function SellerApprovalTable() {
                             setSelectedShop(shop);
                             setIsModalOpen(true);
                           }}
-                          className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold rounded-xl text-xs inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                          className="px-3 py-1.5 bg-orange hover:bg-orange-600 text-white font-extrabold rounded-xl text-xs inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           Inspect & Action

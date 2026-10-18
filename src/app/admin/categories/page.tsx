@@ -243,7 +243,9 @@ export default function AdminCategoriesPage() {
               onClick={handleSyncTaxonomy}
               disabled={isSyncingTaxonomy}
             >
-              <RefreshCw className={`h-4 w-4 text-navy ${isSyncingTaxonomy ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 text-navy ${isSyncingTaxonomy ? 'animate-spin' : ''}`}
+              />
               {isSyncingTaxonomy ? 'Syncing 218 Categories...' : 'Sync Category Taxonomy (218)'}
             </Button>
 
@@ -252,7 +254,9 @@ export default function AdminCategoriesPage() {
               onClick={handleSyncCatalog}
               disabled={isSyncingCatalog}
             >
-              <RefreshCw className={`h-4 w-4 text-white ${isSyncingCatalog ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 text-white ${isSyncingCatalog ? 'animate-spin' : ''}`}
+              />
               {isSyncingCatalog ? 'Pushing Catalog...' : 'Push Shops & Products to DB'}
             </Button>
 
@@ -358,9 +362,9 @@ export default function AdminCategoriesPage() {
                       <td className="py-4">
                         <button
                           onClick={() => setActiveParentCategory(primaryCat)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-navy/5 text-navy border border-navy/20 hover:bg-navy/10 transition-colors cursor-pointer"
                         >
-                          <FolderOpen className="h-3.5 w-3.5 text-amber-700" />
+                          <FolderOpen className="h-3.5 w-3.5 text-navy" />
                           <span>{subCats.length} Sub-categories</span>
                         </button>
                       </td>
@@ -385,7 +389,7 @@ export default function AdminCategoriesPage() {
                             onClick={() => setActiveParentCategory(primaryCat)}
                             className="rounded-xl bg-navy hover:bg-navy-hover text-white text-xs font-extrabold px-3.5 py-1.5 h-8 gap-1.5 cursor-pointer shadow-xs"
                           >
-                            <FolderOpen className="h-3.5 w-3.5 text-amber-400" /> View Sub-types (
+                            <FolderOpen className="h-3.5 w-3.5 text-orange" /> View Sub-types (
                             {subCats.length})
                           </Button>
 
@@ -470,7 +474,7 @@ export default function AdminCategoriesPage() {
                       className="p-3.5 flex items-center justify-between hover:bg-slate-50/80 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-7 w-7 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-800 font-bold text-xs">
+                        <div className="h-7 w-7 rounded-lg bg-orange/10 border border-orange/20 flex items-center justify-center text-orange font-bold text-xs">
                           ✂️
                         </div>
                         <div>

@@ -56,11 +56,11 @@ export default function AdminAnalyticsPage() {
       {/* Header */}
       <div className="bg-navy text-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest block mb-1">
+          <span className="text-[10px] font-extrabold text-orange uppercase tracking-widest block mb-1">
             Real-Time Growth Intelligence
           </span>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <TrendingUp className="w-7 h-7 text-amber-400" /> User &amp; Shop Growth Analytics
+            <TrendingUp className="w-7 h-7 text-orange" /> User &amp; Shop Growth Analytics
           </h1>
           <p className="text-xs text-slate-300 font-medium mt-1">
             Track user registrations and boutique merchant onboarding trends across Hourly, Daily,
@@ -74,7 +74,7 @@ export default function AdminAnalyticsPage() {
             onClick={() => setPeriod('hourly')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               period === 'hourly'
-                ? 'bg-amber-500 text-slate-950 shadow-xs'
+                ? 'bg-orange text-white shadow-xs'
                 : 'text-white/80 hover:text-white'
             }`}
           >
@@ -84,7 +84,7 @@ export default function AdminAnalyticsPage() {
             onClick={() => setPeriod('daily')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               period === 'daily'
-                ? 'bg-amber-500 text-slate-950 shadow-xs'
+                ? 'bg-orange text-white shadow-xs'
                 : 'text-white/80 hover:text-white'
             }`}
           >
@@ -94,7 +94,7 @@ export default function AdminAnalyticsPage() {
             onClick={() => setPeriod('weekly')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               period === 'weekly'
-                ? 'bg-amber-500 text-slate-950 shadow-xs'
+                ? 'bg-orange text-white shadow-xs'
                 : 'text-white/80 hover:text-white'
             }`}
           >
@@ -129,7 +129,7 @@ export default function AdminAnalyticsPage() {
           <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider block">
             User Growth Mode
           </span>
-          <p className="text-lg font-black text-amber-700 uppercase tracking-wider font-mono">
+          <p className="text-lg font-black text-orange uppercase tracking-wider font-mono">
             {period}
           </p>
           <span className="text-[11px] text-slate-500 font-medium">Active timeframe filter</span>
@@ -178,7 +178,7 @@ export default function AdminAnalyticsPage() {
           </div>
 
           <span className="text-xs font-bold text-slate-500 hidden sm:inline">
-            Window: <strong className="text-amber-700 uppercase">{period}</strong>
+            Window: <strong className="text-orange uppercase">{period}</strong>
           </span>
         </div>
 
@@ -209,8 +209,8 @@ export default function AdminAnalyticsPage() {
                       style={{ height: `${heightPercent}%` }}
                       className={`w-full max-w-[28px] rounded-t-xl transition-all duration-300 ${
                         activeTab === 'users'
-                          ? 'bg-gradient-to-t from-navy to-blue-600 group-hover:from-amber-500 group-hover:to-orange'
-                          : 'bg-gradient-to-t from-amber-600 to-amber-400 group-hover:from-emerald-600 group-hover:to-emerald-400'
+                          ? 'bg-gradient-to-t from-navy to-navy-700 group-hover:from-orange group-hover:to-orange-light'
+                          : 'bg-gradient-to-t from-orange to-orange-light group-hover:from-navy group-hover:to-navy-700'
                       }`}
                     />
                     <span className="text-[9px] sm:text-[10px] text-slate-600 font-bold whitespace-nowrap truncate w-full text-center">

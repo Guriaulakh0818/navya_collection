@@ -249,15 +249,13 @@ export default function AdminCouponsPage() {
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
             Total Times Redeemed
           </p>
-          <p className="font-heading text-3xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-            {totalUsedCount}
-          </p>
+          <p className="font-heading text-3xl font-bold text-orange mt-1">{totalUsedCount}</p>
         </div>
       </div>
 
       {/* Error Message */}
       {errorMsg && (
-        <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm">
+        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-sm">
           {errorMsg}
         </div>
       )}
@@ -310,19 +308,17 @@ export default function AdminCouponsPage() {
                         <p className="text-xs font-normal text-slate-500 mt-0.5">{c.title}</p>
                       )}
                       {c.shopId && (
-                        <p className="text-[10px] font-mono text-amber-600 dark:text-amber-400">
-                          Shop: {c.shopId}
-                        </p>
+                        <p className="text-[10px] font-mono text-orange">Shop: {c.shopId}</p>
                       )}
                     </td>
 
                     <td className="py-3.5 px-4">
                       {c.fundingType === 'SELLER' ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange/10 text-orange border border-orange/20">
                           SELLER-FUNDED
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 border border-indigo-500/20">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-navy/10 text-navy dark:text-slate-200 border border-navy/20">
                           JIIVAA-FUNDED
                         </span>
                       )}
@@ -431,7 +427,7 @@ export default function AdminCouponsPage() {
                   <label
                     className={`flex items-start gap-2.5 p-2.5 rounded-lg border cursor-pointer transition ${
                       form.fundingType === 'NAVYA'
-                        ? 'border-indigo-500 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300'
+                        ? 'border-navy bg-navy/10 text-navy dark:text-slate-200'
                         : 'border-border bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300'
                     }`}
                   >
@@ -441,7 +437,7 @@ export default function AdminCouponsPage() {
                       value="NAVYA"
                       checked={form.fundingType === 'NAVYA'}
                       onChange={() => setForm({ ...form, fundingType: 'NAVYA' })}
-                      className="mt-0.5 accent-indigo-600"
+                      className="mt-0.5 accent-navy"
                     />
                     <div>
                       <span className="text-xs font-bold block">JiivaaKart-Funded</span>
@@ -454,7 +450,7 @@ export default function AdminCouponsPage() {
                   <label
                     className={`flex items-start gap-2.5 p-2.5 rounded-lg border cursor-pointer transition ${
                       form.fundingType === 'SELLER'
-                        ? 'border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-300'
+                        ? 'border-orange bg-orange/10 text-orange dark:text-orange-300'
                         : 'border-border bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300'
                     }`}
                   >
@@ -464,7 +460,7 @@ export default function AdminCouponsPage() {
                       value="SELLER"
                       checked={form.fundingType === 'SELLER'}
                       onChange={() => setForm({ ...form, fundingType: 'SELLER' })}
-                      className="mt-0.5 accent-amber-600"
+                      className="mt-0.5 accent-orange"
                     />
                     <div>
                       <span className="text-xs font-bold block">Seller-Funded</span>

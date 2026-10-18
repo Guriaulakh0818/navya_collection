@@ -84,11 +84,11 @@ export default function AdminShopsPage() {
       {/* Header */}
       <div className="bg-navy text-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest block mb-1">
+          <span className="text-[10px] font-extrabold text-orange uppercase tracking-widest block mb-1">
             Boutique Marketplace Management
           </span>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <Building2 className="w-7 h-7 text-amber-400" /> Registered Shops Directory
+            <Building2 className="w-7 h-7 text-orange" /> Registered Shops Directory
           </h1>
           <p className="text-xs text-slate-300 font-medium mt-1">
             Manage all verified boutique stores, review seller statuses, inventory counts, and
@@ -104,7 +104,7 @@ export default function AdminShopsPage() {
             <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
               Total Registered Shops
             </span>
-            <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200">
+            <div className="p-2 rounded-xl bg-orange/10 text-orange border border-orange/20">
               <Building2 className="w-5 h-5" />
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function AdminShopsPage() {
             <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
               Pending Verification
             </span>
-            <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200">
+            <div className="p-2 rounded-xl bg-navy/5 text-navy border border-navy/20">
               <Clock className="w-5 h-5" />
             </div>
           </div>
@@ -161,7 +161,7 @@ export default function AdminShopsPage() {
               placeholder="Search by shop name or slug..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 rounded-xl text-xs bg-slate-50 border-slate-200 focus:bg-white focus:border-amber-500 font-semibold"
+              className="pl-10 rounded-xl text-xs bg-slate-50 border-slate-200 focus:bg-white focus:border-orange font-semibold"
             />
           </div>
 
@@ -221,7 +221,7 @@ export default function AdminShopsPage() {
                       <Link
                         href={`/shop/${s.slug}`}
                         target="_blank"
-                        className="hover:text-amber-700 transition-colors flex items-center gap-1"
+                        className="hover:text-orange transition-colors flex items-center gap-1"
                       >
                         {s.name} <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 inline" />
                       </Link>
@@ -243,7 +243,7 @@ export default function AdminShopsPage() {
                       </span>
                     </td>
 
-                    <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap font-mono font-extrabold text-amber-700">
+                    <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap font-mono font-extrabold text-navy">
                       {s.commissionRate}% Commission
                     </td>
 
@@ -254,7 +254,7 @@ export default function AdminShopsPage() {
                             ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                             : s.status === 'SUSPENDED'
                               ? 'bg-rose-50 text-rose-800 border-rose-300'
-                              : 'bg-amber-50 text-amber-800 border-amber-300'
+                              : 'bg-orange/10 text-orange border-orange/30'
                         }`}
                       >
                         {s.status}
@@ -265,7 +265,7 @@ export default function AdminShopsPage() {
                       <Link
                         href={`/shop/${s.slug}`}
                         target="_blank"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100 transition-colors shadow-2xs"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-navy/5 text-navy border border-navy/20 hover:bg-navy/10 hover:text-navy transition-colors shadow-2xs"
                       >
                         Visit Storefront ↗
                       </Link>

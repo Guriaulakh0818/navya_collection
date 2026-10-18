@@ -67,11 +67,11 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="bg-navy text-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[10px] font-extrabold text-amber-400 uppercase tracking-widest block mb-1">
+          <span className="text-[10px] font-extrabold text-orange uppercase tracking-widest block mb-1">
             Platform User Management
           </span>
           <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <Users className="w-7 h-7 text-amber-400" /> Registered Users Directory
+            <Users className="w-7 h-7 text-orange" /> Registered Users Directory
           </h1>
           <p className="text-xs text-slate-300 font-medium mt-1">
             Complete database ledger of all registered buyers, boutique merchants, and system
@@ -87,7 +87,7 @@ export default function AdminUsersPage() {
             <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
               Total Registered Users
             </span>
-            <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200">
+            <div className="p-2 rounded-xl bg-orange/10 text-orange border border-orange/20">
               <Users className="w-5 h-5" />
             </div>
           </div>
@@ -102,7 +102,7 @@ export default function AdminUsersPage() {
             <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
               Buyers &amp; Customers
             </span>
-            <div className="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-200">
+            <div className="p-2 rounded-xl bg-navy/5 text-navy border border-navy/20">
               <UserCheck className="w-5 h-5" />
             </div>
           </div>
@@ -128,7 +128,7 @@ export default function AdminUsersPage() {
             <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
               Admins &amp; Owners
             </span>
-            <div className="p-2 rounded-xl bg-purple-50 text-purple-600 border border-purple-200">
+            <div className="p-2 rounded-xl bg-navy/10 text-navy border border-navy/30">
               <ShieldCheck className="w-5 h-5" />
             </div>
           </div>
@@ -146,7 +146,7 @@ export default function AdminUsersPage() {
               placeholder="Search by name, email, or mobile..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 rounded-xl text-xs bg-slate-50 border-slate-200 focus:bg-white focus:border-amber-500 font-semibold"
+              className="pl-10 rounded-xl text-xs bg-slate-50 border-slate-200 focus:bg-white focus:border-orange font-semibold"
             />
           </div>
 
@@ -212,10 +212,10 @@ export default function AdminUsersPage() {
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
                           u.role === 'SELLER'
-                            ? 'bg-amber-50 text-amber-900 border-amber-300'
+                            ? 'bg-orange/10 text-orange border-orange/30'
                             : ['ADMIN', 'OWNER', 'SUPER_ADMIN'].includes(u.role)
-                              ? 'bg-purple-50 text-purple-900 border-purple-300'
-                              : 'bg-blue-50 text-blue-900 border-blue-300'
+                              ? 'bg-navy/10 text-navy border-navy/30'
+                              : 'bg-slate-100 text-slate-800 border-slate-300'
                         }`}
                       >
                         {u.role}
@@ -224,7 +224,7 @@ export default function AdminUsersPage() {
 
                     <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap font-semibold text-slate-700">
                       {u.shopName ? (
-                        <span className="text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                        <span className="text-navy font-bold bg-navy/5 px-2 py-0.5 rounded-md border border-navy/20">
                           {u.shopName}
                         </span>
                       ) : (

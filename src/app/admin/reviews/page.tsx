@@ -131,7 +131,7 @@ export default function AdminReviewModerationPage() {
                         className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
                           r.status === 'APPROVED'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : 'bg-red-50 text-red-700 border-red-200'
+                            : 'bg-rose-50 text-rose-700 border-rose-200'
                         }`}
                       >
                         {r.status || 'APPROVED'}
@@ -147,7 +147,7 @@ export default function AdminReviewModerationPage() {
                       </button>
                       <button
                         onClick={() => handleModerate(r.id, 'REJECTED')}
-                        className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-xl border border-red-200 transition-all cursor-pointer"
+                        className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-200 transition-all cursor-pointer"
                       >
                         Reject ✕
                       </button>

@@ -153,7 +153,7 @@ export function ProductInspectionModal({
         {/* Header - Navya Navy & Gold Theme */}
         <div className="p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between bg-navy text-white shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-orange/10 border border-orange/20 flex items-center justify-center text-orange font-bold shrink-0">
               <ShoppingBag className="w-5 h-5" />
             </div>
             <div className="min-w-0">
@@ -166,7 +166,7 @@ export function ProductInspectionModal({
                     product.status === 'active'
                       ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                       : product.status === 'pending_approval'
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
+                        ? 'bg-orange/10 text-orange border-orange/30 animate-pulse'
                         : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
                   }`}
                 >
@@ -174,10 +174,10 @@ export function ProductInspectionModal({
                 </span>
               </div>
               <div className="flex items-center gap-3 text-xs text-slate-300 font-medium flex-wrap mt-0.5">
-                <span className="text-amber-300 font-mono font-bold">SKU: {product.sku}</span>
+                <span className="text-white/80 font-mono font-bold">SKU: {product.sku}</span>
                 <span>•</span>
                 <span className="text-slate-300 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-amber-400" /> Submitted: {formattedDate}
+                  <Clock className="w-3 h-3 text-orange" /> Submitted: {formattedDate}
                 </span>
                 {product.category?.name && (
                   <>
@@ -202,7 +202,7 @@ export function ProductInspectionModal({
           {/* Seller Shop Banner */}
           <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-start sm:items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-navy/5 border border-navy/20 flex items-center justify-center text-navy shrink-0">
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
@@ -223,7 +223,7 @@ export function ProductInspectionModal({
                   </span>
                   {(shop.phone || shop.owner?.mobile) && (
                     <span className="inline-flex items-center gap-1 text-slate-600">
-                      <Phone className="w-3 h-3 text-amber-600" />
+                      <Phone className="w-3 h-3 text-navy" />
                       {shop.phone || shop.owner?.mobile}
                     </span>
                   )}
@@ -259,7 +259,7 @@ export function ProductInspectionModal({
             <div className="lg:col-span-5 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="font-extrabold text-navy uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-amber-600" />
+                  <ImageIcon className="w-3.5 h-3.5 text-orange" />
                   Product Gallery ({product.images?.length || 0})
                 </span>
                 {activeImage && (
@@ -267,7 +267,7 @@ export function ProductInspectionModal({
                     href={activeImage}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[10px] font-bold text-amber-700 hover:text-amber-800 inline-flex items-center gap-1"
+                    className="text-[10px] font-bold text-orange hover:underline inline-flex items-center gap-1"
                   >
                     View Original <ExternalLink className="w-3 h-3" />
                   </a>
@@ -289,7 +289,7 @@ export function ProductInspectionModal({
                   </div>
                 )}
                 {product.images?.find((img: any) => img.imageUrl === activeImage)?.isPrimary && (
-                  <span className="absolute top-2.5 left-2.5 bg-amber-500 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-md uppercase">
+                  <span className="absolute top-2.5 left-2.5 bg-orange text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-md uppercase">
                     ★ Primary Photo
                   </span>
                 )}
@@ -311,7 +311,7 @@ export function ProductInspectionModal({
                           onClick={() => setActiveImage(img.imageUrl)}
                           className={`relative w-14 h-14 bg-white border-2 rounded-xl overflow-hidden shrink-0 cursor-pointer transition-all ${
                             isSelected
-                              ? 'border-amber-500 ring-2 ring-amber-500/30 scale-105 shadow-xs'
+                              ? 'border-orange ring-2 ring-orange/30 scale-105 shadow-xs'
                               : 'border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100'
                           }`}
                           title={`Photo ${idx + 1}${img.isPrimary ? ' (Primary)' : ''}`}
@@ -322,7 +322,7 @@ export function ProductInspectionModal({
                             className="w-full h-full object-cover"
                           />
                           {img.isPrimary && (
-                            <span className="absolute bottom-0 inset-x-0 bg-amber-500 text-slate-950 font-black text-[8px] text-center leading-tight">
+                            <span className="absolute bottom-0 inset-x-0 bg-orange text-white font-black text-[8px] text-center leading-tight">
                               ★
                             </span>
                           )}
@@ -349,7 +349,7 @@ export function ProductInspectionModal({
                           onClick={() => setActiveImage(vImg.imageUrl)}
                           className={`relative w-12 h-12 bg-white border-2 rounded-xl overflow-hidden shrink-0 cursor-pointer transition-all ${
                             isSelected
-                              ? 'border-amber-500 ring-2 ring-amber-500/30 scale-105 shadow-xs'
+                              ? 'border-orange ring-2 ring-orange/30 scale-105 shadow-xs'
                               : 'border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100'
                           }`}
                           title={vImg.label || 'Variant Photo'}
@@ -566,7 +566,7 @@ export function ProductInspectionModal({
                         <strong className="text-navy">{totalVariantStock} Units</strong>
                       </span>
                     </div>
-                    <span className="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-[10px] font-bold">
+                    <span className="px-2.5 py-1 bg-navy/5 text-navy border border-navy/20 rounded-lg text-[10px] font-bold">
                       {variants.length} Matrix Combinations
                     </span>
                   </div>
@@ -599,7 +599,7 @@ export function ProductInspectionModal({
                                 onClick={() => v.imageUrl && setActiveImage(v.imageUrl)}
                                 className={`relative w-11 h-12 rounded-xl overflow-hidden border shrink-0 flex items-center justify-center transition-all ${
                                   v.imageUrl
-                                    ? 'border-slate-200 bg-slate-50 cursor-pointer hover:border-amber-500'
+                                    ? 'border-slate-200 bg-slate-50 cursor-pointer hover:border-orange'
                                     : 'border-dashed border-slate-200 bg-slate-50 text-slate-300'
                                 }`}
                                 title={
@@ -635,7 +635,7 @@ export function ProductInspectionModal({
                                   </div>
                                 </div>
                                 <div className="text-[10px] text-slate-500 font-mono font-medium truncate">
-                                  SKU: <span className="text-amber-800 font-bold">{v.sku}</span>
+                                  SKU: <span className="text-navy font-bold">{v.sku}</span>
                                 </div>
                               </div>
                             </div>
@@ -676,7 +676,7 @@ export function ProductInspectionModal({
                   {/* Return & Replacement Policy */}
                   <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-3">
                     <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                      <RotateCcw className="w-3.5 h-3.5 text-amber-600" /> Return &amp; Replacement
+                      <RotateCcw className="w-3.5 h-3.5 text-navy" /> Return &amp; Replacement
                       Policy
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
@@ -727,7 +727,7 @@ export function ProductInspectionModal({
                   {/* Taxation & Compliance */}
                   <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-3">
                     <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                      <Percent className="w-3.5 h-3.5 text-amber-600" /> Tax &amp; HSN Compliance
+                      <Percent className="w-3.5 h-3.5 text-navy" /> Tax &amp; HSN Compliance
                     </span>
                     <div className="grid grid-cols-2 gap-3 text-[11px]">
                       <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
@@ -753,7 +753,7 @@ export function ProductInspectionModal({
                   {/* Shipping Configuration */}
                   <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-3">
                     <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                      <Truck className="w-3.5 h-3.5 text-amber-600" /> Shipping Configuration
+                      <Truck className="w-3.5 h-3.5 text-navy" /> Shipping Configuration
                     </span>
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between text-[11px]">
                       <div>
@@ -795,7 +795,7 @@ export function ProductInspectionModal({
                   {/* Enterprise SEO Metadata */}
                   <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs space-y-3">
                     <span className="text-navy font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-600" /> Search Engine Optimization
+                      <Sparkles className="w-3.5 h-3.5 text-navy" /> Search Engine Optimization
                       (SEO)
                     </span>
                     <div className="space-y-2 text-[11px]">
@@ -830,7 +830,7 @@ export function ProductInspectionModal({
                           <span className="text-slate-400 text-[10px] font-bold uppercase block">
                             Product URL Slug
                           </span>
-                          <span className="text-amber-800 font-mono font-bold truncate block">
+                          <span className="text-navy font-mono font-bold truncate block">
                             /{product.category?.slug || 'products'}/{product.slug}
                           </span>
                         </div>

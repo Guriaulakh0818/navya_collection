@@ -100,7 +100,7 @@ export function SellerDetailModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 font-bold shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-navy/5 border border-navy/20 flex items-center justify-center text-navy font-bold shrink-0">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
@@ -111,19 +111,18 @@ export function SellerDetailModal({
                     shop.status === 'APPROVED'
                       ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                       : shop.status === 'PENDING_VERIFICATION'
-                        ? 'bg-amber-50 text-amber-800 border-amber-300 animate-pulse'
+                        ? 'bg-orange/10 text-orange border-orange/30 animate-pulse'
                         : shop.status === 'REJECTED'
                           ? 'bg-rose-50 text-rose-800 border-rose-300'
-                          : 'bg-indigo-50 text-indigo-800 border-indigo-300'
+                          : 'bg-slate-100 text-slate-800 border-slate-300'
                   }`}
                 >
                   {shop.status}
                 </span>
               </h2>
               <p className="text-xs text-slate-500">
-                Slug: <span className="font-mono text-amber-700 font-bold">{shop.slug}</span> |
-                Owner: <span className="font-semibold text-slate-800">{owner.name}</span> (
-                {owner.email})
+                Slug: <span className="font-mono text-navy font-bold">{shop.slug}</span> | Owner:{' '}
+                <span className="font-semibold text-slate-800">{owner.name}</span> ({owner.email})
               </p>
             </div>
           </div>
@@ -131,7 +130,7 @@ export function SellerDetailModal({
           <div className="flex items-center gap-3">
             <Link
               href={`/admin/sellers/${shop.id}`}
-              className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 shadow-xs"
+              className="px-3.5 py-1.5 bg-navy/5 hover:bg-navy/10 text-navy border border-navy/20 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1 shadow-xs"
             >
               Open Review Page <ExternalLink className="w-3.5 h-3.5" />
             </Link>
@@ -150,7 +149,7 @@ export function SellerDetailModal({
             onClick={() => setActiveTab('details')}
             className={`py-3 px-4 text-xs font-extrabold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'details'
-                ? 'border-amber-500 text-amber-800'
+                ? 'border-orange text-orange'
                 : 'border-transparent text-slate-500 hover:text-slate-900'
             }`}
           >
@@ -161,7 +160,7 @@ export function SellerDetailModal({
             onClick={() => setActiveTab('documents')}
             className={`py-3 px-4 text-xs font-extrabold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'documents'
-                ? 'border-amber-500 text-amber-800'
+                ? 'border-orange text-orange'
                 : 'border-transparent text-slate-500 hover:text-slate-900'
             }`}
           >
@@ -173,7 +172,7 @@ export function SellerDetailModal({
               onClick={() => setActiveTab('actions')}
               className={`py-3 px-4 text-xs font-extrabold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
                 activeTab === 'actions'
-                  ? 'border-amber-500 text-amber-800'
+                  ? 'border-orange text-orange'
                   : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
@@ -189,8 +188,8 @@ export function SellerDetailModal({
             <div className="space-y-6">
               {/* Primary Owner Info */}
               <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-                  <User className="w-4 h-4 text-amber-600" />
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+                  <User className="w-4 h-4 text-orange" />
                   Primary Owner Profile
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -203,7 +202,7 @@ export function SellerDetailModal({
                       Email Address
                     </span>
                     <span className="font-bold text-slate-900 flex items-center gap-1">
-                      <Mail className="w-3 h-3 text-amber-600" />
+                      <Mail className="w-3 h-3 text-navy" />
                       {owner.email || 'N/A'}
                     </span>
                   </div>
@@ -212,7 +211,7 @@ export function SellerDetailModal({
                       Contact Phone
                     </span>
                     <span className="font-bold text-slate-900 flex items-center gap-1">
-                      <Phone className="w-3 h-3 text-amber-600" />
+                      <Phone className="w-3 h-3 text-navy" />
                       {owner.mobile || shop.phone || 'N/A'}
                     </span>
                   </div>
@@ -221,8 +220,8 @@ export function SellerDetailModal({
 
               {/* Tax & Business Structure */}
               <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-amber-600" />
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-orange" />
                   Business Tax & Legal Registration
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -234,7 +233,7 @@ export function SellerDetailModal({
                   </div>
                   <div>
                     <span className="text-slate-500 block text-[11px] font-medium">PAN Number</span>
-                    <span className="font-mono font-extrabold text-amber-800">
+                    <span className="font-mono font-extrabold text-navy">
                       {profile.panNumber || shop.panNumber || 'N/A'}
                     </span>
                   </div>
@@ -242,7 +241,7 @@ export function SellerDetailModal({
                     <span className="text-slate-500 block text-[11px] font-medium">
                       GSTIN Number
                     </span>
-                    <span className="font-mono font-extrabold text-amber-800">
+                    <span className="font-mono font-extrabold text-navy">
                       {profile.gstin || shop.gstin || 'N/A'}
                     </span>
                   </div>
@@ -251,8 +250,8 @@ export function SellerDetailModal({
 
               {/* Physical Address */}
               <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-amber-600" />
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-orange" />
                   Shop & Pickup Warehouse Address
                 </h3>
                 <p className="text-xs font-semibold text-slate-800">
@@ -285,8 +284,8 @@ export function SellerDetailModal({
 
               {/* Settlement Bank & UPI */}
               <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-4 space-y-3">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-amber-600" />
+                <h3 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+                  <Wallet className="w-4 h-4 text-orange" />
                   Settlement Bank Account & Payout UPI
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -311,7 +310,7 @@ export function SellerDetailModal({
                     <span className="text-slate-500 block text-[11px] font-medium">
                       IFSC Code & UPI ID
                     </span>
-                    <span className="font-mono font-extrabold text-amber-800">
+                    <span className="font-mono font-extrabold text-navy">
                       {shop.bankIfscCode || profile.bankIfscCode || 'N/A'} |{' '}
                       {profile.upiId || 'N/A'}
                     </span>
@@ -323,8 +322,8 @@ export function SellerDetailModal({
 
           {activeTab === 'documents' && (
             <div className="space-y-4">
-              <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-                <FileCheck className="w-4 h-4 text-amber-600" />
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+                <FileCheck className="w-4 h-4 text-orange" />
                 Submitted Documents & Verification Assets
               </h3>
 
@@ -344,15 +343,14 @@ export function SellerDetailModal({
                           {doc.documentType}
                         </span>
                         <span className="text-[10px] text-slate-500 block mt-0.5 font-medium">
-                          Status:{' '}
-                          <span className="text-amber-700 font-extrabold">{doc.status}</span>
+                          Status: <span className="text-navy font-extrabold">{doc.status}</span>
                         </span>
                       </div>
                       <a
                         href={doc.fileUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-xl text-xs font-extrabold flex items-center gap-1 transition-all shadow-xs"
+                        className="px-3 py-1.5 bg-navy/5 hover:bg-navy/10 text-navy border border-navy/20 rounded-xl text-xs font-extrabold flex items-center gap-1 transition-all shadow-xs"
                       >
                         View File <ExternalLink className="w-3.5 h-3.5" />
                       </a>
@@ -365,8 +363,8 @@ export function SellerDetailModal({
 
           {activeTab === 'actions' && (
             <div className="space-y-6">
-              <h3 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-amber-600" />
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-orange" />
                 Governance & Status Action Controls
               </h3>
 
@@ -400,8 +398,8 @@ export function SellerDetailModal({
                   onClick={() => setActionMode('suspend')}
                   className={`px-5 py-2.5 rounded-xl font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer ${
                     actionMode === 'suspend'
-                      ? 'bg-amber-500 text-slate-950 shadow-md'
-                      : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200'
+                      ? 'bg-orange text-white shadow-md'
+                      : 'bg-orange/10 hover:bg-orange/20 text-orange border border-orange/20'
                   }`}
                 >
                   <Clock className="w-4 h-4" />
@@ -486,10 +484,8 @@ export function SellerDetailModal({
 
               {/* SUSPEND ACTION PANEL */}
               {actionMode === 'suspend' && (
-                <div className="p-5 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-4">
-                  <h4 className="text-sm font-extrabold text-amber-900">
-                    Provide Suspension Reason
-                  </h4>
+                <div className="p-5 bg-orange/5 border border-orange/20 rounded-2xl space-y-4">
+                  <h4 className="text-sm font-extrabold text-orange">Provide Suspension Reason</h4>
 
                   <div>
                     <textarea
@@ -497,14 +493,14 @@ export function SellerDetailModal({
                       placeholder="e.g. High customer complaint rate or counterfeit product listing investigation."
                       value={suspensionReason}
                       onChange={(e) => setSuspensionReason(e.target.value)}
-                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 text-xs font-medium focus:border-amber-500 focus:outline-none shadow-xs"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-slate-900 text-xs font-medium focus:border-orange focus:outline-none shadow-xs"
                     />
                   </div>
 
                   <button
                     onClick={handleConfirmSuspend}
                     disabled={isSubmitting}
-                    className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-md transition-all disabled:opacity-50 cursor-pointer"
+                    className="w-full py-3 bg-orange hover:bg-orange-600 text-white font-extrabold text-xs rounded-xl shadow-md transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? 'Suspending Shop...' : 'Confirm Shop Suspension ⚠️'}
                   </button>
