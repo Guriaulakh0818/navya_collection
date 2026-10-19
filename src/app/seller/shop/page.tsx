@@ -1,5 +1,7 @@
+import { Suspense } from 'react';
 import { Metadata } from 'next';
 
+import { Loader } from '@/components/ui/loader';
 import { ShopManagementForm } from '@/frontend/features/seller/components/ShopManagementForm';
 
 export const metadata: Metadata = {
@@ -9,5 +11,15 @@ export const metadata: Metadata = {
 };
 
 export default function SellerShopPage() {
-  return <ShopManagementForm />;
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[400px] items-center justify-center p-8 text-center">
+          <Loader size="md" text="Loading Shop Management..." />
+        </div>
+      }
+    >
+      <ShopManagementForm />
+    </Suspense>
+  );
 }

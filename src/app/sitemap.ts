@@ -100,6 +100,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let dbShops: Array<{ slug: string; updatedAt: Date }> = [];
   let dbProducts: Array<{ slug: string; updatedAt: Date }> = [];
 
+  const isDbAvailable = Boolean(
+    process.env.DATABASE_URL &&
+    !process.env.DATABASE_URL.includes('placeholder') &&
+    process.env.DATABASE_URL.trim() !== '',
+  );
+
+  if (!isDbAvailable) {
+    return staticPages;
+  }
+
   try {
     // Query active database categories with at least 1 public product (directly or via child subcategories)
     const publicProductCondition = {

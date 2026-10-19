@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowLeft, ArrowRight, KeyRound, Mail, ShieldCheck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -10,7 +10,7 @@ import { Loader } from '@/components/ui/loader';
 import { useToast } from '@/providers';
 import { useAdminAuthStore } from '@/stores';
 
-export default function AdminLoginPage() {
+function AdminLoginForm() {
   const setAdminUser = useAdminAuthStore((s) => s.setUser);
   const setToken = useAdminAuthStore((s) => s.setToken);
 
@@ -167,5 +167,19 @@ export default function AdminLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-50/80">
+          <Loader size="lg" text="Loading Admin Portal..." />
+        </div>
+      }
+    >
+      <AdminLoginForm />
+    </Suspense>
   );
 }
