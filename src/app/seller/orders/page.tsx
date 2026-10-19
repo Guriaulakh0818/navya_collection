@@ -182,22 +182,22 @@ export default function SellerOrdersPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-slate-200">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-slate-200">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2 sm:gap-3">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2.5 sm:gap-3">
             <Package className="w-5 h-5 sm:w-6 sm:h-6 text-orange shrink-0" />
-            <span>Orders &amp; Dispatch Center</span>
+            <span>Vendor Orders & Dispatch Center</span>
           </h1>
           <p className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium leading-relaxed">
-            Fulfill orders, record required packing proofs before dispatch, track 7-day settlement
-            eligibility, and monitor shipping deductions.
+            Fulfill orders, record required packing proofs (photos/videos) before dispatch, track
+            7-day settlement eligibility, and monitor shipping deductions.
           </p>
         </div>
 
         {/* Search Input */}
-        <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-80">
+        <form onSubmit={handleSearchSubmit} className="relative w-full md:w-80">
           <input
             type="text"
             placeholder="Search Order # or Buyer..."

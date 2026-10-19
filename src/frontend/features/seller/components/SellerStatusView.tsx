@@ -152,7 +152,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-navy tracking-tight">
               {statusConfig.title}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+            <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1 leading-relaxed">
               {statusConfig.desc}
             </p>
           </div>

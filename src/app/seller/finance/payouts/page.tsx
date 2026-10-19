@@ -43,15 +43,15 @@ export default function SellerPayoutLedgerPage() {
   const orders = data?.orders || [];
 
   return (
-    <div className="space-y-8 font-sans text-slate-900">
+    <div className="space-y-6 sm:space-y-8 font-sans text-slate-900">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 sm:pb-6 border-b border-slate-200">
         <div>
-          <h1 className="text-xl sm:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-2 sm:gap-3">
-            <IndianRupee className="w-5 h-5 sm:w-7 sm:h-7 text-orange shrink-0" />
-            <span>Earnings &amp; Settlement Ledger</span>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-2.5 sm:gap-3">
+            <IndianRupee className="w-6 h-6 sm:w-7 sm:h-7 text-orange shrink-0" />
+            <span>Merchant Earnings & Settlement Ledger</span>
           </h1>
-          <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-relaxed">
             Settlement Calculation: Commission = MRP × 10% | Seller Base Payout = Selling Price −
             Commission | GST added if registered
           </p>
@@ -59,9 +59,9 @@ export default function SellerPayoutLedgerPage() {
 
         <button
           onClick={() => alert('Payout Statement downloaded as CSV.')}
-          className="w-full sm:w-auto justify-center px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-navy font-bold text-xs rounded-xl flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+          className="w-full sm:w-auto px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-navy font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer shrink-0"
         >
-          <Download className="w-4 h-4 text-navy" /> Download Statement CSV
+          <Download className="w-4 h-4 text-navy shrink-0" /> Download Statement CSV
         </button>
       </div>
 
@@ -160,7 +160,7 @@ export default function SellerPayoutLedgerPage() {
 
       {/* ORDERS SETTLEMENT LEDGER */}
       <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-4">
-        <h2 className="text-sm sm:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+        <h2 className="text-sm sm:text-base md:text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
           <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-navy shrink-0" />
           <span>Vendor Sub-Orders Settlement Ledger</span>
         </h2>

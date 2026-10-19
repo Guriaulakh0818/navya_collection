@@ -101,13 +101,13 @@ export default function SellerSettingsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 sm:pb-6 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-slate-200">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2 sm:gap-3">
+          <h1 className="text-xl sm:text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2.5 sm:gap-3">
             <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-orange shrink-0" />
-            <span>Bank &amp; Payout Settings</span>
+            <span>Settlement Bank Account & Payout Settings</span>
           </h1>
-          <p className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium">
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium leading-relaxed">
             Configure direct netbanking accounts and instant UPI IDs for automated vendor payouts.
           </p>
         </div>
@@ -128,10 +128,11 @@ export default function SellerSettingsPage() {
       {/* Settings Form */}
       <form
         onSubmit={handleSaveSettings}
-        className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-6"
+        className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 sm:space-y-6"
       >
-        <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-          <Wallet className="w-4 h-4 text-orange" /> Direct Netbanking & Settlement Account
+        <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+          <Wallet className="w-4 h-4 text-orange shrink-0" />
+          <span>Direct Netbanking & Settlement Account</span>
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">

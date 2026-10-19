@@ -52,17 +52,17 @@ export default function SellerProfilePage() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="pb-4 sm:pb-6 border-b border-slate-200">
-        <h1 className="text-xl sm:text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2 sm:gap-3">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2.5 sm:gap-3">
           <User className="w-5 h-5 sm:w-6 sm:h-6 text-orange shrink-0" />
-          <span>Profile &amp; Verification</span>
+          <span>Merchant Profile & Verification Identifiers</span>
         </h1>
-        <p className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium">
+        <p className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium leading-relaxed">
           Registered business entity details, PAN, GSTIN, and primary warehouse location.
         </p>
       </div>
 
       {/* Profile Overview Card */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-6">
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-orange/10 border border-orange/20 flex items-center justify-center text-orange font-bold shadow-xs shrink-0">
@@ -76,8 +76,8 @@ export default function SellerProfilePage() {
             </div>
           </div>
 
-          <span className="self-start sm:self-auto px-3 py-1 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <span className="self-start sm:self-auto px-3 py-1 text-[11px] sm:text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             VERIFIED SELLER
           </span>
         </div>
