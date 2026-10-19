@@ -324,10 +324,10 @@ export default function SellerAnalyticsPage() {
                     setAddStockAmount(1);
                     setSelectedVariantId(null);
                   }}
-                  className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-orange/5 rounded-2xl border border-slate-200 hover:border-orange/40 transition-all cursor-pointer group shadow-xs hover:shadow-sm"
+                  className="flex items-center justify-between p-3 sm:p-3.5 bg-slate-50 hover:bg-orange/5 rounded-2xl border border-slate-200 hover:border-orange/40 transition-all cursor-pointer group shadow-xs hover:shadow-sm gap-2"
                   title="Click to view product details and manage stock"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                     <span className="w-7 h-7 rounded-full bg-orange/10 text-orange font-mono text-xs font-black flex items-center justify-center shrink-0">
                       #{idx + 1}
                     </span>
@@ -348,15 +348,15 @@ export default function SellerAnalyticsPage() {
                       )}
                     </div>
 
-                    <div>
-                      <span className="font-extrabold text-navy text-xs block group-hover:text-orange transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-extrabold text-navy text-xs block group-hover:text-orange transition-colors truncate">
                         {p.name}
                       </span>
-                      <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono mt-0.5">
+                      <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono mt-0.5 truncate">
                         <span>Price: ₹{p.price}</span>
                         {p.stock !== undefined && (
                           <span
-                            className={`px-1.5 py-0.2 rounded font-semibold ${
+                            className={`px-1.5 py-0.2 rounded font-semibold whitespace-nowrap shrink-0 ${
                               p.stock <= 5
                                 ? 'bg-rose-100 text-rose-700'
                                 : 'bg-emerald-100 text-emerald-800'
@@ -369,8 +369,8 @@ export default function SellerAnalyticsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <div className="text-right whitespace-nowrap">
                       <span className="font-extrabold text-orange text-xs font-mono block">
                         {p.totalQuantity} Sold
                       </span>
@@ -378,7 +378,7 @@ export default function SellerAnalyticsPage() {
                         ₹{Number(p.totalRevenue || 0).toLocaleString('en-IN')} GMV
                       </span>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-orange group-hover:translate-x-0.5 transition-all" />
+                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-orange group-hover:translate-x-0.5 transition-all shrink-0" />
                   </div>
                 </div>
               ))}
@@ -412,10 +412,10 @@ export default function SellerAnalyticsPage() {
                     setAddStockAmount(1);
                     setSelectedVariantId(null);
                   }}
-                  className="flex items-center justify-between p-3.5 bg-rose-50/50 hover:bg-orange/5 rounded-2xl border border-rose-200 hover:border-orange/40 transition-all cursor-pointer group shadow-xs hover:shadow-sm"
+                  className="flex items-center justify-between p-3 sm:p-3.5 bg-rose-50/50 hover:bg-orange/5 rounded-2xl border border-rose-200 hover:border-orange/40 transition-all cursor-pointer group shadow-xs hover:shadow-sm gap-2"
                   title="Click to open product details & add stock"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                     {/* Thumbnail */}
                     <div className="w-10 h-10 rounded-xl bg-slate-200 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative">
                       {p.image ? (
@@ -432,20 +432,20 @@ export default function SellerAnalyticsPage() {
                       )}
                     </div>
 
-                    <div>
-                      <span className="font-extrabold text-navy text-xs block group-hover:text-orange transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-extrabold text-navy text-xs block group-hover:text-orange transition-colors truncate">
                         {p.name}
                       </span>
-                      <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono mt-0.5">
+                      <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono mt-0.5 truncate">
                         <span>Price: ₹{p.price}</span>
-                        {p.sku && <span>SKU: {p.sku}</span>}
+                        {p.sku && <span className="truncate">SKU: {p.sku}</span>}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     <span
-                      className={`px-3 py-1 rounded-full text-[10px] font-black font-mono tracking-wider ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-black font-mono tracking-wider whitespace-nowrap shrink-0 ${
                         p.stock === 0
                           ? 'bg-rose-100 text-rose-700 border border-rose-300'
                           : 'bg-orange/10 text-orange border border-orange/30'
@@ -462,10 +462,10 @@ export default function SellerAnalyticsPage() {
                         handleQuickAddStock(p, 1);
                       }}
                       disabled={isUpdatingStock}
-                      className="px-2.5 py-1 bg-white hover:bg-orange hover:text-white text-navy font-bold text-[10px] rounded-lg border border-slate-200 transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                      className="px-2 sm:px-2.5 py-1 bg-white hover:bg-orange hover:text-white text-navy font-bold text-[10px] rounded-lg border border-slate-200 transition-all shadow-xs flex items-center gap-1 cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
                       title="Quick add +1 unit directly"
                     >
-                      <Plus className="w-3 h-3 text-orange hover:text-white" />
+                      <Plus className="w-3 h-3 text-orange group-hover:text-white shrink-0" />
                       <span>+1 Stock</span>
                     </button>
                   </div>
