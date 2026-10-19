@@ -120,7 +120,10 @@ export function ShopByCategorySection() {
       </div>
 
       {/* Circular Category Grid / Horizontal Scroll */}
-      <div className="flex items-center justify-start xl:justify-between gap-3 sm:gap-4 md:gap-5 overflow-x-auto scrollbar-none pb-2 pt-1 -mx-3 px-3 sm:mx-0 sm:px-0">
+      <div
+        className="flex items-center justify-start xl:justify-between gap-3 sm:gap-4 md:gap-5 overflow-x-auto scrollbar-none no-scrollbar pb-2 pt-1 -mx-3 px-3 sm:mx-0 sm:px-0"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         {CATEGORY_ITEMS.map((item) => (
           <Link
             key={item.id}
