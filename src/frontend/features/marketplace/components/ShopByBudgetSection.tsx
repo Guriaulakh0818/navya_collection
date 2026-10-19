@@ -38,17 +38,16 @@ export function ShopByBudgetSection() {
   return (
     <section className="space-y-3 sm:space-y-4 my-4 sm:my-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2.5 sm:gap-4">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="p-2 rounded-xl bg-orange/10 text-orange shrink-0">
-            <Wallet className="w-5 h-5" />
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+          <div className="p-1.5 sm:p-2 rounded-xl bg-orange/10 text-orange shrink-0">
+            <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="min-w-0">
-            <h2 className="text-base sm:text-lg font-black text-navy-900 tracking-tight leading-snug">
-              <span className="inline-block">Find Your Style,&nbsp;</span>
-              <span className="inline-block">Fit Your Budget</span>
+            <h2 className="text-xs min-[380px]:text-[13px] sm:text-base md:text-lg font-black text-navy-900 tracking-tight whitespace-nowrap">
+              Find Your Style, Fit Your Budget
             </h2>
-            <p className="text-xs text-slate-500 font-medium truncate">
+            <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">
               Curated fashion tailored for every budget
             </p>
           </div>
@@ -56,10 +55,9 @@ export function ShopByBudgetSection() {
 
         <Link
           href="/shop"
-          className="text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors flex items-center gap-1 shrink-0 whitespace-nowrap"
+          className="text-[10px] sm:text-xs md:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors flex items-center gap-0.5 sm:gap-1 shrink-0 whitespace-nowrap"
         >
-          <span className="hidden sm:inline">Explore All Price Tiers</span>
-          <span className="sm:hidden">Explore All</span>
+          <span>Explore All Price Tiers</span>
           <span>→</span>
         </Link>
       </div>
