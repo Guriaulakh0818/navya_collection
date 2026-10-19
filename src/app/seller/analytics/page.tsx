@@ -195,51 +195,65 @@ export default function SellerAnalyticsPage() {
       </div>
 
       {/* METRIC CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-orange/5 border border-orange/20 rounded-3xl p-6 space-y-2 shadow-sm">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+        <div className="bg-orange/5 border border-orange/20 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 space-y-1 sm:space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-navy">
-            <span className="text-xs font-bold uppercase tracking-wider">Gross GMV Sales</span>
-            <IndianRupee className="w-5 h-5 text-orange" />
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">
+              Gross GMV Sales
+            </span>
+            <IndianRupee className="w-4 h-4 sm:w-5 sm:h-5 text-orange shrink-0" />
           </div>
-          <p className="text-2xl font-extrabold text-orange font-mono">
+          <p className="text-lg sm:text-2xl font-extrabold text-orange font-mono">
             ₹{Number(summary.totalGrossRevenue || 0).toLocaleString('en-IN')}
           </p>
-          <span className="text-[10px] text-slate-500">Total Customer Paid GMV</span>
+          <span className="text-[9px] sm:text-[10px] text-slate-500 truncate block">
+            Total Customer Paid GMV
+          </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-2 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 space-y-1 sm:space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Net Seller Disbursal</span>
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">
+              Net Disbursal
+            </span>
+            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 shrink-0" />
           </div>
-          <p className="text-2xl font-extrabold text-emerald-700 font-mono">
+          <p className="text-lg sm:text-2xl font-extrabold text-emerald-700 font-mono">
             ₹{Number(summary.totalNetPayout || 0).toLocaleString('en-IN')}
           </p>
-          <span className="text-[10px] text-slate-500">After Commission Deductions</span>
+          <span className="text-[9px] sm:text-[10px] text-slate-500 truncate block">
+            After Commission Deductions
+          </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-2 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 space-y-1 sm:space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-bold uppercase tracking-wider">Sub-Orders Count</span>
-            <Package className="w-5 h-5 text-indigo-600" />
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">
+              Sub-Orders Count
+            </span>
+            <Package className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 shrink-0" />
           </div>
-          <p className="text-2xl font-extrabold text-navy font-mono">
+          <p className="text-lg sm:text-2xl font-extrabold text-navy font-mono">
             {summary.totalOrdersCount || 0}
           </p>
-          <span className="text-[10px] text-slate-500">Merchant Dispatched Sub-Orders</span>
+          <span className="text-[9px] sm:text-[10px] text-slate-500 truncate block">
+            Merchant Dispatched Orders
+          </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 space-y-2 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 space-y-1 sm:space-y-2 shadow-sm">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-bold uppercase tracking-wider">
-              Average Order Value (AOV)
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate">
+              Average Order (AOV)
             </span>
-            <TrendingUp className="w-5 h-5 text-purple-600" />
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 shrink-0" />
           </div>
-          <p className="text-2xl font-extrabold text-purple-700 font-mono">
+          <p className="text-lg sm:text-2xl font-extrabold text-purple-700 font-mono">
             ₹{Math.round(summary.averageOrderValue || 0).toLocaleString('en-IN')}
           </p>
-          <span className="text-[10px] text-slate-500">Average Spend Per Sub-Order</span>
+          <span className="text-[9px] sm:text-[10px] text-slate-500 truncate block">
+            Average Spend Per Sub-Order
+          </span>
         </div>
       </div>
 

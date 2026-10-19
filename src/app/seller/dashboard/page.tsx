@@ -86,69 +86,73 @@ export default function SellerDashboardPage() {
       </div>
 
       {/* 4 Summary Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Card 1: Total Products */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-navy/30 transition-all shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+        <div className="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 hover:border-navy/30 transition-all shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">
               Total Products
             </span>
-            <div className="w-9 h-9 rounded-xl bg-navy/10 border border-navy/20 flex items-center justify-center text-navy">
-              <ShoppingBag className="w-5 h-5" />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-navy/10 border border-navy/20 flex items-center justify-center text-navy shrink-0">
+              <ShoppingBag className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+          <div className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight font-mono">
             {metrics.totalProducts}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Active catalog items in boutique store</p>
+          <p className="text-[9px] sm:text-[11px] text-slate-500 mt-1 truncate">
+            Active boutique items
+          </p>
         </div>
 
         {/* Card 2: Pending Orders */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-navy/30 transition-all shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+        <div className="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 hover:border-navy/30 transition-all shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">
               Pending Orders
             </span>
-            <div className="w-9 h-9 rounded-xl bg-orange/10 border border-orange/30 flex items-center justify-center text-orange">
-              <Clock className="w-5 h-5" />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-orange/10 border border-orange/30 flex items-center justify-center text-orange shrink-0">
+              <Clock className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-orange tracking-tight">
+          <div className="text-lg sm:text-2xl font-extrabold text-orange tracking-tight font-mono">
             {metrics.pendingOrders}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Orders awaiting dispatch & shipping</p>
+          <p className="text-[9px] sm:text-[11px] text-slate-500 mt-1 truncate">
+            Awaiting dispatch
+          </p>
         </div>
 
         {/* Card 3: Total Revenue */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-navy/30 transition-all shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+        <div className="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 hover:border-navy/30 transition-all shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">
               Net Revenue
             </span>
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600">
-              <IndianRupee className="w-5 h-5" />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 shrink-0">
+              <IndianRupee className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-emerald-600 tracking-tight">
+          <div className="text-lg sm:text-2xl font-extrabold text-emerald-600 tracking-tight font-mono">
             ₹{Number(metrics.totalRevenue || 0).toLocaleString('en-IN')}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Net settlements after commission</p>
+          <p className="text-[9px] sm:text-[11px] text-slate-500 mt-1 truncate">Net settlements</p>
         </div>
 
         {/* Card 4: Inventory Stock */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-navy/30 transition-all shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+        <div className="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-5 hover:border-navy/30 transition-all shadow-sm">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">
               Inventory Units
             </span>
-            <div className="w-9 h-9 rounded-xl bg-navy/10 border border-navy/20 flex items-center justify-center text-navy">
-              <Package className="w-5 h-5" />
+            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-navy/10 border border-navy/20 flex items-center justify-center text-navy shrink-0">
+              <Package className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+          <div className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight font-mono">
             {metrics.totalInventoryStock}
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">Total variant stock items in warehouse</p>
+          <p className="text-[9px] sm:text-[11px] text-slate-500 mt-1 truncate">Warehouse stock</p>
         </div>
       </div>
 
