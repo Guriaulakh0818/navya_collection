@@ -66,71 +66,95 @@ export default function SellerPayoutLedgerPage() {
       </div>
 
       {/* METRIC CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-1 shadow-sm">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 space-y-1 shadow-sm">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Total MRP</span>
-            <TrendingUp className="w-4 h-4 text-slate-600" />
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate">
+              Total MRP
+            </span>
+            <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 shrink-0" />
           </div>
-          <p className="text-xl font-extrabold text-navy font-mono">
+          <p className="text-lg sm:text-xl font-extrabold text-navy font-mono truncate">
             ₹{Number(summary.totalMrp || 0).toLocaleString('en-IN')}
           </p>
-          <span className="text-[10px] text-slate-400">Commission Base</span>
+          <span className="text-[9px] sm:text-[10px] text-slate-400 truncate block">
+            Commission Base
+          </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-1 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 space-y-1 shadow-sm">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Selling Price</span>
-            <ShoppingBag className="w-4 h-4 text-blue-600" />
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate">
+              Selling Price
+            </span>
+            <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 shrink-0" />
           </div>
-          <p className="text-xl font-extrabold text-blue-700 font-mono">
+          <p className="text-lg sm:text-xl font-extrabold text-blue-700 font-mono truncate">
             ₹{Number(summary.sellingPrice || 0).toLocaleString('en-IN')}
           </p>
-          <span className="text-[10px] text-slate-400">Customer Price</span>
+          <span className="text-[9px] sm:text-[10px] text-slate-400 truncate block">
+            Customer Price
+          </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-1 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 space-y-1 shadow-sm">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Commission</span>
-            <PieChart className="w-4 h-4 text-orange" />
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate">
+              Commission
+            </span>
+            <PieChart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange shrink-0" />
           </div>
-          <p className="text-xl font-extrabold text-orange font-mono">
+          <p className="text-lg sm:text-xl font-extrabold text-orange font-mono truncate">
             - ₹{Number(summary.commissionAmount || 0).toLocaleString('en-IN')}
           </p>
-          <span className="text-[10px] text-slate-400">10% of MRP</span>
+          <span className="text-[9px] sm:text-[10px] text-slate-400 truncate block">
+            10% of MRP
+          </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-1 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 space-y-1 shadow-sm">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Base Payout</span>
-            <IndianRupee className="w-4 h-4 text-indigo-600" />
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate">
+              Base Payout
+            </span>
+            <IndianRupee className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600 shrink-0" />
           </div>
-          <p className="text-xl font-extrabold text-indigo-700 font-mono">
+          <p className="text-lg sm:text-xl font-extrabold text-indigo-700 font-mono truncate">
             ₹{Number(summary.sellerBasePayout || 0).toLocaleString('en-IN')}
           </p>
-          <span className="text-[10px] text-slate-400">Selling Price − Commission</span>
+          <span className="text-[9px] sm:text-[10px] text-slate-400 truncate block">
+            Selling Price − Comm.
+          </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-1 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 space-y-1 shadow-sm">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="text-[11px] font-bold uppercase tracking-wider">GST Added</span>
-            <ShieldCheck className="w-4 h-4 text-teal-600" />
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate">
+              GST Added
+            </span>
+            <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-600 shrink-0" />
           </div>
-          <p className="text-xl font-extrabold text-teal-700 font-mono">
+          <p className="text-lg sm:text-xl font-extrabold text-teal-700 font-mono truncate">
             + ₹{Number(summary.sellerGstAmount || 0).toLocaleString('en-IN')}
           </p>
-          <span className="text-[10px] text-slate-400">If GST Registered</span>
+          <span className="text-[9px] sm:text-[10px] text-slate-400 truncate block">
+            If GST Registered
+          </span>
         </div>
 
-        <div className="bg-emerald-50 border border-emerald-200 rounded-3xl p-5 space-y-1 shadow-sm">
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 space-y-1 shadow-sm">
           <div className="flex items-center justify-between text-emerald-700">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Total Payout</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider truncate">
+              Total Payout
+            </span>
+            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 shrink-0" />
           </div>
-          <p className="text-xl font-extrabold text-emerald-700 font-mono">
+          <p className="text-lg sm:text-xl font-extrabold text-emerald-700 font-mono truncate">
             ₹{Number(summary.sellerTotalPayout || 0).toLocaleString('en-IN')}
           </p>
-          <span className="text-[10px] text-emerald-600">Base + GST</span>
+          <span className="text-[9px] sm:text-[10px] text-emerald-600 truncate block">
+            Base + GST
+          </span>
         </div>
       </div>
 
