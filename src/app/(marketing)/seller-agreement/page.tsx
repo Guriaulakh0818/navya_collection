@@ -192,20 +192,19 @@ export default function SellerAgreementPage() {
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
                 <Scale className="w-5 h-5 text-orange" />
-                4. Customer Returns vs. RTO Logistics Policy (BM-01 &amp; BM-04)
+                4. Customer Returns vs. RTO Logistics Policy
               </h2>
               <p className="text-xs sm:text-sm">
-                <strong>Approved Customer Returns (BM-01):</strong> If a customer initiates a return
-                within the approved return window, the item is routed back to the seller. JiivaaKart
+                <strong>Approved Customer Returns:</strong> If a customer initiates a return within
+                the approved return window, the item is routed back to the seller. JiivaaKart
                 reverses its 10% commission and customer refund is issued. Actual logistics freight
-                liability is handled according to the BM-01 return financial model.
+                liability is handled according to our standard seller return policy.
               </p>
               <p className="text-xs sm:text-sm">
-                <strong>RTO (Return to Origin / Undelivered Consignments - BM-04):</strong> When a
-                shipment cannot be delivered to the customer and is returned to the seller as RTO,
-                the actual eligible logistics cost is shared equally:{' '}
-                <strong>50% borne by JiivaaKart</strong> and{' '}
-                <strong>50% borne by the seller</strong> via an adjustment ledger entry.
+                <strong>RTO (Return to Origin / Undelivered Consignments):</strong> When a shipment
+                cannot be delivered to the customer and is returned to the seller as RTO, the actual
+                eligible logistics cost is shared equally: <strong>50% borne by JiivaaKart</strong>{' '}
+                and <strong>50% borne by the seller</strong> via an adjustment ledger entry.
               </p>
             </section>
           </div>

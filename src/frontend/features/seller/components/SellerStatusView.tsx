@@ -144,7 +144,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
               </span>
               {shop?.slug && (
                 <span className="text-xs font-mono text-slate-500 font-bold">
-                  Ref ID:{' '}
+                  Application Ref:{' '}
                   <span className="text-orange font-extrabold">{shop.id.substring(0, 16)}</span>
                 </span>
               )}
@@ -256,7 +256,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
             <AlertCircle className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
             <div>
               <h3 className="text-base font-extrabold text-rose-900">
-                Rejection Reason Provided by Admin
+                Verification Review Feedback
               </h3>
               <p className="text-xs text-rose-700 font-medium mt-1">
                 Please review the feedback below and update your application details or re-upload
@@ -326,7 +326,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
               </div>
               <h4 className="font-extrabold text-navy">Application Saved</h4>
               <p className="text-slate-600">
-                Your merchant profile and documents are safely stored in PostgreSQL.
+                Your merchant profile and compliance documents are safely and securely stored.
               </p>
             </div>
 
@@ -334,9 +334,9 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
               <div className="w-7 h-7 rounded-lg bg-orange/20 text-orange font-black flex items-center justify-center">
                 2
               </div>
-              <h4 className="font-extrabold text-navy">Admin Document Audit</h4>
+              <h4 className="font-extrabold text-navy">Document &amp; Compliance Audit</h4>
               <p className="text-slate-600">
-                Platform governance is validating GSTIN, PAN, and Bank settlement details.
+                Our verification team is validating your GSTIN, PAN, and bank settlement details.
               </p>
             </div>
 

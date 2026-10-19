@@ -49,7 +49,7 @@ export function PendingApprovalCard({
               </span>
             </h2>
             <p className="text-sm text-slate-600 mt-0.5 font-medium">
-              Ref ID:{' '}
+              Application Ref:{' '}
               <span className="font-mono text-orange font-bold">{shopId.substring(0, 16)}</span>
             </p>
           </div>

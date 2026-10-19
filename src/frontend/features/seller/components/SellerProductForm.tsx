@@ -2341,7 +2341,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
             <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">
-              Cost Price (Private Seller Only)
+              Cost Price (Private - Not visible to buyers)
             </label>
             <input
               type="number"

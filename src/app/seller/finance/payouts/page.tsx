@@ -52,8 +52,8 @@ export default function SellerPayoutLedgerPage() {
             Merchant Earnings & Settlement Ledger
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Authoritative BM-03 Payout: Commission = MRP × 10% | Seller Base Payout = Selling Price
-            − Commission | GST added if registered
+            Settlement Calculation: Commission = MRP × 10% | Seller Base Payout = Selling Price −
+            Commission | GST added if registered
           </p>
         </div>
 
@@ -161,8 +161,7 @@ export default function SellerPayoutLedgerPage() {
       {/* ORDERS SETTLEMENT LEDGER */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
         <h2 className="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-          <FileText className="w-5 h-5 text-navy" /> Vendor Sub-Orders Settlement Ledger (BM-03
-          Authoritative)
+          <FileText className="w-5 h-5 text-navy" /> Vendor Sub-Orders Settlement Ledger
         </h2>
 
         {isLoading ? (
