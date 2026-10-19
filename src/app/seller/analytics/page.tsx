@@ -668,36 +668,39 @@ export default function SellerAnalyticsPage() {
                   Custom Quantity To Add
                 </label>
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center border border-slate-300 rounded-xl bg-white overflow-hidden shadow-2xs">
+                  <div className="flex items-center border border-slate-300 rounded-2xl bg-white overflow-hidden shadow-xs">
                     <button
                       type="button"
                       onClick={() => setAddStockAmount((prev) => Math.max(1, prev - 1))}
-                      className="px-3 py-2 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                      className="w-10 h-10 flex items-center justify-center text-slate-700 bg-white hover:bg-slate-100 transition-colors cursor-pointer border-r border-slate-200"
+                      title="Decrease quantity"
                     >
-                      <Minus className="w-3.5 h-3.5" />
+                      <Minus className="w-4 h-4 text-navy" />
                     </button>
                     <input
                       type="number"
                       min={1}
                       value={addStockAmount}
                       onChange={(e) => setAddStockAmount(Math.max(1, Number(e.target.value) || 1))}
-                      className="w-16 text-center font-mono font-extrabold text-navy text-sm py-2 focus:outline-none"
+                      className="w-16 h-10 text-center font-mono font-black text-navy bg-white text-base focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      style={{ backgroundColor: '#ffffff', color: '#183a73' }}
                     />
                     <button
                       type="button"
                       onClick={() => setAddStockAmount((prev) => prev + 1)}
-                      className="px-3 py-2 text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                      className="w-10 h-10 flex items-center justify-center text-slate-700 bg-white hover:bg-slate-100 transition-colors cursor-pointer border-l border-slate-200"
+                      title="Increase quantity"
                     >
-                      <Plus className="w-3.5 h-3.5" />
+                      <Plus className="w-4 h-4 text-navy" />
                     </button>
                   </div>
 
                   {/* Dynamic Stock Calculation Preview */}
-                  <div className="text-xs text-slate-600 font-mono bg-white border border-slate-200 px-3 py-2 rounded-xl flex-1">
+                  <div className="text-xs text-slate-600 font-mono bg-white border border-slate-200 px-3.5 py-2.5 rounded-2xl shadow-xs flex-1">
                     <span>Current: </span>
-                    <strong className="text-navy">{selectedProduct.stock}</strong>
+                    <strong className="text-navy font-bold">{selectedProduct.stock}</strong>
                     <span> + </span>
-                    <strong className="text-orange">{addStockAmount}</strong>
+                    <strong className="text-orange font-bold">{addStockAmount}</strong>
                     <span> = </span>
                     <strong className="text-emerald-700 font-black">
                       {selectedProduct.stock + addStockAmount} units
