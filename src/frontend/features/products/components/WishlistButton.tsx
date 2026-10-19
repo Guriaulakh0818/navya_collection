@@ -1,64 +1,153 @@
 'use client';
 
+import { Heart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import type { Product } from '@/features/products/types/product.types';
+import { useToast } from '@/providers';
 import { useWishlistStore } from '@/stores';
 
-type WishlistButtonProps = {
-  product: Product;
+export type WishlistButtonProps = {
+  product: Product | any;
+  variant?: any;
   className?: string;
+  iconClassName?: string;
+  size?: 'sm' | 'md' | 'lg';
+  showLabel?: boolean;
+  activeLabel?: string;
+  inactiveLabel?: string;
+  showToast?: boolean;
 };
 
-export function WishlistButton({ product, className }: WishlistButtonProps) {
+export function WishlistButton({
+  product,
+  variant,
+  className,
+  iconClassName,
+  size = 'md',
+  showLabel = false,
+  activeLabel = 'Wishlisted',
+  inactiveLabel = 'Add to Wishlist',
+  showToast = true,
+}: WishlistButtonProps) {
   const [mounted, setMounted] = useState(false);
-  const isInWishlist = useWishlistStore((s) => (product?.id ? s.isInWishlist(product.id) : false));
-  const toggleItem = useWishlistStore((s) => s.toggleItem);
+  const { toast } = useToast();
+
+  const pid = product?.id || product?.productId || '';
+  const vid = variant?.id || null;
+
+  const isInWishlist = useWishlistStore((s) => (pid ? s.isInWishlist(pid, vid) : false));
+  const addItem = useWishlistStore((s) => s.addItem);
+  const removeItem = useWishlistStore((s) => s.removeItem);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!product?.id) return null;
+  if (!pid) return null;
 
   const activeInWishlist = mounted && isInWishlist;
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleItem({
-      productId: product.id,
-      name: product.name,
-      price: Number(product.price || 0),
-      image:
-        product.images?.[0]?.imageUrl || product.images?.[0]?.url || (product as any)?.image || '',
-      slug: product.slug,
-    });
+
+    if (activeInWishlist) {
+      await removeItem(pid, vid);
+      if (showToast) {
+        toast(`Removed ${product.name || 'item'} from your wishlist.`, 'info');
+      }
+    } else {
+      const selectedSize =
+        variant?.size ||
+        variant?.sizeName ||
+        (typeof variant?.attributes === 'object' ? variant?.attributes?.size : null) ||
+        null;
+
+      const selectedColor =
+        variant?.color ||
+        variant?.colorName ||
+        (typeof variant?.attributes === 'object' ? variant?.attributes?.color : null) ||
+        null;
+
+      const variantName = variant?.name || null;
+
+      const itemPrice = Number(variant?.price ?? product?.price ?? 0);
+      const comparePrice = variant?.compareAtPrice
+        ? Number(variant.compareAtPrice)
+        : product?.compareAtPrice
+          ? Number(product.compareAtPrice)
+          : null;
+
+      const image =
+        variant?.imageUrl ||
+        variant?.image ||
+        product?.images?.[0]?.imageUrl ||
+        product?.images?.[0]?.url ||
+        product?.image ||
+        '';
+
+      await addItem({
+        productId: pid,
+        variantId: vid,
+        name: product?.name || 'Navya Couture',
+        slug: product?.slug || '',
+        price: itemPrice,
+        compareAtPrice: comparePrice,
+        image,
+        inStock: (variant?.stock ?? product?.stock ?? 1) > 0,
+        categoryName: product?.category?.name || product?.categoryName || null,
+        shopId: product?.shop?.id || product?.shopId,
+        shopName: product?.shop?.name || product?.shopName,
+        shopSlug: product?.shop?.slug || product?.shopSlug,
+        shopLogo: product?.shop?.logo || product?.shopLogo,
+        selectedSize,
+        selectedColor,
+        variantName,
+      });
+
+      if (showToast) {
+        const variantSuffix = [selectedColor, selectedSize].filter(Boolean).join(', ');
+        toast(
+          `Added ${product.name || 'item'}${variantSuffix ? ` (${variantSuffix})` : ''} to wishlist! ❤️`,
+          'success',
+        );
+      }
+    }
   };
+
+  const sizeClasses = {
+    sm: 'p-1.5 text-xs',
+    md: 'p-2 text-sm',
+    lg: 'p-3 text-base',
+  }[size];
+
+  const iconSizes = {
+    sm: 'h-4 w-4',
+    md: 'h-5 w-5',
+    lg: 'h-6 w-6',
+  }[size];
 
   return (
     <button
       type="button"
       onClick={handleClick}
-      className={`inline-flex items-center justify-center rounded-full p-2 transition-all duration-150 active:scale-90 transform cursor-pointer ${
+      className={`inline-flex items-center justify-center rounded-full transition-all duration-200 active:scale-90 transform cursor-pointer select-none ${
         activeInWishlist
-          ? 'bg-rose-50 text-rose-600 scale-105'
-          : 'bg-white/80 text-slate-600 hover:text-rose-600'
-      } ${className || ''}`}
+          ? 'bg-rose-50 text-rose-600 scale-105 shadow-sm'
+          : 'bg-white/80 text-slate-600 hover:text-rose-600 hover:bg-white shadow-2xs'
+      } ${sizeClasses} ${className || ''}`}
       aria-label={activeInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+      title={activeInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5"
-        viewBox="0 0 24 24"
-        fill={activeInWishlist ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06 1.06a5.5 5.5 0 0 0 0-7.78z" />
-      </svg>
+      <Heart
+        className={`transition-transform duration-200 ${iconSizes} ${
+          activeInWishlist ? 'fill-rose-600 text-rose-600 scale-110' : 'text-current'
+        } ${iconClassName || ''}`}
+      />
+      {showLabel && (
+        <span className="ml-1.5 font-bold">{activeInWishlist ? activeLabel : inactiveLabel}</span>
+      )}
     </button>
   );
 }

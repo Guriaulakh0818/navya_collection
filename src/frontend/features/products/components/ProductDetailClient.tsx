@@ -28,7 +28,7 @@ import { useRouter } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Drawer } from '@/components/ui/drawer';
-import { HorizontalCarousel } from '@/frontend/components/ui/HorizontalCarousel';
+import { useToast } from '@/providers';
 import { useCartStore, useWishlistStore } from '@/stores';
 
 import { ProductCard } from './ProductCard';
@@ -95,7 +95,12 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const cartItems = useCartStore((s) => s.items);
-  const { toggleItem: toggleWishlist, isInWishlist } = useWishlistStore();
+  const {
+    addItem: addWishlistItem,
+    removeItem: removeWishlistItem,
+    isInWishlist,
+  } = useWishlistStore();
+  const { toast } = useToast();
   const router = useRouter();
 
   const [mounted, setMounted] = useState(false);
@@ -250,7 +255,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     }
   };
 
-  const isWishlisted = isInWishlist(product.id);
+  const isWishlisted = Boolean(mounted && isInWishlist(product.id, activeVariant?.id));
 
   const stockStatus = useMemo(() => {
     if (!activeVariant && (product.stock || 0) <= 0) {
@@ -471,6 +476,42 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     );
   }, [product.category]);
 
+  const handleToggleWishlist = async () => {
+    const pid = product.id || product.productId;
+    const vid = activeVariant?.id || null;
+    const currentlyWishlisted = isInWishlist(pid, vid);
+
+    if (currentlyWishlisted) {
+      await removeWishlistItem(pid, vid);
+      toast(`Removed "${product.name}" from your wishlist.`, 'info');
+    } else {
+      await addWishlistItem({
+        productId: pid,
+        variantId: vid,
+        name: product.name,
+        slug: product.slug,
+        price: price,
+        compareAtPrice: compareAtPrice,
+        image: activeVariantImageUrl || displayImages?.[0]?.url || product.images?.[0]?.url || '',
+        inStock: (activeVariant?.stock ?? product.stock ?? 1) > 0,
+        categoryName: product.category?.name || null,
+        shopId: product.shop?.id || product.shopId,
+        shopName: product.shop?.name || product.shopName,
+        shopSlug: product.shop?.slug || product.shopSlug,
+        shopLogo: product.shop?.logo || product.shopLogo,
+        selectedSize: activeSize || activeVariant?.size || null,
+        selectedColor: activeColor || activeVariant?.color || null,
+        variantName: activeVariant?.name || null,
+      });
+
+      const variantDetail = [activeColor, activeSize].filter(Boolean).join(', ');
+      toast(
+        `Added "${product.name}"${variantDetail ? ` (${variantDetail})` : ''} to wishlist! ❤️`,
+        'success',
+      );
+    }
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6 md:space-y-8 max-w-7xl mx-auto">
       {/* Breadcrumb Navigation */}
@@ -488,9 +529,26 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
 
       {/* Main Product Layout: 2 Columns on Desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-10 items-start">
-        {/* Left Column: Image Gallery */}
-        <div className="lg:col-span-7">
+        {/* Left Column: Image Gallery with Floating Top-Right Wishlist Heart */}
+        <div className="lg:col-span-7 relative">
           <ProductImageGallery images={displayImages} activeImageUrl={activeVariantImageUrl} />
+          <button
+            type="button"
+            onClick={handleToggleWishlist}
+            className={`absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2.5 sm:p-3 rounded-full shadow-md backdrop-blur-md transition-all duration-200 cursor-pointer active:scale-90 ${
+              isWishlisted
+                ? 'bg-rose-50/95 text-rose-600 ring-2 ring-rose-300'
+                : 'bg-white/90 text-slate-700 hover:text-rose-600 hover:bg-white'
+            }`}
+            title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+            aria-label={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+          >
+            <Heart
+              className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform ${
+                isWishlisted ? 'fill-rose-600 text-rose-600 scale-110' : ''
+              }`}
+            />
+          </button>
         </div>
 
         {/* Right Column: Product Info & Purchase Form */}
@@ -801,16 +859,20 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
 
             <button
               type="button"
-              onClick={() => toggleWishlist(product)}
-              className={`h-[42px] sm:h-[46px] w-[42px] sm:w-[46px] rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-center shrink-0 ${
+              onClick={handleToggleWishlist}
+              className={`h-[42px] sm:h-[46px] w-[42px] sm:w-[46px] rounded-xl sm:rounded-2xl border transition-all cursor-pointer flex items-center justify-center shrink-0 active:scale-90 ${
                 isWishlisted
-                  ? 'border-rose-300 bg-rose-50 text-rose-600'
-                  : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  ? 'border-rose-300 bg-rose-50 text-rose-600 shadow-sm'
+                  : 'border-slate-200 bg-white text-slate-600 hover:text-rose-600 hover:bg-slate-50'
               }`}
-              title="Add to Wishlist"
-              aria-label="Add to Wishlist"
+              title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+              aria-label={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
             >
-              <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isWishlisted ? 'fill-rose-600' : ''}`} />
+              <Heart
+                className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${
+                  isWishlisted ? 'fill-rose-600 text-rose-600 scale-110' : ''
+                }`}
+              />
             </button>
 
             <button

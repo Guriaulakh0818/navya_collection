@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const addToWishlistSchema = z.object({
   productId: z.string().min(1, 'Product ID is required.'),
+  variantId: z.string().optional().nullable(),
 });
 
 export const mergeWishlistSchema = z.object({
