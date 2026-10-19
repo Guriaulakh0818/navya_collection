@@ -467,3 +467,166 @@ export async function DELETE(
     return handleApiError(error, 'DELETE Seller Product Error');
   }
 }
+
+// PATCH /api/v1/seller/products/[id] - Quick Stock Adjustment & Replenishment
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params;
+    const userId = await getAuthenticatedUser();
+    if (!userId) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, email: true, mobile: true },
+    });
+
+    const isPlatformAdminOrOwner = Boolean(
+      user && ['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(String(user.role).toUpperCase()),
+    );
+
+    const product = await prisma.product.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+        ...(isPlatformAdminOrOwner
+          ? {}
+          : {
+              OR: [
+                { shop: { ownerId: userId } },
+                ...(user?.email ? [{ shop: { email: user.email } }] : []),
+                ...(user?.mobile ? [{ shop: { phone: user.mobile } }] : []),
+              ],
+            }),
+      },
+      include: {
+        variants: true,
+      },
+    });
+
+    if (!product) {
+      return NextResponse.json(
+        { success: false, message: 'Product not found or unauthorized.' },
+        { status: 404 },
+      );
+    }
+
+    const body = await request.json();
+    const { stockDelta, newStock, variantId, variantStockUpdates } = body;
+
+    let updatedStock = Number(product.stock);
+    const updatedVariants: any[] = [];
+
+    await prisma.$transaction(async (tx) => {
+      // 1. If variant-level batch updates are provided
+      if (Array.isArray(variantStockUpdates) && variantStockUpdates.length > 0) {
+        for (const vUp of variantStockUpdates) {
+          const variant = product.variants.find((v) => v.id === vUp.variantId);
+          if (variant) {
+            const vNewStock =
+              vUp.newStock !== undefined
+                ? Math.max(0, Number(vUp.newStock))
+                : Math.max(0, Number(variant.stock) + Number(vUp.stockDelta || 0));
+            const updated = await tx.productVariant.update({
+              where: { id: variant.id },
+              data: { stock: vNewStock },
+            });
+            updatedVariants.push(updated);
+          }
+        }
+        const allDbVariants = await tx.productVariant.findMany({
+          where: { productId: id },
+          select: { stock: true },
+        });
+        updatedStock = allDbVariants.reduce((sum, v) => sum + Number(v.stock), 0);
+        await tx.product.update({
+          where: { id },
+          data: { stock: updatedStock },
+        });
+      } else if (variantId) {
+        // 2. Specific single variant update
+        const variant = product.variants.find((v) => v.id === variantId);
+        if (variant) {
+          const vNewStock =
+            newStock !== undefined
+              ? Math.max(0, Number(newStock))
+              : Math.max(0, Number(variant.stock) + Number(stockDelta || 0));
+          const updated = await tx.productVariant.update({
+            where: { id: variant.id },
+            data: { stock: vNewStock },
+          });
+          updatedVariants.push(updated);
+
+          const allDbVariants = await tx.productVariant.findMany({
+            where: { productId: id },
+            select: { stock: true },
+          });
+          updatedStock = allDbVariants.reduce((sum, v) => sum + Number(v.stock), 0);
+          await tx.product.update({
+            where: { id },
+            data: { stock: updatedStock },
+          });
+        }
+      } else {
+        // 3. Product-level stock update
+        const delta = Number(stockDelta || 0);
+        updatedStock =
+          newStock !== undefined
+            ? Math.max(0, Number(newStock))
+            : Math.max(0, Number(product.stock) + delta);
+
+        if (product.variants.length > 0) {
+          // If variants exist, apply delta to the first variant so variant sum stays synchronized
+          const firstVariant = product.variants[0];
+          const newVarStock = Math.max(0, Number(firstVariant.stock) + delta);
+          await tx.productVariant.update({
+            where: { id: firstVariant.id },
+            data: { stock: newVarStock },
+          });
+          const allDbVariants = await tx.productVariant.findMany({
+            where: { productId: id },
+            select: { stock: true },
+          });
+          updatedStock = allDbVariants.reduce((sum, v) => sum + Number(v.stock), 0);
+        }
+
+        await tx.product.update({
+          where: { id },
+          data: { stock: updatedStock },
+        });
+      }
+
+      // Record Audit Log
+      const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
+      await tx.auditLog.create({
+        data: {
+          adminId: userId,
+          action: 'PRODUCT_STOCK_UPDATED',
+          entity: 'Product',
+          entityId: id,
+          metadata: {
+            name: product.name,
+            sku: product.sku,
+            previousStock: product.stock,
+            newStock: updatedStock,
+            delta: stockDelta,
+          },
+          ipAddress: clientIp,
+        },
+      });
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Stock updated successfully for "${product.name}". Current stock: ${updatedStock}`,
+      data: {
+        id: product.id,
+        stock: updatedStock,
+        variants: updatedVariants,
+      },
+    });
+  } catch (error: any) {
+    return handleApiError(error, 'PATCH Seller Product Stock Error');
+  }
+}

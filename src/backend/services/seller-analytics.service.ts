@@ -32,7 +32,19 @@ export class SellerAnalyticsService {
       include: {
         items: {
           include: {
-            product: { select: { id: true, name: true, price: true, images: true } },
+            product: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+                compareAtPrice: true,
+                stock: true,
+                sku: true,
+                status: true,
+                category: { select: { id: true, name: true } },
+                images: { orderBy: { sortOrder: 'asc' }, select: { imageUrl: true } },
+              },
+            },
           },
         },
       },
@@ -57,10 +69,17 @@ export class SellerAnalyticsService {
     const productSalesMap = new Map<
       string,
       {
+        id: string;
         productId: string;
         name: string;
         price: number;
+        compareAtPrice: number;
+        stock: number;
+        sku: string;
+        status: string;
+        categoryName: string;
         image: string | null;
+        images: string[];
         totalQuantity: number;
         totalRevenue: number;
       }
@@ -71,14 +90,21 @@ export class SellerAnalyticsService {
         const p = item.product;
         if (!p) return;
 
+        const imgUrls = Array.isArray(p.images)
+          ? p.images.map((img: { imageUrl: string }) => img.imageUrl)
+          : [];
         const existing = productSalesMap.get(p.id) || {
+          id: p.id,
           productId: p.id,
           name: p.name,
           price: Number(p.price || 0),
-          image:
-            Array.isArray(p.images) && p.images.length > 0
-              ? (p.images[0] as any).url || null
-              : null,
+          compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : 0,
+          stock: Number(p.stock || 0),
+          sku: p.sku || '',
+          status: p.status || 'active',
+          categoryName: p.category?.name || 'Apparel',
+          image: imgUrls[0] || null,
+          images: imgUrls,
           totalQuantity: 0,
           totalRevenue: 0,
         };
@@ -96,7 +122,29 @@ export class SellerAnalyticsService {
     // 4. Inventory Stock Distribution
     const products = await prisma.product.findMany({
       where: { shopId, deletedAt: null },
-      select: { id: true, name: true, stock: true, price: true, images: true },
+      select: {
+        id: true,
+        name: true,
+        stock: true,
+        price: true,
+        compareAtPrice: true,
+        sku: true,
+        status: true,
+        category: { select: { id: true, name: true } },
+        images: { orderBy: { sortOrder: 'asc' }, select: { imageUrl: true } },
+        variants: {
+          select: {
+            id: true,
+            sku: true,
+            size: true,
+            color: true,
+            stock: true,
+            price: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+      orderBy: { stock: 'asc' },
     });
 
     const totalProductsCount = products.length;
@@ -107,12 +155,34 @@ export class SellerAnalyticsService {
     const lowStockItems: any[] = [];
 
     products.forEach((p) => {
+      const imgUrls = Array.isArray(p.images)
+        ? p.images.map((img: { imageUrl: string }) => img.imageUrl)
+        : [];
+      const itemData = {
+        id: p.id,
+        productId: p.id,
+        name: p.name,
+        stock: Number(p.stock || 0),
+        price: Number(p.price),
+        compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : 0,
+        sku: p.sku || '',
+        status: p.status || 'active',
+        categoryName: p.category?.name || 'Apparel',
+        images: imgUrls,
+        image: imgUrls[0] || null,
+        variants: p.variants.map((v) => ({
+          ...v,
+          price: Number(v.price),
+          stock: Number(v.stock),
+        })),
+      };
+
       if (p.stock === 0) {
         outOfStockCount++;
-        lowStockItems.push(p);
+        lowStockItems.push(itemData);
       } else if (p.stock <= 5) {
         lowStockCount++;
-        lowStockItems.push(p);
+        lowStockItems.push(itemData);
       } else {
         inStockCount++;
       }
