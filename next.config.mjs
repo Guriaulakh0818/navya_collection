@@ -5,24 +5,18 @@ const nextConfig = {
   reactStrictMode: true,
   compress: true,
   turbopack: {},
-  webpack: (config, { dev }) => {
-    if (dev) {
-      config.cache = false;
-    }
-    return config;
-  },
   compiler: {
     removeConsole: isProd ? { exclude: ['error', 'warn'] } : false,
   },
   experimental: {
-    workerThreads: false,
-    cpus: 1,
     optimizePackageImports: [
       'lucide-react',
       '@radix-ui/react-slot',
       '@radix-ui/react-tabs',
+      '@tanstack/react-query',
       'date-fns',
       'framer-motion',
+      'zustand',
     ],
   },
   images: {

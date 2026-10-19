@@ -1,9 +1,11 @@
+import { Suspense } from 'react';
 import type { Metadata, Viewport } from 'next';
 import { DM_Sans } from 'next/font/google';
 
 import './globals.css';
 
 import SiteLayout from '@/components/layout';
+import { NavigationProgressBar } from '@/components/ui/NavigationProgressBar';
 import {
   generateOrganizationSchema,
   generateWebSiteSchema,
@@ -125,6 +127,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className="min-h-screen bg-background font-sans text-foreground antialiased overflow-x-hidden max-w-full"
         suppressHydrationWarning
       >
+        <Suspense fallback={null}>
+          <NavigationProgressBar />
+        </Suspense>
         <GoogleAnalytics
           gaMeasurementId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || 'G-Z60T8WT006'}
         />
