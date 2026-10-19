@@ -141,7 +141,7 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
               </div>
 
               {/* Info & Add to Cart */}
-              <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-2.5">
+              <div className="p-2.5 sm:p-3.5 flex-1 flex flex-col justify-between gap-2">
                 <div>
                   <Link href={`/product/${p.slug}`}>
                     <h3 className="font-extrabold text-navy-900 text-xs sm:text-sm group-hover:text-orange transition-colors line-clamp-1">
@@ -149,27 +149,27 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
                     </h3>
                   </Link>
 
-                  <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                  <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate mt-0.5">
                     {p.shop?.name || 'Local Boutique'}
                   </p>
+                </div>
 
-                  <div className="flex items-baseline gap-2 mt-2">
-                    <span className="text-sm sm:text-base font-black text-navy-900 font-mono">
+                {/* Inline Price & Add to Cart Row */}
+                <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t border-slate-100">
+                  <div className="min-w-0 flex items-baseline gap-1 sm:gap-1.5 flex-wrap">
+                    <span className="text-xs sm:text-sm md:text-base font-black text-navy-900 font-mono">
                       ₹{priceNum.toLocaleString('en-IN')}
                     </span>
                     {comparePriceNum && comparePriceNum > priceNum && (
-                      <span className="text-xs text-slate-400 line-through font-mono">
+                      <span className="text-[10px] sm:text-xs text-slate-400 line-through font-mono">
                         ₹{comparePriceNum.toLocaleString('en-IN')}
                       </span>
                     )}
                   </div>
-                </div>
 
-                <div className="pt-1">
-                  <AddToCartButton
-                    product={p as any}
-                    className="w-full text-xs font-bold py-2 shadow-2xs rounded-xl"
-                  />
+                  <div className="shrink-0">
+                    <AddToCartButton product={p as any} compact />
+                  </div>
                 </div>
               </div>
             </div>

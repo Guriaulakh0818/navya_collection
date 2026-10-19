@@ -138,28 +138,30 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          <div className="mt-1 flex items-center justify-between">
-            <ProductPrice
-              price={product.price}
-              compareAtPrice={product.compareAtPrice}
-              className="flex items-baseline gap-1.5 text-xs sm:text-sm font-black"
-            />
-          </div>
+          {product.rating ? (
+            <div className="mt-1 flex items-center justify-between">
+              <ProductRating
+                rating={product.rating}
+                reviewCount={product.reviewCount}
+                className="flex items-center gap-1 text-[10px] text-slate-400 font-medium"
+              />
+            </div>
+          ) : null}
 
-          <div className="mt-0.5 pt-1 border-t border-slate-100 flex items-center justify-between">
-            <ProductRating
-              rating={product.rating}
-              reviewCount={product.reviewCount}
-              className="flex items-center gap-1 text-[10px] text-slate-400 font-medium"
-            />
-          </div>
-        </div>
+          {/* Price & Add to Cart Inline Row */}
+          <div className="mt-1.5 pt-1.5 border-t border-slate-100 flex items-center justify-between gap-1.5">
+            <div className="min-w-0">
+              <ProductPrice
+                price={product.price}
+                compareAtPrice={product.compareAtPrice}
+                className="flex items-baseline gap-1 sm:gap-1.5 flex-wrap text-xs sm:text-sm font-black"
+              />
+            </div>
 
-        <div className="pt-1">
-          <AddToCartButton
-            product={product}
-            className="w-full rounded-xl text-[11px] sm:text-xs font-bold py-1.5 sm:py-2 h-8 sm:h-9 shadow-xs"
-          />
+            <div className="shrink-0">
+              <AddToCartButton product={product} compact />
+            </div>
+          </div>
         </div>
       </div>
     </div>
