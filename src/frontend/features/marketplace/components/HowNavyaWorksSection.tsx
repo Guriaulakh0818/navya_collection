@@ -46,7 +46,7 @@ export function HowNavyaWorksSection() {
             <PackageCheck className="w-3.5 h-3.5 text-orange" />
             <span>Marketplace Workflow</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-navy-900 tracking-tight font-sans">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-navy-900 tracking-tight font-sans">
             How JiivaaKart Works
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
@@ -54,10 +54,10 @@ export function HowNavyaWorksSection() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/shop"
-            className="text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors"
+            className="text-[10px] sm:text-xs md:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors whitespace-nowrap"
           >
             Explore Catalog →
           </Link>

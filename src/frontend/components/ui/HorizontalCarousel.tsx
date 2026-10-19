@@ -61,11 +61,11 @@ export function HorizontalCarousel({
     <section className={`space-y-2.5 sm:space-y-4 relative group ${className}`}>
       {/* Section Header */}
       {title && (
-        <div className="flex items-center justify-between border-b border-slate-200/80 pb-2 sm:pb-3 gap-2">
+        <div className="flex items-center justify-between border-b border-slate-200/80 pb-2 sm:pb-3 gap-2 sm:gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 sm:gap-2">
               {icon}
-              <h2 className="text-xs sm:text-lg md:text-xl font-extrabold text-navy tracking-tight truncate">
+              <h2 className="text-xs min-[380px]:text-[13px] sm:text-base md:text-lg font-black text-navy-900 tracking-tight whitespace-nowrap">
                 {title}
               </h2>
             </div>
@@ -76,7 +76,7 @@ export function HorizontalCarousel({
             )}
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Arrow Navigation Controls */}
             <div className="flex items-center gap-0.5 sm:gap-1">
               <button
@@ -110,7 +110,7 @@ export function HorizontalCarousel({
             {actionLink && (
               <Link
                 href={actionLink}
-                className="text-[10px] sm:text-xs text-orange font-extrabold flex items-center gap-0.5 hover:text-orange-600 transition-colors shrink-0 ml-0.5"
+                className="text-[10px] sm:text-xs md:text-sm text-orange font-extrabold flex items-center gap-0.5 hover:text-orange-600 transition-colors shrink-0 whitespace-nowrap ml-0.5"
               >
                 <span>{actionText}</span>
                 <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />

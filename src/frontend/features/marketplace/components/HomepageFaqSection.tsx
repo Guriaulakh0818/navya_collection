@@ -22,17 +22,17 @@ export function HomepageFaqSection() {
             <HelpCircle className="w-3.5 h-3.5 text-orange" />
             <span>Questions & Answers</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-navy-900 tracking-tight font-sans">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-navy-900 tracking-tight font-sans">
             Frequently Asked Questions
           </h2>
-          <p className="text-sm text-slate-600 font-normal leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
             Essential facts about shopping and selling on JiivaaKart fashion marketplace.
           </p>
         </div>
 
         <Link
           href="/contact"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-orange hover:text-orange-600 transition-colors shrink-0"
+          className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs md:text-sm font-bold text-orange hover:text-orange-600 transition-colors shrink-0 whitespace-nowrap"
         >
           <span>Need more help? Contact Support</span>
           <span aria-hidden="true">→</span>

@@ -39,15 +39,15 @@ export function WhyShopNavyaSection() {
   return (
     <section className="space-y-4 sm:space-y-5 my-8 sm:my-10">
       {/* Header */}
-      <div className="flex items-center gap-2.5">
-        <div className="p-2 rounded-xl bg-orange/10 text-orange">
-          <ShoppingBag className="w-5 h-5" />
+      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+        <div className="p-1.5 sm:p-2 rounded-xl bg-orange/10 text-orange shrink-0">
+          <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
-        <div>
-          <h2 className="text-lg sm:text-xl font-black text-navy-900 tracking-tight">
+        <div className="min-w-0">
+          <h2 className="text-xs min-[380px]:text-[13px] sm:text-base md:text-lg font-black text-navy-900 tracking-tight whitespace-nowrap">
             Why Shop on JiivaaKart?
           </h2>
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">
             Building India&apos;s most trusted fashion marketplace for local clothing stores
           </p>
         </div>
