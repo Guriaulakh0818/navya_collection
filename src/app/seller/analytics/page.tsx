@@ -333,11 +333,14 @@ export default function SellerAnalyticsPage() {
                     </span>
 
                     {/* Thumbnail */}
-                    <div className="w-10 h-10 rounded-xl bg-slate-200 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-slate-200 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative">
                       {p.image ? (
-                        <img
+                        <Image
                           src={p.image}
                           alt={p.name}
+                          width={40}
+                          height={40}
+                          unoptimized
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
                       ) : (
@@ -414,11 +417,14 @@ export default function SellerAnalyticsPage() {
                 >
                   <div className="flex items-center gap-3">
                     {/* Thumbnail */}
-                    <div className="w-10 h-10 rounded-xl bg-slate-200 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-slate-200 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative">
                       {p.image ? (
-                        <img
+                        <Image
                           src={p.image}
                           alt={p.name}
+                          width={40}
+                          height={40}
+                          unoptimized
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
                       ) : (
@@ -504,11 +510,14 @@ export default function SellerAnalyticsPage() {
             {/* Product Overview Card */}
             <div className="flex flex-col sm:flex-row items-start gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
               {/* Product Image */}
-              <div className="w-24 h-24 rounded-2xl bg-white border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+              <div className="w-24 h-24 rounded-2xl bg-white border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative">
                 {selectedProduct.image ? (
-                  <img
+                  <Image
                     src={selectedProduct.image}
                     alt={selectedProduct.name}
+                    width={96}
+                    height={96}
+                    unoptimized
                     className="w-full h-full object-cover"
                   />
                 ) : (
