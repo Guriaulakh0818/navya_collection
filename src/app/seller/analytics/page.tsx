@@ -148,22 +148,22 @@ export default function SellerAnalyticsPage() {
       )}
 
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-            <BarChart3 className="w-7 h-7 text-orange" />
-            Merchant Sales & Revenue Analytics
+          <h1 className="text-xl sm:text-3xl font-extrabold text-navy tracking-tight flex items-center gap-2 sm:gap-3">
+            <BarChart3 className="w-5 h-5 sm:w-7 sm:h-7 text-orange shrink-0" />
+            <span>Sales &amp; Revenue Analytics</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
             Real-time performance metrics, inventory health, and order volume breakdowns.
           </p>
         </div>
 
         {/* TIME PERIOD TOGGLE BUTTONS */}
-        <div className="flex items-center gap-2 bg-white border border-slate-200 p-1 rounded-2xl shadow-xs">
+        <div className="flex items-center gap-1 sm:gap-2 bg-white border border-slate-200 p-1 rounded-2xl shadow-xs w-full sm:w-auto justify-between sm:justify-start">
           <button
             onClick={() => setPeriod('weekly')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex-1 sm:flex-initial text-center ${
               period === 'weekly'
                 ? 'bg-orange text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -173,7 +173,7 @@ export default function SellerAnalyticsPage() {
           </button>
           <button
             onClick={() => setPeriod('monthly')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex-1 sm:flex-initial text-center ${
               period === 'monthly'
                 ? 'bg-orange text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -183,7 +183,7 @@ export default function SellerAnalyticsPage() {
           </button>
           <button
             onClick={() => setPeriod('yearly')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex-1 sm:flex-initial text-center ${
               period === 'yearly'
                 ? 'bg-orange text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
@@ -258,13 +258,15 @@ export default function SellerAnalyticsPage() {
       </div>
 
       {/* REVENUE & ORDERS TREND CHART */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-extrabold text-navy tracking-tight flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-orange" /> Disbursal & Revenue Growth Trend (
-            {period.toUpperCase()})
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4">
+          <h2 className="text-xs sm:text-base font-extrabold text-navy tracking-tight flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange shrink-0" />
+            <span>Revenue Growth ({period.toUpperCase()})</span>
           </h2>
-          <span className="text-xs text-slate-500 font-mono">Dynamic Real-Time Aggregation</span>
+          <span className="text-[10px] sm:text-xs text-slate-400 font-medium">
+            Real-Time Overview
+          </span>
         </div>
 
         {trendData.length === 0 ? (
@@ -297,15 +299,16 @@ export default function SellerAnalyticsPage() {
       </div>
 
       {/* TOP SELLING PRODUCTS & INVENTORY ALERT GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         {/* 1. TOP SELLING PRODUCTS LEADERBOARD */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-extrabold text-navy flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-orange" /> Best-Selling Products Leaderboard
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+            <h2 className="text-xs sm:text-base font-extrabold text-navy flex items-center gap-2">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-orange shrink-0" />
+              <span>Best-Selling Products</span>
             </h2>
-            <span className="text-[11px] text-slate-400 font-semibold">
-              Click product to view details
+            <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
+              Tap product to view details
             </span>
           </div>
 
@@ -381,13 +384,15 @@ export default function SellerAnalyticsPage() {
         </div>
 
         {/* 2. INVENTORY HEALTH & LOW STOCK WARNINGS */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-extrabold text-navy flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-rose-600" /> Inventory Stock Alerts (
-              {lowStockItems.length})
+        <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+            <h2 className="text-xs sm:text-base font-extrabold text-navy flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600 shrink-0" />
+              <span>Inventory Stock Alerts ({lowStockItems.length})</span>
             </h2>
-            <span className="text-[11px] text-slate-400 font-semibold">Click to add stock</span>
+            <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
+              Tap to replenish stock
+            </span>
           </div>
 
           {lowStockItems.length === 0 ? (

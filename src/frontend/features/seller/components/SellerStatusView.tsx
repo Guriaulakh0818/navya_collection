@@ -127,44 +127,46 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
     <div className="w-full max-w-4xl mx-auto my-8 bg-white border border-slate-200 rounded-3xl p-6 md:p-10 shadow-sm font-sans text-slate-900 space-y-8">
       {/* Top Banner Status Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           <div
-            className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-xs border ${statusConfig.color}`}
+            className={`w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-xs border ${statusConfig.color}`}
           >
             <StatusIcon
-              className={`w-8 h-8 ${statusConfig.iconColor} ${status === 'PENDING_VERIFICATION' || status === 'UNDER_REVIEW' ? 'animate-pulse' : ''}`}
+              className={`w-6 h-6 sm:w-8 sm:h-8 ${statusConfig.iconColor} ${status === 'PENDING_VERIFICATION' || status === 'UNDER_REVIEW' ? 'animate-pulse' : ''}`}
             />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap mb-1">
               <span
-                className={`px-3 py-1 text-xs font-extrabold rounded-full border uppercase tracking-wider ${statusConfig.color}`}
+                className={`px-2.5 sm:px-3 py-0.5 sm:py-1 text-[11px] sm:text-xs font-extrabold rounded-full border uppercase tracking-wider ${statusConfig.color}`}
               >
                 {statusConfig.label}
               </span>
               {shop?.slug && (
-                <span className="text-xs font-mono text-slate-500 font-bold">
+                <span className="text-[11px] sm:text-xs font-mono text-slate-500 font-bold">
                   Application Ref:{' '}
                   <span className="text-orange font-extrabold">{shop.id.substring(0, 16)}</span>
                 </span>
               )}
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-navy tracking-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-navy tracking-tight">
               {statusConfig.title}
             </h1>
-            <p className="text-sm text-slate-600 font-medium mt-1">{statusConfig.desc}</p>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
+              {statusConfig.desc}
+            </p>
           </div>
         </div>
 
         {/* Action Header Buttons */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
           <button
             onClick={handleManualRefresh}
             disabled={isRefreshing}
-            className="px-4 py-2.5 text-xs font-extrabold rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-navy transition-all flex items-center gap-2 cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
+            className="w-full sm:w-auto justify-center px-4 py-2.5 text-xs font-extrabold rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-navy transition-all flex items-center gap-2 cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 text-orange ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Checking Database...' : 'Refresh Status'}
+            {isRefreshing ? 'Checking status...' : 'Refresh Status'}
           </button>
         </div>
       </div>

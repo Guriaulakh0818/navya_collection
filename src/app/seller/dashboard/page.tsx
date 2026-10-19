@@ -60,25 +60,25 @@ export default function SellerDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-6 border-b border-slate-200">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-navy/10 border border-navy/20 text-navy text-xs font-bold uppercase tracking-widest mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-navy" />
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-navy/10 border border-navy/20 text-navy text-[10px] sm:text-xs font-bold uppercase tracking-widest mb-1.5 sm:mb-2">
+            <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-navy" />
             Merchant Control Center
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-            <Building2 className="w-7 h-7 text-navy" />
-            {shop.name || 'Merchant Dashboard'}
+          <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5 sm:gap-3">
+            <Building2 className="w-5 h-5 sm:w-7 sm:h-7 text-navy shrink-0" />
+            <span>{shop.name || 'Merchant Dashboard'}</span>
           </h1>
-          <p className="text-xs md:text-sm text-slate-500 mt-1">
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-1">
             Real-time analytics overview, inventory stock levels, and order fulfillment status.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="w-full sm:w-auto">
           <Link
             href="/seller/products"
-            className="px-4 py-2.5 bg-navy hover:bg-navy/90 text-white font-bold text-xs rounded-xl shadow-md shadow-navy/20 transition-all flex items-center gap-2"
+            className="w-full sm:w-auto justify-center px-4 py-2.5 bg-navy hover:bg-navy/90 text-white font-bold text-xs rounded-xl shadow-md shadow-navy/20 transition-all flex items-center gap-2"
           >
             <Plus className="w-4 h-4" /> Add New Product
           </Link>
@@ -159,13 +159,13 @@ export default function SellerDashboardPage() {
       {/* Analytics Charts & Trends */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue Analytics Chart Bar */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-navy" />
-              Monthly Sales Performance (6-Month Trend)
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-navy shrink-0" />
+              <span>Monthly Sales Performance</span>
             </h3>
-            <span className="text-xs text-navy font-semibold bg-navy/10 px-2.5 py-1 rounded-full border border-navy/20">
+            <span className="text-[10px] sm:text-xs text-navy font-semibold bg-navy/10 px-2.5 py-0.5 rounded-full border border-navy/20 self-start sm:self-auto">
               Live Metrics
             </span>
           </div>
@@ -192,10 +192,10 @@ export default function SellerDashboardPage() {
         </div>
 
         {/* Fulfillment Summary */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Truck className="w-4 h-4 text-navy" />
-            Order Fulfillment Status
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
+          <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+            <Truck className="w-4 h-4 text-navy shrink-0" />
+            <span>Order Fulfillment Status</span>
           </h3>
 
           <div className="space-y-4 pt-2">
@@ -234,16 +234,16 @@ export default function SellerDashboardPage() {
 
       {/* Recent Vendor Orders Table */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden space-y-4">
-        <div className="p-6 border-b border-slate-200 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Clock className="w-4 h-4 text-navy" />
-            Recent Vendor Orders
+        <div className="p-4 sm:p-6 border-b border-slate-200 flex items-center justify-between gap-2">
+          <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+            <Clock className="w-4 h-4 text-navy shrink-0" />
+            <span>Recent Orders</span>
           </h3>
           <Link
             href="/seller/orders"
-            className="text-xs text-navy hover:text-navy/80 font-bold underline underline-offset-4"
+            className="text-[11px] sm:text-xs text-navy hover:text-navy/80 font-bold underline underline-offset-4 shrink-0"
           >
-            View All Orders →
+            View All →
           </Link>
         </div>
 

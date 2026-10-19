@@ -101,13 +101,13 @@ export default function SellerSettingsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between pb-6 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 sm:pb-6 border-b border-slate-200">
         <div>
-          <h1 className="text-2xl font-extrabold text-navy tracking-tight flex items-center gap-3">
-            <Settings className="w-6 h-6 text-orange" />
-            Settlement Bank Account & Payout Settings
+          <h1 className="text-xl sm:text-2xl font-extrabold text-navy tracking-tight flex items-center gap-2 sm:gap-3">
+            <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-orange shrink-0" />
+            <span>Bank &amp; Payout Settings</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1 font-medium">
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium">
             Configure direct netbanking accounts and instant UPI IDs for automated vendor payouts.
           </p>
         </div>

@@ -268,13 +268,13 @@ export function ShopManagementForm() {
       )}
 
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
         <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5 sm:gap-3">
+          <h1 className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 sm:gap-3">
             <Store className="w-5 h-5 sm:w-6 sm:h-6 text-navy shrink-0" />
-            Shop Customization & Settings
+            <span>Shop Customization &amp; Settings</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-slate-500 mt-1 leading-relaxed">
             Manage your boutique profile, shop URL, policies, KYC, and SEO settings.
           </p>
         </div>
