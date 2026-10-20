@@ -256,6 +256,8 @@ export class PaymentService {
         couponType: preview.appliedCoupon?.couponType || null,
         couponFundingType: preview.appliedCoupon?.fundingType || null,
         shippingAmount: preview.shipping,
+        shippingMode: preview.shippingMethodCode || input.shippingMethodCode || 'STANDARD',
+        isFirstOrder: (preview as any).isFirstOrder ?? false,
         taxAmount: preview.tax,
         finalAmount: preview.grandTotal,
         paymentMethod: PaymentMethod.RAZORPAY,
@@ -438,7 +440,7 @@ export class PaymentService {
         };
       }
 
-      // 3. Atomically Create Order in Database with Inventory Decrement
+      // 3. Atomically Create Order in Database with Inventory Decrement (< 200ms)
       const order = await OrderRepository.createOrderWithItems({
         userId,
         addressId: input.addressId,
@@ -449,6 +451,8 @@ export class PaymentService {
         couponType: preview.appliedCoupon?.couponType || null,
         couponFundingType: preview.appliedCoupon?.fundingType || null,
         shippingAmount: preview.shipping,
+        shippingMode: preview.shippingMethodCode || input.shippingMethodCode || 'STANDARD',
+        isFirstOrder: (preview as any).isFirstOrder ?? false,
         taxAmount: preview.tax,
         codFee: preview.codFee,
         codFeeTax: preview.codFeeTax,
@@ -476,13 +480,6 @@ export class PaymentService {
           statusCode: 500,
         };
       }
-
-      // 4. Initiate Shiprocket COD Verification Flow (BM-07 Section 6)
-      const { ShiprocketCodService } =
-        await import('@/backend/services/shipping/shiprocket-cod.service');
-      await ShiprocketCodService.initiateVerification(order.id).catch((verErr: any) => {
-        console.warn('[SHIPROCKET_COD_VERIFICATION_INITIATE_WARN]', verErr?.message);
-      });
 
       return {
         success: true,

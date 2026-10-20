@@ -191,7 +191,10 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
 
   useEffect(() => {
     fetchOrderPreview();
-  }, [fetchOrderPreview]);
+    try {
+      router.prefetch('/checkout/success');
+    } catch {}
+  }, [fetchOrderPreview, router]);
 
   const handleSelectPayment = (methodId: 'ONLINE' | 'COD') => {
     setSelectedPaymentMethod(methodId);
