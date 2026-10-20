@@ -768,23 +768,6 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
             );
           })}
         </div>
-
-        {selectedPaymentMethod === 'COD' &&
-          previewData.codFee !== undefined &&
-          previewData.codFee > 0 && (
-            <div className="rounded-xl bg-orange/5 border border-orange/20 p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-navy">
-              <span className="font-medium">
-                COD Handling Fee (1.5%):{' '}
-                <strong className="font-extrabold text-orange">
-                  ₹{previewData.codFee.toFixed(2)}
-                </strong>{' '}
-                (Added to total payable)
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-orange/10 text-orange px-2 py-0.5 rounded-full border border-orange/30 self-start sm:self-auto">
-                100% Non-refundable
-              </span>
-            </div>
-          )}
       </div>
 
       {/* Section 3: Payment Method Selection */}
