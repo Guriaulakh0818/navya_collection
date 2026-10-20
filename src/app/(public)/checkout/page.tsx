@@ -1,5 +1,6 @@
 'use client';
 
+import { ArrowRight } from 'lucide-react';
 import { useEffect } from 'react';
 import Link from 'next/link';
 
@@ -165,7 +166,12 @@ function OrderSummary() {
     isShippingLoading,
     taxData,
     isTaxLoading,
+    nextStep,
   } = useCheckout();
+
+  const availableItems = items.filter((item) => item.isAvailable !== false);
+  const unavailableItems = items.filter((item) => item.isAvailable === false);
+  const hasUnavailable = unavailableItems.length > 0;
 
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -287,6 +293,31 @@ function OrderSummary() {
             onApplySuccess={(coupon) => setAppliedCoupon(coupon)}
             onRemoveCoupon={() => setAppliedCoupon(null)}
           />
+        </div>
+      )}
+
+      {/* Primary Action Button - Proceed to Address (Step 1 Cart Review) */}
+      {step === 'cart' && (
+        <div className="pt-2">
+          <Button
+            type="button"
+            onClick={nextStep}
+            disabled={availableItems.length === 0}
+            className={`w-full rounded-full font-extrabold text-xs sm:text-sm px-6 h-11 sm:h-12 transition-all flex items-center justify-center gap-2 ${
+              availableItems.length === 0
+                ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                : 'bg-orange hover:bg-orange-hover text-white shadow-md shadow-orange/25 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
+            }`}
+          >
+            <span>
+              {availableItems.length === 0
+                ? 'No Available Items in Cart'
+                : hasUnavailable
+                  ? 'Continue with Available Items'
+                  : 'Continue to Address'}
+            </span>
+            <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       )}
 

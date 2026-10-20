@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, ArrowRight, Minus, Plus, Trash2 } from 'lucide-react';
+import { AlertCircle, Minus, Plus, Trash2 } from 'lucide-react';
 import { useEffect } from 'react';
 import Image from 'next/image';
 
@@ -13,7 +13,7 @@ import { formatPrice } from '@/utils/format-price';
 import type { CartItem } from '../types';
 
 export function CartReviewStep() {
-  const { items, updateItemQuantity, removeItem, nextStep } = useCheckout();
+  const { items, updateItemQuantity, removeItem } = useCheckout();
   const removeUnavailableItems = useCartStore((s) => s.removeUnavailableItems);
   const validateCart = useCartStore((s) => s.validateCart);
 
@@ -248,29 +248,6 @@ export function CartReviewStep() {
             </div>
           );
         })}
-      </div>
-
-      {/* Action Button */}
-      <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
-        <Button
-          type="button"
-          onClick={nextStep}
-          disabled={availableItems.length === 0}
-          className={`w-full sm:w-auto rounded-full font-extrabold text-xs sm:text-sm px-6 h-10 sm:h-11 transition-all flex items-center justify-center gap-2 ${
-            availableItems.length === 0
-              ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
-              : 'bg-orange hover:bg-orange-hover text-white shadow-md shadow-orange/25 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
-          }`}
-        >
-          <span>
-            {availableItems.length === 0
-              ? 'No Available Items in Cart'
-              : hasUnavailable
-                ? 'Continue with Available Items'
-                : 'Continue to Address'}
-          </span>
-          <ArrowRight className="h-4 w-4" />
-        </Button>
       </div>
     </div>
   );
