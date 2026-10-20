@@ -559,81 +559,64 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
       )}
 
       {/* Section 1: Delivery Address & Estimate */}
-      <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5 sm:p-4 space-y-2 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5 shrink-0">
-              <MapPin className="h-4 w-4 text-navy shrink-0" /> Delivery Address
-            </span>
-            <button
-              type="button"
-              onClick={prevStep}
-              className="text-xs font-semibold text-navy underline hover:text-navy/80 cursor-pointer"
-            >
-              Change
-            </button>
-          </div>
-
-          {displayAddress ? (
-            <div className="text-xs sm:text-sm text-slate-700 space-y-0.5 break-words">
-              <p className="font-bold text-navy">
-                {displayAddress.fullName} ({displayAddress.type || 'HOME'})
-              </p>
-              <p className="text-xs font-medium text-slate-600">📱 {displayAddress.mobile}</p>
-              <p className="text-xs text-slate-600 leading-relaxed break-words">
-                {displayAddress.addressLine1}
-                {displayAddress.addressLine2 ? `, ${displayAddress.addressLine2}` : ''}
-                <br />
-                {displayAddress.city}, {displayAddress.state} —{' '}
-                <strong className="text-navy">{displayAddress.pincode}</strong>
-              </p>
+      <div className="grid gap-2.5 sm:gap-3 sm:grid-cols-2">
+        {/* Delivery Address Compact Card */}
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/90 bg-slate-50/70 p-3 sm:p-3.5 flex items-center justify-between gap-2 min-w-0">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="p-1 rounded-lg bg-orange/10 text-orange shrink-0">
+              <MapPin className="h-3.5 w-3.5" />
             </div>
-          ) : (
-            <p className="text-xs text-red-500 font-semibold">No delivery address selected!</p>
-          )}
+            <div className="min-w-0 flex-1 truncate text-xs">
+              {displayAddress ? (
+                <span className="text-slate-600 font-medium truncate block">
+                  Delivered to:{' '}
+                  <strong className="font-bold text-navy">
+                    {displayAddress.fullName} ({displayAddress.type || 'HOME'})
+                  </strong>
+                </span>
+              ) : (
+                <span className="text-xs text-red-500 font-semibold">No address selected</span>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={prevStep}
+            className="text-xs font-bold text-navy hover:text-orange underline shrink-0 cursor-pointer"
+          >
+            Change
+          </button>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-3.5 sm:p-4 space-y-2 min-w-0">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <Truck className="h-4 w-4 text-navy shrink-0" /> Shipping & Delivery
-          </span>
-
-          <div className="text-xs sm:text-sm space-y-1 break-words">
-            <p className="font-extrabold text-navy text-sm sm:text-base">
-              {deliveryMethod?.name ||
-                (previewData.shipping === 49 ? 'Standard Delivery' : 'Express Delivery')}
-            </p>
-            <p className="text-xs text-slate-600 font-medium">
-              Estimated Arrival:{' '}
-              <strong className="text-emerald-700 font-extrabold">
+        {/* Shipping & Delivery Compact Card */}
+        <div className="rounded-xl sm:rounded-2xl border border-slate-200/90 bg-slate-50/70 p-3 sm:p-3.5 flex items-center justify-between gap-2 min-w-0 text-xs">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="p-1 rounded-lg bg-navy/5 text-navy shrink-0">
+              <Truck className="h-3.5 w-3.5" />
+            </div>
+            <div className="min-w-0 flex-1 truncate">
+              <span className="font-bold text-navy truncate">
+                {deliveryMethod?.name ||
+                  (previewData.shipping === 49 ? 'Standard Delivery' : 'Express Delivery')}
+              </span>
+              <span className="text-slate-400 mx-1">•</span>
+              <span className="text-slate-500 font-medium">
                 {deliveryMethod?.estimatedDays ||
                   previewData.estimatedDelivery ||
                   (previewData.shipping === 49 ? '5-7 business days' : '2-3 business days')}
-              </strong>
-            </p>
-            <p className="text-xs font-medium text-slate-600">
-              Shipping Fee:{' '}
-              {(deliveryMethod?.price !== undefined
-                ? deliveryMethod.price
-                : previewData.shipping) === 0 ? (
-                <span className="inline-flex items-center gap-1.5 font-black text-emerald-600">
-                  <span>FREE</span>
-                  {(previewData as any)?.shippingData?.isFirstOrderFreeDelivery && (
-                    <span className="text-[10px] bg-indigo-50 text-indigo-700 font-extrabold px-2 py-0.5 rounded-full border border-indigo-200">
-                      🎉 First Order Free Delivery
-                    </span>
-                  )}
-                </span>
-              ) : (
-                <strong className="font-extrabold text-navy">
-                  ₹
-                  {deliveryMethod?.price !== undefined
-                    ? deliveryMethod.price
-                    : previewData.shipping}
-                </strong>
-              )}
-            </p>
+              </span>
+            </div>
           </div>
+          <span className="shrink-0 font-bold">
+            {(deliveryMethod?.price !== undefined ? deliveryMethod.price : previewData.shipping) ===
+            0 ? (
+              <span className="font-black text-emerald-600">FREE</span>
+            ) : (
+              <span className="font-black text-navy">
+                ₹{deliveryMethod?.price !== undefined ? deliveryMethod.price : previewData.shipping}
+              </span>
+            )}
+          </span>
         </div>
       </div>
 
@@ -692,13 +675,13 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
             return (
               <div
                 key={item.id || item.productId}
-                className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border p-3 sm:p-3.5 bg-white min-w-0 transition-all ${
+                className={`flex items-center justify-between gap-2.5 sm:gap-3 rounded-xl sm:rounded-2xl border p-2.5 sm:p-3.5 bg-white min-w-0 transition-all ${
                   isUnavailable ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200'
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
                   <div
-                    className={`relative h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-slate-100 border ${isUnavailable ? 'border-rose-200 opacity-60' : 'border-slate-200'}`}
+                    className={`relative h-12 w-12 sm:h-14 sm:w-14 shrink-0 rounded-lg sm:rounded-xl overflow-hidden bg-slate-100 border ${isUnavailable ? 'border-rose-200 opacity-60' : 'border-slate-200'}`}
                   >
                     <Image
                       src={
@@ -713,22 +696,23 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
 
                   <div className="min-w-0 flex-1">
                     <h4
-                      className={`text-xs sm:text-sm font-semibold line-clamp-1 break-words ${isUnavailable ? 'text-slate-500' : 'text-navy'}`}
+                      className={`text-xs sm:text-sm font-semibold truncate ${isUnavailable ? 'text-slate-500' : 'text-navy'}`}
+                      title={item.name}
                     >
                       {item.name ||
                         (item.variantName
                           ? `${item.productName} - ${item.variantName}`
                           : item.productName)}
                     </h4>
-                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                    <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                       {item.color && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
-                          Color: {item.color}
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
+                          {item.color}
                         </span>
                       )}
                       {item.size && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
-                          Size: {item.size}
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-100 text-slate-700">
+                          {item.size}
                         </span>
                       )}
                       <span className="text-[11px] text-slate-500 font-medium">
@@ -737,15 +721,15 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
                     </div>
 
                     {isUnavailable && (
-                      <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300">
-                          <AlertCircle className="w-3 h-3 text-rose-600 shrink-0" />
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-800 border border-rose-300">
+                          <AlertCircle className="w-2.5 h-2.5 text-rose-600 shrink-0" />
                           Currently unavailable
                         </span>
                         <button
                           type="button"
                           onClick={() => handleRemoveItem(item.id, item.variantId)}
-                          className="inline-flex items-center gap-1 text-[11px] font-extrabold text-rose-600 hover:text-rose-800 underline cursor-pointer"
+                          className="inline-flex items-center gap-1 text-[10px] font-extrabold text-rose-600 hover:text-rose-800 underline cursor-pointer"
                         >
                           <Trash2 className="w-3 h-3" />
                           Remove
@@ -755,27 +739,29 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
                   </div>
                 </div>
 
-                <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 shrink-0">
+                <div className="text-right shrink-0 pl-2">
                   {isUnavailable ? (
-                    <div className="text-right">
+                    <div>
                       <span className="line-through text-slate-400 text-xs block">
                         ₹{item.subtotal.toLocaleString('en-IN')}
                       </span>
-                      <span className="text-[10px] text-rose-600 font-extrabold block">
-                        Excluded from total
+                      <span className="text-[9px] text-rose-600 font-extrabold block">
+                        Excluded
                       </span>
                     </div>
                   ) : (
-                    <>
-                      <span className="font-bold text-navy text-xs sm:text-sm block">
+                    <div>
+                      <span className="font-black text-navy text-xs sm:text-sm block">
                         ₹{item.subtotal.toLocaleString('en-IN')}
                       </span>
                       {item.inStock ? (
-                        <span className="text-[10px] font-bold text-emerald-600">In Stock</span>
+                        <span className="text-[10px] font-bold text-emerald-600 block">
+                          In Stock
+                        </span>
                       ) : (
-                        <span className="text-[10px] font-bold text-red-500">Low Stock</span>
+                        <span className="text-[10px] font-bold text-red-500 block">Low Stock</span>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
