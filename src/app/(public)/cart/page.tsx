@@ -1,17 +1,6 @@
 'use client';
 
-import {
-  AlertCircle,
-  Building2,
-  ChevronRight,
-  Minus,
-  Plus,
-  ShieldCheck,
-  ShoppingBag,
-  Store,
-  Tag,
-  Trash2,
-} from 'lucide-react';
+import { AlertCircle, Minus, Plus, ShoppingBag, Tag, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -144,197 +133,134 @@ export default function MultiVendorCartPage() {
           </div>
         )}
 
-        {/* MAIN LAYOUT: SHOP GROUPS + ORDER SUMMARY */}
+        {/* MAIN LAYOUT: CART ITEMS + ORDER SUMMARY */}
         <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
-          {/* SHOP GROUPS LIST */}
-          <div className="lg:col-span-2 space-y-6 sm:space-y-8 min-w-0">
-            {shopGroups.map((group) => (
-              <div
-                key={group.shopId}
-                className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-shadow space-y-3 sm:space-y-4"
-              >
-                {/* Shop Header (100% Responsive layout for mobile 320px-414px) */}
-                <div className="bg-orange/5 border-b border-orange/20 p-3 sm:p-5 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2.5 sm:gap-4">
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 w-full xs:w-auto">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white border border-orange/30 overflow-hidden shrink-0 flex items-center justify-center text-orange shadow-xs relative">
-                      {group.shopLogo ? (
-                        <Image
-                          src={group.shopLogo}
-                          alt={group.shopName}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                      )}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        <Link
-                          href={`/shop/${group.shopSlug || ''}`}
-                          className="font-extrabold text-navy text-xs sm:text-sm hover:text-orange transition-colors flex items-center gap-1 truncate max-w-[140px] xs:max-w-[180px] sm:max-w-none"
-                        >
-                          <span className="truncate">{group.shopName}</span>
-                          <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 shrink-0" />
-                        </Link>
-                        <span className="px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-xs shrink-0">
-                          <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" /> VERIFIED
-                        </span>
-                      </div>
-                      <span className="text-[10px] sm:text-[11px] text-slate-600 font-medium block truncate">
-                        {group.itemCount} item(s) from this store
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between xs:block w-full xs:w-auto text-left xs:text-right pt-1.5 xs:pt-0 border-t xs:border-t-0 border-orange/20">
-                    <span className="text-[9px] sm:text-[10px] uppercase text-slate-500 font-extrabold block">
-                      Shop Subtotal
-                    </span>
-                    <span className="text-xs sm:text-sm font-black text-navy font-mono">
-                      {formatPrice(group.subtotal)}
-                    </span>
-                    <span className="text-[10px] block font-bold mt-0.5">
-                      Delivery:{' '}
-                      <span
-                        className={
-                          group.subtotal >= 999 ? 'text-emerald-700' : 'text-slate-700 font-mono'
-                        }
-                      >
-                        {group.subtotal >= 999 ? 'FREE (≥₹999)' : '₹49 (<₹999)'}
-                      </span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Shop Items List */}
-                <div className="p-3 sm:p-6 space-y-3.5 sm:space-y-4 divide-y divide-slate-100">
-                  {group.items.map((item) => {
-                    return (
-                      <div
-                        key={item.id}
-                        className="pt-3.5 first:pt-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
-                      >
-                        <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 w-full">
-                          <div className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-xl sm:rounded-2xl bg-slate-100 overflow-hidden relative border border-slate-200 shadow-xs">
-                            {item.image ? (
-                              <Image
-                                src={item.image}
-                                alt={item.name}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                              />
-                            ) : (
-                              <div className="h-full w-full flex items-center justify-center text-slate-400">
-                                <Tag className="w-6 h-6 sm:w-8 sm:h-8" />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
-                            <h3 className="font-extrabold text-navy text-xs sm:text-sm truncate">
-                              {item.name}
-                            </h3>
-                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-slate-600 font-medium">
-                              {item.size && (
-                                <span>
-                                  Size: <strong className="text-navy">{item.size}</strong>
-                                </span>
-                              )}
-                              {item.color && (
-                                <span>
-                                  Color: <strong className="text-navy">{item.color}</strong>
-                                </span>
-                              )}
-                              {item.isAvailable === false ? (
-                                <span className="text-rose-800 text-[9px] sm:text-[10px] font-extrabold bg-rose-100 border border-rose-300 px-2 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs">
-                                  <AlertCircle className="w-2.5 h-2.5 text-rose-600" /> Currently
-                                  unavailable
-                                </span>
-                              ) : (
-                                <span className="text-emerald-700 text-[9px] sm:text-[10px] font-extrabold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
-                                  In Stock
-                                </span>
-                              )}
-                            </div>
-
-                            {item.isAvailable === false ? (
-                              <div className="pt-0.5">
-                                <span className="text-xs sm:text-sm line-through text-slate-400 font-mono">
-                                  {formatPrice(item.price)}
-                                </span>
-                                <span className="text-[10px] text-rose-600 font-extrabold block">
-                                  Excluded from subtotal
-                                </span>
-                              </div>
-                            ) : (
-                              <p className="text-xs sm:text-sm font-black text-navy font-mono pt-0.5">
-                                {formatPrice(item.price)}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Quantity Controls & Delete Button */}
-                        <div className="flex items-center justify-between w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-                          {item.isAvailable === false ? (
-                            <button
-                              onClick={() => removeItem(item.id)}
-                              className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-xl cursor-pointer transition-colors shadow-2xs"
-                            >
-                              <Trash2 className="h-3.5 w-3.5 text-rose-600" />
-                              <span>Remove</span>
-                            </button>
+          {/* CART ITEMS LIST */}
+          <div className="lg:col-span-2 min-w-0">
+            <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-shadow">
+              {/* Items List */}
+              <div className="p-4 sm:p-6 space-y-3.5 sm:space-y-4 divide-y divide-slate-100">
+                {items.map((item) => {
+                  return (
+                    <div
+                      key={item.id}
+                      className="pt-3.5 first:pt-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
+                    >
+                      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 w-full">
+                        <div className="h-16 w-16 sm:h-20 sm:w-20 shrink-0 rounded-xl sm:rounded-2xl bg-slate-100 overflow-hidden relative border border-slate-200 shadow-xs">
+                          {item.image ? (
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
                           ) : (
-                            <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 border border-slate-200 rounded-xl p-1 shadow-xs">
-                              <button
-                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                className={`h-6 w-6 sm:h-7 sm:w-7 rounded-lg border bg-white flex items-center justify-center transition-colors cursor-pointer ${
-                                  item.quantity <= 1
-                                    ? 'border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300'
-                                    : 'border-slate-200 text-slate-700 hover:bg-slate-100'
-                                }`}
-                                aria-label={
-                                  item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'
-                                }
-                                title={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
-                              >
-                                {item.quantity <= 1 ? (
-                                  <Trash2 className="h-3 w-3 text-rose-600" />
-                                ) : (
-                                  <Minus className="h-3 w-3" />
-                                )}
-                              </button>
-                              <span className="w-6 sm:w-8 text-center text-xs font-black text-navy font-mono">
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                                aria-label="Increase quantity"
-                              >
-                                <Plus className="h-3 w-3" />
-                              </button>
+                            <div className="h-full w-full flex items-center justify-center text-slate-400">
+                              <Tag className="w-6 h-6 sm:w-8 sm:h-8" />
                             </div>
                           )}
+                        </div>
 
-                          <button
-                            onClick={() => removeItem(item.id)}
-                            className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Remove item"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                        <div className="space-y-0.5 sm:space-y-1 min-w-0 flex-1">
+                          <h3 className="font-extrabold text-navy text-xs sm:text-sm truncate">
+                            {item.name}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-slate-600 font-medium">
+                            {item.size && (
+                              <span>
+                                Size: <strong className="text-navy">{item.size}</strong>
+                              </span>
+                            )}
+                            {item.color && (
+                              <span>
+                                Color: <strong className="text-navy">{item.color}</strong>
+                              </span>
+                            )}
+                            {item.isAvailable === false ? (
+                              <span className="text-rose-800 text-[9px] sm:text-[10px] font-extrabold bg-rose-100 border border-rose-300 px-2 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs">
+                                <AlertCircle className="w-2.5 h-2.5 text-rose-600" /> Currently
+                                unavailable
+                              </span>
+                            ) : (
+                              <span className="text-emerald-700 text-[9px] sm:text-[10px] font-extrabold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">
+                                In Stock
+                              </span>
+                            )}
+                          </div>
+
+                          {item.isAvailable === false ? (
+                            <div className="pt-0.5">
+                              <span className="text-xs sm:text-sm line-through text-slate-400 font-mono">
+                                {formatPrice(item.price)}
+                              </span>
+                              <span className="text-[10px] text-rose-600 font-extrabold block">
+                                Excluded from subtotal
+                              </span>
+                            </div>
+                          ) : (
+                            <p className="text-xs sm:text-sm font-black text-navy font-mono pt-0.5">
+                              {formatPrice(item.price)}
+                            </p>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
+
+                      {/* Quantity Controls & Delete Button */}
+                      <div className="flex items-center justify-between w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+                        {item.isAvailable === false ? (
+                          <button
+                            onClick={() => removeItem(item.id)}
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-xl cursor-pointer transition-colors shadow-2xs"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-rose-600" />
+                            <span>Remove</span>
+                          </button>
+                        ) : (
+                          <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-100 border border-slate-200 rounded-xl p-1 shadow-xs">
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              className={`h-6 w-6 sm:h-7 sm:w-7 rounded-lg border bg-white flex items-center justify-center transition-colors cursor-pointer ${
+                                item.quantity <= 1
+                                  ? 'border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300'
+                                  : 'border-slate-200 text-slate-700 hover:bg-slate-100'
+                              }`}
+                              aria-label={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
+                              title={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
+                            >
+                              {item.quantity <= 1 ? (
+                                <Trash2 className="h-3 w-3 text-rose-600" />
+                              ) : (
+                                <Minus className="h-3 w-3" />
+                              )}
+                            </button>
+                            <span className="w-6 sm:w-8 text-center text-xs font-black text-navy font-mono">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              className="h-6 w-6 sm:h-7 sm:w-7 rounded-lg border border-slate-200 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                              aria-label="Increase quantity"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+                        )}
+
+                        <button
+                          onClick={() => removeItem(item.id)}
+                          className="p-1.5 sm:p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Remove item"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            </div>
           </div>
 
           {/* ORDER SUMMARY SIDEBAR */}
@@ -344,20 +270,22 @@ export default function MultiVendorCartPage() {
                 Order Summary
               </h2>
 
-              {/* Per-Shop Subtotals */}
-              <div className="space-y-2 text-xs border-b border-slate-200 pb-4">
-                <span className="text-slate-500 font-extrabold uppercase text-[10px] block">
-                  Item Subtotals
-                </span>
-                {shopGroups.map((g) => (
-                  <div key={g.shopId} className="flex justify-between text-slate-700 font-medium">
-                    <span className="truncate max-w-[170px]">{g.shopName}</span>
-                    <span className="font-mono text-navy font-extrabold">
-                      {formatPrice(groupSubtotal(g))}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {/* Per-Shop Subtotals (only shown when multiple vendors) */}
+              {shopGroups.length > 1 && (
+                <div className="space-y-2 text-xs border-b border-slate-200 pb-4">
+                  <span className="text-slate-500 font-extrabold uppercase text-[10px] block">
+                    Item Subtotals
+                  </span>
+                  {shopGroups.map((g) => (
+                    <div key={g.shopId} className="flex justify-between text-slate-700 font-medium">
+                      <span className="truncate max-w-[170px]">{g.shopName}</span>
+                      <span className="font-mono text-navy font-extrabold">
+                        {formatPrice(groupSubtotal(g))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Coupon Section */}
               <CouponInputCard
