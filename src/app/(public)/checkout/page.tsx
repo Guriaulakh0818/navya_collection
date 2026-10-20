@@ -43,7 +43,7 @@ function CheckoutSteps() {
         ]}
         className="mx-auto max-w-[1440px] px-4 md:px-6 py-4"
       />
-      <div className="mx-auto max-w-6xl px-3 sm:px-4 md:px-6 py-4 sm:py-8">
+      <div className="mx-auto max-w-6xl px-3 sm:px-4 md:px-6 py-4 sm:py-8 w-full max-w-full overflow-x-hidden">
         <h1 className="font-heading text-2xl sm:text-3xl text-navy mb-4 sm:mb-6">Checkout</h1>
 
         {/* Mobile Compact Step Progress (< md) */}
@@ -120,8 +120,8 @@ function CheckoutSteps() {
           </div>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-3 w-full min-w-0">
+          <div className="lg:col-span-2 min-w-0 w-full">
             {step === 'cart' && <CartReviewStep />}
             {step === 'address' && <AddressStep />}
             {step === 'delivery' && <DeliveryStep />}
@@ -135,7 +135,7 @@ function CheckoutSteps() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-border bg-white p-4 sm:p-6 shadow-premium h-fit space-y-4">
+          <div className="rounded-2xl border border-border bg-white p-4 sm:p-6 shadow-premium h-fit space-y-4 min-w-0 w-full">
             <h3 className="font-heading text-lg sm:text-xl font-bold text-navy">Order Summary</h3>
             <OrderSummary />
           </div>
