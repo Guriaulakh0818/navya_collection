@@ -120,8 +120,14 @@ function CheckoutSteps() {
           </div>
         </div>
 
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-3 w-full min-w-0">
-          <div className="lg:col-span-2 min-w-0 w-full">
+        <div
+          className={
+            step === 'address'
+              ? 'max-w-3xl mx-auto w-full min-w-0'
+              : 'grid gap-6 sm:gap-8 lg:grid-cols-3 w-full min-w-0'
+          }
+        >
+          <div className={step === 'address' ? 'w-full min-w-0' : 'lg:col-span-2 min-w-0 w-full'}>
             {step === 'cart' && <CartReviewStep />}
             {step === 'address' && <AddressStep />}
             {step === 'delivery' && <DeliveryStep />}
@@ -135,10 +141,12 @@ function CheckoutSteps() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-border bg-white p-4 sm:p-6 shadow-premium h-fit space-y-4 min-w-0 w-full">
-            <h3 className="font-heading text-lg sm:text-xl font-bold text-navy">Order Summary</h3>
-            <OrderSummary />
-          </div>
+          {step !== 'address' && (
+            <div className="rounded-2xl border border-border bg-white p-4 sm:p-6 shadow-premium h-fit space-y-4 min-w-0 w-full">
+              <h3 className="font-heading text-lg sm:text-xl font-bold text-navy">Order Summary</h3>
+              <OrderSummary />
+            </div>
+          )}
         </div>
       </div>
     </div>

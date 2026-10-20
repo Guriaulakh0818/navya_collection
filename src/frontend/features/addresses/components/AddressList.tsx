@@ -1,5 +1,6 @@
 'use client';
 
+import { MapPin, Plus } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -164,15 +165,20 @@ export const AddressList: React.FC<AddressListProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header Bar */}
-      <div className="flex items-center justify-between gap-4 pb-3 border-b border-slate-100">
-        <div>
-          <h3 className="font-heading text-xl font-bold text-navy">
-            {selectable ? 'Select Delivery Address' : 'Saved Addresses'}
-          </h3>
-          <p className="text-xs font-semibold text-slate-500 mt-0.5">
-            <span className="font-bold text-navy">{addresses.length}</span> of 10 maximum addresses
-            saved
-          </p>
+      <div className="flex items-center justify-between gap-2 sm:gap-4 pb-3 sm:pb-4 border-b border-slate-100">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+          <div className="p-1.5 sm:p-2 rounded-xl bg-orange/10 text-orange shrink-0">
+            <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-xs min-[380px]:text-[13px] sm:text-base md:text-lg font-black text-navy tracking-tight truncate">
+              {selectable ? 'Select Delivery Address' : 'Saved Addresses'}
+            </h2>
+            <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">
+              <span className="font-bold text-navy">{addresses.length}</span> of 10 maximum
+              addresses saved
+            </p>
+          </div>
         </div>
 
         <button
@@ -182,9 +188,10 @@ export const AddressList: React.FC<AddressListProps> = ({
             setIsModalOpen(true);
           }}
           disabled={addresses.length >= 10}
-          className="inline-flex items-center gap-1.5 rounded-full bg-navy text-white hover:bg-navy/90 active:scale-[0.98] font-bold text-xs px-4 py-2.5 shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-orange text-white hover:bg-orange-600 active:scale-95 font-bold text-[11px] sm:text-xs px-3 sm:px-4 py-1.5 sm:py-2 shadow-xs transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 whitespace-nowrap"
         >
-          <span className="text-base font-normal leading-none">+</span> Add New Address
+          <Plus className="w-3.5 h-3.5" />
+          <span>Add New Address</span>
         </button>
       </div>
 
@@ -231,13 +238,14 @@ export const AddressList: React.FC<AddressListProps> = ({
           </p>
           <button
             type="button"
-            className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-navy text-white hover:bg-navy/90 font-bold text-xs px-5 py-2.5 shadow-md transition-all cursor-pointer"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-orange text-white hover:bg-orange-600 active:scale-95 font-bold text-xs px-5 py-2.5 shadow-md transition-all cursor-pointer"
             onClick={() => {
               setEditingAddress(null);
               setIsModalOpen(true);
             }}
           >
-            + Add Address Now
+            <Plus className="w-4 h-4" />
+            <span>Add Address Now</span>
           </button>
         </div>
       )}
