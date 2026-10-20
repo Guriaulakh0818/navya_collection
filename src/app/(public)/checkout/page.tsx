@@ -25,7 +25,7 @@ const STEP_LABELS = [
 ];
 
 function CheckoutSteps() {
-  const { step } = useCheckout();
+  const { step, setStep } = useCheckout();
 
   useEffect(() => {
     try {
@@ -74,13 +74,22 @@ function CheckoutSteps() {
               const isCompleted = STEP_LABELS.findIndex((s) => s.key === step) > index;
               return (
                 <div key={item.key} className="flex flex-1 items-center">
-                  <div className="flex flex-col items-center">
+                  <button
+                    type="button"
+                    disabled={!isCompleted}
+                    onClick={() => {
+                      if (isCompleted) setStep(item.key as any);
+                    }}
+                    className={`flex flex-col items-center bg-transparent border-none p-0 text-left ${
+                      isCompleted ? 'cursor-pointer group hover:opacity-85' : 'cursor-default'
+                    }`}
+                  >
                     <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold transition-all ${
                         isActive
-                          ? 'bg-navy text-white'
+                          ? 'bg-navy text-white ring-2 ring-navy/20 ring-offset-2'
                           : isCompleted
-                            ? 'bg-emerald-500 text-white'
+                            ? 'bg-emerald-500 text-white group-hover:scale-105'
                             : 'bg-slate-200 text-slate-600'
                       }`}
                     >
@@ -88,12 +97,16 @@ function CheckoutSteps() {
                     </div>
                     <span
                       className={`mt-1 text-xs font-medium ${
-                        isActive ? 'text-navy' : 'text-slate-500'
+                        isActive
+                          ? 'text-navy font-bold'
+                          : isCompleted
+                            ? 'text-slate-700'
+                            : 'text-slate-500'
                       }`}
                     >
                       {item.label}
                     </span>
-                  </div>
+                  </button>
                   {index < STEP_LABELS.length - 1 && (
                     <div
                       className={`mx-2 h-0.5 flex-1 ${
@@ -134,6 +147,7 @@ function CheckoutSteps() {
 
 function OrderSummary() {
   const {
+    step,
     items,
     deliveryMethod,
     paymentMethod,
@@ -185,9 +199,16 @@ function OrderSummary() {
         </div>
 
         {appliedCoupon && (
-          <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
-            <span>Discount ({appliedCoupon.code})</span>
-            <span>- ₹{discountAmount.toLocaleString('en-IN')}</span>
+          <div className="flex justify-between items-center text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1.5 rounded-xl border border-emerald-200">
+            <span className="flex items-center gap-1.5">
+              <span>Promo ({appliedCoupon.code})</span>
+              <span className="text-[9px] bg-emerald-200 text-emerald-900 font-extrabold px-1.5 py-0.5 rounded-full">
+                APPLIED
+              </span>
+            </span>
+            <span className="font-mono text-emerald-700">
+              - ₹{discountAmount.toLocaleString('en-IN')}
+            </span>
           </div>
         )}
 
@@ -249,15 +270,17 @@ function OrderSummary() {
         />
       </div>
 
-      {/* Coupon Input Integration */}
-      <div className="border-t border-border pt-4">
-        <CouponInputCard
-          cartAmount={subtotal}
-          appliedCoupon={appliedCoupon}
-          onApplySuccess={(coupon) => setAppliedCoupon(coupon)}
-          onRemoveCoupon={() => setAppliedCoupon(null)}
-        />
-      </div>
+      {/* Coupon Input Integration - Only shown in Step 1 (Cart Review) */}
+      {step === 'cart' && (
+        <div className="border-t border-border pt-4">
+          <CouponInputCard
+            cartAmount={subtotal}
+            appliedCoupon={appliedCoupon}
+            onApplySuccess={(coupon) => setAppliedCoupon(coupon)}
+            onRemoveCoupon={() => setAppliedCoupon(null)}
+          />
+        </div>
+      )}
 
       {items.length === 0 && (
         <p className="text-xs text-slate-500 mt-2">

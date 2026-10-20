@@ -25,10 +25,6 @@ export function CartReviewStep() {
   const unavailableItems = items.filter((item) => item.isAvailable === false);
   const hasUnavailable = unavailableItems.length > 0;
 
-  const subtotal = availableItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = 99;
-  const total = availableItems.length === 0 ? 0 : subtotal + (subtotal >= 999 ? 0 : shipping);
-
   const handleQuantityChange = (itemId: string, delta: number, current: number) => {
     const newQty = current + delta;
     if (newQty <= 0) {
@@ -64,7 +60,8 @@ export function CartReviewStep() {
                 Some items in your cart are currently unavailable
               </p>
               <p className="text-rose-700 text-[11px] sm:text-xs">
-                Items marked as &quot;Currently unavailable&quot; have been excluded from your total. Remove them to proceed with your available items.
+                Items marked as &quot;Currently unavailable&quot; have been excluded from your
+                total. Remove them to proceed with your available items.
               </p>
             </div>
           </div>
@@ -233,28 +230,6 @@ export function CartReviewStep() {
             </div>
           );
         })}
-      </div>
-
-      <div className="mt-6 space-y-2 text-sm text-slate-600 border-t border-slate-100 pt-4 bg-slate-50/60 p-4 rounded-2xl border">
-        <div className="flex justify-between font-medium">
-          <span>Subtotal</span>
-          <span className="font-bold text-navy">{formatPrice(subtotal)}</span>
-        </div>
-        <div className="flex justify-between font-medium">
-          <span>Shipping</span>
-          <span className="font-bold text-emerald-600">
-            {subtotal >= 999 ? 'FREE' : formatPrice(availableItems.length === 0 ? 0 : shipping)}
-          </span>
-        </div>
-        {subtotal < 999 && availableItems.length > 0 && (
-          <p className="text-xs font-semibold text-orange">
-            Add {formatPrice(999 - subtotal)} more for FREE Shipping!
-          </p>
-        )}
-        <div className="flex justify-between font-black text-navy text-base pt-3 border-t border-slate-200">
-          <span>Total</span>
-          <span className="text-orange text-lg">{formatPrice(total)}</span>
-        </div>
       </div>
 
       {/* High-Visibility Brand Orange Action Button */}

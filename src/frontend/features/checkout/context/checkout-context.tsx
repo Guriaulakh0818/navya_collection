@@ -122,6 +122,8 @@ export const CheckoutProvider: React.FC<{
   useEffect(() => {
     if (cartAppliedCoupon && (!appliedCoupon || appliedCoupon.code !== cartAppliedCoupon.code)) {
       setAppliedCouponState(cartAppliedCoupon);
+    } else if (!cartAppliedCoupon && appliedCoupon) {
+      setAppliedCouponState(null);
     }
   }, [cartAppliedCoupon, appliedCoupon]);
 
