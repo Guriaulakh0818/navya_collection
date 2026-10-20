@@ -121,34 +121,44 @@ function CheckoutSteps() {
           </div>
         </div>
 
-        <div
-          className={
-            step === 'address'
-              ? 'max-w-3xl mx-auto w-full min-w-0'
-              : 'grid gap-6 sm:gap-8 lg:grid-cols-3 w-full min-w-0'
-          }
-        >
-          <div className={step === 'address' ? 'w-full min-w-0' : 'lg:col-span-2 min-w-0 w-full'}>
-            {step === 'cart' && <CartReviewStep />}
-            {step === 'address' && <AddressStep />}
-            {step === 'delivery' && <DeliveryStep />}
-            {step === 'payment' && <PaymentStep />}
-            {step === 'review' && (
-              <ReviewStep
-                onPlaceOrder={() => {
-                  window.location.href = '/checkout/success';
-                }}
-              />
-            )}
-          </div>
+        {(() => {
+          const isFullWidthStep = step === 'address' || step === 'review';
 
-          {step !== 'address' && (
-            <div className="rounded-2xl border border-border bg-white p-4 sm:p-6 shadow-premium h-fit space-y-4 min-w-0 w-full">
-              <h3 className="font-heading text-lg sm:text-xl font-bold text-navy">Order Summary</h3>
-              <OrderSummary />
+          return (
+            <div
+              className={
+                isFullWidthStep
+                  ? step === 'review'
+                    ? 'max-w-4xl mx-auto w-full min-w-0'
+                    : 'max-w-3xl mx-auto w-full min-w-0'
+                  : 'grid gap-6 sm:gap-8 lg:grid-cols-3 w-full min-w-0'
+              }
+            >
+              <div className={isFullWidthStep ? 'w-full min-w-0' : 'lg:col-span-2 min-w-0 w-full'}>
+                {step === 'cart' && <CartReviewStep />}
+                {step === 'address' && <AddressStep />}
+                {step === 'delivery' && <DeliveryStep />}
+                {step === 'payment' && <PaymentStep />}
+                {step === 'review' && (
+                  <ReviewStep
+                    onPlaceOrder={() => {
+                      window.location.href = '/checkout/success';
+                    }}
+                  />
+                )}
+              </div>
+
+              {!isFullWidthStep && (
+                <div className="rounded-2xl border border-border bg-white p-4 sm:p-6 shadow-premium h-fit space-y-4 min-w-0 w-full">
+                  <h3 className="font-heading text-lg sm:text-xl font-bold text-navy">
+                    Order Summary
+                  </h3>
+                  <OrderSummary />
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          );
+        })()}
       </div>
     </div>
   );
