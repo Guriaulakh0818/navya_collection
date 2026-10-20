@@ -122,7 +122,7 @@ function CheckoutSteps() {
         </div>
 
         {(() => {
-          const isFullWidthStep = step === 'address' || step === 'review';
+          const isFullWidthStep = step === 'address' || step === 'payment' || step === 'review';
 
           return (
             <div
