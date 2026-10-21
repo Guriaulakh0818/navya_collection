@@ -44,7 +44,7 @@ function CheckoutSteps() {
         ]}
         className="mx-auto max-w-[1440px] px-4 md:px-6 py-4"
       />
-      <div className="mx-auto max-w-6xl px-3 sm:px-4 md:px-6 py-4 sm:py-8 w-full max-w-full overflow-x-hidden">
+      <div className="mx-auto max-w-6xl w-full px-3 sm:px-4 md:px-6 py-4 sm:py-8 overflow-x-hidden">
         <h1 className="font-heading text-2xl sm:text-3xl text-navy mb-4 sm:mb-6">Checkout</h1>
 
         {/* Mobile Compact Step Progress (< md) */}
