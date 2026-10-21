@@ -8,6 +8,15 @@ const nextConfig = {
   compiler: {
     removeConsole: isProd ? { exclude: ['error', 'warn'] } : false,
   },
+  outputFileTracingExcludes: {
+    '*': [
+      '@swc/core',
+      'esbuild',
+      'uglify-js',
+      'watchpack',
+      '@playwright/test',
+    ],
+  },
   experimental: {
     optimizePackageImports: [
       'lucide-react',

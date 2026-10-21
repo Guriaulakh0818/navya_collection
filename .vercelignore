@@ -9,11 +9,23 @@ scratch/
 tests/
 src/__tests__/
 coverage/
+playwright-report/
+test-results/
+playwright.config.ts
+vitest.config.ts
+vitest.setup.ts
 
 # Documentation & Logs
 *.log
+*.md
+docs/
 npm-debug.log*
 yarn-debug.log*
+
+# Tooling and Configs
+.husky/
+commitlint.config.cjs
+lint-staged.config.mjs
 
 # Git and IDE
 .git/
