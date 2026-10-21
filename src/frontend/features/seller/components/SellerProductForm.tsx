@@ -1156,7 +1156,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   const handleApplyBasePriceToAllVariants = () => {
     const base = Number(formData.price) || 0;
     if (base <= 0) {
-      showToast('Please enter a valid Selling Price in Section 4 first.', 'error');
+      showToast('Please enter a valid Selling Price in Section 3 (Pricing) first.', 'error');
       return;
     }
     setFormData((prev) => ({
@@ -1560,44 +1560,45 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       onSubmit={(e) => handleSubmit(e, 'pending_approval')}
       className="space-y-8 max-w-6xl mx-auto pb-16"
     >
-      {/* Header & Sticky Action Bar */}
+      {/* Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs sticky top-4 z-20 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <Link
             href="/seller/products"
-            className="p-2 text-slate-500 hover:text-navy hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+            className="p-2.5 text-slate-500 hover:text-navy hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+            title="Back to Products Catalog"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-extrabold text-navy tracking-tight">
-              {productId ? 'Edit Product' : 'Add New Product'}
-            </h1>
-            <p className="text-xs text-slate-500">
-              Template: <strong className="text-orange">{activeTemplate.name}</strong> • Size
-              System:{' '}
-              <span className="font-mono text-slate-700 font-bold">
-                {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name}
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-extrabold text-navy tracking-tight">
+                {productId ? 'Edit Product Listing' : 'Add New Product'}
+              </h1>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange/10 text-orange border border-orange/20">
+                {productId ? 'Editing Mode' : 'Catalog Draft'}
               </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Complete the structured sections below. When ready, submit the listing for approval at
+              the bottom of the page.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full sm:w-auto px-6 py-2.5 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <span>Saving...</span>
-            ) : (
-              <>
-                <Send className="w-4 h-4 text-white" />{' '}
-                {productId ? 'Update Listing' : 'Submit for Approval'}
-              </>
-            )}
-          </button>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-start sm:justify-end">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange/10 border border-orange/20 text-xs font-bold text-navy">
+            <span className="text-slate-500 text-[11px] uppercase tracking-wider">Template:</span>
+            <strong className="text-orange">{activeTemplate.name}</strong>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700">
+            <span className="text-slate-500 text-[11px] uppercase tracking-wider">
+              Size System:
+            </span>
+            <span className="font-mono text-navy font-bold">
+              {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name || 'Standard'}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -1622,11 +1623,18 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
       {/* SECTION 1: COMMON PRODUCT INFORMATION */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4 text-orange" /> Section 1: Common Product Information
-          </h2>
-          <span className="text-[11px] font-bold text-slate-400">Step 1 of 5</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+          <div>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <ShoppingBag className="w-4 h-4 text-orange" /> Section 1: Common Product Information
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Basic product identity, brand name, and category placement.
+            </p>
+          </div>
+          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+            Step 1 of 6
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
@@ -1695,7 +1703,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             {/* 1. Department Selection */}
             <div className="space-y-1.5">
               <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-                Step 1: Department
+                1. Select Department
               </label>
               <div className="flex flex-wrap gap-2">
                 {CATEGORY_ENGINE_TAXONOMY.map((dept) => {
@@ -1739,7 +1747,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             {/* 2. Subcategory / Section Selection */}
             <div className="space-y-1.5">
               <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-                Step 2: Category / Section
+                2. Select Subcategory / Section
               </label>
               <div className="flex flex-wrap gap-1.5">
                 {currentDepartmentDef?.subCategories.map((sub) => {
@@ -1773,7 +1781,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             {/* 3. Garment / Product Type Pills */}
             <div className="space-y-1.5">
               <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500">
-                Step 3: Specific Garment / Product Type (Loads Attributes & Size System)
+                3. Select Garment Type & Attributes Template
               </label>
               <div className="flex flex-wrap gap-2">
                 {currentSubCategoryDef?.productTypes.map((pt) => {
@@ -2151,17 +2159,19 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
       {/* SECTION 2: DYNAMIC CATEGORY ATTRIBUTES ENGINE */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
           <div>
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
               <Layers className="w-4 h-4 text-orange" /> Section 2: Dynamic Category Attributes
             </h2>
-            <p className="text-[11px] text-slate-500">
-              Active Category Template:{' '}
-              <strong className="text-orange">{activeTemplate.name}</strong>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Garment-tailored fabric, design, and weave specifications for{' '}
+              <strong className="text-orange">{activeTemplate.name}</strong>.
             </p>
           </div>
-          <span className="text-[11px] font-bold text-slate-400">Step 2 of 5</span>
+          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+            Step 2 of 6
+          </span>
         </div>
 
         <div className="space-y-6 text-xs">
@@ -2220,11 +2230,19 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
       {/* SECTION 3: PRICING, TAXATION & INVENTORY */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-            <Percent className="w-4 h-4 text-orange" /> Section 3: Pricing, GST Taxation & Inventory
-          </h2>
-          <span className="text-[11px] font-bold text-slate-400">Step 3 of 5</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+          <div>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <Percent className="w-4 h-4 text-orange" /> Section 3: Pricing, GST Taxation &
+              Inventory
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Customer selling price, MRP, GST tax rate, and warehouse stock tracking.
+            </p>
+          </div>
+          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+            Step 3 of 6
+          </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
@@ -2419,11 +2437,19 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
       {/* SECTION 4: SHIPPING & PACKAGE SPECIFICATIONS */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-            <Truck className="w-4 h-4 text-orange" /> Section 4: Shipping & Packaging Specifications
-          </h2>
-          <span className="text-[11px] font-bold text-slate-400">Step 4 of 5</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+          <div>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <Truck className="w-4 h-4 text-orange" /> Section 4: Shipping & Packaging
+              Specifications
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Physical package dead weight and dimensions used for courier rate estimation.
+            </p>
+          </div>
+          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+            Step 4 of 6
+          </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
@@ -2505,20 +2531,22 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         </div>
       </div>
 
-      {/* SECTION 4B: MANDATORY RETURN & REPLACEMENT POLICY (Section 3 Business Rules) */}
+      {/* SECTION 5: MANDATORY RETURN & REPLACEMENT POLICY */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
           <div>
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <RotateCcw className="w-4 h-4 text-orange" /> Section 4B: Return & Replacement Policy{' '}
+              <RotateCcw className="w-4 h-4 text-orange" /> Section 5: Return & Replacement Policy{' '}
               <span className="text-rose-500">*</span>
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Select one of the 3 standardized marketplace policy options. Window durations are
-              strictly locked and enforced by JiivaaKart.
+              Select one of the 3 standardized customer return & replacement options enforced across
+              the marketplace.
             </p>
           </div>
-          <span className="text-[11px] font-bold text-slate-400">Step 4B</span>
+          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+            Step 5 of 6
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -2656,19 +2684,22 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         </div>
       </div>
 
-      {/* SECTION 5: COLOR-FIRST PRODUCT VARIANT SYSTEM */}
+      {/* SECTION 6: COLOR-FIRST PRODUCT VARIANT SYSTEM */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
           <div>
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <Boxes className="w-4 h-4 text-orange" /> Section 5: Dynamic Product Variant Matrix
+              <Boxes className="w-4 h-4 text-orange" /> Section 6: Product Variant Matrix & Photo
+              Gallery
             </h2>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-slate-500 mt-0.5">
               Color-first grouped matrix with variant-specific photos and category sizes (
               {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name}).
             </p>
           </div>
-          <span className="text-[11px] font-bold text-slate-400">Step 5 of 5</span>
+          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+            Step 6 of 6
+          </span>
         </div>
 
         {/* Variant Mode Selection */}
@@ -3748,11 +3779,23 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         )}
       </div>
 
-      {/* SECTION 6: ENTERPRISE SEO SEARCH ENGINE METADATA */}
+      {/* SECTION 7: ENTERPRISE SEO SEARCH ENGINE METADATA */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-navy flex items-center gap-2">
-          <Globe className="w-4 h-4 text-navy" /> Section 6: Enterprise SEO & Search Engine Keywords
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+          <div>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
+              <Globe className="w-4 h-4 text-orange" /> Section 7: Enterprise SEO & Search Engine
+              Keywords
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Search engine meta tags and focus keywords to improve visibility on Google search and
+              store discovery.
+            </p>
+          </div>
+          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+            Optional SEO
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
           <div>
@@ -3797,21 +3840,27 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       </div>
 
       {/* BOTTOM ACTION BAR */}
-      <div className="sticky bottom-4 z-20 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-4 shadow-lg flex items-center justify-between gap-4">
-        <Link
-          href="/seller/products"
-          className="text-xs font-bold text-slate-500 hover:text-navy flex items-center gap-1.5 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" /> Cancel & Back to Products
-        </Link>
-        <div className="flex items-center gap-3">
+      <div className="sticky bottom-4 z-20 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3.5">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+          <Link
+            href="/seller/products"
+            className="text-xs font-bold text-slate-500 hover:text-navy flex items-center gap-1.5 transition-colors p-1"
+          >
+            <ArrowLeft className="w-4 h-4" /> Cancel & Back to Products
+          </Link>
+          <span className="text-[11px] text-slate-400 hidden sm:inline">
+            Review all sections before final submission
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2.5 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl transition-all flex items-center gap-2 shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
+            className="w-full sm:w-auto px-8 py-3 bg-orange hover:bg-orange/90 text-white font-extrabold text-sm rounded-xl transition-all flex items-center justify-center gap-2.5 shadow-md shadow-orange/20 cursor-pointer active:scale-95 disabled:opacity-50"
           >
             {isSubmitting ? (
-              <span>Saving...</span>
+              <span>Saving product...</span>
             ) : (
               <>
                 <Send className="w-4 h-4 text-white" />{' '}
