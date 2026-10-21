@@ -12,7 +12,11 @@ function getJwtSecretKey(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-export async function GET() {
+// High-performance in-memory cache for seller dashboard: TTL 15 seconds
+const dashboardCache = new Map<string, { timestamp: number; payload: any }>();
+const CACHE_TTL_MS = 15000;
+
+export async function GET(request: Request) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
@@ -35,7 +39,7 @@ export async function GET() {
     }
 
     // Find seller's primary shop
-    const shop = await prisma.shop.findFirst({
+    let shop = await prisma.shop.findFirst({
       where: { ownerId: userId, deletedAt: null },
       include: {
         owner: {
@@ -54,10 +58,56 @@ export async function GET() {
     });
 
     if (!shop) {
+      // Fallback: check if user owns any shop via User model relation
+      const userWithShop = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          ownedShops: {
+            where: { deletedAt: null },
+            include: {
+              owner: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  mobile: true,
+                  role: true,
+                  approvalStatus: true,
+                },
+              },
+              sellerProfile: true,
+              addresses: true,
+            },
+            take: 1,
+          },
+        },
+      });
+
+      if (userWithShop?.ownedShops?.[0]) {
+        shop = userWithShop.ownedShops[0];
+      }
+    }
+
+    if (!shop) {
       return NextResponse.json(
         { success: false, message: 'No registered seller shop found for this account.' },
         { status: 404 },
       );
+    }
+
+    // Serve from hot in-memory cache if requested within TTL (unless ?fresh=true)
+    const cacheKey = `seller_dashboard_${shop.id}`;
+    const url = new URL(request.url);
+    const forceFresh = url.searchParams.get('fresh') === 'true';
+    const cached = dashboardCache.get(cacheKey);
+    const now = Date.now();
+
+    if (!forceFresh && cached && now - cached.timestamp < CACHE_TTL_MS) {
+      return NextResponse.json(cached.payload, {
+        headers: {
+          'Cache-Control': 'private, max-age=15, stale-while-revalidate=30',
+        },
+      });
     }
 
     if (shop.name) {
@@ -79,100 +129,103 @@ export async function GET() {
       }
     }
 
-    // Metrics Calculation
-    const totalProducts = await prisma.product.count({
-      where: { shopId: shop.id, deletedAt: null },
-    });
-
-    const pendingOrders = await prisma.vendorOrder.count({
-      where: {
-        shopId: shop.id,
-        status: { in: ['PENDING', 'PROCESSING'] },
-      },
-    });
-
-    const revenueAggregation = await prisma.vendorOrder.aggregate({
-      where: {
-        shopId: shop.id,
-      },
-      _sum: {
-        vendorPayoutAmount: true,
-        totalAmount: true,
-      },
-    });
-
-    const totalRevenue = Number(
-      revenueAggregation._sum.vendorPayoutAmount || revenueAggregation._sum.totalAmount || 0,
-    );
-
-    const inventoryAggregation = await prisma.productVariant.aggregate({
-      where: {
-        product: {
-          shopId: shop.id,
-          deletedAt: null,
-        },
-      },
-      _sum: {
-        stock: true,
-      },
-    });
-
-    const totalInventoryStock = inventoryAggregation._sum.stock || 0;
-
-    // Recent Vendor Orders
-    const recentOrders = await prisma.vendorOrder.findMany({
-      where: { shopId: shop.id },
-      take: 6,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        masterOrder: {
-          select: {
-            id: true,
-            orderNumber: true,
-            paymentStatus: true,
-            user: {
-              select: {
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-        items: {
-          select: {
-            id: true,
-            quantity: true,
-            price: true,
-            total: true,
-            product: {
-              select: {
-                name: true,
-                images: { select: { imageUrl: true }, take: 1 },
-              },
-            },
-          },
-        },
-      },
-    });
-
-    // Compute Real Monthly Revenue from Vendor Orders across last 6 months
+    // Compute Date boundary for 6 months
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
     sixMonthsAgo.setDate(1);
     sixMonthsAgo.setHours(0, 0, 0, 0);
 
-    const pastOrders = await prisma.vendorOrder.findMany({
-      where: {
-        shopId: shop.id,
-        createdAt: { gte: sixMonthsAgo },
-      },
-      select: {
-        vendorPayoutAmount: true,
-        totalAmount: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+    // Parallel Execution of all independent queries for maximum performance
+    const [
+      totalProducts,
+      pendingOrders,
+      revenueAggregation,
+      inventoryAggregation,
+      recentOrders,
+      pastOrders,
+    ] = await Promise.all([
+      prisma.product.count({
+        where: { shopId: shop.id, deletedAt: null },
+      }),
+      prisma.vendorOrder.count({
+        where: {
+          shopId: shop.id,
+          status: { in: ['PENDING', 'PROCESSING'] },
+        },
+      }),
+      prisma.vendorOrder.aggregate({
+        where: {
+          shopId: shop.id,
+        },
+        _sum: {
+          vendorPayoutAmount: true,
+          totalAmount: true,
+        },
+      }),
+      prisma.productVariant.aggregate({
+        where: {
+          product: {
+            shopId: shop.id,
+            deletedAt: null,
+          },
+        },
+        _sum: {
+          stock: true,
+        },
+      }),
+      prisma.vendorOrder.findMany({
+        where: { shopId: shop.id },
+        take: 6,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          masterOrder: {
+            select: {
+              id: true,
+              orderNumber: true,
+              paymentStatus: true,
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          items: {
+            select: {
+              id: true,
+              quantity: true,
+              price: true,
+              total: true,
+              product: {
+                select: {
+                  name: true,
+                  images: { select: { imageUrl: true }, take: 1 },
+                },
+              },
+            },
+          },
+        },
+      }),
+      prisma.vendorOrder.findMany({
+        where: {
+          shopId: shop.id,
+          createdAt: { gte: sixMonthsAgo },
+        },
+        select: {
+          vendorPayoutAmount: true,
+          totalAmount: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+    ]);
+
+    const totalRevenue = Number(
+      revenueAggregation._sum.vendorPayoutAmount || revenueAggregation._sum.totalAmount || 0,
+    );
+
+    const totalInventoryStock = inventoryAggregation._sum.stock || 0;
 
     const monthNames = [
       'Jan',
@@ -210,7 +263,7 @@ export async function GET() {
       revenue: Math.round(revenue),
     }));
 
-    return NextResponse.json({
+    const responsePayload = {
       success: true,
       data: {
         shop: {
@@ -234,6 +287,15 @@ export async function GET() {
         },
         monthlyRevenue,
         recentOrders,
+      },
+    };
+
+    // Update in-memory cache
+    dashboardCache.set(cacheKey, { timestamp: now, payload: responsePayload });
+
+    return NextResponse.json(responsePayload, {
+      headers: {
+        'Cache-Control': 'private, max-age=15, stale-while-revalidate=30',
       },
     });
   } catch (error: any) {

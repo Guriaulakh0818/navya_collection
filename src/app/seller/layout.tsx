@@ -61,6 +61,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
   };
 
   useEffect(() => {
+    setSidebarOpen(false);
     fetchSellerStatus();
   }, [pathname]);
 
@@ -134,7 +135,11 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
         }`}
       >
         <div className="flex h-16 items-center justify-between px-6 border-b border-slate-200 bg-slate-50/50">
-          <Link href="/seller/dashboard" className="flex items-center gap-2">
+          <Link
+            href="/seller/dashboard"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-2"
+          >
             <Building2 className="w-6 h-6 text-navy" />
             <span className="font-extrabold text-navy text-lg tracking-tight">Merchant Portal</span>
           </Link>
@@ -180,6 +185,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${
                   isActive
                     ? 'bg-navy text-white shadow-md shadow-navy/20'
