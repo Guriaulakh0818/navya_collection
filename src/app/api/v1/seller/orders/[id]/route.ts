@@ -36,7 +36,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                 name: true,
                 sku: true,
                 fabric: true,
-                images: { select: { imageUrl: true }, take: 1 },
+                images: {
+                  select: { imageUrl: true },
+                  take: 1,
+                  orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+                },
               },
             },
             variant: {

@@ -73,7 +73,11 @@ export async function GET() {
         take: 8,
         orderBy: { rating: 'desc' },
         include: {
-          images: { select: { imageUrl: true }, take: 1 },
+          images: {
+            select: { imageUrl: true },
+            take: 1,
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+          },
           shop: { select: { id: true, name: true, slug: true, verificationBadge: true } },
           category: { select: { id: true, name: true, slug: true } },
         },
@@ -87,7 +91,11 @@ export async function GET() {
         take: 12,
         orderBy: { createdAt: 'desc' },
         include: {
-          images: { select: { imageUrl: true }, take: 1 },
+          images: {
+            select: { imageUrl: true },
+            take: 1,
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+          },
           shop: { select: { id: true, name: true, slug: true } },
           category: { select: { id: true, name: true, slug: true } },
         },
@@ -101,7 +109,11 @@ export async function GET() {
         take: 12,
         orderBy: { price: 'desc' },
         include: {
-          images: { select: { imageUrl: true }, take: 1 },
+          images: {
+            select: { imageUrl: true },
+            take: 1,
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+          },
           shop: { select: { id: true, name: true, slug: true } },
           category: { select: { id: true, name: true, slug: true } },
         },

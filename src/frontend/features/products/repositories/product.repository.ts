@@ -66,9 +66,7 @@ export class ProductRepository {
           },
           images: {
             take: 2,
-            orderBy: {
-              sortOrder: 'asc',
-            },
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
           },
           variants: {
             where: {
@@ -156,9 +154,7 @@ export class ProductRepository {
             },
           },
           images: {
-            orderBy: {
-              sortOrder: 'asc',
-            },
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
           },
           variants: {
             where: {
@@ -252,12 +248,20 @@ export class ProductRepository {
           isNewArrival: productData.isNewArrival ?? true,
           category: { connect: { id: validCatId } },
           images: {
-            create: images.map((img, index) => ({
-              imageUrl: img.url,
-              altText: img.alt || `Product Image ${index + 1}`,
-              isPrimary: img.isPrimary || index === 0,
-              sortOrder: img.sortOrder ?? index,
-            })),
+            create: (() => {
+              const all = [...images];
+              const pIdx = all.findIndex((img) => img.isPrimary);
+              if (pIdx > 0) {
+                const [prim] = all.splice(pIdx, 1);
+                all.unshift(prim);
+              }
+              return all.map((img, index) => ({
+                imageUrl: img.url,
+                altText: img.alt || `Product Image ${index + 1}`,
+                isPrimary: index === 0,
+                sortOrder: index,
+              }));
+            })(),
           },
           variants: {
             create: variants.map((v, index) => ({

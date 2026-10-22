@@ -119,7 +119,11 @@ export class MarketplaceSearchService {
             skip,
             take: limit,
             include: {
-              images: { select: { imageUrl: true }, take: 1 },
+              images: {
+                select: { imageUrl: true },
+                take: 1,
+                orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+              },
               shop: { select: { id: true, name: true, slug: true, rating: true } },
               category: { select: { id: true, name: true, slug: true } },
             },
@@ -202,7 +206,11 @@ export class MarketplaceSearchService {
           name: true,
           slug: true,
           price: true,
-          images: { select: { imageUrl: true }, take: 1 },
+          images: {
+            select: { imageUrl: true },
+            take: 1,
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+          },
           shop: { select: { name: true } },
         },
       }),

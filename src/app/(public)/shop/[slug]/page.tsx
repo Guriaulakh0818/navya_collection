@@ -70,7 +70,7 @@ async function getApprovedShopBySlug(slug: string) {
             imageUrl: true,
             altText: true,
           },
-          orderBy: { sortOrder: 'asc' },
+          orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
           take: 2,
         },
         category: {

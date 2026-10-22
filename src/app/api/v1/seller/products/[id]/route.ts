@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             }),
       },
       include: {
-        images: { orderBy: { sortOrder: 'asc' } },
+        images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
         variants: { orderBy: { createdAt: 'asc' } },
         category: true,
       },
@@ -262,23 +262,30 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             allImages.push({
               imageUrl: vUrl,
               altText: `${data.name} - ${v.color || 'Variant'}`,
-              isPrimary: allImages.length === 0,
+              isPrimary: false,
               sortOrder: allImages.length,
             });
           }
         });
       }
 
-      if (data.images) {
-        const hasExplicitPrimary = allImages.some((img: any) => Boolean(img.isPrimary));
+      if (data.images && allImages.length > 0) {
+        const primaryIdx = allImages.findIndex((img: any) => Boolean(img.isPrimary));
+        if (primaryIdx > 0) {
+          const [primaryImg] = allImages.splice(primaryIdx, 1);
+          allImages.unshift(primaryImg);
+        } else if (primaryIdx === -1) {
+          allImages[0].isPrimary = true;
+        }
+
         await tx.productImage.deleteMany({ where: { productId: id } });
         await tx.productImage.createMany({
           data: allImages.map((img: any, idx: number) => ({
             productId: id,
             imageUrl: img.imageUrl,
             altText: img.altText || data.name,
-            isPrimary: hasExplicitPrimary ? Boolean(img.isPrimary) : idx === 0,
-            sortOrder: img.sortOrder ?? idx,
+            isPrimary: idx === 0,
+            sortOrder: idx,
           })),
         });
       }

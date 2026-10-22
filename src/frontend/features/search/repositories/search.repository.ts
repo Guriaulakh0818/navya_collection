@@ -50,9 +50,7 @@ export class SearchRepository {
             },
           },
           images: {
-            orderBy: {
-              sortOrder: 'asc',
-            },
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
             take: 2,
           },
           _count: {
@@ -117,7 +115,7 @@ export class SearchRepository {
             slug: true,
             price: true,
             images: {
-              where: { isPrimary: true },
+              orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
               take: 1,
               select: { imageUrl: true },
             },

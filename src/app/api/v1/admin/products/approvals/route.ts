@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
           .findMany({
             where: whereCondition,
             include: {
-              images: { orderBy: { sortOrder: 'asc' } },
+              images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
               variants: true,
               category: { select: { id: true, name: true, slug: true } },
               brandRef: { select: { id: true, name: true, slug: true } },
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
               .findMany({
                 where: whereCondition,
                 include: {
-                  images: { orderBy: { sortOrder: 'asc' } },
+                  images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
                   variants: true,
                   category: { select: { id: true, name: true, slug: true } },
                   brandRef: { select: { id: true, name: true, slug: true } },
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
                   .findMany({
                     where: whereCondition,
                     include: {
-                      images: { orderBy: { sortOrder: 'asc' } },
+                      images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
                     },
                     orderBy: { createdAt: 'desc' },
                     skip,

@@ -16,7 +16,7 @@ export class CartRepository {
           include: {
             images: {
               where: { deletedAt: null },
-              orderBy: { sortOrder: 'asc' as const },
+              orderBy: [{ isPrimary: 'desc' as const }, { sortOrder: 'asc' as const }],
             },
             category: {
               select: {

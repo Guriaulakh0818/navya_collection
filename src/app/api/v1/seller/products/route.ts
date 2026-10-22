@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
         include: {
           images: {
             select: { id: true, imageUrl: true, isPrimary: true },
-            orderBy: { sortOrder: 'asc' },
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
           },
           variants: true,
           category: { select: { id: true, name: true, slug: true } },
@@ -309,7 +309,7 @@ export async function POST(request: NextRequest) {
             allImages.push({
               imageUrl: vUrl,
               altText: `${data.name} - ${v.color || 'Variant'}`,
-              isPrimary: allImages.length === 0,
+              isPrimary: false,
               sortOrder: allImages.length,
             });
           }
@@ -317,14 +317,21 @@ export async function POST(request: NextRequest) {
       }
 
       if (allImages.length > 0) {
-        const hasExplicitPrimary = allImages.some((img) => Boolean(img.isPrimary));
+        const primaryIdx = allImages.findIndex((img) => Boolean(img.isPrimary));
+        if (primaryIdx > 0) {
+          const [primaryImg] = allImages.splice(primaryIdx, 1);
+          allImages.unshift(primaryImg);
+        } else if (primaryIdx === -1) {
+          allImages[0].isPrimary = true;
+        }
+
         await tx.productImage.createMany({
           data: allImages.map((img, index) => ({
             productId: product.id,
             imageUrl: img.imageUrl,
             altText: img.altText || data.name,
-            isPrimary: hasExplicitPrimary ? Boolean(img.isPrimary) : index === 0,
-            sortOrder: img.sortOrder ?? index,
+            isPrimary: index === 0,
+            sortOrder: index,
           })),
         });
       }

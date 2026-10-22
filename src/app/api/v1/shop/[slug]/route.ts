@@ -105,7 +105,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         where: productWhere,
         orderBy,
         include: {
-          images: { select: { imageUrl: true }, take: 1 },
+          images: {
+            select: { imageUrl: true },
+            take: 1,
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+          },
           category: { select: { id: true, name: true, slug: true } },
         },
       }),
@@ -134,7 +138,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         take: 4,
         orderBy: { createdAt: 'desc' },
         include: {
-          images: { select: { imageUrl: true }, take: 1 },
+          images: {
+            select: { imageUrl: true },
+            take: 1,
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+          },
           shop: { select: { id: true, name: true, slug: true } },
           category: { select: { id: true, name: true, slug: true } },
         },

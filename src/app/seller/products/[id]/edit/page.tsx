@@ -21,7 +21,7 @@ export default async function EditSellerProductPage({
   const product = await prisma.product.findUnique({
     where: { id },
     include: {
-      images: { orderBy: { sortOrder: 'asc' } },
+      images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
       variants: { orderBy: { createdAt: 'asc' } },
       category: true,
     },

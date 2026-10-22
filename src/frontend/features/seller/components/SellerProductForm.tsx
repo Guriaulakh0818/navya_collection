@@ -217,13 +217,27 @@ function getDefaultFormData(init?: any) {
     sleeve: init?.sleeve || '',
     neck: init?.neck || '',
     attributes: init?.attributes || {},
-    images: (init?.images || []).map((img: any, idx: number) => ({
-      ...img,
-      imageUrl:
-        typeof img === 'string' ? img : (img.imageUrl || img.secureUrl || img.url || '').trim(),
-      isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
-      sortOrder: img.sortOrder ?? idx,
-    })),
+    images: (() => {
+      const raw = (init?.images || []).map((img: any, idx: number) => ({
+        ...img,
+        imageUrl:
+          typeof img === 'string' ? img : (img.imageUrl || img.secureUrl || img.url || '').trim(),
+        isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
+        sortOrder: img.sortOrder ?? idx,
+      }));
+      const primaryIdx = raw.findIndex((img: any) => img.isPrimary);
+      if (primaryIdx > 0) {
+        const [primaryImg] = raw.splice(primaryIdx, 1);
+        raw.unshift(primaryImg);
+      } else if (raw.length > 0 && primaryIdx === -1) {
+        raw[0].isPrimary = true;
+      }
+      return raw.map((img: any, idx: number) => ({
+        ...img,
+        isPrimary: idx === 0,
+        sortOrder: idx,
+      }));
+    })(),
     variants: (init?.variants || []).map((v: any) => ({
       ...v,
       imageUrl: v.attributes?.imageUrl || v.imageUrl || v.image || '',
@@ -618,15 +632,29 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             sleeve: prod.sleeve || prod.attributes?.sleeve || '',
             neck: prod.neck || prod.attributes?.neck || '',
             attributes: prod.attributes || {},
-            images: (prod.images || []).map((img: any, idx: number) => ({
-              ...img,
-              imageUrl:
-                typeof img === 'string'
-                  ? img
-                  : (img.imageUrl || img.secureUrl || img.url || '').trim(),
-              isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
-              sortOrder: img.sortOrder ?? idx,
-            })),
+            images: (() => {
+              const raw = (prod.images || []).map((img: any, idx: number) => ({
+                ...img,
+                imageUrl:
+                  typeof img === 'string'
+                    ? img
+                    : (img.imageUrl || img.secureUrl || img.url || '').trim(),
+                isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
+                sortOrder: img.sortOrder ?? idx,
+              }));
+              const primaryIdx = raw.findIndex((img: any) => img.isPrimary);
+              if (primaryIdx > 0) {
+                const [primaryImg] = raw.splice(primaryIdx, 1);
+                raw.unshift(primaryImg);
+              } else if (raw.length > 0 && primaryIdx === -1) {
+                raw[0].isPrimary = true;
+              }
+              return raw.map((img: any, idx: number) => ({
+                ...img,
+                isPrimary: idx === 0,
+                sortOrder: idx,
+              }));
+            })(),
             variants: loadedVariants,
           }));
 
@@ -1191,23 +1219,30 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
   const handleRemoveImage = (index: number) => {
     setFormData((prev) => {
-      const newImages = prev.images.filter((_: any, i: number) => i !== index);
-      if (newImages.length > 0 && !newImages.some((img: any) => img.isPrimary)) {
-        newImages[0].isPrimary = true;
-      }
-      return { ...prev, images: newImages };
+      const remaining = prev.images.filter((_: any, i: number) => i !== index);
+      const reindexed = remaining.map((img: any, i: number) => ({
+        ...img,
+        isPrimary: i === 0,
+        sortOrder: i,
+      }));
+      return { ...prev, images: reindexed };
     });
   };
 
   const handleSetPrimaryImage = (index: number) => {
     setFormData((prev) => {
-      const selectedImgUrl = prev.images[index]?.imageUrl;
+      const currentImages = [...prev.images];
+      if (index < 0 || index >= currentImages.length) return prev;
+      const [selectedImg] = currentImages.splice(index, 1);
+      const reorderedImages = [selectedImg, ...currentImages].map((img: any, i: number) => ({
+        ...img,
+        isPrimary: i === 0,
+        sortOrder: i,
+      }));
+      const selectedImgUrl = selectedImg?.imageUrl;
       return {
         ...prev,
-        images: prev.images.map((img: any, i: number) => ({
-          ...img,
-          isPrimary: i === index,
-        })),
+        images: reorderedImages,
         variants: prev.variants.map((v: any) => {
           if (!v.imageUrl && selectedImgUrl) {
             return { ...v, imageUrl: selectedImgUrl };
@@ -1269,7 +1304,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           );
           const updatedImages = hasInGallery
             ? prev.images
-            : [...prev.images, { imageUrl: uploadedUrl, isPrimary: prev.images.length === 0 }];
+            : [
+                ...prev.images,
+                {
+                  imageUrl: uploadedUrl,
+                  isPrimary: prev.images.length === 0,
+                  sortOrder: prev.images.length,
+                },
+              ];
 
           return {
             ...prev,
@@ -1527,7 +1569,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           );
           const updatedImages = hasInGallery
             ? prev.images
-            : [...prev.images, { imageUrl: uploadedUrl, isPrimary: prev.images.length === 0 }];
+            : [
+                ...prev.images,
+                {
+                  imageUrl: uploadedUrl,
+                  isPrimary: prev.images.length === 0,
+                  sortOrder: prev.images.length,
+                },
+              ];
 
           return {
             ...prev,
@@ -1693,8 +1742,12 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         return;
       }
 
-      // 2. Ensure exactly one primary image is designated
-      if (!normalizedImages.some((img: any) => img.isPrimary)) {
+      // 2. Ensure exactly one primary image is designated and moved to index 0
+      const primaryIdx = normalizedImages.findIndex((img: any) => img.isPrimary);
+      if (primaryIdx > 0) {
+        const [prim] = normalizedImages.splice(primaryIdx, 1);
+        normalizedImages.unshift(prim);
+      } else if (normalizedImages.length > 0 && primaryIdx === -1) {
         normalizedImages[0].isPrimary = true;
       }
 
@@ -1731,14 +1784,24 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       }
 
       // Clean images payload for Zod validation (must be valid URL, not empty, not raw base64)
-      const sanitizedImages = normalizedImages
-        .filter((img: any) => Boolean(img.imageUrl) && !img.imageUrl.startsWith('data:'))
-        .map((img: any, idx: number) => ({
-          imageUrl: img.imageUrl,
-          altText: img.altText || formData.name || 'Product Image',
-          isPrimary: Boolean(img.isPrimary),
-          sortOrder: img.sortOrder ?? idx,
-        }));
+      const validImages = normalizedImages.filter(
+        (img: any) => Boolean(img.imageUrl) && !img.imageUrl.startsWith('data:'),
+      );
+
+      const primValidIdx = validImages.findIndex((img: any) => img.isPrimary);
+      if (primValidIdx > 0) {
+        const [prim] = validImages.splice(primValidIdx, 1);
+        validImages.unshift(prim);
+      } else if (validImages.length > 0 && primValidIdx === -1) {
+        validImages[0].isPrimary = true;
+      }
+
+      const sanitizedImages = validImages.map((img: any, idx: number) => ({
+        imageUrl: img.imageUrl,
+        altText: img.altText || formData.name || 'Product Image',
+        isPrimary: idx === 0,
+        sortOrder: idx,
+      }));
 
       if (sanitizedImages.length === 0) {
         showToast(

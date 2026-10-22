@@ -53,9 +53,7 @@ export class FilterRepository {
             },
           },
           images: {
-            orderBy: {
-              sortOrder: 'asc',
-            },
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
             take: 2,
           },
           variants: {

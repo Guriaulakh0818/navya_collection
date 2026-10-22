@@ -106,7 +106,7 @@ export default async function AdminDashboardPage() {
           orderBy: { createdAt: 'desc' },
           include: {
             shop: { select: { name: true } },
-            images: { take: 1 },
+            images: { take: 1, orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
             category: { select: { name: true } },
           },
         })
@@ -116,7 +116,9 @@ export default async function AdminDashboardPage() {
               where: { status: { in: ['pending_approval', 'draft'] }, deletedAt: null },
               take: 5,
               orderBy: { createdAt: 'desc' },
-              include: { images: { take: 1 } },
+              include: {
+                images: { take: 1, orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
+              },
             })
             .catch(() =>
               prisma.product

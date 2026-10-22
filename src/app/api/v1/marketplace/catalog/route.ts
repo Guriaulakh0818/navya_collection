@@ -51,7 +51,11 @@ export async function GET() {
           },
           orderBy: { createdAt: 'desc' },
           include: {
-            images: { select: { imageUrl: true }, take: 2 },
+            images: {
+              select: { imageUrl: true },
+              take: 2,
+              orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+            },
             shop: {
               select: { id: true, name: true, slug: true, city: true, verificationBadge: true },
             },

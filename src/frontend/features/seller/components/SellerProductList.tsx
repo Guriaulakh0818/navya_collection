@@ -7,6 +7,7 @@ import {
   Clock,
   Edit3,
   Plus,
+  RefreshCw,
   Search,
   ShoppingBag,
   Tag,
@@ -61,9 +62,32 @@ export function SellerProductList() {
     }
   }, [activeTab, page, searchQuery]);
 
+  const [isReconciling, setIsReconciling] = useState<boolean>(false);
+
   useEffect(() => {
-    fetchProducts();
+    // Quietly reconcile any shuffled legacy product photos on mount
+    fetch('/api/v1/seller/products/reconcile-images', { method: 'POST' })
+      .catch(() => {})
+      .then(() => fetchProducts());
   }, [fetchProducts]);
+
+  const handleReconcileImages = async () => {
+    setIsReconciling(true);
+    try {
+      const res = await fetch('/api/v1/seller/products/reconcile-images', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message || 'All product photos synced successfully!', 'success');
+        fetchProducts();
+      } else {
+        showToast(data.message || 'Sync failed', 'error');
+      }
+    } catch {
+      showToast('Server error: unable to sync photos', 'error');
+    } finally {
+      setIsReconciling(false);
+    }
+  };
 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ type, text });
@@ -176,6 +200,16 @@ export function SellerProductList() {
               Delete Selected ({selectedIds.length})
             </button>
           )}
+
+          <button
+            onClick={handleReconcileImages}
+            disabled={isReconciling}
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            title="Fix and synchronize main cover photos for all existing products"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isReconciling ? 'animate-spin' : ''}`} />
+            {isReconciling ? 'Syncing Photos...' : 'Sync Main Photos'}
+          </button>
 
           <Link
             href="/seller/products/new"

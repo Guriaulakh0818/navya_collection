@@ -77,6 +77,13 @@ async function getFormattedProduct(slug: string) {
               }
             });
           }
+          // Sort so primary image is strictly at index 0
+          combinedImages.sort((a: any, b: any) => {
+            if (a.isPrimary && !b.isPrimary) return -1;
+            if (!a.isPrimary && b.isPrimary) return 1;
+            return 0;
+          });
+
           return combinedImages;
         })(),
         variants:
@@ -173,7 +180,7 @@ async function getRelatedProducts(
       include: {
         images: {
           where: { deletedAt: null },
-          orderBy: { sortOrder: 'asc' },
+          orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
         },
         variants: {
           where: { deletedAt: null },
@@ -211,7 +218,7 @@ async function getRelatedProducts(
         include: {
           images: {
             where: { deletedAt: null },
-            orderBy: { sortOrder: 'asc' },
+            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
           },
           variants: {
             where: { deletedAt: null },

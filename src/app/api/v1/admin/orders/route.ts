@@ -73,7 +73,12 @@ export async function GET(request: NextRequest) {
           items: {
             include: {
               shop: { select: { id: true, name: true, slug: true } },
-              product: { select: { name: true, images: { take: 1 } } },
+              product: {
+                select: {
+                  name: true,
+                  images: { take: 1, orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
+                },
+              },
             },
           },
         },

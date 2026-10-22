@@ -606,7 +606,7 @@ export default async function CategoryPage({ params }: Props) {
       include: {
         images: {
           select: { id: true, imageUrl: true, isPrimary: true, altText: true },
-          orderBy: { isPrimary: 'desc' },
+          orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
         },
         shop: { select: { id: true, name: true, slug: true } },
         category: { select: { id: true, name: true, slug: true } },

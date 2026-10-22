@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
       products = await prisma.product.findMany({
         where: whereCondition,
         include: {
-          images: { orderBy: { sortOrder: 'asc' } },
+          images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }] },
           variants: true,
           category: { select: { id: true, name: true, slug: true } },
           shop: {

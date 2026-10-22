@@ -19,7 +19,7 @@ export class WishlistRepository {
             include: {
               images: {
                 where: { deletedAt: null },
-                orderBy: { sortOrder: 'asc' },
+                orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
               },
               category: {
                 select: {
@@ -81,7 +81,7 @@ export class WishlistRepository {
             include: {
               images: {
                 where: { deletedAt: null },
-                orderBy: { sortOrder: 'asc' },
+                orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
               },
             },
           },
@@ -155,7 +155,7 @@ export class WishlistRepository {
               include: {
                 images: {
                   where: { deletedAt: null },
-                  orderBy: { sortOrder: 'asc' },
+                  orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
                 },
               },
             },

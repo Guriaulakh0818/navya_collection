@@ -48,7 +48,7 @@ function sanitizeShop(s: any) {
     logo:
       s.slug === 'navya-collection' || s.name?.toLowerCase().includes('navya')
         ? '/images/navya-logo.png'
-        : (s.logo || null),
+        : s.logo || null,
     banner: '/images/default-shop-banner.png',
     rating: s.rating !== null && s.rating !== undefined ? Number(s.rating) : null,
     reviewCount: s.reviewCount ? Number(s.reviewCount) : 0,
@@ -120,7 +120,11 @@ export const getMarketplaceHomeData = safeCache(async () => {
               select: {
                 id: true,
                 name: true,
-                images: { select: { imageUrl: true }, take: 1 },
+                images: {
+                  select: { imageUrl: true },
+                  take: 1,
+                  orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+                },
               },
             },
           },
@@ -163,7 +167,11 @@ export const getMarketplaceHomeData = safeCache(async () => {
             compareAtPrice: true,
             rating: true,
             reviewCount: true,
-            images: { select: { imageUrl: true }, take: 1 },
+            images: {
+              select: { imageUrl: true },
+              take: 1,
+              orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+            },
             shop: { select: { id: true, name: true, slug: true, verificationBadge: true } },
             category: { select: { id: true, name: true, slug: true } },
           },
@@ -188,7 +196,11 @@ export const getMarketplaceHomeData = safeCache(async () => {
             compareAtPrice: true,
             rating: true,
             reviewCount: true,
-            images: { select: { imageUrl: true }, take: 1 },
+            images: {
+              select: { imageUrl: true },
+              take: 1,
+              orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+            },
             shop: { select: { id: true, name: true, slug: true } },
             category: { select: { id: true, name: true, slug: true } },
           },
@@ -213,7 +225,11 @@ export const getMarketplaceHomeData = safeCache(async () => {
             compareAtPrice: true,
             rating: true,
             reviewCount: true,
-            images: { select: { imageUrl: true }, take: 1 },
+            images: {
+              select: { imageUrl: true },
+              take: 1,
+              orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+            },
             shop: { select: { id: true, name: true, slug: true } },
             category: { select: { id: true, name: true, slug: true } },
           },

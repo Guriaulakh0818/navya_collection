@@ -200,7 +200,11 @@ export async function GET(request: Request) {
               product: {
                 select: {
                   name: true,
-                  images: { select: { imageUrl: true }, take: 1 },
+                  images: {
+                    select: { imageUrl: true },
+                    take: 1,
+                    orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+                  },
                 },
               },
             },
