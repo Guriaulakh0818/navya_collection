@@ -175,11 +175,14 @@ export class CartRepository {
   }
 
   /**
-   * Deletes a cart item.
+   * Deletes cart items by item ID or product ID.
    */
-  static async removeItem(cartItemId: string) {
-    return await prisma.cartItem.delete({
-      where: { id: cartItemId },
+  static async removeItem(cartItemIdOrProductId: string, variantId?: string | null) {
+    return await prisma.cartItem.deleteMany({
+      where: {
+        OR: [{ id: cartItemIdOrProductId }, { productId: cartItemIdOrProductId }],
+        ...(variantId ? { variantId } : {}),
+      },
     });
   }
 

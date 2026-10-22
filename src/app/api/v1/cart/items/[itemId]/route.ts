@@ -67,7 +67,8 @@ export async function DELETE(
     }
 
     const { itemId } = await params;
-    const response = await CartService.removeItem(userId, itemId);
+    const variantId = request.nextUrl.searchParams.get('variantId') || undefined;
+    const response = await CartService.removeItem(userId, itemId, variantId);
     return NextResponse.json(response, { status: response.statusCode });
   } catch (error: any) {
     console.error('[API_REMOVE_CART_ITEM_ERROR]', error);

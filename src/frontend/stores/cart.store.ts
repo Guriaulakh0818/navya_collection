@@ -157,6 +157,29 @@ function calculateTotals(items: CartStoreItem[]): CartCalculatedTotals {
   };
 }
 
+// Monotonically increasing operation sequence ID to discard stale out-of-order network responses
+let latestCartOperationId = 0;
+
+// Set of recently removed item IDs and product IDs (with 8-second protection window)
+const recentlyRemovedMap = new Map<string, number>();
+
+function markItemAsRemoved(idOrProductId: string) {
+  if (!idOrProductId) return;
+  const expiresAt = Date.now() + 8000;
+  recentlyRemovedMap.set(idOrProductId, expiresAt);
+}
+
+function isItemRecentlyRemoved(productId: string, itemId?: string): boolean {
+  const now = Date.now();
+  const prodExpires = recentlyRemovedMap.get(productId);
+  if (prodExpires && prodExpires > now) return true;
+  if (itemId) {
+    const itemExpires = recentlyRemovedMap.get(itemId);
+    if (itemExpires && itemExpires > now) return true;
+  }
+  return false;
+}
+
 export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
@@ -171,27 +194,18 @@ export const useCartStore = create<CartStore>()(
       syncWithServer: (serverCart) => {
         if (!serverCart) return;
 
-        const currentLocal = get().items;
-        // Keep any local items that aren't yet reflected in serverCart (e.g. concurrent in-flight additions)
-        const inFlightItems = currentLocal.filter((localItem) => {
-          return !serverCart.items?.some((serverItem: any) => {
-            if (serverItem.productId !== localItem.productId) return false;
-            if (serverItem.variantId || localItem.variantId) {
-              return (serverItem.variantId || null) === (localItem.variantId || null);
-            }
-            const sameSize = (serverItem.size || null) === (localItem.size || null);
-            const sameColor = (serverItem.color || null) === (localItem.color || null);
-            return sameSize && sameColor;
-          });
+        // Filter out any items that the user recently removed in this session
+        const rawServerItems = serverCart.items || [];
+        const cleanServerItems = rawServerItems.filter((i: any) => {
+          return !isItemRecentlyRemoved(i.productId, i.id);
         });
 
-        const mergedItems = [...(serverCart.items || []), ...inFlightItems];
-        const totals = calculateTotals(mergedItems);
+        const totals = calculateTotals(cleanServerItems);
 
         set({
           ...serverCart,
-          items: mergedItems,
-          itemCount: mergedItems.reduce((acc, i) => acc + i.quantity, 0),
+          items: cleanServerItems,
+          itemCount: cleanServerItems.reduce((acc, i) => acc + i.quantity, 0),
           subtotal: totals.subtotal,
           total: totals.total,
           isGuest: false,
@@ -202,22 +216,29 @@ export const useCartStore = create<CartStore>()(
 
       fetchCart: async () => {
         if (get().isGuest) return;
+        const opId = ++latestCartOperationId;
 
         set({ isLoading: true, error: null });
         try {
           const res = await fetch('/api/v1/cart', { method: 'GET' });
+          if (opId !== latestCartOperationId) return;
+
           if (res.status === 401) {
             set({ isGuest: true, isLoading: false });
             return;
           }
           const json = await res.json();
+          if (opId !== latestCartOperationId) return;
+
           if (json.success && json.data) {
             get().syncWithServer(json.data);
           } else {
             set({ isLoading: false, error: json.message || 'Failed to load cart' });
           }
         } catch {
-          set({ isLoading: false, error: 'Network error loading cart' });
+          if (opId === latestCartOperationId) {
+            set({ isLoading: false, error: 'Network error loading cart' });
+          }
         }
       },
 
@@ -310,6 +331,11 @@ export const useCartStore = create<CartStore>()(
       },
 
       addItem: async (input) => {
+        const opId = ++latestCartOperationId;
+        // User explicitly wants to add this product, unmark from recently removed
+        recentlyRemovedMap.delete(input.productId);
+        if (input.id) recentlyRemovedMap.delete(input.id);
+
         const quantityToAdd = input.quantity || 1;
         const state = get();
         const cleanVariantId = input.variantId || null;
@@ -365,7 +391,7 @@ export const useCartStore = create<CartStore>()(
         }
 
         const totals = calculateTotals(updatedItems);
-        set({ ...totals, error: null });
+        set({ ...totals, items: updatedItems, error: null });
 
         if (state.isGuest) return;
 
@@ -388,6 +414,8 @@ export const useCartStore = create<CartStore>()(
           });
 
           const json = await res.json();
+          // Drop stale response if user performed another cart action (e.g. remove) while request was in-flight
+          if (opId !== latestCartOperationId) return;
           if (res.ok && json.success && json.data) {
             get().syncWithServer(json.data);
           }
@@ -401,6 +429,7 @@ export const useCartStore = create<CartStore>()(
           await get().removeItem(itemIdOrProductId);
           return;
         }
+        const opId = ++latestCartOperationId;
         const state = get();
 
         // 1. Optimistic Local State Update so UI buttons respond instantly
@@ -413,7 +442,7 @@ export const useCartStore = create<CartStore>()(
         });
 
         const totals = calculateTotals(updatedItems);
-        set({ ...totals, error: null });
+        set({ ...totals, items: updatedItems, error: null });
 
         if (state.isGuest) return;
 
@@ -424,13 +453,15 @@ export const useCartStore = create<CartStore>()(
         if (!targetItem) return;
 
         try {
-          const res = await fetch(`/api/v1/cart/items/${targetItem.id}`, {
+          const updateId = targetItem.id.startsWith('item_') ? targetItem.productId : targetItem.id;
+          const res = await fetch(`/api/v1/cart/items/${encodeURIComponent(updateId)}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ quantity: newQuantity }),
           });
 
           const json = await res.json();
+          if (opId !== latestCartOperationId) return;
           if (res.ok && json.success && json.data) {
             get().syncWithServer(json.data);
           }
@@ -438,9 +469,27 @@ export const useCartStore = create<CartStore>()(
       },
 
       removeItem: async (itemIdOrProductId, variantId) => {
+        const opId = ++latestCartOperationId;
         const state = get();
 
-        // 1. Optimistic Local Removal
+        // 1. Mark as recently removed immediately to block any in-flight response from reviving it
+        markItemAsRemoved(itemIdOrProductId);
+        const targetItem = state.items.find((i) => {
+          if (i.id === itemIdOrProductId) return true;
+          if (
+            i.productId === itemIdOrProductId &&
+            (variantId === undefined || (i.variantId || null) === (variantId || null))
+          ) {
+            return true;
+          }
+          return false;
+        });
+        if (targetItem) {
+          markItemAsRemoved(targetItem.productId);
+          if (targetItem.id) markItemAsRemoved(targetItem.id);
+        }
+
+        // 2. Optimistic Local Removal
         const updatedItems = state.items.filter((i) => {
           if (i.id === itemIdOrProductId) return false;
           if (
@@ -452,30 +501,27 @@ export const useCartStore = create<CartStore>()(
           return true;
         });
         const totals = calculateTotals(updatedItems);
-        set({ ...totals, error: null });
+        set({ ...totals, items: updatedItems, error: null });
 
         if (state.isGuest) return;
 
-        // 2. Logged-in Server Sync
-        const targetItem = state.items.find((i) => {
-          if (i.id === itemIdOrProductId) return true;
-          if (
-            i.productId === itemIdOrProductId &&
-            (variantId === undefined || (i.variantId || null) === (variantId || null))
-          ) {
-            return true;
-          }
-          return false;
-        });
-        if (!targetItem) return;
-
+        // 3. Logged-in Server Sync
         try {
-          const deleteId = targetItem.id.startsWith('item_') ? targetItem.productId : targetItem.id;
-          const res = await fetch(`/api/v1/cart/items/${deleteId}`, {
-            method: 'DELETE',
-          });
+          const deleteTarget = targetItem
+            ? targetItem.id.startsWith('item_')
+              ? targetItem.productId
+              : targetItem.id
+            : itemIdOrProductId;
+          const vQuery = variantId ? `?variantId=${encodeURIComponent(variantId)}` : '';
+          const res = await fetch(
+            `/api/v1/cart/items/${encodeURIComponent(deleteTarget)}${vQuery}`,
+            {
+              method: 'DELETE',
+            },
+          );
 
           const json = await res.json();
+          if (opId !== latestCartOperationId) return;
           if (res.ok && json.success && json.data) {
             get().syncWithServer(json.data);
           }
@@ -483,6 +529,13 @@ export const useCartStore = create<CartStore>()(
       },
 
       clearCart: async () => {
+        const opId = ++latestCartOperationId;
+        // Mark all items as recently removed
+        get().items.forEach((item) => {
+          markItemAsRemoved(item.productId);
+          if (item.id) markItemAsRemoved(item.id);
+        });
+
         // 1. Optimistic Local Clear
         set({ ...DEFAULT_TOTALS, isLoading: false, error: null });
 
@@ -493,6 +546,7 @@ export const useCartStore = create<CartStore>()(
         try {
           const res = await fetch('/api/v1/cart', { method: 'DELETE' });
           const json = await res.json();
+          if (opId !== latestCartOperationId) return;
           if (res.ok && json.success && json.data) {
             get().syncWithServer(json.data);
           }

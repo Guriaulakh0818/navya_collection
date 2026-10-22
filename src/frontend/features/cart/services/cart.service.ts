@@ -344,42 +344,16 @@ export class CartService {
   /**
    * Removes an item from user's cart.
    */
-  static async removeItem(userId: string, cartItemId: string): Promise<ServiceResponse> {
+  static async removeItem(
+    userId: string,
+    cartItemId: string,
+    variantId?: string | null,
+  ): Promise<ServiceResponse> {
     try {
-      const cart = await CartRepository.findOrCreateCartByUserId(userId);
-      let cartItem = await CartRepository.findCartItemById(cartItemId);
+      // 1. Remove all matching cart items (by item ID or product ID and optional variant)
+      await CartRepository.removeItem(cartItemId, variantId);
 
-      if (!cartItem) {
-        // Fallback: check if cartItemId was a productId
-        const matched = cart.items.find(
-          (i: any) => i.id === cartItemId || i.productId === cartItemId,
-        );
-        if (matched) {
-          cartItem = matched as any;
-        }
-      }
-
-      if (!cartItem) {
-        // Item is already not in cart, return current cart gracefully
-        const calculated = this.calculateCartTotals(cart);
-        return {
-          success: true,
-          message: 'Item removed from cart.',
-          statusCode: 200,
-          data: calculated,
-        };
-      }
-
-      if (cartItem.cartId !== cart.id) {
-        return {
-          success: false,
-          message: 'Unauthorized access to cart item.',
-          statusCode: 403,
-        };
-      }
-
-      await CartRepository.removeItem(cartItem.id);
-
+      // 2. Return latest calculated cart
       const updatedCart = await CartRepository.findOrCreateCartByUserId(userId);
       const calculated = this.calculateCartTotals(updatedCart);
 
