@@ -1561,42 +1561,21 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       className="space-y-8 max-w-6xl mx-auto pb-16"
     >
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs sticky top-4 z-20 backdrop-blur-md">
+      <div className="flex items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs sticky top-4 z-20 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <Link
             href="/seller/products"
-            className="p-2.5 text-slate-500 hover:text-navy hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+            className="p-2 text-slate-500 hover:text-navy hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
             title="Back to Products Catalog"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold text-navy tracking-tight">
-                {productId ? 'Edit Product Listing' : 'Add New Product'}
-              </h1>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange/10 text-orange border border-orange/20">
-                {productId ? 'Editing Mode' : 'Catalog Draft'}
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Complete the structured sections below. When ready, submit the listing for approval at
-              the bottom of the page.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-start sm:justify-end">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange/10 border border-orange/20 text-xs font-bold text-navy">
-            <span className="text-slate-500 text-[11px] uppercase tracking-wider">Template:</span>
-            <strong className="text-orange">{activeTemplate.name}</strong>
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700">
-            <span className="text-slate-500 text-[11px] uppercase tracking-wider">
-              Size System:
-            </span>
-            <span className="font-mono text-navy font-bold">
-              {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name || 'Standard'}
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-extrabold text-navy tracking-tight">
+              {productId ? 'Edit Product' : 'Add New Product'}
+            </h1>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange/10 text-orange border border-orange/20">
+              {productId ? 'Editing' : 'Draft'}
             </span>
           </div>
         </div>
