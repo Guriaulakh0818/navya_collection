@@ -916,129 +916,261 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               </div>
             </div>
           </div>
+
+          {/* DESKTOP ONLY: Product Specifications & Customer Reviews in Side Column (Fills empty side space) */}
+          <div className="hidden lg:block space-y-3.5 pt-2 border-t border-slate-100">
+            {/* 1. Product Specifications & Details */}
+            <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-2.5 shadow-xs">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h2 className="text-xs font-extrabold text-navy flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-orange" /> Product Specifications &amp;
+                  Details
+                </h2>
+                <span className="text-[10.5px] text-slate-400 font-bold">
+                  100% Authentic Details
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 xl:grid-cols-3 gap-1.5">
+                {specifications.map((spec, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-slate-50/70 border border-slate-100/90 rounded-lg p-2 flex flex-col justify-center"
+                  >
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider truncate">
+                      {spec.label}
+                    </span>
+                    <span
+                      className="font-bold text-navy mt-0.5 text-[11px] truncate"
+                      title={spec.value}
+                    >
+                      {spec.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 2 & 3. Customer Reviews & Write Review Form */}
+            <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h2 className="text-xs font-extrabold text-navy">
+                  Customer Reviews ({reviewsList.length})
+                </h2>
+                <ProductRating rating={product.rating} reviewCount={reviewsList.length} />
+              </div>
+
+              {/* Write Review Form */}
+              <form onSubmit={handleAddReview} className="space-y-2.5">
+                <h3 className="font-extrabold text-navy text-[11.5px]">Write a Customer Review</h3>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <label className="block text-slate-700 font-bold mb-1 text-[10.5px]">
+                      Your Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ananya Sharma"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 font-bold mb-1 text-[10.5px]">
+                      Rating
+                    </label>
+                    <select
+                      value={newRating}
+                      onChange={(e) => setNewRating(Number(e.target.value))}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-900 font-extrabold focus:bg-white focus:border-orange focus:outline-none cursor-pointer"
+                    >
+                      <option value={5}>⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                      <option value={4}>⭐⭐⭐⭐ 4 - Very Good</option>
+                      <option value={3}>⭐⭐⭐ 3 - Good</option>
+                      <option value={2}>⭐⭐ 2 - Average</option>
+                      <option value={1}>⭐ 1 - Poor</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1 text-[10.5px]">
+                    Your Review &amp; Feedback
+                  </label>
+                  <textarea
+                    placeholder="Share details of your experience with fabric, fitting, and delivery..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    rows={2}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 bg-orange hover:bg-orange/90 text-white text-xs font-extrabold rounded-lg shadow-xs transition-all cursor-pointer"
+                >
+                  Submit Verified Review
+                </button>
+              </form>
+
+              {/* Reviews Feed */}
+              {reviewsList.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-slate-100 max-h-60 overflow-y-auto pr-1">
+                  {reviewsList.map((r: any) => (
+                    <div
+                      key={r.id}
+                      className="p-2.5 bg-slate-50/70 border border-slate-100 rounded-lg space-y-1 text-xs"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-navy text-[11px]">{r.userName}</span>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {new Date(r.createdAt).toLocaleDateString('en-IN')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 text-amber-500 text-[11px] font-bold">
+                        {'★'.repeat(r.rating)}
+                        {'☆'.repeat(5 - r.rating)}
+                      </div>
+                      <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                        {r.comment}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* COMPACT PRODUCT SPECIFICATIONS (2-Cols on Mobile, 3-Cols Tablet, 4-Cols Desktop) */}
-      <section className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-5 space-y-2.5 shadow-xs">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-          <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-navy flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange" /> Product Specifications
-            &amp; Details
-          </h2>
-          <span className="text-[10px] sm:text-[11px] text-slate-400 font-bold hidden sm:inline">
-            100% Authentic Details
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
-          {specifications.map((spec, idx) => (
-            <div
-              key={idx}
-              className="bg-slate-50/70 border border-slate-100/90 rounded-lg sm:rounded-xl p-2 sm:p-2.5 flex flex-col justify-center"
-            >
-              <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider truncate">
-                {spec.label}
-              </span>
-              <span
-                className="font-bold text-navy mt-0.5 text-[10.5px] sm:text-xs truncate"
-                title={spec.value}
-              >
-                {spec.value}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Customer Reviews Section */}
-      <section className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 border-t border-slate-200">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base sm:text-xl font-extrabold text-navy">
-            Customer Reviews ({reviewsList.length})
-          </h2>
-          <ProductRating rating={product.rating} reviewCount={reviewsList.length} />
-        </div>
-
-        {/* Add Review Form */}
-        <form
-          onSubmit={handleAddReview}
-          className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 space-y-2.5 sm:space-y-3 shadow-xs"
-        >
-          <h3 className="font-extrabold text-navy text-xs sm:text-sm">Write a Customer Review</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-xs">
-            <div>
-              <label className="block text-slate-700 font-bold mb-1 text-[11px]">Your Name</label>
-              <input
-                type="text"
-                placeholder="e.g. Ananya Sharma"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-slate-700 font-bold mb-1 text-[11px]">Rating</label>
-              <select
-                value={newRating}
-                onChange={(e) => setNewRating(Number(e.target.value))}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-extrabold focus:bg-white focus:border-orange focus:outline-none cursor-pointer"
-              >
-                <option value={5}>⭐⭐⭐⭐⭐ 5 - Excellent</option>
-                <option value={4}>⭐⭐⭐⭐ 4 - Very Good</option>
-                <option value={3}>⭐⭐⭐ 3 - Good</option>
-                <option value={2}>⭐⭐ 2 - Average</option>
-                <option value={1}>⭐ 1 - Poor</option>
-              </select>
-            </div>
+      {/* MOBILE ONLY: Product Specifications & Customer Reviews (Untouched for Mobile) */}
+      <div className="lg:hidden space-y-4 sm:space-y-6">
+        {/* COMPACT PRODUCT SPECIFICATIONS (2-Cols on Mobile, 3-Cols Tablet, 4-Cols Desktop) */}
+        <section className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-5 space-y-2.5 shadow-xs">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-navy flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange" /> Product Specifications
+              &amp; Details
+            </h2>
+            <span className="text-[10px] sm:text-[11px] text-slate-400 font-bold hidden sm:inline">
+              100% Authentic Details
+            </span>
           </div>
 
-          <div>
-            <label className="block text-slate-700 font-bold mb-1 text-[11px]">
-              Your Review & Feedback
-            </label>
-            <textarea
-              placeholder="Share details of your experience with fabric, fitting, and delivery..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              rows={2}
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="px-4 sm:px-5 py-2 bg-orange hover:bg-orange/90 text-white text-xs font-extrabold rounded-lg shadow-xs transition-all cursor-pointer"
-          >
-            Submit Verified Review
-          </button>
-        </form>
-
-        {/* Reviews Feed - Only render when reviews exist to eliminate empty div gaps */}
-        {reviewsList.length > 0 && (
-          <div className="space-y-2 sm:space-y-3">
-            {reviewsList.map((r: any) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
+            {specifications.map((spec, idx) => (
               <div
-                key={r.id}
-                className="p-3 sm:p-4 bg-white border border-slate-200 rounded-xl space-y-1.5 shadow-xs"
+                key={idx}
+                className="bg-slate-50/70 border border-slate-100/90 rounded-lg sm:rounded-xl p-2 sm:p-2.5 flex flex-col justify-center"
               >
-                <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-navy text-xs sm:text-sm">{r.userName}</span>
-                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
-                    {new Date(r.createdAt).toLocaleDateString('en-IN')}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
-                  {'★'.repeat(r.rating)}
-                  {'☆'.repeat(5 - r.rating)}
-                </div>
-                <p className="text-xs text-slate-600 font-medium leading-relaxed">{r.comment}</p>
+                <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider truncate">
+                  {spec.label}
+                </span>
+                <span
+                  className="font-bold text-navy mt-0.5 text-[10.5px] sm:text-xs truncate"
+                  title={spec.value}
+                >
+                  {spec.value}
+                </span>
               </div>
             ))}
           </div>
-        )}
-      </section>
+        </section>
+
+        {/* Customer Reviews Section */}
+        <section className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 border-t border-slate-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base sm:text-xl font-extrabold text-navy">
+              Customer Reviews ({reviewsList.length})
+            </h2>
+            <ProductRating rating={product.rating} reviewCount={reviewsList.length} />
+          </div>
+
+          {/* Add Review Form */}
+          <form
+            onSubmit={handleAddReview}
+            className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 space-y-2.5 sm:space-y-3 shadow-xs"
+          >
+            <h3 className="font-extrabold text-navy text-xs sm:text-sm">Write a Customer Review</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-xs">
+              <div>
+                <label className="block text-slate-700 font-bold mb-1 text-[11px]">Your Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Ananya Sharma"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-700 font-bold mb-1 text-[11px]">Rating</label>
+                <select
+                  value={newRating}
+                  onChange={(e) => setNewRating(Number(e.target.value))}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-extrabold focus:bg-white focus:border-orange focus:outline-none cursor-pointer"
+                >
+                  <option value={5}>⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                  <option value={4}>⭐⭐⭐⭐ 4 - Very Good</option>
+                  <option value={3}>⭐⭐⭐ 3 - Good</option>
+                  <option value={2}>⭐⭐ 2 - Average</option>
+                  <option value={1}>⭐ 1 - Poor</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-slate-700 font-bold mb-1 text-[11px]">
+                Your Review &amp; Feedback
+              </label>
+              <textarea
+                placeholder="Share details of your experience with fabric, fitting, and delivery..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                rows={2}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="px-4 sm:px-5 py-2 bg-orange hover:bg-orange/90 text-white text-xs font-extrabold rounded-lg shadow-xs transition-all cursor-pointer"
+            >
+              Submit Verified Review
+            </button>
+          </form>
+
+          {/* Reviews Feed - Only render when reviews exist to eliminate empty div gaps */}
+          {reviewsList.length > 0 && (
+            <div className="space-y-2 sm:space-y-3">
+              {reviewsList.map((r: any) => (
+                <div
+                  key={r.id}
+                  className="p-3 sm:p-4 bg-white border border-slate-200 rounded-xl space-y-1.5 shadow-xs"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-navy text-xs sm:text-sm">
+                      {r.userName}
+                    </span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
+                      {new Date(r.createdAt).toLocaleDateString('en-IN')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
+                    {'★'.repeat(r.rating)}
+                    {'☆'.repeat(5 - r.rating)}
+                  </div>
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed">{r.comment}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
 
       {/* Related Products / More to Explore (Amazon / Flipkart / Myntra style) */}
       {relatedProducts && relatedProducts.length > 0 && (
