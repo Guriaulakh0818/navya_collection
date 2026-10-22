@@ -102,54 +102,76 @@ export function AiStudioEnhancerModal({
     setErrorMessage(null);
 
     try {
-      const headers: Record<string, string> = {};
-      if (hfToken.trim()) {
-        headers['x-hf-token'] = hfToken.trim();
-      }
+      let cutoutUrl = '';
+      let briaSuccess = false;
 
-      let response: Response;
-
-      if (selectedFile) {
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        response = await fetch('/api/v1/seller/ai/studio-enhance', {
-          method: 'POST',
-          headers,
-          body: formData,
-        });
-      } else {
-        response = await fetch('/api/v1/seller/ai/studio-enhance', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...headers,
-          },
-          body: JSON.stringify({ imageUrl: previewOriginalUrl }),
-        });
-      }
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok || !data.success) {
-        if (data.code === 'TOKEN_REQUIRED' || data.code === 'INVALID_TOKEN') {
-          setShowTokenInput(true);
-          setErrorMessage(data.message || 'Free Hugging Face token required to run Bria AI.');
-        } else {
-          setErrorMessage(data.message || 'AI processing failed. Please try again.');
+      // 1. Try Bria AI Cloud Inference first
+      try {
+        const headers: Record<string, string> = {};
+        if (hfToken.trim()) {
+          headers['x-hf-token'] = hfToken.trim();
         }
-        setIsProcessing(false);
-        return;
+
+        let response: Response;
+        if (selectedFile) {
+          const formData = new FormData();
+          formData.append('file', selectedFile);
+          response = await fetch('/api/v1/seller/ai/studio-enhance', {
+            method: 'POST',
+            headers,
+            body: formData,
+          });
+        } else {
+          response = await fetch('/api/v1/seller/ai/studio-enhance', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...headers,
+            },
+            body: JSON.stringify({ imageUrl: previewOriginalUrl }),
+          });
+        }
+
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && data.success && data.data?.cutout) {
+          cutoutUrl = data.data.cutout;
+          briaSuccess = true;
+        }
+      } catch (briaErr) {
+        console.warn(
+          '[AI_STUDIO] Cloud inference attempt failed, falling back to local engine:',
+          briaErr,
+        );
       }
 
-      if (data.data?.cutout) {
-        setCutoutBase64(data.data.cutout);
+      // 2. Seamless 100% Free Fallback (In-Browser WebAssembly AI)
+      if (!briaSuccess) {
+        try {
+          const { removeBackground } = await import('@imgly/background-removal');
+          const source = selectedFile || previewOriginalUrl;
+          const blob = await removeBackground(source);
+          cutoutUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        } catch (localErr: any) {
+          throw new Error(
+            localErr?.message || 'Could not process photo background. Please try another image.',
+          );
+        }
+      }
+
+      if (cutoutUrl) {
+        setCutoutBase64(cutoutUrl);
         setViewMode('after');
       } else {
         throw new Error('AI service did not return image cutout.');
       }
     } catch (err: any) {
       console.error('[AI_STUDIO_MODAL_ERROR]', err);
-      setErrorMessage(err.message || 'Network error occurred while connecting to AI service.');
+      setErrorMessage(err.message || 'Error occurred while creating studio photo.');
     } finally {
       setIsProcessing(false);
     }
