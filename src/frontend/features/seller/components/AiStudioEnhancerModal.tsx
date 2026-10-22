@@ -101,146 +101,48 @@ export function AiStudioEnhancerModal({
     }
 
     setIsProcessing(true);
-    setProgressStatus('Connecting to AI Studio Engine...');
+    setProgressStatus('Running Bria AI RMBG-2.0 Studio Engine...');
     setErrorMessage(null);
 
     try {
-      let cutoutUrl = '';
-      let briaSuccess = false;
+      const headers: Record<string, string> = {};
+      if (hfToken.trim()) {
+        headers['x-hf-token'] = hfToken.trim();
+      }
 
-      // 1. Try Bria AI Cloud Inference first
-      try {
-        const headers: Record<string, string> = {};
-        if (hfToken.trim()) {
-          headers['x-hf-token'] = hfToken.trim();
-        }
+      let response: Response;
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        response = await fetch('/api/v1/seller/ai/studio-enhance', {
+          method: 'POST',
+          headers,
+          body: formData,
+        });
+      } else {
+        response = await fetch('/api/v1/seller/ai/studio-enhance', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...headers,
+          },
+          body: JSON.stringify({ imageUrl: previewOriginalUrl }),
+        });
+      }
 
-        let response: Response;
-        if (selectedFile) {
-          const formData = new FormData();
-          formData.append('file', selectedFile);
-          response = await fetch('/api/v1/seller/ai/studio-enhance', {
-            method: 'POST',
-            headers,
-            body: formData,
-          });
-        } else {
-          response = await fetch('/api/v1/seller/ai/studio-enhance', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...headers,
-            },
-            body: JSON.stringify({ imageUrl: previewOriginalUrl }),
-          });
-        }
+      const data = await response.json().catch(() => ({}));
 
-        const data = await response.json().catch(() => ({}));
-        if (response.ok && data.success && data.data?.cutout) {
-          cutoutUrl = data.data.cutout;
-          briaSuccess = true;
-        } else if (data.code === 'TOKEN_REQUIRED' || data.code === 'INVALID_TOKEN') {
+      if (!response.ok || !data.success || !data.data?.cutout) {
+        if (data.code === 'TOKEN_REQUIRED' || data.code === 'INVALID_TOKEN') {
           setShowTokenInput(true);
         }
-      } catch (briaErr) {
-        console.warn(
-          '[AI_STUDIO] Cloud inference attempt failed, trying local CDN engine:',
-          briaErr,
+        throw new Error(
+          data.message || 'Bria AI could not process this image. Please try another image.',
         );
       }
 
-      // 2. Seamless In-Browser WebAssembly Fallback via CDN (Zero Webpack / Bundle Overhead)
-      if (!briaSuccess) {
-        try {
-          const loadCdnEngine = async () => {
-            if ((window as any).__imglyRemoveBg) {
-              return (window as any).__imglyRemoveBg;
-            }
-
-            setProgressStatus('Loading AI Engine...');
-
-            const cdnEndpoints = [
-              'https://cdn.jsdelivr.net/npm/@imgly/background-removal/+esm',
-              'https://esm.sh/@imgly/background-removal@1.7.0',
-            ];
-
-            let lastErr: any = null;
-            for (const url of cdnEndpoints) {
-              try {
-                // Dynamically import ESM from CDN at runtime (bypassing webpack bundle)
-                const importDynamic = new Function('moduleUrl', 'return import(moduleUrl)');
-                const mod = await importDynamic(url);
-                const fn = mod.removeBackground || mod.default;
-                if (typeof fn === 'function') {
-                  (window as any).__imglyRemoveBg = fn;
-                  return fn;
-                }
-              } catch (e: any) {
-                lastErr = e;
-                console.warn(`[AI_STUDIO] Failed to load from ${url}:`, e?.message || e);
-              }
-            }
-
-            throw new Error(
-              lastErr?.message ||
-                'Failed to load in-browser AI engine. Please check your internet connection.',
-            );
-          };
-
-          const removeBgFn = await loadCdnEngine();
-          setProgressStatus('Initializing AI Neural Model...');
-
-          // Prepare image source as File/Blob or URL
-          let source: any = selectedFile;
-          if (!source && previewOriginalUrl) {
-            try {
-              if (previewOriginalUrl.startsWith('http')) {
-                const imgRes = await fetch(previewOriginalUrl);
-                if (imgRes.ok) {
-                  source = await imgRes.blob();
-                } else {
-                  source = previewOriginalUrl;
-                }
-              } else {
-                source = previewOriginalUrl;
-              }
-            } catch {
-              source = previewOriginalUrl;
-            }
-          }
-
-          const blob = await removeBgFn(source, {
-            model: 'isnet_quint8', // ~40MB compact quantized model, 2x faster in browser
-            progress: (_key: string, current: number, total: number) => {
-              if (total > 0) {
-                const pct = Math.min(100, Math.round((current / total) * 100));
-                setProgressStatus(`Loading AI Model (${pct}%)...`);
-              } else {
-                setProgressStatus('Processing photo with AI...');
-              }
-            },
-          });
-
-          setProgressStatus('Finalizing studio cutout...');
-          cutoutUrl = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-          });
-        } catch (localErr: any) {
-          throw new Error(
-            localErr?.message || 'Could not process photo background. Please try another image.',
-          );
-        }
-      }
-
-      if (cutoutUrl) {
-        setCutoutBase64(cutoutUrl);
-        setViewMode('after');
-      } else {
-        throw new Error('AI service did not return image cutout.');
-      }
+      setCutoutBase64(data.data.cutout);
+      setViewMode('after');
     } catch (err: any) {
       console.error('[AI_STUDIO_MODAL_ERROR]', err);
       setErrorMessage(err.message || 'Error occurred while creating studio photo.');
