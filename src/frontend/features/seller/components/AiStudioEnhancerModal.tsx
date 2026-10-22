@@ -36,6 +36,7 @@ export function AiStudioEnhancerModal({
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isApplying, setIsApplying] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [progressStatus, setProgressStatus] = useState<string>('Processing with AI...');
   const [showTokenInput, setShowTokenInput] = useState<boolean>(false);
   const [hfToken, setHfToken] = useState<string>('');
 
@@ -100,6 +101,7 @@ export function AiStudioEnhancerModal({
     }
 
     setIsProcessing(true);
+    setProgressStatus('Connecting to AI Studio Engine...');
     setErrorMessage(null);
 
     try {
@@ -151,29 +153,75 @@ export function AiStudioEnhancerModal({
       if (!briaSuccess) {
         try {
           const loadCdnEngine = async () => {
-            if ((window as any).imglyRemoveBackground) {
-              return (window as any).imglyRemoveBackground;
+            if ((window as any).__imglyRemoveBg) {
+              return (window as any).__imglyRemoveBg;
             }
-            return new Promise<any>((resolve, reject) => {
-              const script = document.createElement('script');
-              script.src =
-                'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/bundle.js';
-              script.async = true;
-              script.onload = () => {
-                if ((window as any).imglyRemoveBackground) {
-                  resolve((window as any).imglyRemoveBackground);
-                } else {
-                  reject(new Error('AI engine failed to initialize from CDN.'));
+
+            setProgressStatus('Loading AI Engine...');
+
+            const cdnEndpoints = [
+              'https://cdn.jsdelivr.net/npm/@imgly/background-removal/+esm',
+              'https://esm.sh/@imgly/background-removal@1.7.0',
+            ];
+
+            let lastErr: any = null;
+            for (const url of cdnEndpoints) {
+              try {
+                // Dynamically import ESM from CDN at runtime (bypassing webpack bundle)
+                const importDynamic = new Function('moduleUrl', 'return import(moduleUrl)');
+                const mod = await importDynamic(url);
+                const fn = mod.removeBackground || mod.default;
+                if (typeof fn === 'function') {
+                  (window as any).__imglyRemoveBg = fn;
+                  return fn;
                 }
-              };
-              script.onerror = () => reject(new Error('Failed to load in-browser AI engine.'));
-              document.head.appendChild(script);
-            });
+              } catch (e: any) {
+                lastErr = e;
+                console.warn(`[AI_STUDIO] Failed to load from ${url}:`, e?.message || e);
+              }
+            }
+
+            throw new Error(
+              lastErr?.message ||
+                'Failed to load in-browser AI engine. Please check your internet connection.',
+            );
           };
 
           const removeBgFn = await loadCdnEngine();
-          const source = selectedFile || previewOriginalUrl;
-          const blob = await removeBgFn(source);
+          setProgressStatus('Initializing AI Neural Model...');
+
+          // Prepare image source as File/Blob or URL
+          let source: any = selectedFile;
+          if (!source && previewOriginalUrl) {
+            try {
+              if (previewOriginalUrl.startsWith('http')) {
+                const imgRes = await fetch(previewOriginalUrl);
+                if (imgRes.ok) {
+                  source = await imgRes.blob();
+                } else {
+                  source = previewOriginalUrl;
+                }
+              } else {
+                source = previewOriginalUrl;
+              }
+            } catch {
+              source = previewOriginalUrl;
+            }
+          }
+
+          const blob = await removeBgFn(source, {
+            model: 'isnet_quint8', // ~40MB compact quantized model, 2x faster in browser
+            progress: (_key: string, current: number, total: number) => {
+              if (total > 0) {
+                const pct = Math.min(100, Math.round((current / total) * 100));
+                setProgressStatus(`Loading AI Model (${pct}%)...`);
+              } else {
+                setProgressStatus('Processing photo with AI...');
+              }
+            },
+          });
+
+          setProgressStatus('Finalizing studio cutout...');
           cutoutUrl = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result as string);
@@ -542,7 +590,7 @@ export function AiStudioEnhancerModal({
                       {isProcessing ? (
                         <>
                           <RefreshCw className="w-4 h-4 animate-spin" />
-                          Processing with AI...
+                          {progressStatus || 'Processing with AI...'}
                         </>
                       ) : (
                         <>
