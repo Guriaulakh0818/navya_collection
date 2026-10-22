@@ -261,6 +261,12 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   const [isAiStudioModalOpen, setIsAiStudioModalOpen] = useState(false);
   const [aiStudioTargetUrl, setAiStudioTargetUrl] = useState<string | undefined>(undefined);
 
+  // AI Description Generator State
+  const [isGeneratingAiDesc, setIsGeneratingAiDesc] = useState(false);
+  const [aiDescTone, setAiDescTone] = useState<'royal' | 'bullet' | 'seo'>('royal');
+  const [previousDesc, setPreviousDesc] = useState<string | null>(null);
+  const [aiGeneratedSuccess, setAiGeneratedSuccess] = useState(false);
+
   const handleOpenAiStudioModal = (imageUrl?: string) => {
     setAiStudioTargetUrl(imageUrl);
     setIsAiStudioModalOpen(true);
@@ -995,6 +1001,74 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       } & set template to "${res.matchedLabels[0] || 'Garment'}"`,
       'success',
     );
+  };
+
+  const handleGenerateAiDescription = async () => {
+    if (!formData.name.trim()) {
+      showToast(
+        'Please enter a Product Name first so AI knows what garment you are listing.',
+        'error',
+      );
+      if (typeof document !== 'undefined') {
+        const titleInput = document.querySelector<HTMLInputElement>(
+          'input[placeholder*="Royal Blue"]',
+        );
+        titleInput?.focus();
+      }
+      return;
+    }
+
+    setIsGeneratingAiDesc(true);
+    try {
+      if (formData.description.trim()) {
+        setPreviousDesc(formData.description);
+      }
+
+      const res = await fetch('/api/v1/seller/ai/generate-description', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.name,
+          brand: formData.brand || 'Navya Collection',
+          category: activeTemplate?.name || selectedCategoryIds[0] || 'Ethnic Wear',
+          department: activeDeptId,
+          fabric:
+            formData.fabric ||
+            (formData as any).fabric_type ||
+            formData.attributes?.fabric ||
+            formData.attributes?.fabric_type,
+          pattern:
+            formData.pattern ||
+            (formData as any).work_type ||
+            formData.attributes?.pattern ||
+            formData.attributes?.work_type,
+          color: selectedColors.length > 0 ? selectedColors.join(', ') : formData.color,
+          occasion: formData.occasion || formData.attributes?.occasion,
+          attributes: formData.attributes,
+          currentDescription: formData.description,
+          tone: aiDescTone,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.data?.description) {
+        setFormData((prev) => ({
+          ...prev,
+          description: data.data.description,
+          metaDescription: prev.metaDescription || data.data.metaDescription || '',
+          metaKeywords: prev.metaKeywords || data.data.keywords || '',
+        }));
+        setAiGeneratedSuccess(true);
+        showToast('AI Product Description generated successfully!', 'success');
+      } else {
+        showToast(data.message || 'Could not generate description. Please try again.', 'error');
+      }
+    } catch (err: any) {
+      console.error('AI Description error:', err);
+      showToast(err.message || 'Error generating AI description.', 'error');
+    } finally {
+      setIsGeneratingAiDesc(false);
+    }
   };
 
   const handleMainCategoryChange = (mainId: string) => {
@@ -2218,18 +2292,115 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             </div>
           </div>
 
-          <div className="md:col-span-2">
-            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Product Description <span className="text-rose-500">*</span>
-            </label>
+          <div className="md:col-span-2 space-y-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
+                Product Description <span className="text-rose-500">*</span>
+              </label>
+
+              {/* AI Assistance Toolbar */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {/* Tone Selector */}
+                <div className="inline-flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setAiDescTone('royal')}
+                    className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
+                      aiDescTone === 'royal'
+                        ? 'bg-white text-navy shadow-xs'
+                        : 'text-slate-500 hover:text-navy'
+                    }`}
+                    title="Luxury Royal Boutique Heritage Tone"
+                  >
+                    👑 Luxury
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAiDescTone('bullet')}
+                    className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
+                      aiDescTone === 'bullet'
+                        ? 'bg-white text-navy shadow-xs'
+                        : 'text-slate-500 hover:text-navy'
+                    }`}
+                    title="Modern Clear Bullet Points"
+                  >
+                    ⚡ Bullets
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAiDescTone('seo')}
+                    className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
+                      aiDescTone === 'seo'
+                        ? 'bg-white text-navy shadow-xs'
+                        : 'text-slate-500 hover:text-navy'
+                    }`}
+                    title="Marketplace & Search Engine Optimized"
+                  >
+                    🔍 SEO
+                  </button>
+                </div>
+
+                {/* AI Generate Button */}
+                <button
+                  type="button"
+                  disabled={isGeneratingAiDesc}
+                  onClick={handleGenerateAiDescription}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-orange to-amber-600 hover:from-orange/95 hover:to-amber-500 text-white font-extrabold text-xs rounded-lg transition-all shadow-xs cursor-pointer active:scale-95 disabled:opacity-60"
+                  title="Automatically generate description with AI based on title and attributes"
+                >
+                  <Sparkles className={`w-3.5 h-3.5 ${isGeneratingAiDesc ? 'animate-spin' : ''}`} />
+                  <span>
+                    {isGeneratingAiDesc
+                      ? 'AI Writing...'
+                      : formData.description.trim()
+                        ? 'Enhance with AI'
+                        : 'Generate with AI'}
+                  </span>
+                </button>
+
+                {/* Undo Button */}
+                {previousDesc && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, description: previousDesc }));
+                      setPreviousDesc(null);
+                      showToast('Reverted to previous description.', 'success');
+                    }}
+                    className="text-[10px] font-bold text-slate-500 hover:text-navy px-1.5 py-1 rounded hover:bg-slate-100 transition-colors cursor-pointer"
+                    title="Undo AI generation"
+                  >
+                    Undo
+                  </button>
+                )}
+              </div>
+            </div>
+
             <textarea
               required
-              rows={4}
-              placeholder="Describe the fabric, craftsmanship, wash care instructions, stitching details and styling tips..."
+              rows={6}
+              placeholder="Describe the fabric, craftsmanship, wash care instructions, stitching details and styling tips... Or click 'Generate with AI' above to write it automatically!"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-900 font-medium focus:border-navy focus:bg-white focus:outline-none transition-all leading-relaxed"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-900 font-medium focus:border-navy focus:bg-white focus:outline-none transition-all leading-relaxed text-xs"
             />
+
+            {aiGeneratedSuccess && (
+              <div className="flex items-center justify-between text-[11px] text-emerald-700 bg-emerald-50/70 border border-emerald-200/80 px-3 py-1.5 rounded-xl">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  Description written with AI. You can edit any line above or click Generate with AI
+                  again for another variation.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setAiGeneratedSuccess(false)}
+                  className="text-emerald-800 hover:text-emerald-950 font-bold ml-2 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
 
           <div>
