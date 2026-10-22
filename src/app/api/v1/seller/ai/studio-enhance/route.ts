@@ -78,27 +78,61 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Connect to official Bria AI RMBG-2.0 Space
-    let app: any = null;
+    // 3. Connect & predict with Bria AI Engine
+    // Primary: briaai/BRIA-RMBG-1.4 on /run (Unlimited, does NOT have ZeroGPU daily quota limits)
+    // Fallback: briaai/BRIA-RMBG-2.0 on /image
+    let remoteUrl: string | null = null;
+    let engineUsed = '';
     const clientOptions = token ? { token: token as any } : undefined;
+
+    // Attempt 1: Bria AI RMBG-1.4 (Unlimited / Non-ZeroGPU space)
     try {
-      app = await Client.connect('briaai/BRIA-RMBG-2.0', clientOptions);
-    } catch (err: any) {
-      console.warn('[BRIA_AI] Failed to connect to RMBG-2.0, falling back to RMBG-1.4:', err);
-      app = await Client.connect('briaai/BRIA-RMBG-1.4', clientOptions);
+      console.log('[BRIA_AI] Connecting to BRIA-RMBG-1.4...');
+      const app14 = await Client.connect('briaai/BRIA-RMBG-1.4', clientOptions);
+      const res14 = await app14.predict('/run', [imageBlob]);
+      const fileObj = (res14.data as any)?.[1] || (res14.data as any)?.[0];
+      remoteUrl =
+        fileObj?.url || (Array.isArray(fileObj) ? fileObj[0]?.url : fileObj?.path || null);
+      if (remoteUrl) {
+        engineUsed = 'BRIA-RMBG-1.4 (Unlimited)';
+      }
+    } catch (err14: any) {
+      console.warn(
+        '[BRIA_AI] RMBG-1.4 attempt failed, trying RMBG-2.0 fallback:',
+        err14?.message || err14,
+      );
     }
 
-    // 4. Run prediction
-    const result = await app.predict('/image', [imageBlob]);
-
-    const fileObj = result.data?.[1] || result.data?.[0];
-    const remoteUrl = fileObj?.url || (Array.isArray(fileObj) ? fileObj[0]?.url : null);
+    // Attempt 2: Bria AI RMBG-2.0 fallback
+    if (!remoteUrl) {
+      try {
+        console.log('[BRIA_AI] Attempting fallback to BRIA-RMBG-2.0...');
+        const app20 = await Client.connect('briaai/BRIA-RMBG-2.0', clientOptions);
+        const res20 = await app20.predict('/image', [imageBlob]);
+        const fileObj = (res20.data as any)?.[1] || (res20.data as any)?.[0];
+        remoteUrl = fileObj?.url || (Array.isArray(fileObj) ? fileObj[0]?.url : null);
+        if (remoteUrl) {
+          engineUsed = 'BRIA-RMBG-2.0';
+        }
+      } catch (err20: any) {
+        const msg = err20?.message || String(err20);
+        console.error('[BRIA_AI] RMBG-2.0 failed:', msg);
+        if (msg.includes('ZeroGPU') || msg.includes('quota') || msg.includes('runs limit')) {
+          throw new Error(
+            'AI Studio is experiencing peak GPU load. Please wait a minute and try again.',
+          );
+        }
+        throw new Error(msg);
+      }
+    }
 
     if (!remoteUrl) {
-      throw new Error('AI engine did not return output image URL.');
+      throw new Error(
+        'AI studio engine could not generate transparent cutout for this photo. Please try another photo.',
+      );
     }
 
-    // 5. Download transparent cutout PNG and encode to base64
+    // 4. Download transparent cutout PNG and encode to base64
     const cutoutRes = await fetch(remoteUrl);
     if (!cutoutRes.ok) {
       throw new Error(`Failed to retrieve transparent cutout: ${cutoutRes.statusText}`);
@@ -109,7 +143,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Product cutout generated successfully with Bria AI RMBG-2.0.',
+      message: `Product cutout generated successfully using ${engineUsed || 'Bria AI'}.`,
       data: {
         cutout: base64Cutout,
       },
