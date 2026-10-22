@@ -289,22 +289,22 @@ export default async function CityMarketplacePage({ params }: Props) {
         />
       </div>
 
-      {/* Hero Header */}
-      <section className="bg-gradient-to-br from-navy to-[#183A73] text-white py-10 md:py-14 px-4 sm:px-6">
-        <div className="mx-auto max-w-7xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-orange text-xs font-bold border border-white/20 backdrop-blur-xs">
-            <MapPin className="w-3.5 h-3.5" />
-            <span>Local Marketplace Discovery</span>
+      {/* Compact City Header */}
+      <div className="mx-auto max-w-7xl px-4 md:px-6 pt-4 pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-2 border-b border-slate-200">
+          <div className="flex items-baseline gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-black text-navy tracking-tight">
+              Fashion Boutiques in {cityName}
+            </h1>
+            <span className="text-xs sm:text-sm font-semibold text-slate-500">
+              ({matchingShops.length} shops, {cityProducts.length} styles)
+            </span>
           </div>
-          <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white">
-            Local Fashion Stores in {cityName}
-          </h1>
-          <p className="text-slate-200 text-sm sm:text-base max-w-2xl font-medium leading-relaxed">
-            Explore authentic fashion collections and products from verified clothing boutiques in{' '}
-            <strong className="text-white">{locationDisplay}</strong> available on JiivaaKart.
+          <p className="text-xs text-slate-500 hidden sm:block">
+            Verified local clothing boutiques in {locationDisplay}
           </p>
         </div>
-      </section>
+      </div>
 
       <div className="mx-auto max-w-7xl px-4 md:px-6 py-8 sm:py-10 space-y-10">
         {/* Available Categories Pills in this City */}

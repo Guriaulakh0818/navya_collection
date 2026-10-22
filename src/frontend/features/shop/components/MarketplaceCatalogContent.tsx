@@ -272,23 +272,24 @@ export function MarketplaceCatalogContent() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4 space-y-4">
-        <div className="bg-gradient-to-r from-navy via-navy/90 to-slate-900 rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden shadow-lg border border-navy/20">
-          <div className="relative z-10 space-y-3 max-w-2xl">
-            <span className="px-3 py-1 bg-orange/20 text-orange font-extrabold text-[11px] uppercase tracking-wider rounded-full border border-orange/30 inline-flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-orange" />
-              Verified Boutique Marketplace
-            </span>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
-              Explore Boutique Shops & Designers
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4 space-y-4">
+        {/* Clean, compact page title row */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-2 border-b border-slate-200">
+          <div className="flex items-baseline gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-black text-navy tracking-tight">
+              Boutique Marketplace
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
-              Discover authentic fashion creators and verified artisan shops across India. Shop
-              exclusive collections directly from trusted partner storefronts.
-            </p>
+            <span className="text-xs sm:text-sm font-semibold text-slate-500">
+              (
+              {activeView === 'products'
+                ? `${products.length} products`
+                : `${shops.length} verified boutiques`}
+              )
+            </span>
           </div>
-
-          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-orange/10 to-transparent pointer-events-none hidden md:block" />
+          <p className="text-xs text-slate-500 hidden sm:block">
+            Shop exclusive designer fashion directly from trusted boutique storefronts across India
+          </p>
         </div>
 
         {/* 2. SEARCH & VIEW SWITCHER BAR */}

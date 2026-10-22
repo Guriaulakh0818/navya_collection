@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
-import { CategoryBanner } from '@/features/categories/components/CategoryBanner';
 import {
   CATEGORIES,
   DEFAULT_PAGE_SIZE,
@@ -817,45 +816,54 @@ export default async function CategoryPage({ params }: Props) {
       <JsonLd data={categoryJsonLd} />
 
       <div className="bg-white border-b border-slate-200/80">
-        <Breadcrumb items={breadcrumbItems} className="mx-auto max-w-[1440px] px-4 md:px-6 py-3" />
+        <Breadcrumb
+          items={breadcrumbItems}
+          className="mx-auto max-w-[1440px] px-4 md:px-6 py-2.5"
+        />
       </div>
 
-      <CategoryBanner category={category} />
+      <div className="mx-auto max-w-[1440px] px-4 md:px-6 pt-3 pb-8 space-y-3">
+        {/* Clean, compact Category Heading */}
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-1.5 border-b border-slate-200">
+          <div className="flex items-baseline gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-black text-navy tracking-tight">
+              {category.name}
+            </h1>
+            <span className="text-xs sm:text-sm font-semibold text-slate-500">
+              ({allProducts.length} items)
+            </span>
+          </div>
+          {category.description && (
+            <p className="text-xs text-slate-500 max-w-xl line-clamp-1 hidden sm:block">
+              {category.description}
+            </p>
+          )}
+        </div>
 
-      <div className="mx-auto max-w-[1440px] px-4 md:px-6 py-6 sm:py-8 space-y-6">
         {/* Subcategories Quick Filter Pills (if present) */}
         {category.subCategories && category.subCategories.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-navy">
-                {category.parentName
-                  ? `Explore More ${category.parentName} Categories`
-                  : `Browse ${category.name} Sub-Categories`}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-              {category.subCategories.map((sub: any) => {
-                const isActive = sub.slug === cleanSlug;
-                return (
-                  <Link
-                    key={sub.id}
-                    href={`/category/${sub.slug}`}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold shrink-0 transition-all border shadow-2xs ${
-                      isActive
-                        ? 'bg-navy text-white border-navy shadow-xs scale-105'
-                        : 'bg-white text-slate-700 border-slate-200 hover:border-orange hover:text-orange'
-                    }`}
-                  >
-                    <span>{sub.name}</span>
-                    {sub.badge && (
-                      <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase bg-orange text-white">
-                        {sub.badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {category.subCategories.map((sub: any) => {
+              const isActive = sub.slug === cleanSlug;
+              return (
+                <Link
+                  key={sub.id}
+                  href={`/category/${sub.slug}`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shrink-0 transition-all border shadow-2xs ${
+                    isActive
+                      ? 'bg-navy text-white border-navy shadow-xs'
+                      : 'bg-white text-slate-700 border-slate-200 hover:border-orange hover:text-orange'
+                  }`}
+                >
+                  <span>{sub.name}</span>
+                  {sub.badge && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase bg-orange text-white">
+                      {sub.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         )}
 
