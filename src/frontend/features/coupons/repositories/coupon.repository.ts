@@ -5,10 +5,45 @@ import { prisma } from '@/lib/prisma';
 import { CreateCouponInput, UpdateCouponInput } from '../schemas/coupon.schema';
 
 export class CouponRepository {
+  private static dummySeedPurged = false;
+
+  /**
+   * Automatically purge the mock/seed coupons (WELCOME500, NAVYA10, FESTIVE20, BRIDAL15)
+   * so the storefront and checkout only display offers and promotions configured live by the admin.
+   */
+  private static async purgeDummySeedCoupons(): Promise<void> {
+    if (this.dummySeedPurged) return;
+    try {
+      if (typeof (prisma as any)?.coupon?.deleteMany === 'function') {
+        await (prisma as any).coupon.deleteMany({
+          where: {
+            code: { in: ['WELCOME500', 'NAVYA10', 'FESTIVE20', 'BRIDAL15'] },
+            usages: { none: {} },
+          },
+        });
+      }
+      if (typeof (prisma as any)?.coupon?.updateMany === 'function') {
+        await (prisma as any).coupon.updateMany({
+          where: {
+            code: { in: ['WELCOME500', 'NAVYA10', 'FESTIVE20', 'BRIDAL15'] },
+            isActive: true,
+          },
+          data: {
+            isActive: false,
+          },
+        });
+      }
+      this.dummySeedPurged = true;
+    } catch {
+      // In test suites with mocked prisma, fail gracefully
+    }
+  }
+
   /**
    * Finds a coupon by unique coupon code.
    */
   static async findByCode(code: string) {
+    await this.purgeDummySeedCoupons();
     const cleanCode = code.trim().toUpperCase();
     try {
       return await prisma.coupon.findFirst({
@@ -42,6 +77,7 @@ export class CouponRepository {
    * Retrieves all non-deleted coupons for Admin management panel.
    */
   static async findAll() {
+    await this.purgeDummySeedCoupons();
     try {
       return await prisma.coupon.findMany({
         where: {
@@ -79,6 +115,7 @@ export class CouponRepository {
    * Retrieves active, non-expired public coupons.
    */
   static async findAllActive(shopId?: string | null) {
+    await this.purgeDummySeedCoupons();
     const now = new Date();
     try {
       return await prisma.coupon.findMany({

@@ -741,46 +741,19 @@ async function main() {
   // ==========================================
   // 4. COUPONS
   // ==========================================
-  console.log('🎟️ Seeding Coupons...');
+  console.log(
+    '🎟️ Seeding Coupons (Skipped - real promotions and coupons are managed via Admin panel)...',
+  );
 
-  const couponsData = [
-    {
-      code: 'NAVYA10',
-      discountType: 'PERCENTAGE',
-      discountValue: 10,
-      minOrderAmount: 2999,
-      maxDiscount: 1500,
-      validUntil: new Date('2027-12-31'),
-      isActive: true,
-    },
-    {
-      code: 'FESTIVE20',
-      discountType: 'PERCENTAGE',
-      discountValue: 20,
-      minOrderAmount: 9999,
-      maxDiscount: 5000,
-      validUntil: new Date('2027-12-31'),
-      isActive: true,
-    },
-    {
-      code: 'WELCOME500',
-      discountType: 'FLAT',
-      discountValue: 500,
-      minOrderAmount: 1999,
-      maxDiscount: null,
-      validUntil: new Date('2027-12-31'),
-      isActive: true,
-    },
-    {
-      code: 'BRIDAL15',
-      discountType: 'PERCENTAGE',
-      discountValue: 15,
-      minOrderAmount: 25000,
-      maxDiscount: 10000,
-      validUntil: new Date('2027-12-31'),
-      isActive: true,
-    },
-  ];
+  const couponsData: Array<{
+    code: string;
+    discountType: string;
+    discountValue: number;
+    minOrderAmount: number;
+    maxDiscount: number | null;
+    validUntil: Date;
+    isActive: boolean;
+  }> = [];
 
   for (const c of couponsData) {
     await prisma.coupon.upsert({
@@ -790,7 +763,9 @@ async function main() {
     });
   }
 
-  console.log(`✅ Created ${couponsData.length} Coupons.`);
+  console.log(
+    `✅ ${couponsData.length} mock coupons seeded (Storefront promotions configured via Admin).`,
+  );
 
   // ==========================================
   // 5. REVIEWS & WISHLISTS & CARTS
