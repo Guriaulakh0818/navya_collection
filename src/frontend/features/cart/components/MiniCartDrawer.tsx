@@ -70,11 +70,13 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
             Explore luxury ethnic couture and boutique collections!
           </p>
           <Button
-            className="mt-6 rounded-full bg-navy text-xs font-bold px-6"
+            className="mt-6 rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold px-6 shadow-sm cursor-pointer"
             onClick={onClose}
             asChild
           >
-            <Link href="/shop">Start Shopping</Link>
+            <Link href="/shop" className="text-white hover:text-white">
+              Start Shopping
+            </Link>
           </Button>
         </div>
       ) : (
