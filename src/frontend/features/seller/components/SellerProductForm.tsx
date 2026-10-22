@@ -1558,20 +1558,20 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   return (
     <form
       onSubmit={(e) => handleSubmit(e, 'pending_approval')}
-      className="space-y-8 max-w-6xl mx-auto pb-16"
+      className="space-y-4 sm:space-y-5 max-w-6xl mx-auto pb-16"
     >
       {/* Header Bar */}
-      <div className="flex items-center justify-between gap-4 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs sticky top-4 z-20 backdrop-blur-md">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 shadow-xs sticky top-2 sm:top-4 z-20 backdrop-blur-md">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <Link
             href="/seller/products"
-            className="p-2 text-slate-500 hover:text-navy hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 text-slate-500 hover:text-navy hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
             title="Back to Products Catalog"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-extrabold text-navy tracking-tight">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            <h1 className="text-lg sm:text-xl font-extrabold text-navy tracking-tight">
               {productId ? 'Edit Product' : 'Add New Product'}
             </h1>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange/10 text-orange border border-orange/20">
@@ -1601,24 +1601,25 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       )}
 
       {/* SECTION 1: COMMON PRODUCT INFORMATION */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
-          <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-orange" /> Section 1: Common Product Information
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+        <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+          <div className="min-w-0 pr-1">
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
+              <ShoppingBag className="w-4 h-4 text-orange shrink-0" /> Section 1: Common Product
+              Information
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Basic product identity, brand name, and category placement.
             </p>
           </div>
-          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+          <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
             Step 1 of 6
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 text-xs">
           <div className="md:col-span-2">
-            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
               Product Name / Title <span className="text-rose-500">*</span>
             </label>
             <input
@@ -1627,12 +1628,12 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               placeholder="e.g. Royal Blue Banarasi Silk Saree with Gold Zari Border"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-bold focus:border-navy focus:bg-white focus:outline-none transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-slate-900 font-bold focus:border-navy focus:bg-white focus:outline-none transition-all"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
               Brand Name
             </label>
             <input
@@ -1640,12 +1641,12 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               placeholder="e.g. Jiivaa Couture, Boutique Edition, Self Manufactured"
               value={formData.brand}
               onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-medium focus:border-navy focus:bg-white focus:outline-none transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-slate-900 font-medium focus:border-navy focus:bg-white focus:outline-none transition-all"
             />
           </div>
 
           {/* DYNAMIC CATEGORY & GARMENT TYPE SELECTOR */}
-          <div className="md:col-span-2 bg-gradient-to-br from-orange-50/30 via-slate-50/60 to-white p-5 rounded-2xl border border-orange/20 space-y-4 shadow-2xs">
+          <div className="md:col-span-2 bg-gradient-to-br from-orange-50/30 via-slate-50/60 to-white p-4 sm:p-5 rounded-2xl border border-orange/20 space-y-3.5 sm:space-y-4 shadow-2xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange/15 pb-3">
               <div>
                 <div className="flex items-center gap-2">
@@ -2137,18 +2138,19 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       </div>
 
       {/* SECTION 2: DYNAMIC CATEGORY ATTRIBUTES ENGINE */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
-          <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <Layers className="w-4 h-4 text-orange" /> Section 2: Dynamic Category Attributes
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+        <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+          <div className="min-w-0 pr-1">
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
+              <Layers className="w-4 h-4 text-orange shrink-0" /> Section 2: Dynamic Category
+              Attributes
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Garment-tailored fabric, design, and weave specifications for{' '}
               <strong className="text-orange">{activeTemplate.name}</strong>.
             </p>
           </div>
-          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+          <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
             Step 2 of 6
           </span>
         </div>
@@ -2208,18 +2210,18 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       </div>
 
       {/* SECTION 3: PRICING, TAXATION & INVENTORY */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
-          <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <Percent className="w-4 h-4 text-orange" /> Section 3: Pricing, GST Taxation &
-              Inventory
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+        <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+          <div className="min-w-0 pr-1">
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
+              <Percent className="w-4 h-4 text-orange shrink-0" /> Section 3: Pricing, GST Taxation
+              & Inventory
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Customer selling price, MRP, GST tax rate, and warehouse stock tracking.
             </p>
           </div>
-          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+          <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
             Step 3 of 6
           </span>
         </div>
@@ -2415,18 +2417,18 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       </div>
 
       {/* SECTION 4: SHIPPING & PACKAGE SPECIFICATIONS */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
-          <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <Truck className="w-4 h-4 text-orange" /> Section 4: Shipping & Packaging
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+        <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+          <div className="min-w-0 pr-1">
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
+              <Truck className="w-4 h-4 text-orange shrink-0" /> Section 4: Shipping & Packaging
               Specifications
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Physical package dead weight and dimensions used for courier rate estimation.
             </p>
           </div>
-          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+          <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
             Step 4 of 6
           </span>
         </div>
@@ -2511,19 +2513,19 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       </div>
 
       {/* SECTION 5: MANDATORY RETURN & REPLACEMENT POLICY */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
-          <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <RotateCcw className="w-4 h-4 text-orange" /> Section 5: Return & Replacement Policy{' '}
-              <span className="text-rose-500">*</span>
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+        <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+          <div className="min-w-0 pr-1">
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
+              <RotateCcw className="w-4 h-4 text-orange shrink-0" /> Section 5: Return & Replacement
+              Policy <span className="text-rose-500">*</span>
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Select one of the 3 standardized customer return & replacement options enforced across
               the marketplace.
             </p>
           </div>
-          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+          <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
             Step 5 of 6
           </span>
         </div>
@@ -2664,19 +2666,19 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       </div>
 
       {/* SECTION 6: COLOR-FIRST PRODUCT VARIANT SYSTEM */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
-          <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <Boxes className="w-4 h-4 text-orange" /> Section 6: Product Variant Matrix & Photo
-              Gallery
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+        <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+          <div className="min-w-0 pr-1">
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
+              <Boxes className="w-4 h-4 text-orange shrink-0" /> Section 6: Product Variant Matrix &
+              Photo Gallery
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Color-first grouped matrix with variant-specific photos and category sizes (
               {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name}).
             </p>
           </div>
-          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+          <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
             Step 6 of 6
           </span>
         </div>
@@ -3759,19 +3761,19 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       </div>
 
       {/* SECTION 7: ENTERPRISE SEO SEARCH ENGINE METADATA */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
-          <div>
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-2">
-              <Globe className="w-4 h-4 text-orange" /> Section 7: Enterprise SEO & Search Engine
-              Keywords
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
+        <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+          <div className="min-w-0 pr-1">
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
+              <Globe className="w-4 h-4 text-orange shrink-0" /> Section 7: Enterprise SEO & Search
+              Engine Keywords
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Search engine meta tags and focus keywords to improve visibility on Google search and
               store discovery.
             </p>
           </div>
-          <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">
+          <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200 whitespace-nowrap">
             Optional SEO
           </span>
         </div>
