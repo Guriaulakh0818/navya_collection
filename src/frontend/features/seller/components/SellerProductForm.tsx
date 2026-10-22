@@ -180,6 +180,57 @@ async function compressImageFile(file: File, maxDim = 1500, quality = 0.8): Prom
   });
 }
 
+function getDefaultFormData(init?: any) {
+  return {
+    name: init?.name || '',
+    brand: init?.brand || '',
+    sku: init?.sku || '',
+    barcode: init?.barcode || '',
+    description: init?.description || '',
+    videoUrl: init?.videoUrl || '',
+    productType: init?.productType || '',
+    price: init?.price ? Number(init.price) : 0,
+    compareAtPrice: init?.compareAtPrice ? Number(init.compareAtPrice) : 0,
+    costPrice: init?.costPrice ? Number(init.costPrice) : 0,
+    taxGstRate: init?.taxGstRate ? Number(init.taxGstRate) : 5,
+    hsnCode: init?.hsnCode || '6204',
+    stock: init?.stock ? Number(init.stock) : 10,
+    lowStockThreshold: init?.lowStockThreshold ? Number(init.lowStockThreshold) : 5,
+    weight: init?.weight ? Number(init.weight) : 500,
+    packageLength: init?.packageLength ? Number(init.packageLength) : 30,
+    packageWidth: init?.packageWidth ? Number(init.packageWidth) : 25,
+    packageHeight: init?.packageHeight ? Number(init.packageHeight) : 5,
+    countryOfOrigin: init?.countryOfOrigin || 'India',
+    manufacturerDetails: init?.manufacturerDetails || 'JiivaaKart Artisan Partner, India',
+    status: init?.status || 'active',
+    returnPolicyType: init?.returnPolicyType || 'RETURN_AND_REPLACEMENT',
+    categoryId: init?.categoryId || '',
+    metaTitle: init?.metaTitle || '',
+    metaDescription: init?.metaDescription || '',
+    metaKeywords: init?.metaKeywords || '',
+    focusKeyword: init?.focusKeyword || '',
+    occasion: init?.occasion || '',
+    color: init?.color || '',
+    fabric: init?.fabric || '',
+    fit: init?.fit || '',
+    pattern: init?.pattern || '',
+    sleeve: init?.sleeve || '',
+    neck: init?.neck || '',
+    attributes: init?.attributes || {},
+    images: (init?.images || []).map((img: any, idx: number) => ({
+      ...img,
+      imageUrl:
+        typeof img === 'string' ? img : (img.imageUrl || img.secureUrl || img.url || '').trim(),
+      isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
+      sortOrder: img.sortOrder ?? idx,
+    })),
+    variants: (init?.variants || []).map((v: any) => ({
+      ...v,
+      imageUrl: v.attributes?.imageUrl || v.imageUrl || v.image || '',
+    })),
+  };
+}
+
 export function SellerProductForm({ productId, initialData }: ProductFormProps) {
   const router = useRouter();
   const [isLoadingProduct, setIsLoadingProduct] = useState(Boolean(productId && !initialData));
@@ -196,6 +247,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+
+  // Auto-Save Draft Storage State
+  const DRAFT_STORAGE_KEY = productId
+    ? `navya_product_draft_${productId}`
+    : 'navya_seller_product_draft';
+  const [draftStatus, setDraftStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
+  const [hasRestoredDraft, setHasRestoredDraft] = useState(false);
+  const [isDraftLoaded, setIsDraftLoaded] = useState(false);
 
   // AI Studio Photo Enhancer (Powered by Bria AI)
   const [isAiStudioModalOpen, setIsAiStudioModalOpen] = useState(false);
@@ -229,54 +289,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     Array.from(new Set(initialCategoryIds.length > 0 ? initialCategoryIds : ['cat_women_sarees'])),
   );
 
-  const [formData, setFormData] = useState({
-    name: initialData?.name || '',
-    brand: initialData?.brand || '',
-    sku: initialData?.sku || '',
-    barcode: initialData?.barcode || '',
-    description: initialData?.description || '',
-    videoUrl: initialData?.videoUrl || '',
-    productType: initialData?.productType || '',
-    price: initialData?.price ? Number(initialData.price) : 0,
-    compareAtPrice: initialData?.compareAtPrice ? Number(initialData.compareAtPrice) : 0,
-    costPrice: initialData?.costPrice ? Number(initialData.costPrice) : 0,
-    taxGstRate: initialData?.taxGstRate ? Number(initialData.taxGstRate) : 5,
-    hsnCode: initialData?.hsnCode || '6204',
-    stock: initialData?.stock ? Number(initialData.stock) : 10,
-    lowStockThreshold: initialData?.lowStockThreshold ? Number(initialData.lowStockThreshold) : 5,
-    weight: initialData?.weight ? Number(initialData.weight) : 500,
-    packageLength: initialData?.packageLength ? Number(initialData.packageLength) : 30,
-    packageWidth: initialData?.packageWidth ? Number(initialData.packageWidth) : 25,
-    packageHeight: initialData?.packageHeight ? Number(initialData.packageHeight) : 5,
-    countryOfOrigin: initialData?.countryOfOrigin || 'India',
-    manufacturerDetails: initialData?.manufacturerDetails || 'JiivaaKart Artisan Partner, India',
-    status: initialData?.status || 'active',
-    returnPolicyType: initialData?.returnPolicyType || 'RETURN_AND_REPLACEMENT',
-    categoryId: initialData?.categoryId || '',
-    metaTitle: initialData?.metaTitle || '',
-    metaDescription: initialData?.metaDescription || '',
-    metaKeywords: initialData?.metaKeywords || '',
-    focusKeyword: initialData?.focusKeyword || '',
-    occasion: initialData?.occasion || '',
-    color: initialData?.color || '',
-    fabric: initialData?.fabric || '',
-    fit: initialData?.fit || '',
-    pattern: initialData?.pattern || '',
-    sleeve: initialData?.sleeve || '',
-    neck: initialData?.neck || '',
-    attributes: initialData?.attributes || {},
-    images: (initialData?.images || []).map((img: any, idx: number) => ({
-      ...img,
-      imageUrl:
-        typeof img === 'string' ? img : (img.imageUrl || img.secureUrl || img.url || '').trim(),
-      isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
-      sortOrder: img.sortOrder ?? idx,
-    })),
-    variants: (initialData?.variants || []).map((v: any) => ({
-      ...v,
-      imageUrl: v.attributes?.imageUrl || v.imageUrl || v.image || '',
-    })),
-  });
+  const [formData, setFormData] = useState(() => getDefaultFormData(initialData));
 
   // Variant management state
   const initialVariants = initialData?.variants || [];
@@ -664,6 +677,226 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ type, text });
     setTimeout(() => setToastMessage(null), 5000);
+  };
+
+  // 1. Restore unsaved draft on initial mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const rawDraft = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (rawDraft) {
+        const parsed = JSON.parse(rawDraft);
+        // Only auto-restore when creating a new product (not editing an existing catalog product)
+        if (!productId && parsed && parsed.formData) {
+          const hasContent = Boolean(
+            (parsed.formData.name && parsed.formData.name.trim()) ||
+            parsed.formData.price > 0 ||
+            (parsed.formData.description && parsed.formData.description.trim()) ||
+            (parsed.formData.images && parsed.formData.images.length > 0) ||
+            (parsed.selectedColors && parsed.selectedColors.length > 0) ||
+            (parsed.selectedSizes && parsed.selectedSizes.length > 0) ||
+            (parsed.formData.attributes && Object.keys(parsed.formData.attributes).length > 0),
+          );
+
+          if (hasContent) {
+            setFormData((prev) => ({
+              ...prev,
+              ...parsed.formData,
+              attributes: { ...(prev.attributes || {}), ...(parsed.formData.attributes || {}) },
+            }));
+            if (
+              Array.isArray(parsed.selectedCategoryIds) &&
+              parsed.selectedCategoryIds.length > 0
+            ) {
+              setSelectedCategoryIds(parsed.selectedCategoryIds);
+            }
+            if (parsed.variantMode) setVariantMode(parsed.variantMode);
+            if (Array.isArray(parsed.selectedColors)) setSelectedColors(parsed.selectedColors);
+            if (parsed.colorPhotos) setColorPhotos(parsed.colorPhotos);
+            if (Array.isArray(parsed.selectedSizes)) setSelectedSizes(parsed.selectedSizes);
+            if (parsed.customColorInput) setCustomColorInput(parsed.customColorInput);
+            if (parsed.customSizeInput) setCustomSizeInput(parsed.customSizeInput);
+
+            setHasRestoredDraft(true);
+            setLastSavedTime(parsed.savedDisplayTime || 'earlier session');
+            setDraftStatus('saved');
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore draft from localStorage:', e);
+    } finally {
+      setIsDraftLoaded(true);
+    }
+  }, [DRAFT_STORAGE_KEY, productId]);
+
+  // 2. Auto-save draft changes to localStorage (debounced 1000ms)
+  useEffect(() => {
+    if (!isDraftLoaded || typeof window === 'undefined' || productId) return;
+
+    const hasContent = Boolean(
+      formData.name.trim() ||
+      formData.description.trim() ||
+      formData.price > 0 ||
+      formData.brand.trim() ||
+      formData.sku.trim() ||
+      (formData.images && formData.images.length > 0) ||
+      selectedColors.length > 0 ||
+      selectedSizes.length > 0 ||
+      (formData.attributes && Object.keys(formData.attributes).length > 0),
+    );
+
+    if (!hasContent) return;
+
+    setDraftStatus('saving');
+
+    const timer = setTimeout(() => {
+      try {
+        const now = new Date();
+        const displayTime = new Intl.DateTimeFormat('en-IN', {
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: true,
+        }).format(now);
+
+        const safeImages = (formData.images || [])
+          .filter((img: any) => {
+            const url = typeof img === 'string' ? img : img.imageUrl || '';
+            return !(url.startsWith('data:') && url.length > 250000);
+          })
+          .map((img: any, idx: number) => ({
+            imageUrl: typeof img === 'string' ? img : img.imageUrl || '',
+            altText: img.altText || '',
+            isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
+            sortOrder: img.sortOrder ?? idx,
+          }));
+
+        const draftPayload = {
+          formData: {
+            ...formData,
+            images: safeImages,
+          },
+          selectedCategoryIds,
+          variantMode,
+          selectedColors,
+          colorPhotos,
+          selectedSizes,
+          customColorInput,
+          customSizeInput,
+          savedAt: now.toISOString(),
+          savedDisplayTime: displayTime,
+        };
+
+        localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draftPayload));
+        setLastSavedTime(displayTime);
+        setDraftStatus('saved');
+      } catch (err) {
+        console.warn('Auto-save to localStorage quota exceeded or failed:', err);
+        setDraftStatus('idle');
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [
+    isDraftLoaded,
+    DRAFT_STORAGE_KEY,
+    productId,
+    formData,
+    selectedCategoryIds,
+    variantMode,
+    selectedColors,
+    colorPhotos,
+    selectedSizes,
+    customColorInput,
+    customSizeInput,
+  ]);
+
+  // 3. Instant emergency save before window/tab close
+  useEffect(() => {
+    if (typeof window === 'undefined' || productId) return;
+
+    const handleBeforeUnload = () => {
+      try {
+        const hasContent = Boolean(
+          formData.name.trim() ||
+          formData.description.trim() ||
+          formData.price > 0 ||
+          (formData.images && formData.images.length > 0) ||
+          (formData.attributes && Object.keys(formData.attributes).length > 0),
+        );
+        if (hasContent) {
+          const now = new Date();
+          const displayTime = new Intl.DateTimeFormat('en-IN', {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true,
+          }).format(now);
+
+          const safeImages = (formData.images || [])
+            .filter((img: any) => {
+              const url = typeof img === 'string' ? img : img.imageUrl || '';
+              return !(url.startsWith('data:') && url.length > 250000);
+            })
+            .map((img: any, idx: number) => ({
+              imageUrl: typeof img === 'string' ? img : img.imageUrl || '',
+              altText: img.altText || '',
+              isPrimary: Boolean(img.isPrimary !== undefined ? img.isPrimary : idx === 0),
+              sortOrder: img.sortOrder ?? idx,
+            }));
+
+          const draftPayload = {
+            formData: {
+              ...formData,
+              images: safeImages,
+            },
+            selectedCategoryIds,
+            variantMode,
+            selectedColors,
+            colorPhotos,
+            selectedSizes,
+            customColorInput,
+            customSizeInput,
+            savedAt: now.toISOString(),
+            savedDisplayTime: displayTime,
+          };
+          localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draftPayload));
+        }
+      } catch (e) {}
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [
+    DRAFT_STORAGE_KEY,
+    productId,
+    formData,
+    selectedCategoryIds,
+    variantMode,
+    selectedColors,
+    colorPhotos,
+    selectedSizes,
+    customColorInput,
+    customSizeInput,
+  ]);
+
+  const handleClearDraft = () => {
+    if (confirm('Are you sure you want to clear your saved draft and reset the form?')) {
+      try {
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+      } catch (e) {}
+      setFormData(getDefaultFormData(initialData));
+      setSelectedCategoryIds(['cat_women_sarees']);
+      setVariantMode('NONE');
+      setSelectedColors([]);
+      setColorPhotos({});
+      setSelectedSizes([]);
+      setCustomColorInput('');
+      setCustomSizeInput('');
+      setHasRestoredDraft(false);
+      setLastSavedTime(null);
+      setDraftStatus('idle');
+      showToast('Draft cleared. Form has been reset.', 'success');
+    }
   };
 
   const toggleCategory = (catId: string) => {
@@ -1520,6 +1753,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       }
 
       if (data.success) {
+        try {
+          localStorage.removeItem(DRAFT_STORAGE_KEY);
+        } catch (e) {}
         showToast(data.message || 'Product saved successfully!', 'success');
         setTimeout(() => {
           router.push('/seller/products');
@@ -1594,7 +1830,71 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             </span>
           </div>
         </div>
+
+        {/* Auto-save & Clear Draft Controls */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {draftStatus === 'saving' && (
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-200">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+              <span>Saving draft...</span>
+            </div>
+          )}
+          {draftStatus === 'saved' && lastSavedTime && (
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="hidden xs:inline">Auto-saved</span> {lastSavedTime}
+            </div>
+          )}
+          {(lastSavedTime || hasRestoredDraft) && (
+            <button
+              type="button"
+              onClick={handleClearDraft}
+              title="Discard draft and reset form"
+              className="text-[11px] font-bold text-slate-400 hover:text-rose-600 px-2 py-1 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span className="hidden sm:inline">Reset Form</span>
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Restored Draft Notification Banner */}
+      {hasRestoredDraft && (
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-950 p-3 sm:p-3.5 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="font-bold text-emerald-900">
+                Pichli Session ki Product Details Restore Ho Gayi Hain!
+              </p>
+              <p className="text-[11px] text-emerald-700">
+                Browser band hone se pehle aapne jo information fill ki thi, sabhi safely restore
+                kar di gayi hai (
+                {lastSavedTime ? `Last saved at ${lastSavedTime}` : 'Draft recovered'}).
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setHasRestoredDraft(false)}
+              className="px-3 py-1.5 text-[11px] font-bold text-emerald-800 hover:bg-emerald-100 rounded-xl transition-colors cursor-pointer"
+            >
+              Dismiss
+            </button>
+            <button
+              type="button"
+              onClick={handleClearDraft}
+              className="px-3 py-1.5 text-[11px] font-bold text-rose-700 bg-white hover:bg-rose-50 border border-rose-200 rounded-xl transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Clear & Start Fresh
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Toast Alert */}
       {toastMessage && (
@@ -3867,6 +4167,11 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
+          {draftStatus === 'saved' && lastSavedTime && (
+            <span className="text-[11px] font-semibold text-emerald-600 hidden md:flex items-center gap-1.5 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Progress auto-saved
+            </span>
+          )}
           <button
             type="submit"
             disabled={isSubmitting}
