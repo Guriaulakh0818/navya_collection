@@ -1647,22 +1647,17 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           {/* DYNAMIC CATEGORY & GARMENT TYPE SELECTOR */}
           <div className="md:col-span-2 bg-gradient-to-br from-orange-50/30 via-slate-50/60 to-white p-4 sm:p-5 rounded-2xl border border-orange/20 space-y-3.5 sm:space-y-4 shadow-2xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange/15 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 border-b border-orange/15 pb-2.5 sm:pb-3">
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-navy text-white">
-                    Category Engine
-                  </span>
-                  <h3 className="text-sm font-extrabold text-navy">
-                    Dynamic Garment & Category Selection
-                  </h3>
-                </div>
-                <p className="text-[11px] text-slate-600 mt-0.5">
+                <h3 className="text-xs sm:text-sm font-extrabold text-navy">
+                  Dynamic Garment & Category Selection
+                </h3>
+                <p className="hidden sm:block text-[11px] text-slate-600 mt-0.5">
                   Choose the garment to automatically open its tailored attributes in Section 2 and
                   configure its size system.
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   type="button"
                   onClick={handleAutoDetectCategories}
