@@ -1954,7 +1954,7 @@ export function SellerRegistrationWizard() {
             </div>
 
             <div className="p-4 rounded-xl bg-orange/10 border border-orange/20 text-xs font-bold text-navy shadow-xs">
-              ⚡ By submitting this application, you agree to JiivaaKart Merchant Agreement terms,
+              By submitting this application, you agree to JiivaaKart Merchant Agreement terms,
               standard 10% platform commission, and quality standards.
             </div>
           </div>
@@ -2009,7 +2009,7 @@ export function SellerRegistrationWizard() {
                 Submitting Merchant Application...
               </>
             ) : (
-              'Submit Merchant Application ✓'
+              'Submit Merchant Application'
             )}
           </button>
         )}

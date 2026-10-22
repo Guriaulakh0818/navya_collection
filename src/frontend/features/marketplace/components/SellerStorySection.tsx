@@ -88,7 +88,7 @@ export function SellerStorySection() {
               Local Businesses
             </p>
             <p className="font-serif italic text-sm font-bold text-orange leading-tight">
-              Stronger Together ✨
+              Stronger Together
             </p>
           </div>
         </div>

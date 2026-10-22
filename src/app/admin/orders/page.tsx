@@ -283,7 +283,7 @@ export default function AdminOrdersPage() {
                     <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap font-bold text-navy">
                       {order.customerName}
                       <span className="block text-[10px] text-slate-500 font-mono font-normal">
-                        📱 {order.customerPhone}
+                        {order.customerPhone}
                       </span>
                     </td>
 

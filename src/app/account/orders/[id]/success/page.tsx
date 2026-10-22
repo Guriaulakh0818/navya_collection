@@ -1,4 +1,4 @@
-import { CheckCircle2, MapPin, Package, ShoppingBag, Truck } from 'lucide-react';
+import { CheckCircle2, MapPin, Package, Phone, ShoppingBag, Truck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -57,7 +57,9 @@ export default async function OrderSuccessPage({ params }: { params: Promise<{ i
                   <MapPin className="h-4 w-4 text-navy" /> Delivery Address
                 </span>
                 <p className="font-bold text-navy text-sm">{order.address?.fullName}</p>
-                <p className="text-xs text-slate-600">📱 {order.address?.mobile}</p>
+                <p className="text-xs text-slate-600 flex items-center gap-1">
+                  <Phone className="h-3 w-3 text-slate-400" /> {order.address?.mobile}
+                </p>
                 <p className="text-xs text-slate-600 leading-relaxed">
                   {order.address?.addressLine1}
                   {order.address?.addressLine2 ? `, ${order.address?.addressLine2}` : ''}

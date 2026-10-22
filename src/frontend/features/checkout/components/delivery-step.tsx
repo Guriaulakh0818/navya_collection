@@ -1,6 +1,6 @@
 'use client';
 
-import { Truck } from 'lucide-react';
+import { Gift, Sparkles, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -106,7 +106,7 @@ export function DeliveryStep() {
       {shippingData?.guestOfferPrompt && (
         <div className="p-3.5 sm:p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-950 text-xs sm:text-sm font-semibold flex items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2">
-            <span className="text-base">🎁</span>
+            <Gift className="w-4 h-4 text-indigo-600 shrink-0" />
             <span>{shippingData.guestOfferPrompt}</span>
           </div>
           <a
@@ -121,7 +121,7 @@ export function DeliveryStep() {
       {/* First Order Free Delivery Active Banner */}
       {isFirstOrderFree && (
         <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs sm:text-sm font-extrabold flex items-center gap-2.5 shadow-xs">
-          <span className="text-base">🎉</span>
+          <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>
             {shippingData?.offerTitle ||
               'First order — Free delivery applied on all delivery options!'}

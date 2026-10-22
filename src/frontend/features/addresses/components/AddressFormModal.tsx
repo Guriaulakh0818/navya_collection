@@ -357,7 +357,7 @@ export const AddressFormModal: React.FC<AddressFormModalProps> = ({
                 >
                   {localities.map((loc, idx) => (
                     <option key={`${loc.name}-${idx}`} value={loc.name}>
-                      📍 {loc.name} ({loc.district})
+                      {loc.name} ({loc.district})
                     </option>
                   ))}
                 </select>

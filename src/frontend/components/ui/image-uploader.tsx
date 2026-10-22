@@ -1,5 +1,6 @@
 'use client';
 
+import { Trash2 } from 'lucide-react';
 import React, { useCallback, useRef, useState } from 'react';
 
 import { CloudinaryFolder } from '@/lib/cloudinary';
@@ -400,7 +401,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                     className="p-1 text-red-500 hover:text-red-700"
                     title="Delete Image"
                   >
-                    🗑
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>

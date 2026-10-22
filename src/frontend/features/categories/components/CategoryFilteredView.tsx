@@ -19,6 +19,7 @@ import {
   Search,
   ShieldCheck,
   Shirt,
+  ShoppingBag,
   SlidersHorizontal,
   Sparkles,
   Star,
@@ -1803,8 +1804,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
             </div>
           ) : (
             <div className="bg-white border border-slate-200/90 rounded-3xl p-8 sm:p-14 text-center space-y-4 shadow-xs my-4">
-              <div className="w-16 h-16 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange font-bold mx-auto shadow-xs text-2xl">
-                🛍️
+              <div className="w-16 h-16 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange font-bold mx-auto shadow-xs">
+                <ShoppingBag className="w-7 h-7 text-orange" />
               </div>
               <div className="space-y-1 max-w-md mx-auto">
                 <h3 className="text-base sm:text-lg font-extrabold text-navy">

@@ -56,7 +56,7 @@ export default function MultiVendorWishlistPage() {
     });
 
     await removeItem(item.productId, item.variantId);
-    toast(`Moved "${item.name}"${variantLabel ? ` (${variantLabel})` : ''} to bag! 🛍️`, 'success');
+    toast(`Moved "${item.name}"${variantLabel ? ` (${variantLabel})` : ''} to bag!`, 'success');
   };
 
   const handleRemove = async (item: any) => {

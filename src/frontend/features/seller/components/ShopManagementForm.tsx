@@ -206,8 +206,8 @@ export function ShopManagementForm() {
       if (data.success) {
         showToast(
           newIsClosed
-            ? '🌴 Vacation Mode Activated! Public customer orders are now paused.'
-            : '🟢 Store Re-opened! Your shop is live and accepting customer orders.',
+            ? 'Vacation Mode Activated! Public customer orders are now paused.'
+            : 'Store Re-opened! Your shop is live and accepting customer orders.',
           'success',
         );
       } else {
@@ -314,7 +314,7 @@ export function ShopManagementForm() {
           },
           { id: 'policies', shortLabel: 'Policies', fullLabel: 'Shop Policies', icon: Truck },
           { id: 'seo', shortLabel: 'SEO', fullLabel: 'SEO Metadata', icon: Globe },
-          { id: 'vacation', shortLabel: 'Vacation', fullLabel: 'Vacation Mode 🌴', icon: Palmtree },
+          { id: 'vacation', shortLabel: 'Vacation', fullLabel: 'Vacation Mode', icon: Palmtree },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -352,7 +352,7 @@ export function ShopManagementForm() {
             <div className="p-4 rounded-2xl bg-orange/5 border border-orange/20 space-y-3">
               <div>
                 <p className="text-xs font-extrabold text-navy">
-                  ✨ Permanent Luxury Storefront Banner
+                  Permanent Luxury Storefront Banner
                 </p>
                 <p className="text-[11px] text-slate-600 font-medium">
                   Every shop automatically displays the official luxury &quot;STYLE THAT
@@ -801,8 +801,8 @@ export function ShopManagementForm() {
                     />
                     <h3 className="font-black text-navy text-base">
                       {formData.isClosed
-                        ? '🔴 STORE IS TEMPORARILY CLOSED (VACATION MODE ACTIVE)'
-                        : '🟢 STORE IS ONLINE & ACCEPTING ORDERS'}
+                        ? 'STORE IS TEMPORARILY CLOSED (VACATION MODE ACTIVE)'
+                        : 'STORE IS ONLINE & ACCEPTING ORDERS'}
                     </h3>
                   </div>
                   <p className="text-xs text-slate-600 font-medium mt-1">
@@ -825,8 +825,8 @@ export function ShopManagementForm() {
                   {isSaving
                     ? 'Updating Status...'
                     : formData.isClosed
-                      ? '🟢 Re-open Store Now'
-                      : '🌴 Turn ON Vacation Mode'}
+                      ? 'Re-open Store Now'
+                      : 'Turn ON Vacation Mode'}
                 </button>
               </div>
             </div>
@@ -909,7 +909,7 @@ export function ShopManagementForm() {
             className="w-full sm:w-auto px-8 py-3.5 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl shadow-md shadow-orange/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             <Save className="w-4 h-4 shrink-0" />
-            <span>{isSaving ? 'Saving Customizations...' : 'Save Boutique Customization ✓'}</span>
+            <span>{isSaving ? 'Saving Customizations...' : 'Save Boutique Customization'}</span>
           </button>
         </div>
       </form>

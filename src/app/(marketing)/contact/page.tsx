@@ -107,7 +107,7 @@ export default function ContactPage() {
                     Phone / WhatsApp
                   </span>
                   <span className="text-[11px] font-extrabold text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Open WhatsApp 💬
+                    Open WhatsApp
                   </span>
                 </div>
                 <p className="text-base font-extrabold text-navy mt-0.5 group-hover:text-emerald-600 transition-colors">
@@ -132,7 +132,7 @@ export default function ContactPage() {
                     Business Location
                   </span>
                   <span className="text-[11px] font-extrabold text-navy opacity-0 group-hover:opacity-100 transition-opacity">
-                    Open Google Maps 🗺️
+                    Open Google Maps
                   </span>
                 </div>
                 <p className="text-base font-extrabold text-navy mt-0.5 group-hover:text-navy transition-colors">

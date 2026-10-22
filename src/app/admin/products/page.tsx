@@ -403,7 +403,7 @@ export default function AdminProductsPage() {
               <RefreshCw
                 className={`h-3.5 w-3.5 text-emerald-600 ${isSyncingCatalog ? 'animate-spin' : ''}`}
               />
-              {isSyncingCatalog ? 'Pushing Catalog...' : '📦 Push Real Products to DB'}
+              {isSyncingCatalog ? 'Pushing Catalog...' : 'Push Real Products to DB'}
             </Button>
             <Button
               variant="outline"

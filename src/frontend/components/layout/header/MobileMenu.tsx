@@ -69,14 +69,14 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop', href: '/shop', icon: ShoppingBag },
     { label: 'Categories', href: '/category', icon: Grid },
-    { label: '  • Spotlight ✨', href: '/category/spotlight', icon: Sparkles },
+    { label: '  • Spotlight', href: '/category/spotlight', icon: Sparkles },
     { label: '  • Men Wear', href: '/category/men', icon: Shirt },
     { label: '  • Women Wear', href: '/category/women', icon: Shirt },
     { label: '  • Kids Wear', href: '/category/kids', icon: Baby },
     { label: '  • Shops & Boutiques', href: '/shops', icon: Store },
     isVerifiedSeller
-      ? { label: 'Seller Dashboard 🏪', href: '/seller/dashboard', icon: Store }
-      : { label: 'Become Seller ✨', href: '/become-seller', icon: Store },
+      ? { label: 'Seller Dashboard', href: '/seller/dashboard', icon: Store }
+      : { label: 'Become a Seller', href: '/become-seller', icon: Store },
     { label: 'My Account', href: user ? '/account' : '/login', icon: User },
     { label: 'Contact Us', href: '/contact', icon: PhoneCall },
   ];

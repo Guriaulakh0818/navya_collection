@@ -109,7 +109,7 @@ export function WishlistButton({
       if (showToast) {
         const variantSuffix = [selectedColor, selectedSize].filter(Boolean).join(', ');
         toast(
-          `Added ${product.name || 'item'}${variantSuffix ? ` (${variantSuffix})` : ''} to wishlist! ❤️`,
+          `Added ${product.name || 'item'}${variantSuffix ? ` (${variantSuffix})` : ''} to wishlist!`,
           'success',
         );
       }

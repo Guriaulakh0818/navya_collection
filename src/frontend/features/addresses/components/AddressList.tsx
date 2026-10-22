@@ -230,7 +230,7 @@ export const AddressList: React.FC<AddressListProps> = ({
       {!isLoading && !errorMsg && addresses.length === 0 && (
         <div className="text-center py-12 px-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white text-navy shadow-sm mb-3">
-            📍
+            <MapPin className="h-6 w-6 text-navy" />
           </div>
           <p className="text-base font-bold text-navy">No saved addresses found</p>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed font-medium">

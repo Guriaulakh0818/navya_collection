@@ -233,13 +233,13 @@ export default function AdminShopsPage() {
                     <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap font-bold text-slate-900">
                       {s.ownerName}
                       <span className="block text-[11px] text-slate-500 font-mono font-normal">
-                        {s.ownerEmail} | 📱 {s.ownerMobile}
+                        {s.ownerEmail} | {s.ownerMobile}
                       </span>
                     </td>
 
                     <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap font-bold text-slate-700">
                       <span className="bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 font-mono text-navy">
-                        📦 {s.productCount} Products
+                        {s.productCount} Products
                       </span>
                     </td>
 

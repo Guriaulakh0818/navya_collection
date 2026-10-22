@@ -233,7 +233,7 @@ export default function AdminUsersPage() {
                     </td>
 
                     <td className="px-4 py-3.5 border-r border-slate-200 whitespace-nowrap font-mono text-slate-700 font-medium">
-                      📱 +91 {u.mobile}
+                      +91 {u.mobile}
                     </td>
 
                     <td className="px-4 py-3.5 whitespace-nowrap text-slate-600 font-medium">

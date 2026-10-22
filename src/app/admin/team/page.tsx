@@ -326,8 +326,8 @@ export default function AdminTeamPage() {
 
                       <td className="py-4">
                         {isPrimaryOwner ? (
-                          <span className="px-3 py-1 bg-navy/10 text-navy border border-navy/30 rounded-full text-[11px] font-extrabold">
-                            👑 OWNER
+                          <span className="px-3 py-1 bg-navy/10 text-navy border border-navy/30 rounded-full text-[11px] font-extrabold tracking-wide">
+                            OWNER
                           </span>
                         ) : (
                           <select

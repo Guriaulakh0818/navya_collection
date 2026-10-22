@@ -453,7 +453,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       addSpec(formattedLabel, String(val), key);
     });
 
-    addSpec('Country of Origin', product.countryOfOrigin || 'India 🇮🇳', 'countryoforigin');
+    addSpec('Country of Origin', product.countryOfOrigin || 'India', 'countryoforigin');
 
     return specs;
   }, [product, activeVariant, activeColor, activeSize]);
@@ -506,7 +506,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
 
       const variantDetail = [activeColor, activeSize].filter(Boolean).join(', ');
       toast(
-        `Added "${product.name}"${variantDetail ? ` (${variantDetail})` : ''} to wishlist! ❤️`,
+        `Added "${product.name}"${variantDetail ? ` (${variantDetail})` : ''} to wishlist!`,
         'success',
       );
     }

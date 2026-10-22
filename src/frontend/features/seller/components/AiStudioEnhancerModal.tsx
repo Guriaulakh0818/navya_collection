@@ -435,7 +435,7 @@ export function AiStudioEnhancerModal({
                         : 'text-slate-600 hover:text-navy'
                     }`}
                   >
-                    ✨ Studio
+                    Studio AI
                   </button>
                   <button
                     type="button"

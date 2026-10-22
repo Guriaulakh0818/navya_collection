@@ -156,7 +156,7 @@ export default function AdminOffersPage() {
       if (res.ok && json.success && json.data) {
         setOffers((prev) => [json.data, ...prev]);
         setShowCreateModal(false);
-        setSuccessMessage(`🎉 Offer "${json.data.title}" created successfully!`);
+        setSuccessMessage(`Offer "${json.data.title}" created successfully!`);
         setTimeout(() => setSuccessMessage(null), 4000);
         // Reset form
         setFormData({
@@ -502,9 +502,9 @@ export default function AdminOffersPage() {
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-xs sm:text-sm bg-white focus:outline-hidden focus:ring-2 focus:ring-navy/20"
                 >
-                  <option value="FREE_DELIVERY">🚚 FREE DELIVERY (₹0 Shipping Fee)</option>
-                  <option value="PERCENT_DISCOUNT">🏷️ PERCENTAGE DISCOUNT (% off order)</option>
-                  <option value="FLAT_DISCOUNT">💰 FLAT DISCOUNT (₹ off order)</option>
+                  <option value="FREE_DELIVERY">FREE DELIVERY (₹0 Shipping Fee)</option>
+                  <option value="PERCENT_DISCOUNT">PERCENTAGE DISCOUNT (% off order)</option>
+                  <option value="FLAT_DISCOUNT">FLAT DISCOUNT (₹ off order)</option>
                 </select>
               </div>
 

@@ -208,7 +208,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
   const handleApplyStudioEnhancedPhoto = async (file: File) => {
     await handleUploadMultipleImages([file]);
-    showToast('✨ Studio photo uploaded and added to gallery!', 'success');
+    showToast('Studio photo uploaded and added to gallery!', 'success');
   };
 
   // Multi-Category Selection State
@@ -757,7 +757,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     }
 
     showToast(
-      `⚡ Auto-detected ${res.categoryIds.length} categories for ${
+      `Auto-detected ${res.categoryIds.length} categories for ${
         deptGroup === 'group_men' ? 'Men' : deptGroup === 'group_kids' ? 'Kids' : 'Women'
       } & set template to "${res.matchedLabels[0] || 'Garment'}"`,
       'success',
@@ -1698,7 +1698,12 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               <div className="flex flex-wrap gap-2">
                 {CATEGORY_ENGINE_TAXONOMY.map((dept) => {
                   const isDeptActive = activeDeptId === dept.id;
-                  const icon = dept.name === 'Men' ? '👨' : dept.name === 'Women' ? '👩' : '👶';
+                  const departmentLabel =
+                    dept.name === 'Women'
+                      ? "Women's Collection"
+                      : dept.name === 'Men'
+                        ? "Men's Collection"
+                        : "Kids' Collection";
                   return (
                     <button
                       key={dept.id}
@@ -1720,14 +1725,13 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                           setSelectedMainCat('group_women');
                         }
                       }}
-                      className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+                      className={`px-4 py-2 rounded-xl font-bold text-xs tracking-wide transition-all cursor-pointer ${
                         isDeptActive
                           ? 'bg-navy text-white shadow-xs ring-2 ring-navy/20'
                           : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
                       }`}
                     >
-                      <span>{icon}</span>
-                      <span>{dept.name}</span>
+                      <span>{departmentLabel}</span>
                     </button>
                   );
                 })}
@@ -2091,7 +2095,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                         type="button"
                         onClick={() => handleOpenAiStudioModal(img.imageUrl)}
                         className="p-1.5 bg-orange hover:bg-orange/90 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer"
-                        title="✨ Make Studio Photo with AI"
+                        title="Make Studio Photo with AI"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
                       </button>
@@ -2285,7 +2289,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             />
             {discountDetails ? (
               <p className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
-                ⚡ Discount: {discountDetails.formattedPercent} OFF
+                Discount: {discountDetails.formattedPercent} OFF
               </p>
             ) : (
               <p className="text-[10px] text-slate-400">Printed tag MRP</p>
@@ -2419,7 +2423,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             />
             <p className="text-[10px] text-slate-500">
               {formData.variants.length > 0
-                ? `⚡ Auto-calculated from sum of variant stocks (${formData.stock} units)`
+                ? `Auto-calculated from sum of variant stocks (${formData.stock} units)`
                 : 'Direct stock count for standalone item'}
             </p>
           </div>

@@ -42,9 +42,7 @@ export function FooterNewsletter() {
     return (
       <div className="flex items-center gap-2 p-3.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold shadow-xs animate-in fade-in duration-200">
         <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-        <span>
-          🎉 Subscribed! We sent your 15% OFF coupon code (NAVYA15VIP) to your email inbox!
-        </span>
+        <span>Subscribed! We sent your 15% OFF coupon code (NAVYA15VIP) to your email inbox!</span>
       </div>
     );
   }

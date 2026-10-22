@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, Sparkles, Truck } from 'lucide-react';
+import { CheckCircle2, Gift, Sparkles, Truck } from 'lucide-react';
 import React from 'react';
 
 import type { DeliveryMethod } from '@/features/checkout/types';
@@ -160,7 +160,7 @@ export const ShippingSummaryCard: React.FC<ShippingSummaryCardProps> = ({
       {isFirstOrderFree ? (
         <div className="text-xs font-black text-indigo-950 bg-indigo-100/90 border border-indigo-300 px-3.5 py-2 rounded-2xl flex items-center gap-2 shadow-xs">
           <Sparkles className="h-4 w-4 text-indigo-600 shrink-0" />
-          <span>First Order Benefit — Standard Shipping FREE 🎉</span>
+          <span>First Order Benefit — Standard Shipping FREE</span>
         </div>
       ) : isFree ? (
         <div className="text-xs font-black text-emerald-900 bg-emerald-100/90 border border-emerald-300 px-3.5 py-2 rounded-2xl flex items-center gap-2 shadow-xs">
@@ -168,8 +168,9 @@ export const ShippingSummaryCard: React.FC<ShippingSummaryCardProps> = ({
           <span>✓ You unlocked FREE Shipping!</span>
         </div>
       ) : guestOfferPrompt ? (
-        <div className="text-xs font-bold text-indigo-900 bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-2xl flex items-center justify-between shadow-xs">
-          <span>🎁 {guestOfferPrompt}</span>
+        <div className="text-xs font-bold text-indigo-900 bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-2xl flex items-center gap-2 shadow-xs">
+          <Gift className="h-4 w-4 text-indigo-600 shrink-0" />
+          <span>{guestOfferPrompt}</span>
         </div>
       ) : !hasMultipleSellers && isStandard && remainingForFree > 0 ? (
         <div className="text-xs font-bold text-navy bg-white border border-slate-200 px-3.5 py-2 rounded-2xl flex items-center justify-between shadow-xs">

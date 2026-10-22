@@ -86,7 +86,7 @@ export function SellerStatusView({ statusData, onRefresh, onStartNew }: SellerSt
           color: 'bg-emerald-50 text-emerald-800 border-emerald-300',
           icon: CheckCircle2,
           iconColor: 'text-emerald-600',
-          title: 'Merchant Application Approved! 🎉',
+          title: 'Merchant Application Approved!',
           desc: 'Your boutique store is live. Access your Seller Dashboard to upload products and handle orders.',
         };
       case 'UNDER_REVIEW':
