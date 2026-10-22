@@ -136,20 +136,43 @@ export function AiStudioEnhancerModal({
         if (response.ok && data.success && data.data?.cutout) {
           cutoutUrl = data.data.cutout;
           briaSuccess = true;
+        } else if (data.code === 'TOKEN_REQUIRED' || data.code === 'INVALID_TOKEN') {
+          setShowTokenInput(true);
         }
       } catch (briaErr) {
         console.warn(
-          '[AI_STUDIO] Cloud inference attempt failed, falling back to local engine:',
+          '[AI_STUDIO] Cloud inference attempt failed, trying local CDN engine:',
           briaErr,
         );
       }
 
-      // 2. Seamless 100% Free Fallback (In-Browser WebAssembly AI)
+      // 2. Seamless In-Browser WebAssembly Fallback via CDN (Zero Webpack / Bundle Overhead)
       if (!briaSuccess) {
         try {
-          const { removeBackground } = await import('@imgly/background-removal');
+          const loadCdnEngine = async () => {
+            if ((window as any).imglyRemoveBackground) {
+              return (window as any).imglyRemoveBackground;
+            }
+            return new Promise<any>((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src =
+                'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/bundle.js';
+              script.async = true;
+              script.onload = () => {
+                if ((window as any).imglyRemoveBackground) {
+                  resolve((window as any).imglyRemoveBackground);
+                } else {
+                  reject(new Error('AI engine failed to initialize from CDN.'));
+                }
+              };
+              script.onerror = () => reject(new Error('Failed to load in-browser AI engine.'));
+              document.head.appendChild(script);
+            });
+          };
+
+          const removeBgFn = await loadCdnEngine();
           const source = selectedFile || previewOriginalUrl;
-          const blob = await removeBackground(source);
+          const blob = await removeBgFn(source);
           cutoutUrl = await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result as string);
