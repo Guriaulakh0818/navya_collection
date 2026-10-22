@@ -30,7 +30,10 @@ function CheckoutSteps() {
 
   useEffect(() => {
     try {
-      useCartStore.getState().mergeGuestCart();
+      const cartState = useCartStore.getState();
+      if (cartState.isGuest && cartState.items.length > 0) {
+        cartState.mergeGuestCart();
+      }
     } catch {}
   }, []);
 

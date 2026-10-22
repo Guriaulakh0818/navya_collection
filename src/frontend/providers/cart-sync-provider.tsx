@@ -15,8 +15,6 @@ import { useWishlistStore } from '@/stores/wishlist.store';
  */
 export function CartSyncProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
-  const cartStore = useCartStore();
-  const wishlistStore = useWishlistStore();
   const hasMergedRef = useRef(false);
   const wasAuthRef = useRef(false);
 
@@ -28,22 +26,32 @@ export function CartSyncProvider({ children }: { children: React.ReactNode }) {
       if (!hasMergedRef.current) {
         hasMergedRef.current = true;
 
-        // Perform guest merge on login (stores transition from guest to server mode cleanly)
-        cartStore.mergeGuestCart();
-        wishlistStore.mergeGuestWishlist();
+        // Perform guest merge ONLY if stores are currently in guest mode, otherwise simply fetch server cart
+        const cartState = useCartStore.getState();
+        if (cartState.isGuest) {
+          cartState.mergeGuestCart();
+        } else {
+          cartState.fetchCart();
+        }
+
+        const wishlistState = useWishlistStore.getState();
+        if (wishlistState.isGuest) {
+          wishlistState.mergeGuestWishlist();
+        } else {
+          wishlistState.fetchWishlist();
+        }
       }
     } else {
       hasMergedRef.current = false;
       if (wasAuthRef.current) {
         wasAuthRef.current = false;
-        cartStore.resetLocalCart();
-        wishlistStore.resetLocalWishlist();
+        useCartStore.getState().resetLocalCart();
+        useWishlistStore.getState().resetLocalWishlist();
       } else {
-        cartStore.setGuestMode(true);
-        wishlistStore.setGuestMode(true);
+        useCartStore.getState().setGuestMode(true);
+        useWishlistStore.getState().setGuestMode(true);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isLoading]);
 
   return <>{children}</>;

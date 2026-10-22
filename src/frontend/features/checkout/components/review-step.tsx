@@ -129,7 +129,10 @@ export function ReviewStep({ onPlaceOrder }: { onPlaceOrder?: () => void }) {
     setErrorMsg(null);
     try {
       try {
-        await useCartStore.getState().mergeGuestCart();
+        const cartState = useCartStore.getState();
+        if (cartState.isGuest && cartState.items.length > 0) {
+          await cartState.mergeGuestCart();
+        }
       } catch {}
 
       const clientItems = useCartStore.getState().items;

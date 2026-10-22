@@ -516,6 +516,13 @@ export const useCartStore = create<CartStore>()(
 
       mergeGuestCart: async () => {
         const state = get();
+
+        // If user is already in server mode, there are no guest items to merge; just sync
+        if (!state.isGuest) {
+          await get().fetchCart();
+          return;
+        }
+
         const localItems = state.items;
 
         if (localItems.length === 0) {
@@ -524,7 +531,8 @@ export const useCartStore = create<CartStore>()(
           return;
         }
 
-        set({ isLoading: true, error: null });
+        // Mark as server mode immediately so concurrent or subsequent calls don't re-merge
+        set({ isGuest: false, isLoading: true, error: null });
 
         try {
           const payloadItems = localItems.map((item) => ({

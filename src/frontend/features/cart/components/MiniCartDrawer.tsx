@@ -98,10 +98,21 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
             </div>
           )}
 
-          {/* Free Shipping Notification */}
-          <div className="mb-3 rounded-2xl bg-orange/10 p-3 text-xs text-orange font-semibold flex items-center gap-2 shrink-0">
-            <Truck className="h-4 w-4 shrink-0" />
-            <span>Multi-Vendor pan-India express shipping.</span>
+          {/* Free Shipping Notification & Clear Cart */}
+          <div className="mb-3 flex items-center justify-between gap-2 shrink-0">
+            <div className="flex-1 rounded-xl bg-orange/10 p-2.5 text-xs text-orange font-semibold flex items-center gap-2">
+              <Truck className="h-4 w-4 shrink-0" />
+              <span>Multi-Vendor pan-India express shipping.</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => clearCart()}
+              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0 border border-slate-200"
+              title="Clear entire cart"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-slate-500 hover:text-rose-600" />
+              <span className="hidden sm:inline">Clear</span>
+            </button>
           </div>
 
           {/* Grouped Cart Items List */}

@@ -297,7 +297,7 @@ export class CartRepository {
           await tx.cartItem.update({
             where: { id: existing.id },
             data: {
-              quantity: Math.min(existing.quantity + guestItem.quantity, availableStock),
+              quantity: Math.min(Math.max(existing.quantity, guestItem.quantity), availableStock),
             },
           });
         } else {
