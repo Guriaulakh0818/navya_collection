@@ -2172,41 +2172,40 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
       {/* SECTION 2: DYNAMIC CATEGORY ATTRIBUTES ENGINE */}
       <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs space-y-3.5 sm:space-y-4">
-        <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
-          <div className="min-w-0 pr-1">
-            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
-              <Layers className="w-4 h-4 text-orange shrink-0" /> Section 2: Dynamic Category
-              Attributes
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
+          <div className="min-w-0 flex items-center gap-1.5 sm:gap-2">
+            <Layers className="w-4 h-4 text-orange shrink-0" />
+            <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy whitespace-nowrap truncate">
+              Section 2: Dynamic Category Attributes
             </h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Garment-tailored fabric, design, and weave specifications for{' '}
-              <strong className="text-orange">{activeTemplate.name}</strong>.
-            </p>
           </div>
           <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
             Step 2 of 6
           </span>
         </div>
 
-        <div className="space-y-6 text-xs">
+        <div className="space-y-4 text-xs">
           {Object.entries(groupedAttributes).map(([groupTitle, attributes]) => {
             if (attributes.length === 0) return null;
             return (
               <div
                 key={groupTitle}
-                className="space-y-3 bg-slate-50/50 p-4 rounded-2xl border border-slate-200"
+                className="space-y-2.5 bg-slate-50/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200"
               >
                 <h3 className="font-extrabold uppercase tracking-wider text-[11px] text-navy">
                   {groupTitle}
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
                   {attributes.map((attr) => {
                     const currentValue =
                       (formData as any)[attr.id] || formData.attributes?.[attr.id] || '';
 
                     return (
-                      <div key={attr.id} className="space-y-1">
-                        <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">
+                      <div key={attr.id} className="space-y-1 min-w-0">
+                        <label
+                          className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] truncate"
+                          title={attr.label}
+                        >
                           {attr.label} {attr.required && <span className="text-rose-500">*</span>}
                         </label>
 
@@ -2214,7 +2213,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                           <select
                             value={currentValue}
                             onChange={(e) => handleDynamicAttributeChange(attr.id, e.target.value)}
-                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-medium focus:border-navy focus:outline-none transition-all cursor-pointer"
+                            className="w-full bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs text-slate-900 font-medium focus:border-navy focus:outline-none transition-all cursor-pointer truncate"
                           >
                             <option value="">Select {attr.label}...</option>
                             {attr.options.map((opt: string) => (
@@ -2229,7 +2228,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                             placeholder={attr.placeholder || `Enter ${attr.label}...`}
                             value={currentValue}
                             onChange={(e) => handleDynamicAttributeChange(attr.id, e.target.value)}
-                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-medium focus:border-navy focus:outline-none transition-all"
+                            className="w-full bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs text-slate-900 font-medium focus:border-navy focus:outline-none transition-all"
                           />
                         )}
                       </div>
