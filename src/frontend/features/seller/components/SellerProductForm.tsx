@@ -41,6 +41,7 @@ import {
   resolveSizeSystem,
   SIZE_SYSTEMS,
 } from '@/config/product-attribute-engine';
+import { AiStudioEnhancerModal } from '@/frontend/features/seller/components/AiStudioEnhancerModal';
 import { autoCategorizeProduct } from '@/shared/utils/auto-categorizer';
 
 type ProductFormProps = {
@@ -195,6 +196,20 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+
+  // AI Studio Photo Enhancer (Powered by Bria AI)
+  const [isAiStudioModalOpen, setIsAiStudioModalOpen] = useState(false);
+  const [aiStudioTargetUrl, setAiStudioTargetUrl] = useState<string | undefined>(undefined);
+
+  const handleOpenAiStudioModal = (imageUrl?: string) => {
+    setAiStudioTargetUrl(imageUrl);
+    setIsAiStudioModalOpen(true);
+  };
+
+  const handleApplyStudioEnhancedPhoto = async (file: File) => {
+    await handleUploadMultipleImages([file]);
+    showToast('✨ Studio photo uploaded and added to gallery!', 'success');
+  };
 
   // Multi-Category Selection State
   const initialCategoryIds: string[] = [];
@@ -1946,9 +1961,20 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
               Product Images Gallery <span className="text-rose-500">*</span>
             </label>
-            <span className="text-[11px] text-slate-500 font-medium">
-              {formData.images.length} photos uploaded (Click star to set main display photo)
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleOpenAiStudioModal()}
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-orange to-amber-500 hover:from-orange/90 hover:to-amber-500/90 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                title="Convert phone photos into studio catalog photos with Bria AI"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>AI Studio Magic</span>
+              </button>
+              <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">
+                {formData.images.length} photos uploaded (Click star to set main display photo)
+              </span>
+            </div>
           </div>
 
           <div
@@ -2061,6 +2087,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
                   <div className="absolute inset-0 bg-navy/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2">
                     <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAiStudioModal(img.imageUrl)}
+                        className="p-1.5 bg-orange hover:bg-orange/90 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer"
+                        title="✨ Make Studio Photo with AI"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                      </button>
                       {!img.isPrimary && (
                         <button
                           type="button"
@@ -3846,6 +3880,17 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           </button>
         </div>
       </div>
+
+      {/* AI Studio Enhancer Modal (Powered by Bria AI) */}
+      <AiStudioEnhancerModal
+        isOpen={isAiStudioModalOpen}
+        onClose={() => {
+          setIsAiStudioModalOpen(false);
+          setAiStudioTargetUrl(undefined);
+        }}
+        initialImageUrl={aiStudioTargetUrl}
+        onApply={handleApplyStudioEnhancedPhoto}
+      />
     </form>
   );
 }
