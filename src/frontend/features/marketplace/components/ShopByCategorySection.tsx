@@ -18,7 +18,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
   {
     id: 'women',
     name: 'Women',
-    image: '/images/categories/category-women.jpg',
+    image: '/images/categories/category-women.png',
     href: '/category/women',
     badge: 'POPULAR',
     badgeBg: 'bg-orange',
@@ -27,7 +27,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
   {
     id: 'men',
     name: 'Men',
-    image: '/images/categories/category-men.jpg',
+    image: '/images/categories/category-men.png',
     href: '/category/men',
     badge: 'STYLE',
     badgeBg: 'bg-navy',
@@ -36,7 +36,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
   {
     id: 'kids',
     name: 'Kids',
-    image: '/images/categories/category-kids.jpg',
+    image: '/images/categories/category-kids.png',
     href: '/category/kids',
     badge: 'NEW',
     badgeBg: 'bg-emerald-600',

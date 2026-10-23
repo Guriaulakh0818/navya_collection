@@ -21,8 +21,8 @@ export const CATEGORIES: Category[] = [
     name: 'In The Spotlight',
     slug: 'spotlight',
     description: 'Handpicked seasonal drops, festive highlights, top-rated trends & budget finds.',
-    image: '/images/categories/category-spotlight.jpg',
-    banner: '/images/categories/category-spotlight.jpg',
+    image: '/images/categories/category-spotlight.png',
+    banner: '/images/categories/category-spotlight.png',
     productCount: 12,
     accent: CATEGORY_ACCENTS[1],
     subCategories: [
@@ -42,8 +42,8 @@ export const CATEGORIES: Category[] = [
     slug: 'men',
     description:
       'Designer shirts, t-shirts, jeans, trousers, silk kurta sets, suits & accessories.',
-    image: '/images/categories/category-men.jpg',
-    banner: '/images/categories/category-men.jpg',
+    image: '/images/categories/category-men.png',
+    banner: '/images/categories/category-men.png',
     productCount: 15,
     accent: CATEGORY_ACCENTS[0],
     subCategories: [
@@ -63,8 +63,8 @@ export const CATEGORIES: Category[] = [
     name: 'Women',
     slug: 'women',
     description: 'Handcrafted luxury sarees, bridal lehengas, kurtas, western wear & accessories.',
-    image: '/images/categories/category-women.jpg',
-    banner: '/images/categories/category-women.jpg',
+    image: '/images/categories/category-women.png',
+    banner: '/images/categories/category-women.png',
     productCount: 15,
     accent: CATEGORY_ACCENTS[3],
     subCategories: [
@@ -84,8 +84,8 @@ export const CATEGORIES: Category[] = [
     name: 'Kids',
     slug: 'kids',
     description: 'Fashion & essentials for baby, boys, girls and teens.',
-    image: '/images/categories/category-kids.jpg',
-    banner: '/images/categories/category-kids.jpg',
+    image: '/images/categories/category-kids.png',
+    banner: '/images/categories/category-kids.png',
     productCount: 5,
     accent: CATEGORY_ACCENTS[4],
     subCategories: [
@@ -276,8 +276,8 @@ export function findCategoryBySlug(slug: string): Category {
       name: matchedFlat.name,
       slug: matchedFlat.slug,
       description: `Explore ${matchedFlat.breadcrumb} collection at Navya Collection.`,
-      image: '/images/categories/category-spotlight.jpg',
-      banner: '/images/categories/category-spotlight.jpg',
+      image: '/images/categories/category-spotlight.png',
+      banner: '/images/categories/category-spotlight.png',
       parentName: matchedFlat.mainGroupName,
       accent: 'from-navy to-[#234b8f]',
     };
