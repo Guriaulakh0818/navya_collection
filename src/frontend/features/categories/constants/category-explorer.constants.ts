@@ -1203,15 +1203,15 @@ export const MAIN_CATEGORY_GROUPS: MainCategoryGroup[] = [
     ],
   },
 
-  // 5. NAVYA COLLECTION SHOPS
+  // 5. JIIVAAKART SHOPS
   {
     id: 'group_shops',
-    name: 'Navya Collection Shops',
+    name: 'JiivaaKart',
     slug: 'shops',
     iconImage: '/images/categories/category-shops.png',
     badge: 'BOUTIQUES',
     banner: {
-      title: 'Navya Partner Boutiques',
+      title: 'JiivaaKart Partner Boutiques',
       subtitle:
         'Shop directly from authentic designer boutiques, verified artisans & premium stores',
       image: '/images/categories/category-shops.png',

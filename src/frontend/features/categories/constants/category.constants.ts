@@ -98,10 +98,10 @@ export const CATEGORIES: Category[] = [
     ],
   },
 
-  // 5. NAVYA COLLECTION SHOPS
+  // 5. JIIVAAKART SHOPS
   {
     id: 'group_shops',
-    name: 'Navya Collection Shops',
+    name: 'JiivaaKart',
     slug: 'shops',
     description: 'Explore verified partner designer boutiques and independent regional shops.',
     image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600',

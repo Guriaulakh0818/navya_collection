@@ -568,10 +568,10 @@ export const CATEGORY_TAXONOMY: MainCategoryOption[] = [
     ],
   },
 
-  // 5. NAVYA COLLECTION SHOPS
+  // 5. JIIVAAKART SHOPS
   {
     id: 'group_shops',
-    name: 'Navya Collection Shops',
+    name: 'JiivaaKart',
     slug: 'shops',
     badge: 'Boutiques',
     sections: [
