@@ -44,7 +44,7 @@ const CATEGORY_ITEMS: CategoryItem[] = [
   {
     id: 't-shirts',
     name: 'T-Shirts',
-    image: '/images/categories/men-tshirts.jpg',
+    image: '/images/categories/men-tshirts.png',
     href: '/category/men-t-shirts',
     badge: 'HOT',
     badgeBg: 'bg-orange',
@@ -52,13 +52,13 @@ const CATEGORY_ITEMS: CategoryItem[] = [
   {
     id: 'shirts',
     name: 'Shirts',
-    image: '/images/categories/men-shirts.jpg',
+    image: '/images/categories/men-shirts.png',
     href: '/category/men-shirts',
   },
   {
     id: 'jeans',
     name: 'Jeans',
-    image: '/images/categories/men-jeans.jpg',
+    image: '/images/categories/men-jeans.png',
     href: '/category/men-jeans',
     badge: 'BESTSELLER',
     badgeBg: 'bg-navy',
@@ -66,13 +66,13 @@ const CATEGORY_ITEMS: CategoryItem[] = [
   {
     id: 'trousers',
     name: 'Trousers',
-    image: '/images/categories/men-trousers.jpg',
+    image: '/images/categories/men-trousers.png',
     href: '/category/men-trousers',
   },
   {
     id: 'cargo-pants',
     name: 'Cargo Pants',
-    image: '/images/categories/men-cargos.jpg',
+    image: '/images/categories/men-cargos.png',
     href: '/category/men-cargo-pants',
     badge: 'TRENDING',
     badgeBg: 'bg-orange',
@@ -80,13 +80,13 @@ const CATEGORY_ITEMS: CategoryItem[] = [
   {
     id: 'kurta-sets',
     name: 'Kurta Sets',
-    image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600',
+    image: '/images/categories/Kurta Sets & Salwar Suits (womens).png',
     href: '/category/women-kurta-sets',
   },
   {
     id: 'sarees',
     name: 'Sarees',
-    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600',
+    image: '/images/categories/Sarees (womens).png',
     href: '/category/women-sarees',
   },
 ];

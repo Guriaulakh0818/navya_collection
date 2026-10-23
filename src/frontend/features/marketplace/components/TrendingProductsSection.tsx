@@ -113,7 +113,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
         >
           {products.map((p, index) => {
             const imageSrc =
-              p.images?.[0]?.imageUrl || p.images?.[0]?.url || '/images/categories/men-shirts.jpg';
+              p.images?.[0]?.imageUrl || p.images?.[0]?.url || '/images/categories/men-shirts.png';
             const priceNum = Number(p.price || 0);
             const comparePriceNum = p.compareAtPrice ? Number(p.compareAtPrice) : null;
             const discountPercent =
