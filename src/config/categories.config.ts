@@ -390,7 +390,6 @@ export const CATEGORY_TAXONOMY: MainCategoryOption[] = [
               { id: 'cat_women_sling_bags', name: 'Sling Bags', slug: 'women-sling-bags' },
               { id: 'cat_women_shoulder_bags', name: 'Shoulder Bags', slug: 'women-shoulder-bags' },
               { id: 'cat_women_tote_bags', name: 'Tote Bags', slug: 'women-tote-bags' },
-              { id: 'cat_women_backpacks', name: 'Backpacks', slug: 'women-backpacks' },
               { id: 'cat_women_clutches', name: 'Clutches', slug: 'women-clutches' },
             ],
           },

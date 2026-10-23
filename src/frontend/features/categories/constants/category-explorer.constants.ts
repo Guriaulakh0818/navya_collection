@@ -815,13 +815,6 @@ export const MAIN_CATEGORY_GROUPS: MainCategoryGroup[] = [
             queryParam: 'category=women-shoulder-bags',
           },
           {
-            id: 'women_backpacks',
-            name: 'Backpacks',
-            slug: 'women-backpacks',
-            image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300',
-            queryParam: 'category=women-backpacks',
-          },
-          {
             id: 'women_clutches',
             name: 'Clutches & Potlis',
             slug: 'women-clutches',
