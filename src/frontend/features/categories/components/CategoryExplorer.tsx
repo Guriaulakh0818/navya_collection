@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, ChevronDown, ChevronUp, Grid, Search, Sparkles, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Grid, Search, Sparkles, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -254,42 +254,7 @@ export function CategoryExplorer({
             </aside>
 
             {/* RIGHT CONTENT AREA: Sub-sections, Spotlights, and Product Variety Cards */}
-            <main className="flex-1 bg-white p-3 sm:p-5 md:p-6 overflow-y-auto max-h-[calc(100vh-130px)] space-y-6">
-              {/* Category Header Banner */}
-              {activeGroup.banner && (
-                <Link
-                  href={activeGroup.banner.link}
-                  className="group relative block rounded-2xl sm:rounded-3xl overflow-hidden bg-gradient-to-r from-[#183A73] to-[#255299] p-4 sm:p-6 text-white shadow-md hover:shadow-lg transition-all"
-                >
-                  <div className="relative z-10 max-w-sm sm:max-w-md space-y-1.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-amber-300 bg-white/10 px-2.5 py-0.5 rounded-full backdrop-blur-xs">
-                      <Sparkles className="h-3 w-3" /> Featured Collection
-                    </span>
-                    <h1 className="text-base sm:text-2xl font-black leading-tight drop-shadow-xs">
-                      {activeGroup.banner.title}
-                    </h1>
-                    <p className="text-[11px] sm:text-xs text-slate-200 line-clamp-2 font-medium">
-                      {activeGroup.banner.subtitle}
-                    </p>
-                    <div className="pt-2 inline-flex items-center gap-1.5 text-xs font-bold text-amber-300 group-hover:translate-x-1 transition-transform">
-                      <span>Explore Category</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </div>
-                  </div>
-                  <div className="absolute right-0 top-0 bottom-0 w-1/3 sm:w-1/2 opacity-65 group-hover:opacity-85 transition-opacity">
-                    <Image
-                      src={activeGroup.banner.image}
-                      alt={activeGroup.banner.title}
-                      fill
-                      unoptimized
-                      priority
-                      sizes="(max-width: 768px) 30vw, 400px"
-                      className="object-cover"
-                    />
-                  </div>
-                </Link>
-              )}
-
+            <main className="flex-1 bg-white p-3 sm:p-5 md:p-6 overflow-y-auto max-h-[calc(100vh-130px)] space-y-5">
               {/* In The Spotlight (if present) */}
               {activeGroup.spotlights && activeGroup.spotlights.length > 0 && (
                 <div className="space-y-3">
