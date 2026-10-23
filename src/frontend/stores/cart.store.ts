@@ -355,17 +355,23 @@ export const useCartStore = create<CartStore>()(
         if (existingIndex !== -1) {
           updatedItems = [...state.items];
           const existing = updatedItems[existingIndex];
-          const maxStock = input.availableStock || existing.availableStock || 99;
+          const rawLimit = input.availableStock || existing.availableStock;
+          const maxStock =
+            typeof rawLimit === 'number' && rawLimit > 0 ? Math.min(rawLimit, 10) : 10;
           const newQty = Math.min(existing.quantity + quantityToAdd, maxStock);
 
           updatedItems[existingIndex] = {
             ...existing,
             quantity: newQty,
+            availableStock: maxStock,
             price: Number(input.price),
             compareAtPrice: input.compareAtPrice ?? existing.compareAtPrice,
             image: input.image || existing.image,
           };
         } else {
+          const rawLimit = input.availableStock;
+          const maxStock =
+            typeof rawLimit === 'number' && rawLimit > 0 ? Math.min(rawLimit, 10) : 10;
           const newItem: CartStoreItem = {
             id: input.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
             productId: input.productId,
@@ -379,8 +385,8 @@ export const useCartStore = create<CartStore>()(
             sku: input.sku,
             price: Number(input.price),
             compareAtPrice: input.compareAtPrice,
-            quantity: Math.min(quantityToAdd, input.availableStock || 99),
-            availableStock: input.availableStock || 99,
+            quantity: Math.min(quantityToAdd, maxStock),
+            availableStock: maxStock,
             image: input.image,
             shopId: input.shopId || 'independent-shop',
             shopName: input.shopName || 'Independent Vendor',
@@ -435,8 +441,10 @@ export const useCartStore = create<CartStore>()(
         // 1. Optimistic Local State Update so UI buttons respond instantly
         const updatedItems = state.items.map((i) => {
           if (i.id === itemIdOrProductId || (!i.variantId && i.productId === itemIdOrProductId)) {
-            const maxStock = i.availableStock || 99;
-            return { ...i, quantity: Math.min(newQuantity, maxStock) };
+            const rawLimit = i.availableStock;
+            const maxStock =
+              typeof rawLimit === 'number' && rawLimit > 0 ? Math.min(rawLimit, 10) : 10;
+            return { ...i, quantity: Math.min(newQuantity, maxStock), availableStock: maxStock };
           }
           return i;
         });

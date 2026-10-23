@@ -37,6 +37,8 @@ interface ProductItem {
     name: string;
     slug: string;
   } | null;
+  stock?: number | null;
+  variants?: any[];
 }
 
 interface TrendingProductsSectionProps {

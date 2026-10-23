@@ -36,6 +36,18 @@ function sanitizeProduct(p: any) {
           slug: String(p.category.slug || ''),
         }
       : null,
+    stock: p.stock !== undefined && p.stock !== null ? Number(p.stock) : 6,
+    variants: (p.variants || []).map((v: any) => ({
+      id: String(v.id),
+      name: v.name || null,
+      sku: v.sku || '',
+      size: v.size || null,
+      color: v.color || null,
+      price: Number(v.price ?? p.price ?? 0),
+      compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : null,
+      stock: v.stock !== undefined && v.stock !== null ? Number(v.stock) : 6,
+      imageUrl: v.imageUrl || null,
+    })),
   };
 }
 
@@ -167,6 +179,21 @@ export const getMarketplaceHomeData = safeCache(async () => {
             compareAtPrice: true,
             rating: true,
             reviewCount: true,
+            stock: true,
+            variants: {
+              select: {
+                id: true,
+                name: true,
+                sku: true,
+                size: true,
+                color: true,
+                price: true,
+                compareAtPrice: true,
+                stock: true,
+                imageUrl: true,
+              },
+              take: 10,
+            },
             images: {
               select: { imageUrl: true },
               take: 1,
@@ -196,6 +223,21 @@ export const getMarketplaceHomeData = safeCache(async () => {
             compareAtPrice: true,
             rating: true,
             reviewCount: true,
+            stock: true,
+            variants: {
+              select: {
+                id: true,
+                name: true,
+                sku: true,
+                size: true,
+                color: true,
+                price: true,
+                compareAtPrice: true,
+                stock: true,
+                imageUrl: true,
+              },
+              take: 10,
+            },
             images: {
               select: { imageUrl: true },
               take: 1,
@@ -225,6 +267,21 @@ export const getMarketplaceHomeData = safeCache(async () => {
             compareAtPrice: true,
             rating: true,
             reviewCount: true,
+            stock: true,
+            variants: {
+              select: {
+                id: true,
+                name: true,
+                sku: true,
+                size: true,
+                color: true,
+                price: true,
+                compareAtPrice: true,
+                stock: true,
+                imageUrl: true,
+              },
+              take: 10,
+            },
             images: {
               select: { imageUrl: true },
               take: 1,

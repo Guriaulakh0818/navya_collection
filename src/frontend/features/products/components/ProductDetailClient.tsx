@@ -338,7 +338,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       price: price,
       compareAtPrice: compareAtPrice,
       quantity: 1,
-      availableStock: activeVariant?.stock ?? product.stock ?? 99,
+      availableStock: Math.min(activeVariant?.stock ?? product.stock ?? 10, 10),
       image:
         activeVariantImageUrl || product.images?.[0]?.url || product.images?.[0]?.imageUrl || '',
       shopId: product.shop?.id || product.shopId || 'independent-shop',
@@ -352,7 +352,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     e.preventDefault();
     e.stopPropagation();
     if (!currentCartItem) return;
-    const maxStock = activeVariant?.stock ?? product.stock ?? 99;
+    const maxStock = Math.min(activeVariant?.stock ?? product.stock ?? 10, 10);
     if (currentVariantQuantity >= maxStock) return;
     await updateQuantity(currentCartItem.id, currentVariantQuantity + 1);
   };
@@ -361,10 +361,13 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     e.preventDefault();
     e.stopPropagation();
     if (!currentCartItem) return;
+    const maxStock = Math.min(activeVariant?.stock ?? product.stock ?? 10, 10);
     if (currentVariantQuantity <= 1) {
       await removeItem(currentCartItem.id, activeVariant?.id || null);
     } else {
-      await updateQuantity(currentCartItem.id, currentVariantQuantity - 1);
+      const targetQty =
+        currentVariantQuantity > maxStock ? maxStock - 1 : currentVariantQuantity - 1;
+      await updateQuantity(currentCartItem.id, Math.max(1, targetQty));
     }
   };
 
@@ -845,10 +848,18 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 <button
                   type="button"
                   onClick={handleIncreaseVariantQty}
-                  disabled={currentVariantQuantity >= (activeVariant?.stock ?? product.stock ?? 99)}
+                  disabled={
+                    currentVariantQuantity >=
+                    Math.min(activeVariant?.stock ?? product.stock ?? 10, 10)
+                  }
                   className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg sm:rounded-xl bg-orange hover:bg-orange-600 text-white flex items-center justify-center transition-all active:scale-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
                   aria-label="Increase quantity"
-                  title="Increase quantity"
+                  title={
+                    currentVariantQuantity >=
+                    Math.min(activeVariant?.stock ?? product.stock ?? 10, 10)
+                      ? 'Maximum available stock reached'
+                      : 'Increase quantity'
+                  }
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[3]" />
                 </button>
