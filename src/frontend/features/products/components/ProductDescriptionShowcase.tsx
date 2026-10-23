@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import React, { useState } from 'react';
 
-interface SpecificationItem {
+export interface SpecificationItem {
   label: string;
   value: string;
 }
@@ -165,50 +165,203 @@ export function parseProductDescription(text?: string | null): ParsedDescription
 interface ProductDescriptionShowcaseProps {
   description?: string | null;
   className?: string;
+  variant?: 'full' | 'compact';
+  onViewMore?: () => void;
+  additionalSpecs?: SpecificationItem[];
 }
 
 export function ProductDescriptionShowcase({
   description,
   className = '',
+  variant = 'full',
+  onViewMore,
+  additionalSpecs,
 }: ProductDescriptionShowcaseProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const parsed = React.useMemo(() => parseProductDescription(description), [description]);
+
+  // Combine and deduplicate specifications from metadata & parsed description
+  const allSpecs = React.useMemo(() => {
+    const list: SpecificationItem[] = [];
+    const seen = new Set<string>();
+
+    const add = (label: string, value: string) => {
+      const cleanLabel = (label || '').trim();
+      const cleanVal = (value || '').trim();
+      if (!cleanVal) return;
+      const key = cleanLabel.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (key && seen.has(key)) return;
+      if (key) seen.add(key);
+      list.push({ label: cleanLabel, value: cleanVal });
+    };
+
+    if (additionalSpecs && additionalSpecs.length > 0) {
+      additionalSpecs.forEach((s) => add(s.label, s.value));
+    }
+
+    if (parsed.specifications && parsed.specifications.length > 0) {
+      parsed.specifications.forEach((s) => add(s.label, s.value));
+    }
+
+    return list;
+  }, [additionalSpecs, parsed.specifications]);
+
+  // For compact view (Buy Box): pick top 4 key specs
+  const compactSpecs = React.useMemo(() => {
+    const priorityKeys = ['fabric', 'fit', 'occasion', 'care', 'pattern', 'category', 'brand'];
+    const selected: SpecificationItem[] = [];
+
+    priorityKeys.forEach((k) => {
+      const found = allSpecs.find(
+        (s) => s.label.toLowerCase().includes(k) && !selected.some((x) => x.label === s.label),
+      );
+      if (found) selected.push(found);
+    });
+
+    allSpecs.forEach((s) => {
+      if (selected.length < 4 && !selected.some((x) => x.label === s.label)) {
+        selected.push(s);
+      }
+    });
+
+    return selected.slice(0, 4);
+  }, [allSpecs]);
+
   if (!description || !description.trim()) {
+    if (variant === 'compact' && compactSpecs.length > 0) {
+      return (
+        <div className={`space-y-2 pt-1 ${className}`}>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {compactSpecs.map((spec, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100/90 border border-slate-200 text-[11px] font-bold text-navy"
+              >
+                <span className="text-slate-400 font-semibold">{spec.label}:</span>
+                <span>{spec.value}</span>
+              </span>
+            ))}
+          </div>
+          {onViewMore && (
+            <button
+              type="button"
+              onClick={onViewMore}
+              className="inline-flex items-center gap-1 text-[11px] font-extrabold text-orange hover:text-orange-600 transition-colors cursor-pointer"
+            >
+              <span>View All Specifications &amp; Details</span>
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      );
+    }
     return null;
   }
 
-  const parsed = parseProductDescription(description);
+  // COMPACT VARIANT: For the Buy Box above Add to Cart (Clean, concise, balanced height)
+  if (variant === 'compact') {
+    return (
+      <div className={`space-y-2 pt-1 border-t border-slate-100 ${className}`}>
+        {/* Story Hook / Lead */}
+        {parsed.hook && (
+          <div className="relative pl-2.5 border-l-2 border-orange/80 py-0.5">
+            <p className="font-medium text-slate-700 leading-relaxed text-xs line-clamp-2">
+              {parsed.hook}
+            </p>
+          </div>
+        )}
 
-  // If unstructured, render clean formatted text with paragraph breaks
+        {/* Top 3-4 Key Spec Badges */}
+        {compactSpecs.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+            {compactSpecs.map((spec, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100/80 border border-slate-200/80 text-[10.5px] font-bold text-navy"
+              >
+                <span className="text-slate-400 font-semibold">{spec.label}:</span>
+                <span>{spec.value}</span>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Quick jump link to full tabs below */}
+        {onViewMore && (
+          <button
+            type="button"
+            onClick={onViewMore}
+            className="inline-flex items-center gap-1 text-[11px] font-extrabold text-orange hover:text-orange-600 transition-colors cursor-pointer pt-0.5"
+          >
+            <span>View All Specifications, Styling &amp; Wash Care</span>
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  // FULL VARIANT: For Full-Width Tabs Below the Main Product Fold
+  // If unstructured raw text
   if (!parsed.isStructured) {
     const paragraphs = parsed.raw.split(/\n\s*\n/).filter(Boolean);
 
     return (
-      <div className={`space-y-2.5 text-xs sm:text-sm text-slate-600 leading-relaxed ${className}`}>
-        {paragraphs.map((p, i) => {
-          // If bullet list
-          if (p.includes('•') || p.trim().startsWith('-')) {
-            const items = p
-              .split(/(?:•|\n-)/)
-              .map((it) => it.trim())
-              .filter(Boolean);
+      <div className={`space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed ${className}`}>
+        {allSpecs.length > 0 && (
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <h3 className="text-xs sm:text-sm font-extrabold text-navy flex items-center gap-2">
+                <Layers className="w-4 h-4 text-orange" /> Product Specifications
+              </h3>
+              <span className="text-[11px] text-slate-400 font-bold">100% Authentic Details</span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-2.5">
+              {allSpecs.map((spec, idx) => (
+                <div
+                  key={idx}
+                  className="bg-slate-50/70 border border-slate-100 rounded-xl p-2.5 flex flex-col justify-center"
+                >
+                  <span className="text-[9.5px] font-extrabold text-slate-400 uppercase tracking-wider truncate">
+                    {spec.label}
+                  </span>
+                  <span className="font-bold text-navy mt-0.5 text-xs truncate" title={spec.value}>
+                    {spec.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+          <h3 className="text-xs sm:text-sm font-extrabold text-navy">About This Garment</h3>
+          {paragraphs.map((p, i) => {
+            if (p.includes('•') || p.trim().startsWith('-')) {
+              const items = p
+                .split(/(?:•|\n-)/)
+                .map((it) => it.trim())
+                .filter(Boolean);
+              return (
+                <ul key={i} className="space-y-1.5 my-2">
+                  {items.map((it, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-orange shrink-0 mt-0.5" />
+                      <span className="font-medium text-slate-700">{it}</span>
+                    </li>
+                  ))}
+                </ul>
+              );
+            }
             return (
-              <ul key={i} className="space-y-1.5 my-2">
-                {items.map((it, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-orange shrink-0 mt-0.5" />
-                    <span className="font-medium text-slate-700">{it}</span>
-                  </li>
-                ))}
-              </ul>
+              <p key={i} className="font-medium text-slate-700 whitespace-pre-line leading-relaxed">
+                {p}
+              </p>
             );
-          }
-          return (
-            <p key={i} className="font-medium text-slate-700 whitespace-pre-line">
-              {p}
-            </p>
-          );
-        })}
+          })}
+        </div>
       </div>
     );
   }
@@ -216,115 +369,90 @@ export function ProductDescriptionShowcase({
   const hasAdditionalDetails = Boolean(parsed.craftsmanship || parsed.styling || parsed.care);
 
   return (
-    <div className={`space-y-3.5 text-xs sm:text-sm ${className}`}>
-      {/* 1. Lead / Story Hook */}
+    <div className={`space-y-4 sm:space-y-5 text-xs sm:text-sm ${className}`}>
+      {/* 1. Lead / Story Hook in Full Width */}
       {parsed.hook && (
-        <div className="relative pl-3 border-l-2 border-orange/80 py-0.5">
-          <p className="font-medium text-slate-800 leading-relaxed text-xs sm:text-[13px]">
+        <div className="bg-gradient-to-r from-orange/5 via-orange/2 to-transparent border-l-4 border-orange p-3.5 sm:p-4 rounded-r-2xl">
+          <p className="font-medium text-slate-800 leading-relaxed text-xs sm:text-sm">
             {parsed.hook}
           </p>
         </div>
       )}
 
-      {/* 2. Structured Garment Specifications Grid */}
-      {parsed.specifications && parsed.specifications.length > 0 && (
-        <div className="space-y-2 bg-slate-50/80 border border-slate-200/90 rounded-xl p-3 sm:p-3.5 shadow-2xs">
-          <div className="flex items-center gap-1.5 text-navy font-extrabold text-[11px] sm:text-xs uppercase tracking-wider">
-            <Layers className="w-3.5 h-3.5 text-orange" />
-            <span>Garment Specifications &amp; Highlights</span>
+      {/* 2. Structured Garment Specifications Grid (Full Width 2-4 cols) */}
+      {allSpecs.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <h3 className="text-xs sm:text-sm font-extrabold text-navy flex items-center gap-2">
+              <Layers className="w-4 h-4 text-orange" /> Product Specifications &amp; Details
+            </h3>
+            <span className="text-[11px] text-slate-400 font-bold">100% Authentic Details</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1">
-            {parsed.specifications.map((spec, idx) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-2.5">
+            {allSpecs.map((spec, idx) => (
               <div
                 key={idx}
-                className="bg-white border border-slate-200/70 rounded-lg p-2 sm:p-2.5 flex flex-col justify-center shadow-3xs"
+                className="bg-slate-50/70 border border-slate-100 rounded-xl p-2.5 flex flex-col justify-center"
               >
-                {spec.label ? (
-                  <>
-                    <span className="text-[9.5px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider truncate">
-                      {spec.label}
-                    </span>
-                    <span className="font-bold text-navy text-[11px] sm:text-xs leading-snug mt-0.5 break-words">
-                      {spec.value}
-                    </span>
-                  </>
-                ) : (
-                  <span className="font-bold text-navy text-[11px] sm:text-xs leading-snug">
-                    {spec.value}
-                  </span>
-                )}
+                <span className="text-[9.5px] font-extrabold text-slate-400 uppercase tracking-wider truncate">
+                  {spec.label}
+                </span>
+                <span className="font-bold text-navy mt-0.5 text-xs truncate" title={spec.value}>
+                  {spec.value}
+                </span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* 3. Additional Boutique Details (Craftsmanship, Styling, Care) */}
+      {/* 3. Luxury Boutique Cards (Craftsmanship, Styling, Care) in 3-Column Desktop Grid */}
       {hasAdditionalDetails && (
-        <div className="space-y-2.5 pt-1">
-          {/* Craftsmanship Card */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
+          {/* Card 1: Artisanal Craftsmanship & Fabric */}
           {parsed.craftsmanship && (
-            <div className="bg-amber-50/60 border border-amber-200/70 rounded-xl p-3 sm:p-3.5 space-y-1">
-              <div className="flex items-center gap-1.5 text-amber-900 font-extrabold text-[11px] sm:text-xs">
-                <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                <span>Artisanal Craftsmanship &amp; Fabric</span>
+            <div className="bg-gradient-to-br from-amber-50/80 to-amber-50/30 border border-amber-200/80 rounded-2xl p-4 space-y-2 shadow-xs flex flex-col">
+              <div className="flex items-center gap-2 text-amber-900 font-extrabold text-xs sm:text-sm">
+                <div className="p-1.5 rounded-lg bg-amber-100 text-amber-700">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <span>Craftsmanship &amp; Fabric</span>
               </div>
-              <p className="text-[11.5px] sm:text-xs font-medium text-amber-950/85 leading-relaxed">
+              <p className="text-xs font-medium text-amber-950/85 leading-relaxed flex-1">
                 {parsed.craftsmanship}
               </p>
             </div>
           )}
 
-          {/* Collapsible or Inline Styling & Care */}
-          {!isExpanded && (parsed.styling || parsed.care) ? (
-            <button
-              type="button"
-              onClick={() => setIsExpanded(true)}
-              className="w-full py-1.5 px-3 rounded-lg border border-dashed border-slate-300 hover:border-navy text-navy font-bold text-[11px] flex items-center justify-center gap-1.5 bg-slate-50/50 hover:bg-slate-100/70 transition-all cursor-pointer"
-            >
-              <span>View Styling Guide &amp; Wash Care</span>
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-          ) : (
-            <>
-              {/* Styling Guide Card */}
-              {parsed.styling && (
-                <div className="bg-indigo-50/60 border border-indigo-200/70 rounded-xl p-3 sm:p-3.5 space-y-1">
-                  <div className="flex items-center gap-1.5 text-indigo-900 font-extrabold text-[11px] sm:text-xs">
-                    <Compass className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>Styling Guide &amp; Pairing Advice</span>
-                  </div>
-                  <p className="text-[11.5px] sm:text-xs font-medium text-indigo-950/85 leading-relaxed">
-                    {parsed.styling}
-                  </p>
+          {/* Card 2: Styling Guide & Pairing Advice */}
+          {parsed.styling && (
+            <div className="bg-gradient-to-br from-indigo-50/80 to-indigo-50/30 border border-indigo-200/80 rounded-2xl p-4 space-y-2 shadow-xs flex flex-col">
+              <div className="flex items-center gap-2 text-indigo-900 font-extrabold text-xs sm:text-sm">
+                <div className="p-1.5 rounded-lg bg-indigo-100 text-indigo-700">
+                  <Compass className="w-4 h-4" />
                 </div>
-              )}
+                <span>Styling &amp; Pairing Advice</span>
+              </div>
+              <p className="text-xs font-medium text-indigo-950/85 leading-relaxed flex-1">
+                {parsed.styling}
+              </p>
+            </div>
+          )}
 
-              {/* Care & Maintenance Card */}
-              {parsed.care && (
-                <div className="bg-emerald-50/60 border border-emerald-200/70 rounded-xl p-3 sm:p-3.5 space-y-1">
-                  <div className="flex items-center gap-1.5 text-emerald-900 font-extrabold text-[11px] sm:text-xs">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Care &amp; Maintenance</span>
-                  </div>
-                  <p className="text-[11.5px] sm:text-xs font-medium text-emerald-950/85 leading-relaxed">
-                    {parsed.care}
-                  </p>
+          {/* Card 3: Care & Maintenance */}
+          {parsed.care && (
+            <div className="bg-gradient-to-br from-emerald-50/80 to-emerald-50/30 border border-emerald-200/80 rounded-2xl p-4 space-y-2 shadow-xs flex flex-col">
+              <div className="flex items-center gap-2 text-emerald-900 font-extrabold text-xs sm:text-sm">
+                <div className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
+                  <ShieldCheck className="w-4 h-4" />
                 </div>
-              )}
-
-              {isExpanded && (
-                <button
-                  type="button"
-                  onClick={() => setIsExpanded(false)}
-                  className="w-full py-1 text-slate-500 hover:text-navy font-bold text-[10.5px] flex items-center justify-center gap-1 cursor-pointer"
-                >
-                  <span>Show Less</span>
-                  <ChevronUp className="w-3 h-3" />
-                </button>
-              )}
-            </>
+                <span>Care &amp; Maintenance</span>
+              </div>
+              <p className="text-xs font-medium text-emerald-950/85 leading-relaxed flex-1">
+                {parsed.care}
+              </p>
+            </div>
           )}
         </div>
       )}

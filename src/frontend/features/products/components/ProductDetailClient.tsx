@@ -112,6 +112,15 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   const [selectedVariant, setSelectedVariant] = useState<string>(product?.variants?.[0]?.id || '');
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [activeTab, setActiveTab] = useState<'specs' | 'reviews' | 'shipping'>('specs');
+
+  const scrollToTabs = (tabKey: 'specs' | 'reviews' | 'shipping' = 'specs') => {
+    setActiveTab(tabKey);
+    const el = document.getElementById('product-details-tabs');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   // Helper to extract variant color safely
   const getVColor = (v: any) => {
@@ -529,31 +538,36 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       />
 
       {/* Main Product Layout: 2 Columns on Desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-10 items-start">
-        {/* Left Column: Image Gallery with Floating Top-Right Wishlist Heart */}
-        <div className="lg:col-span-7 relative">
-          <ProductImageGallery images={displayImages} activeImageUrl={activeVariantImageUrl} />
-          <button
-            type="button"
-            onClick={handleToggleWishlist}
-            className={`absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2.5 sm:p-3 rounded-full shadow-md backdrop-blur-md transition-all duration-200 cursor-pointer active:scale-90 ${
-              isWishlisted
-                ? 'bg-rose-50/95 text-rose-600 ring-2 ring-rose-300'
-                : 'bg-white/90 text-slate-700 hover:text-rose-600 hover:bg-white'
-            }`}
-            title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
-            aria-label={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
-          >
-            <Heart
-              className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform ${
-                isWishlisted ? 'fill-rose-600 text-rose-600 scale-110' : ''
-              }`}
-            />
-          </button>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+        {/* Left Column: Image Gallery with Sticky Positioning & Floating Wishlist Heart */}
+        <div className="lg:col-span-6 lg:sticky lg:top-24 self-start">
+          <ProductImageGallery
+            images={displayImages}
+            activeImageUrl={activeVariantImageUrl}
+            renderOverlay={
+              <button
+                type="button"
+                onClick={handleToggleWishlist}
+                className={`absolute top-3 right-3 sm:top-4 sm:right-4 z-20 p-2.5 sm:p-3 rounded-full shadow-md backdrop-blur-md transition-all duration-200 cursor-pointer active:scale-90 ${
+                  isWishlisted
+                    ? 'bg-rose-50/95 text-rose-600 ring-2 ring-rose-300'
+                    : 'bg-white/90 text-slate-700 hover:text-rose-600 hover:bg-white'
+                }`}
+                title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                aria-label={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+              >
+                <Heart
+                  className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform ${
+                    isWishlisted ? 'fill-rose-600 text-rose-600 scale-110' : ''
+                  }`}
+                />
+              </button>
+            }
+          />
         </div>
 
         {/* Right Column: Product Info & Purchase Form */}
-        <div className="lg:col-span-5 space-y-3 sm:space-y-4">
+        <div className="lg:col-span-6 space-y-3 sm:space-y-4">
           {/* Header & Badges with Title & Price Side-by-Side (Mobile Space Optimization) */}
           <div className="space-y-1.5 sm:space-y-2 border-b border-slate-100 pb-2.5 sm:pb-3">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -797,8 +811,13 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
             </div>
           )}
 
-          {/* Structured Product Description Showcase */}
-          <ProductDescriptionShowcase description={product.description} />
+          {/* Structured Product Description Showcase (Compact Mode in Buy Box) */}
+          <ProductDescriptionShowcase
+            description={product.description}
+            variant="compact"
+            onViewMore={() => scrollToTabs('specs')}
+            additionalSpecs={specifications}
+          />
 
           {/* Action Buttons: Dynamic Add to Cart / Quantity Controller & Buy Now */}
           <div className="flex flex-row items-center gap-1.5 xs:gap-2 sm:gap-3 w-full flex-nowrap">
@@ -915,56 +934,88 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* DESKTOP ONLY: Product Specifications & Customer Reviews in Side Column (Fills empty side space) */}
-          <div className="hidden lg:block space-y-3.5 pt-2 border-t border-slate-100">
-            {/* 1. Product Specifications & Details */}
-            <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-2.5 shadow-xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <h2 className="text-xs font-extrabold text-navy flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-orange" /> Product Specifications &amp;
-                  Details
-                </h2>
-                <span className="text-[10.5px] text-slate-400 font-bold">
-                  100% Authentic Details
-                </span>
-              </div>
+      {/* FULL-WIDTH LUXURY TABS: Specifications, Customer Reviews & Shipping Assurances (Amazon / Myntra / Flipkart standard) */}
+      <section
+        id="product-details-tabs"
+        className="pt-6 sm:pt-8 border-t border-slate-200 space-y-5 sm:space-y-6"
+      >
+        {/* Modern Tab Bar */}
+        <div className="flex items-center gap-2 sm:gap-4 border-b border-slate-200 overflow-x-auto pb-px [scrollbar-width:none] [-ms-overflow-style:none]">
+          <button
+            type="button"
+            onClick={() => setActiveTab('specs')}
+            className={`pb-3.5 px-3 sm:px-5 text-xs sm:text-sm font-extrabold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'specs'
+                ? 'border-orange text-orange'
+                : 'border-transparent text-slate-500 hover:text-navy'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span>Product Specifications &amp; Details</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('reviews')}
+            className={`pb-3.5 px-3 sm:px-5 text-xs sm:text-sm font-extrabold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'reviews'
+                ? 'border-orange text-orange'
+                : 'border-transparent text-slate-500 hover:text-navy'
+            }`}
+          >
+            <Star className="w-4 h-4" />
+            <span>Customer Reviews ({reviewsList.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('shipping')}
+            className={`pb-3.5 px-3 sm:px-5 text-xs sm:text-sm font-extrabold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'shipping'
+                ? 'border-orange text-orange'
+                : 'border-transparent text-slate-500 hover:text-navy'
+            }`}
+          >
+            <Truck className="w-4 h-4" />
+            <span>Shipping, Returns &amp; Assurance</span>
+          </button>
+        </div>
 
-              <div className="grid grid-cols-2 xl:grid-cols-3 gap-1.5">
-                {specifications.map((spec, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-slate-50/70 border border-slate-100/90 rounded-lg p-2 flex flex-col justify-center"
-                  >
-                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider truncate">
-                      {spec.label}
-                    </span>
-                    <span
-                      className="font-bold text-navy mt-0.5 text-[11px] truncate"
-                      title={spec.value}
-                    >
-                      {spec.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* Tab 1: Product Specifications & Craftsmanship */}
+        {activeTab === 'specs' && (
+          <div className="pt-1">
+            <ProductDescriptionShowcase
+              description={product.description}
+              variant="full"
+              additionalSpecs={specifications}
+            />
+          </div>
+        )}
 
-            {/* 2 & 3. Customer Reviews & Write Review Form */}
-            <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <h2 className="text-xs font-extrabold text-navy">
-                  Customer Reviews ({reviewsList.length})
-                </h2>
+        {/* Tab 2: Customer Reviews & Ratings */}
+        {activeTab === 'reviews' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 pt-1">
+            {/* Left: Summary & Write Review Form */}
+            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h3 className="text-sm sm:text-base font-extrabold text-navy">Customer Rating</h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    Based on {reviewsList.length} verified reviews
+                  </p>
+                </div>
                 <ProductRating rating={product.rating} reviewCount={reviewsList.length} />
               </div>
 
               {/* Write Review Form */}
-              <form onSubmit={handleAddReview} className="space-y-2.5">
-                <h3 className="font-extrabold text-navy text-[11.5px]">Write a Customer Review</h3>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+              <form onSubmit={handleAddReview} className="space-y-3">
+                <h4 className="font-extrabold text-navy text-xs sm:text-sm">
+                  Write a Customer Review
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                   <div>
-                    <label className="block text-slate-700 font-bold mb-1 text-[10.5px]">
+                    <label className="block text-slate-700 font-bold mb-1 text-[11px]">
                       Your Name
                     </label>
                     <input
@@ -972,17 +1023,17 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                       placeholder="e.g. Ananya Sharma"
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-700 font-bold mb-1 text-[10.5px]">
+                    <label className="block text-slate-700 font-bold mb-1 text-[11px]">
                       Rating
                     </label>
                     <select
                       value={newRating}
                       onChange={(e) => setNewRating(Number(e.target.value))}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-900 font-extrabold focus:bg-white focus:border-orange focus:outline-none cursor-pointer"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-extrabold focus:bg-white focus:border-orange focus:outline-none cursor-pointer"
                     >
                       <option value={5}>⭐⭐⭐⭐⭐ 5 - Excellent</option>
                       <option value={4}>⭐⭐⭐⭐ 4 - Very Good</option>
@@ -994,182 +1045,128 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1 text-[10.5px]">
+                  <label className="block text-slate-700 font-bold mb-1 text-[11px]">
                     Your Review &amp; Feedback
                   </label>
                   <textarea
                     placeholder="Share details of your experience with fabric, fitting, and delivery..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    rows={2}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
+                    rows={3}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
                     required
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-orange hover:bg-orange/90 text-white text-xs font-extrabold rounded-lg shadow-xs transition-all cursor-pointer"
+                  className="px-5 py-2 bg-orange hover:bg-orange/90 text-white text-xs font-extrabold rounded-lg shadow-xs transition-all cursor-pointer"
                 >
                   Submit Verified Review
                 </button>
               </form>
+            </div>
 
-              {/* Reviews Feed */}
-              {reviewsList.length > 0 && (
-                <div className="space-y-2 pt-2 border-t border-slate-100 max-h-60 overflow-y-auto pr-1">
+            {/* Right: Reviews List */}
+            <div className="lg:col-span-7 space-y-3">
+              <h3 className="text-sm sm:text-base font-extrabold text-navy">
+                Verified Reviews ({reviewsList.length})
+              </h3>
+              {reviewsList.length > 0 ? (
+                <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
                   {reviewsList.map((r: any) => (
                     <div
                       key={r.id}
-                      className="p-2.5 bg-slate-50/70 border border-slate-100 rounded-lg space-y-1 text-xs"
+                      className="p-3.5 sm:p-4 bg-white border border-slate-200 rounded-xl space-y-1.5 shadow-xs"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-extrabold text-navy text-[11px]">{r.userName}</span>
-                        <span className="text-[10px] text-slate-400 font-medium">
+                        <span className="font-extrabold text-navy text-xs sm:text-sm">
+                          {r.userName}
+                        </span>
+                        <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
                           {new Date(r.createdAt).toLocaleDateString('en-IN')}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 text-amber-500 text-[11px] font-bold">
+                      <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
                         {'★'.repeat(r.rating)}
                         {'☆'.repeat(5 - r.rating)}
                       </div>
-                      <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                      <p className="text-xs text-slate-600 font-medium leading-relaxed">
                         {r.comment}
                       </p>
                     </div>
                   ))}
                 </div>
+              ) : (
+                <div className="p-8 text-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl space-y-2">
+                  <Star className="w-8 h-8 text-amber-400 mx-auto" />
+                  <h4 className="text-xs sm:text-sm font-extrabold text-navy">No reviews yet</h4>
+                  <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
+                    Be the first customer to share feedback and review this boutique collection!
+                  </p>
+                </div>
               )}
             </div>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* MOBILE ONLY: Product Specifications & Customer Reviews (Untouched for Mobile) */}
-      <div className="lg:hidden space-y-4 sm:space-y-6">
-        {/* COMPACT PRODUCT SPECIFICATIONS (2-Cols on Mobile, 3-Cols Tablet, 4-Cols Desktop) */}
-        <section className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-5 space-y-2.5 shadow-xs">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-navy flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange" /> Product Specifications
-              &amp; Details
-            </h2>
-            <span className="text-[10px] sm:text-[11px] text-slate-400 font-bold hidden sm:inline">
-              100% Authentic Details
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 sm:gap-2">
-            {specifications.map((spec, idx) => (
-              <div
-                key={idx}
-                className="bg-slate-50/70 border border-slate-100/90 rounded-lg sm:rounded-xl p-2 sm:p-2.5 flex flex-col justify-center"
-              >
-                <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 uppercase tracking-wider truncate">
-                  {spec.label}
-                </span>
-                <span
-                  className="font-bold text-navy mt-0.5 text-[10.5px] sm:text-xs truncate"
-                  title={spec.value}
-                >
-                  {spec.value}
-                </span>
+        {/* Tab 3: Shipping, Returns & Assurance */}
+        {activeTab === 'shipping' && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 pt-1">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-2 shadow-xs">
+              <div className="w-9 h-9 rounded-xl bg-orange/10 text-orange flex items-center justify-center">
+                <Truck className="w-5 h-5" />
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Customer Reviews Section */}
-        <section className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 border-t border-slate-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base sm:text-xl font-extrabold text-navy">
-              Customer Reviews ({reviewsList.length})
-            </h2>
-            <ProductRating rating={product.rating} reviewCount={reviewsList.length} />
-          </div>
-
-          {/* Add Review Form */}
-          <form
-            onSubmit={handleAddReview}
-            className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 space-y-2.5 sm:space-y-3 shadow-xs"
-          >
-            <h3 className="font-extrabold text-navy text-xs sm:text-sm">Write a Customer Review</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-xs">
-              <div>
-                <label className="block text-slate-700 font-bold mb-1 text-[11px]">Your Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Ananya Sharma"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-slate-700 font-bold mb-1 text-[11px]">Rating</label>
-                <select
-                  value={newRating}
-                  onChange={(e) => setNewRating(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-extrabold focus:bg-white focus:border-orange focus:outline-none cursor-pointer"
-                >
-                  <option value={5}>⭐⭐⭐⭐⭐ 5 - Excellent</option>
-                  <option value={4}>⭐⭐⭐⭐ 4 - Very Good</option>
-                  <option value={3}>⭐⭐⭐ 3 - Good</option>
-                  <option value={2}>⭐⭐ 2 - Average</option>
-                  <option value={1}>⭐ 1 - Poor</option>
-                </select>
-              </div>
+              <h4 className="font-extrabold text-navy text-xs sm:text-sm">
+                Pan-India Express Delivery
+              </h4>
+              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                Free shipping on all prepaid orders. Dispatched within 24-48 hours via top express
+                couriers with live WhatsApp &amp; SMS tracking.
+              </p>
             </div>
 
-            <div>
-              <label className="block text-slate-700 font-bold mb-1 text-[11px]">
-                Your Review &amp; Feedback
-              </label>
-              <textarea
-                placeholder="Share details of your experience with fabric, fitting, and delivery..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                rows={2}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 sm:p-2.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-orange focus:outline-none"
-                required
-              />
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-2 shadow-xs">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <RotateCcw className="w-5 h-5" />
+              </div>
+              <h4 className="font-extrabold text-navy text-xs sm:text-sm">
+                7-Day Easy Returns &amp; Exchange
+              </h4>
+              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                If the size doesn’t fit or you’re not satisfied, request an easy doorstep exchange
+                or return within 7 days of delivery.
+              </p>
             </div>
 
-            <button
-              type="submit"
-              className="px-4 sm:px-5 py-2 bg-orange hover:bg-orange/90 text-white text-xs font-extrabold rounded-lg shadow-xs transition-all cursor-pointer"
-            >
-              Submit Verified Review
-            </button>
-          </form>
-
-          {/* Reviews Feed - Only render when reviews exist to eliminate empty div gaps */}
-          {reviewsList.length > 0 && (
-            <div className="space-y-2 sm:space-y-3">
-              {reviewsList.map((r: any) => (
-                <div
-                  key={r.id}
-                  className="p-3 sm:p-4 bg-white border border-slate-200 rounded-xl space-y-1.5 shadow-xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-extrabold text-navy text-xs sm:text-sm">
-                      {r.userName}
-                    </span>
-                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
-                      {new Date(r.createdAt).toLocaleDateString('en-IN')}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
-                    {'★'.repeat(r.rating)}
-                    {'☆'.repeat(5 - r.rating)}
-                  </div>
-                  <p className="text-xs text-slate-600 font-medium leading-relaxed">{r.comment}</p>
-                </div>
-              ))}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-2 shadow-xs">
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h4 className="font-extrabold text-navy text-xs sm:text-sm">
+                100% Verified Boutique Quality
+              </h4>
+              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                Directly sourced from trusted boutiques. Hand-inspected for fabric quality, stitch
+                finishing, and exact measurements.
+              </p>
             </div>
-          )}
-        </section>
-      </div>
+
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 space-y-2 shadow-xs">
+              <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <h4 className="font-extrabold text-navy text-xs sm:text-sm">
+                Secure &amp; Protected Checkout
+              </h4>
+              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                100% safe payments powered by SSL 256-bit encryption. UPI (GPay, PhonePe), Cards,
+                NetBanking, and Cash on Delivery supported.
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Related Products / More to Explore (Amazon / Flipkart / Myntra style) */}
       {relatedProducts && relatedProducts.length > 0 && (

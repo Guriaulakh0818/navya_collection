@@ -10,12 +10,14 @@ type ProductImageGalleryProps = {
   images: ProductImage[];
   activeImageUrl?: string;
   className?: string;
+  renderOverlay?: React.ReactNode;
 };
 
 export function ProductImageGallery({
   images,
   activeImageUrl,
   className,
+  renderOverlay,
 }: ProductImageGalleryProps) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -37,7 +39,7 @@ export function ProductImageGallery({
       <div
         className={
           className ||
-          'relative aspect-[3/4] rounded-3xl overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-orange-50/20 flex items-center justify-center p-8 border border-slate-200'
+          'relative aspect-[3/4] w-full max-w-[440px] max-h-[520px] mx-auto rounded-3xl overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-orange-50/20 flex items-center justify-center p-8 border border-slate-200'
         }
       >
         <div className="text-center space-y-2">
@@ -94,17 +96,20 @@ export function ProductImageGallery({
         onTouchEnd={onTouchEnd}
         className={
           className ||
-          'relative aspect-[3/4] w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-100 border border-slate-200 shadow-sm group touch-pan-y'
+          'relative aspect-[3/4] w-full max-w-[420px] lg:max-w-[450px] xl:max-w-[480px] max-h-[480px] sm:max-h-[520px] lg:max-h-[550px] mx-auto overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-100 border border-slate-200 shadow-sm group touch-pan-y'
         }
       >
         <Image
           src={activeImg.url}
           alt={activeImg.alt || 'Product image'}
           fill
-          className="object-cover transition-all duration-500 group-hover:scale-105 select-none overflow-hidden [text-indent:-9999px]"
-          sizes="(min-width: 1024px) 40vw, 100vw"
+          className="object-cover object-top transition-all duration-500 group-hover:scale-105 select-none overflow-hidden [text-indent:-9999px]"
+          sizes="(min-width: 1024px) 35vw, 100vw"
           priority
         />
+
+        {/* Floating Custom Overlay (e.g. Wishlist button pinned directly to photo) */}
+        {renderOverlay}
 
         {/* Previous Image Arrow */}
         {images.length > 1 && (
@@ -142,10 +147,10 @@ export function ProductImageGallery({
 
       {/* Touch Scrollable Thumbnail Bar */}
       {images.length > 1 && (
-        <div className="relative">
+        <div className="relative max-w-[420px] lg:max-w-[450px] xl:max-w-[480px] mx-auto">
           <div
             ref={thumbnailRef}
-            className="flex items-center gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scroll-smooth"
+            className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scroll-smooth"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {images.map((img, idx) => (
@@ -153,7 +158,7 @@ export function ProductImageGallery({
                 key={img.id || idx}
                 type="button"
                 onClick={() => setActiveIdx(idx)}
-                className={`relative h-14 w-14 sm:h-18 sm:w-18 shrink-0 overflow-hidden rounded-xl sm:rounded-2xl border-2 transition-all cursor-pointer snap-start ${
+                className={`relative h-13 w-13 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-xl sm:rounded-2xl border-2 transition-all cursor-pointer snap-start ${
                   activeIdx === idx
                     ? 'border-navy shadow-md scale-95 ring-2 ring-navy/30 opacity-100'
                     : 'border-slate-200 opacity-70 hover:opacity-100'
@@ -163,7 +168,7 @@ export function ProductImageGallery({
                   src={img.url}
                   alt={img.alt || `Thumbnail ${idx + 1}`}
                   fill
-                  className="object-cover transition-all duration-300 select-none overflow-hidden [text-indent:-9999px]"
+                  className="object-cover object-top transition-all duration-300 select-none overflow-hidden [text-indent:-9999px]"
                 />
               </button>
             ))}
