@@ -179,7 +179,6 @@ export const CATEGORY_TAXONOMY: MainCategoryOption[] = [
           { id: 'cat_men_watches', name: 'Watches', slug: 'men-watches' },
           { id: 'cat_men_sunglasses', name: 'Sunglasses', slug: 'men-sunglasses' },
           { id: 'cat_men_caps_hats', name: 'Caps & Hats', slug: 'men-caps-hats' },
-          { id: 'cat_men_bags', name: 'Bags & Backpacks', slug: 'men-bags-backpacks' },
           { id: 'cat_men_ties', name: 'Ties & Pocket Squares', slug: 'men-ties' },
           { id: 'cat_men_jewellery', name: 'Jewellery', slug: 'men-jewellery' },
           {

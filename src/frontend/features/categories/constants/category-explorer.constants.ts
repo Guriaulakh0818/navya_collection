@@ -502,13 +502,6 @@ export const MAIN_CATEGORY_GROUPS: MainCategoryGroup[] = [
             queryParam: 'category=men-caps-hats',
           },
           {
-            id: 'men_bags',
-            name: 'Bags & Backpacks',
-            slug: 'men-bags-backpacks',
-            image: '/images/categories/men-all-accessories.jpg',
-            queryParam: 'category=men-bags-backpacks',
-          },
-          {
             id: 'men_ties',
             name: 'Ties & Pocket Squares',
             slug: 'men-ties',
