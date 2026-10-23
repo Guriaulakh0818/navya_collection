@@ -32,6 +32,7 @@ import { useToast } from '@/providers';
 import { useCartStore, useWishlistStore } from '@/stores';
 
 import { ProductCard } from './ProductCard';
+import { ProductDescriptionShowcase } from './ProductDescriptionShowcase';
 import { ProductImageGallery } from './ProductImageGallery';
 import { ProductRating } from './ProductRating';
 
@@ -796,10 +797,8 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
             </div>
           )}
 
-          {/* Product Description */}
-          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-            {product.description}
-          </p>
+          {/* Structured Product Description Showcase */}
+          <ProductDescriptionShowcase description={product.description} />
 
           {/* Action Buttons: Dynamic Add to Cart / Quantity Controller & Buy Now */}
           <div className="flex flex-row items-center gap-1.5 xs:gap-2 sm:gap-3 w-full flex-nowrap">
