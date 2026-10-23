@@ -402,7 +402,6 @@ export const CATEGORY_TAXONOMY: MainCategoryOption[] = [
             name: 'Scarves & Stoles',
             slug: 'women-scarves-stoles',
           },
-          { id: 'cat_women_hair_acc', name: 'Hair Accessories', slug: 'women-hair-accessories' },
           {
             id: 'cat_women_all_accessories',
             name: "All Women's Accessories",
