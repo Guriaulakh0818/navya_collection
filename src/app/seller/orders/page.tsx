@@ -53,20 +53,36 @@ export default function SellerOrdersPage() {
   const [isUploadingProof, setIsUploadingProof] = useState(false);
   const [proofNotes, setProofNotes] = useState('');
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const fetchOrders = useCallback(async () => {
     setIsLoading(true);
+    setErrorMessage(null);
     try {
       const url = new URL('/api/v1/seller/orders', window.location.origin);
       if (activeTab !== 'ALL') url.searchParams.set('status', activeTab);
       if (searchQuery) url.searchParams.set('q', searchQuery);
+      url.searchParams.set('_t', Date.now().toString());
 
-      const res = await fetch(url.toString());
+      const res = await fetch(url.toString(), {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+        },
+      });
       const data = await res.json();
-      if (data.success && data.data) {
+      if (data.success && Array.isArray(data.data)) {
         setOrders(data.data);
+      } else {
+        setOrders([]);
+        if (!data.success && data.message) {
+          setErrorMessage(data.message);
+        }
       }
     } catch (err: any) {
       console.error('Failed to fetch vendor orders:', err);
+      setErrorMessage(err.message || 'Failed to connect to server.');
     } finally {
       setIsLoading(false);
     }
@@ -196,18 +212,48 @@ export default function SellerOrdersPage() {
           </p>
         </div>
 
-        {/* Search Input */}
-        <form onSubmit={handleSearchSubmit} className="relative w-full md:w-80">
-          <input
-            type="text"
-            placeholder="Search Order # or Buyer..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs text-navy focus:bg-white focus:border-orange focus:outline-none transition-all"
-          />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-        </form>
+        <div className="flex items-center gap-2.5 w-full md:w-auto">
+          {/* Refresh Button */}
+          <button
+            type="button"
+            onClick={() => fetchOrders()}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-navy font-bold rounded-xl text-xs transition-colors cursor-pointer shrink-0"
+            title="Refresh Orders"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
+
+          {/* Search Input */}
+          <form onSubmit={handleSearchSubmit} className="relative w-full md:w-80">
+            <input
+              type="text"
+              placeholder="Search Order # or Buyer..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs text-navy focus:bg-white focus:border-orange focus:outline-none transition-all"
+            />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          </form>
+        </div>
       </div>
+
+      {/* Error Alert Banner if any */}
+      {errorMessage && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-xs text-amber-800">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+          <button
+            onClick={() => fetchOrders()}
+            className="text-xs font-bold underline cursor-pointer ml-3"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Status Filter Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
