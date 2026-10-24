@@ -4,6 +4,7 @@
 import {
   Building2,
   Check,
+  ChevronDown,
   ChevronRight,
   Heart,
   HelpCircle,
@@ -38,6 +39,8 @@ import { ProductRating } from './ProductRating';
 interface ProductDetailClientProps {
   product: any;
   relatedProducts?: any[];
+  shopProducts?: any[];
+  trendingProducts?: any[];
 }
 
 function getCleanVariantLabel(v: any, productName?: string): { main: string; sub?: string } {
@@ -90,7 +93,12 @@ const COLOR_HEX_MAP: Record<string, string> = {
   Multicolor: '#6366f1',
 };
 
-export function ProductDetailClient({ product, relatedProducts = [] }: ProductDetailClientProps) {
+export function ProductDetailClient({
+  product,
+  relatedProducts = [],
+  shopProducts = [],
+  trendingProducts = [],
+}: ProductDetailClientProps) {
   const addItem = useCartStore((s) => s.addItem);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
@@ -111,6 +119,75 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [activeTab, setActiveTab] = useState<'specs' | 'reviews' | 'shipping'>('specs');
+
+  // --- Amazon / Flipkart / Myntra / Meesho style Discovery & Recommendation States ---
+  const [exploreFilter, setExploreFilter] = useState<
+    'all' | 'top_rated' | 'deals' | 'under_999' | 'under_499'
+  >('all');
+  const [visibleExploreCount, setVisibleExploreCount] = useState(10);
+
+  // 1. Similar Products (Category matches excluding current product)
+  const similarItems = useMemo(() => {
+    return (relatedProducts || []).filter((p: any) => p && p.id !== product?.id);
+  }, [relatedProducts, product?.id]);
+
+  // 2. Boutique Store Products (Same boutique, excluding current product and duplicates)
+  const boutiqueItems = useMemo(() => {
+    const similarIds = new Set(similarItems.map((p: any) => p.id));
+    return (shopProducts || []).filter(
+      (p: any) => p && p.id !== product?.id && !similarIds.has(p.id),
+    );
+  }, [shopProducts, product?.id, similarItems]);
+
+  // 3. Trending Items (Top rated/popular styles across JiivaaKart)
+  const trendingItems = useMemo(() => {
+    const seenIds = new Set([
+      product?.id,
+      ...similarItems.map((p: any) => p.id),
+      ...boutiqueItems.map((p: any) => p.id),
+    ]);
+    return (trendingProducts || []).filter((p: any) => p && !seenIds.has(p.id));
+  }, [trendingProducts, product?.id, similarItems, boutiqueItems]);
+
+  // 4. Combined Discovery Feed for Continuous Browsing
+  const allDiscoveryProducts = useMemo(() => {
+    const map = new Map<string, any>();
+    for (const p of [
+      ...(trendingProducts || []),
+      ...(relatedProducts || []),
+      ...(shopProducts || []),
+    ]) {
+      if (p && p.id && p.id !== product?.id && !map.has(p.id)) {
+        map.set(p.id, p);
+      }
+    }
+    return Array.from(map.values());
+  }, [trendingProducts, relatedProducts, shopProducts, product?.id]);
+
+  // Quick Filtered feed
+  const filteredExploreProducts = useMemo(() => {
+    return allDiscoveryProducts.filter((p: any) => {
+      if (exploreFilter === 'top_rated') {
+        return (p.rating ?? 0) >= 4;
+      }
+      if (exploreFilter === 'deals') {
+        if (!p.compareAtPrice || p.compareAtPrice <= p.price) return false;
+        const discountPercent = ((p.compareAtPrice - p.price) / p.compareAtPrice) * 100;
+        return discountPercent >= 25;
+      }
+      if (exploreFilter === 'under_999') {
+        return Number(p.price || 0) <= 999;
+      }
+      if (exploreFilter === 'under_499') {
+        return Number(p.price || 0) <= 499;
+      }
+      return true;
+    });
+  }, [allDiscoveryProducts, exploreFilter]);
+
+  const displayedExploreProducts = useMemo(() => {
+    return filteredExploreProducts.slice(0, visibleExploreCount);
+  }, [filteredExploreProducts, visibleExploreCount]);
 
   const scrollToTabs = (tabKey: 'specs' | 'reviews' | 'shipping' = 'specs') => {
     setActiveTab(tabKey);
@@ -1170,9 +1247,9 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
         )}
       </section>
 
-      {/* Related Products / More to Explore (Amazon / Flipkart / Myntra style) */}
-      {relatedProducts && relatedProducts.length > 0 && (
-        <section className="space-y-3 sm:space-y-4 pt-3.5 sm:pt-4 border-t border-slate-200">
+      {/* 1. SIMILAR PRODUCTS SECTION (Category Recommendations) */}
+      {similarItems.length > 0 && (
+        <section className="space-y-3.5 sm:space-y-4 pt-4 border-t border-slate-200">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-2">
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-orange/10 border border-orange/20 rounded-full text-orange font-bold text-[10.5px] sm:text-xs uppercase tracking-wider mb-1 sm:mb-1.5">
@@ -1189,18 +1266,228 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
             {product.category?.slug && (
               <Link
                 href={`/category/${product.category.slug}`}
-                className="inline-flex items-center gap-1 text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors self-start sm:self-auto"
+                className="inline-flex items-center gap-1 text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors self-start sm:self-auto group"
               >
                 <span>View All In {product.category.name}</span>
-                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             )}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-            {relatedProducts.map((relProd: any) => (
-              <ProductCard key={relProd.id} product={relProd} />
+            {similarItems.slice(0, 10).map((relProd: any) => (
+              <ProductCard key={`sim-${relProd.id}`} product={relProd} />
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* 2. MORE FROM THIS BOUTIQUE (Exclusive Store Collection) */}
+      {boutiqueItems.length > 0 && product.shop && (
+        <section className="space-y-3.5 sm:space-y-4 pt-6 border-t border-slate-200/90">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-2">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-navy/10 border border-navy/20 rounded-full text-navy font-bold text-[10.5px] sm:text-xs uppercase tracking-wider mb-1 sm:mb-1.5">
+                <Building2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-navy" />
+                <span>Boutique Showcase</span>
+              </div>
+              <h2 className="text-lg sm:text-2xl font-black text-navy tracking-tight leading-tight">
+                More From {product.shop.name || 'This Boutique'}
+              </h2>
+              <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
+                Handcrafted & curated styles directly from{' '}
+                {product.shop.city ? `${product.shop.city}, ` : ''}verified boutique partner
+              </p>
+            </div>
+            {product.shop.slug && (
+              <Link
+                href={`/shops/${product.shop.slug}`}
+                className="inline-flex items-center gap-1 text-xs sm:text-sm font-extrabold text-navy hover:text-orange transition-colors self-start sm:self-auto group"
+              >
+                <span>Explore Boutique Store</span>
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+            {boutiqueItems.slice(0, 5).map((shopProd: any) => (
+              <ProductCard key={`shop-${shopProd.id}`} product={shopProd} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 3. TRENDING PICKS & BESTSELLERS ACROSS JIIVAAKART */}
+      {trendingItems.length > 0 && (
+        <section className="space-y-3.5 sm:space-y-4 pt-6 border-t border-slate-200/90">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-2">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-700 font-bold text-[10.5px] sm:text-xs uppercase tracking-wider mb-1 sm:mb-1.5">
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500" />
+                <span>Trending Now</span>
+              </div>
+              <h2 className="text-lg sm:text-2xl font-black text-navy tracking-tight leading-tight">
+                Trending Styles & Best Sellers
+              </h2>
+              <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
+                Most loved picks across Indian fashion boutiques this week
+              </p>
+            </div>
+            <Link
+              href="/shop?filter=trending"
+              className="inline-flex items-center gap-1 text-xs sm:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors self-start sm:self-auto group"
+            >
+              <span>Explore All Trending</span>
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+            {trendingItems.slice(0, 5).map((trendProd: any) => (
+              <ProductCard key={`trend-${trendProd.id}`} product={trendProd} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 4. CONTINUOUS DISCOVERY FEED (Amazon / Flipkart / Myntra / Meesho style) */}
+      {allDiscoveryProducts.length > 0 && (
+        <section className="space-y-4 sm:space-y-5 pt-8 pb-4 border-t-2 border-slate-200">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 bg-orange/10 border border-orange/20 rounded-full text-orange font-bold text-[10.5px] sm:text-xs uppercase tracking-wider mb-1 sm:mb-1.5">
+                <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span>Endless Discovery</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-navy tracking-tight leading-tight">
+                Explore More For You
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
+                Customers who viewed this product also loved exploring these curated styles
+              </p>
+            </div>
+
+            {/* Interactive Filter Pills */}
+            <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none]">
+              {[
+                { id: 'all', label: '🔥 All For You' },
+                { id: 'top_rated', label: '⭐ Top Rated' },
+                { id: 'deals', label: '🏷️ 25%+ Off' },
+                { id: 'under_999', label: '💰 Under ₹999' },
+                { id: 'under_499', label: '✨ Under ₹499' },
+              ].map((filterTab) => (
+                <button
+                  key={filterTab.id}
+                  type="button"
+                  onClick={() => {
+                    setExploreFilter(filterTab.id as any);
+                    setVisibleExploreCount(10);
+                  }}
+                  className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer active:scale-95 ${
+                    exploreFilter === filterTab.id
+                      ? 'bg-navy text-white shadow-xs ring-2 ring-navy/20'
+                      : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  {filterTab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Product Discovery Grid */}
+          {displayedExploreProducts.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3.5">
+              {displayedExploreProducts.map((expProd: any) => (
+                <ProductCard key={`exp-${expProd.id}`} product={expProd} />
+              ))}
+            </div>
+          ) : (
+            <div className="py-10 text-center bg-white rounded-2xl border border-slate-200 p-6">
+              <p className="text-sm font-bold text-slate-600">
+                No styles match this quick filter right now.
+              </p>
+              <button
+                type="button"
+                onClick={() => setExploreFilter('all')}
+                className="mt-3 px-4 py-2 bg-orange text-white text-xs font-bold rounded-xl hover:bg-orange-600 transition-all cursor-pointer"
+              >
+                Show All Recommended Styles
+              </button>
+            </div>
+          )}
+
+          {/* Load More Button or Completion Banner */}
+          {filteredExploreProducts.length > visibleExploreCount ? (
+            <div className="pt-4 flex flex-col items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => setVisibleExploreCount((prev) => prev + 10)}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-orange text-navy-900 hover:text-white font-extrabold text-xs sm:text-sm rounded-2xl border-2 border-slate-200 hover:border-orange shadow-sm hover:shadow-md transition-all active:scale-98 cursor-pointer"
+              >
+                <span>
+                  Load More Styles ({filteredExploreProducts.length - visibleExploreCount} More)
+                </span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              <p className="text-[11px] text-slate-400 font-semibold">
+                Showing {displayedExploreProducts.length} of {filteredExploreProducts.length}{' '}
+                curated products
+              </p>
+            </div>
+          ) : (
+            displayedExploreProducts.length > 0 && (
+              <div className="pt-4 pb-2 text-center">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 text-slate-600 text-xs font-bold">
+                  <span>🎉 You&apos;ve explored all recommendations in this filter!</span>
+                </span>
+              </div>
+            )
+          )}
+
+          {/* Bottom Quick-Category Discovery Strip */}
+          <div className="mt-8 rounded-2xl bg-gradient-to-r from-navy-900 via-navy-800 to-navy-900 p-5 sm:p-6 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <h3 className="text-base sm:text-lg font-black text-white">
+                Looking for something else?
+              </h3>
+              <p className="text-xs text-white/80 mt-0.5">
+                Explore thousands of local boutique fashion styles across India.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Link
+                href="/category/men"
+                className="px-3.5 py-1.5 bg-white/10 hover:bg-white hover:text-navy-900 text-white font-bold text-xs rounded-xl border border-white/20 transition-all backdrop-blur-xs"
+              >
+                Men
+              </Link>
+              <Link
+                href="/category/women"
+                className="px-3.5 py-1.5 bg-white/10 hover:bg-white hover:text-navy-900 text-white font-bold text-xs rounded-xl border border-white/20 transition-all backdrop-blur-xs"
+              >
+                Women
+              </Link>
+              <Link
+                href="/category/kids"
+                className="px-3.5 py-1.5 bg-white/10 hover:bg-white hover:text-navy-900 text-white font-bold text-xs rounded-xl border border-white/20 transition-all backdrop-blur-xs"
+              >
+                Kids
+              </Link>
+              <Link
+                href="/shops"
+                className="px-3.5 py-1.5 bg-white/10 hover:bg-white hover:text-navy-900 text-white font-bold text-xs rounded-xl border border-white/20 transition-all backdrop-blur-xs"
+              >
+                Boutiques
+              </Link>
+              <Link
+                href="/shop"
+                className="px-4 py-1.5 bg-orange hover:bg-orange-600 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all active:scale-95"
+              >
+                Explore All →
+              </Link>
+            </div>
           </div>
         </section>
       )}

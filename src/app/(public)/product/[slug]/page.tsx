@@ -157,94 +157,40 @@ async function getFormattedProduct(slug: string) {
   return null;
 }
 
-async function getRelatedProducts(
+async function getProductDiscoveryData(
   productId: string,
   categoryId?: string | null,
   shopId?: string | null,
 ) {
   try {
-    const whereConditions: any = {
-      id: { not: productId },
-      deletedAt: null,
-      status: 'active',
-    };
-
-    if (categoryId) {
-      whereConditions.categoryId = categoryId;
-    }
-
-    let prods = await prisma.product.findMany({
-      where: whereConditions,
-      take: 8,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        images: {
-          where: { deletedAt: null },
-          orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
-        },
-        variants: {
-          where: { deletedAt: null },
-        },
-        shop: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            logo: true,
-            verificationBadge: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
+    const baseInclude = {
+      images: {
+        where: { deletedAt: null },
+        orderBy: [{ isPrimary: 'desc' as const }, { sortOrder: 'asc' as const }],
+      },
+      variants: {
+        where: { deletedAt: null },
+      },
+      shop: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          logo: true,
+          verificationBadge: true,
+          city: true,
         },
       },
-    });
-
-    // If fewer than 4 items from same category, fetch more products from other categories/shops
-    if (prods.length < 4) {
-      const existingIds = [productId, ...prods.map((p) => p.id)];
-      const fallbackProds = await prisma.product.findMany({
-        where: {
-          id: { notIn: existingIds },
-          deletedAt: null,
-          status: 'active',
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
         },
-        take: 8 - prods.length,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          images: {
-            where: { deletedAt: null },
-            orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
-          },
-          variants: {
-            where: { deletedAt: null },
-          },
-          shop: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-              logo: true,
-              verificationBadge: true,
-            },
-          },
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-        },
-      });
-      prods = [...prods, ...fallbackProds];
-    }
+      },
+    };
 
-    return prods.map((p) => ({
+    const formatProduct = (p: any) => ({
       id: p.id,
       name: p.name,
       slug: p.slug,
@@ -276,6 +222,7 @@ async function getRelatedProducts(
             slug: p.shop.slug,
             logo: p.shop.logo,
             verificationBadge: p.shop.verificationBadge || 'NONE',
+            city: p.shop.city || null,
           }
         : null,
       category: p.category
@@ -285,10 +232,85 @@ async function getRelatedProducts(
             slug: p.category.slug,
           }
         : null,
-    }));
+    });
+
+    // 1. Similar Category Products (Up to 12)
+    const similarPromise = categoryId
+      ? prisma.product
+          .findMany({
+            where: {
+              id: { not: productId },
+              categoryId,
+              deletedAt: null,
+              status: 'active',
+            },
+            take: 12,
+            orderBy: { createdAt: 'desc' },
+            include: baseInclude,
+          })
+          .catch(() => [])
+      : Promise.resolve([]);
+
+    // 2. Same Boutique Store Products (Up to 8)
+    const shopPromise = shopId
+      ? prisma.product
+          .findMany({
+            where: {
+              id: { not: productId },
+              shopId,
+              deletedAt: null,
+              status: 'active',
+            },
+            take: 8,
+            orderBy: { createdAt: 'desc' },
+            include: baseInclude,
+          })
+          .catch(() => [])
+      : Promise.resolve([]);
+
+    // 3. Trending across JiivaaKart (Up to 30)
+    const trendingPromise = prisma.product
+      .findMany({
+        where: {
+          id: { not: productId },
+          deletedAt: null,
+          status: 'active',
+        },
+        take: 30,
+        orderBy: [{ rating: 'desc' }, { createdAt: 'desc' }],
+        include: baseInclude,
+      })
+      .catch(() => []);
+
+    const [similarRaw, shopRaw, trendingRaw] = await Promise.all([
+      similarPromise,
+      shopPromise,
+      trendingPromise,
+    ]);
+
+    let similarProds = similarRaw.map(formatProduct);
+    const shopProducts = shopRaw.map(formatProduct);
+    const trendingProducts = trendingRaw.map(formatProduct);
+
+    // If similar category products are fewer than 6, supplement from trending
+    if (similarProds.length < 6) {
+      const existingIds = new Set([productId, ...similarProds.map((p) => p.id)]);
+      const backfill = trendingProducts.filter((p) => !existingIds.has(p.id));
+      similarProds = [...similarProds, ...backfill.slice(0, 10 - similarProds.length)];
+    }
+
+    return {
+      relatedProducts: similarProds,
+      shopProducts,
+      trendingProducts,
+    };
   } catch (error) {
-    console.error('Error fetching related products:', error);
-    return [];
+    console.error('Error fetching product discovery data:', error);
+    return {
+      relatedProducts: [],
+      shopProducts: [],
+      trendingProducts: [],
+    };
   }
 }
 
@@ -317,7 +339,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const relatedProducts = await getRelatedProducts(
+  const { relatedProducts, shopProducts, trendingProducts } = await getProductDiscoveryData(
     product.id,
     product.category?.id,
     product.shop?.id,
@@ -329,7 +351,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16 pt-4 font-sans">
       <JsonLd data={jsonLdSchemas} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ProductDetailClient key={product.id} product={product} relatedProducts={relatedProducts} />
+        <ProductDetailClient
+          key={product.id}
+          product={product}
+          relatedProducts={relatedProducts}
+          shopProducts={shopProducts}
+          trendingProducts={trendingProducts}
+        />
       </div>
     </div>
   );
