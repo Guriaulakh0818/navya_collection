@@ -2,6 +2,7 @@ import { OrderStatus, ShippingStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/backend/lib/session';
+import { CommissionService } from '@/backend/services/commission.service';
 import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { AwbService } from '@/backend/services/shipping/awb.service';
 import { LabelService } from '@/backend/services/shipping/label.service';
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const isAdmin = ['ADMIN', 'SUPER_ADMIN'].includes(currentUser.role);
+    const isAdmin = ['ADMIN', 'SUPER_ADMIN', 'OWNER', 'SUPERVISOR'].includes(currentUser.role);
     const { searchParams } = new URL(request.url);
     const shopIdParam = searchParams.get('shopId');
     const status = searchParams.get('status');
@@ -118,24 +119,150 @@ export async function GET(request: NextRequest) {
 
     let targetShopId: string | null = null;
 
-    if (isAdmin && shopIdParam) {
-      targetShopId = shopIdParam;
-    } else {
+    if (isAdmin && shopIdParam && shopIdParam !== 'all') {
       const shop = await prisma.shop.findFirst({
-        where: { ownerId: currentUser.id, deletedAt: null },
+        where: {
+          deletedAt: null,
+          OR: [{ id: shopIdParam }, { slug: shopIdParam }, { shopCode: shopIdParam }],
+        },
         select: { id: true },
       });
+      targetShopId = shop?.id || shopIdParam;
+    } else {
+      let shop = await prisma.shop.findFirst({
+        where: {
+          deletedAt: null,
+          OR: [
+            { ownerId: currentUser.id },
+            ...(currentUser.email ? [{ email: currentUser.email }] : []),
+          ],
+        },
+        select: { id: true },
+      });
+
+      if (!shop && isAdmin) {
+        shop = await prisma.shop.findFirst({
+          where: {
+            deletedAt: null,
+            OR: [{ slug: 'navya-collection' }, { status: 'APPROVED' }],
+          },
+          select: { id: true },
+        });
+      }
+
       targetShopId = shop?.id || null;
     }
 
-    if (!targetShopId) {
+    if (!targetShopId && isAdmin) {
+      const anyShop = await prisma.shop.findFirst({
+        where: { deletedAt: null },
+        select: { id: true },
+      });
+      targetShopId = anyShop?.id || null;
+    }
+
+    if (!targetShopId && !(isAdmin && shopIdParam === 'all')) {
       return NextResponse.json(
         { success: false, message: 'No active seller shop associated with your account.' },
         { status: 400 },
       );
     }
 
-    const where: any = { shopId: targetShopId };
+    // 0. Self-healing backfill:
+    // If master orders exist with items for this shop (or unassigned items) but no VendorOrder,
+    // automatically generate the VendorOrder and link the items so past orders show up immediately.
+    if (targetShopId) {
+      try {
+        const orphanOrders = await prisma.order.findMany({
+          where: {
+            vendorOrders: {
+              none: { shopId: targetShopId },
+            },
+            OR: [
+              { items: { some: { shopId: targetShopId } } },
+              { items: { some: { product: { shopId: targetShopId } } } },
+              { items: { some: { shopId: null, vendorOrderId: null } } },
+            ],
+          },
+          include: {
+            items: {
+              include: {
+                product: { select: { id: true, shopId: true, price: true, compareAtPrice: true } },
+              },
+            },
+          },
+          take: 50,
+        });
+
+        for (const orphan of orphanOrders) {
+          const matchingItems = orphan.items.filter(
+            (it) =>
+              it.shopId === targetShopId ||
+              it.product?.shopId === targetShopId ||
+              (!it.shopId && !it.vendorOrderId),
+          );
+
+          if (matchingItems.length > 0) {
+            const sSubtotal = matchingItems.reduce(
+              (sum, it) => sum + Number(it.total || Number(it.price) * it.quantity),
+              0,
+            );
+            const totalMrp = matchingItems.reduce(
+              (sum, it) =>
+                sum + Number(it.mrp || it.product?.compareAtPrice || it.price) * it.quantity,
+              0,
+            );
+            const commAmount = CommissionService.roundMoney(totalMrp * 0.1);
+            const vendorPayout = CommissionService.roundMoney(Math.max(0, sSubtotal - commAmount));
+            const shopSuffix =
+              targetShopId
+                .replace(/[^a-zA-Z0-9]/g, '')
+                .slice(-4)
+                .toUpperCase() || 'VEND';
+            const vOrderNumber = `${orphan.orderNumber}-${shopSuffix}`;
+
+            const existingVO = await prisma.vendorOrder.findUnique({
+              where: { vendorOrderNumber: vOrderNumber },
+            });
+
+            const uniqueVOrderNumber = existingVO
+              ? `${vOrderNumber}-${Math.floor(100 + Math.random() * 900)}`
+              : vOrderNumber;
+
+            const newVendorOrder = await prisma.vendorOrder.create({
+              data: {
+                masterOrderId: orphan.id,
+                shopId: targetShopId,
+                vendorOrderNumber: uniqueVOrderNumber,
+                totalAmount: sSubtotal,
+                totalMrp,
+                commissionAmount: commAmount,
+                vendorPayoutAmount: vendorPayout,
+                status: orphan.orderStatus || 'PENDING',
+                shippingStatus: 'PENDING',
+              },
+            });
+
+            // Link the items
+            const itemIdsToLink = matchingItems.map((it) => it.id);
+            await prisma.orderItem.updateMany({
+              where: { id: { in: itemIdsToLink } },
+              data: {
+                shopId: targetShopId,
+                vendorOrderId: newVendorOrder.id,
+              },
+            });
+          }
+        }
+      } catch (backfillErr) {
+        console.warn('⚠️ [SELLER_ORDERS_BACKFILL_WARN]', backfillErr);
+      }
+    }
+
+    const where: any = {};
+    if (targetShopId && !(isAdmin && shopIdParam === 'all')) {
+      where.shopId = targetShopId;
+    }
 
     if (status && status !== 'ALL') {
       where.status = status;

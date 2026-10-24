@@ -268,6 +268,7 @@ export class PaymentService {
         items: availableItems.map((i: any) => ({
           productId: i.productId,
           variantId: i.variantId,
+          shopId: i.shopId || (i as any).shop?.id || null,
           name: i.name,
           sku: i.sku || i.productId,
           price: i.price,
@@ -364,6 +365,7 @@ export class PaymentService {
       items: items.map((i: any) => ({
         productId: i.productId,
         variantId: i.variantId,
+        shopId: i.shopId || (i as any).shop?.id || null,
         name: i.name || 'Recovered Fashion Item',
         sku: i.sku || i.productId || 'SKU-ITEM',
         price: Number(i.price),
@@ -462,6 +464,7 @@ export class PaymentService {
         items: availableItems.map((i: any) => ({
           productId: i.productId,
           variantId: i.variantId,
+          shopId: i.shopId || (i as any).shop?.id || null,
           name: i.name,
           sku: i.sku || i.productId,
           price: i.price,

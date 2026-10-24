@@ -165,6 +165,7 @@ export class OrderRepository {
         id: true,
         shopId: true,
         price: true,
+        compareAtPrice: true,
         stock: true,
         name: true,
         sku: true,
@@ -173,23 +174,82 @@ export class OrderRepository {
 
     const productMap = new Map(dbProducts.map((p) => [p.id, p]));
 
+    // Find system default shop outside transaction as ultimate fallback
+    const defaultShop = await prisma.shop.findFirst({
+      where: { deletedAt: null },
+      orderBy: [{ status: 'asc' }, { createdAt: 'asc' }],
+      select: { id: true, slug: true, shopCode: true, ownerId: true },
+    });
+
+    // Collect candidate shop keys from items & products
+    const candidateShopKeys = Array.from(
+      new Set(
+        input.items
+          .map((i) => {
+            const prod = productMap.get(i.productId);
+            return i.shopId || prod?.shopId || null;
+          })
+          .filter((k): k is string =>
+            Boolean(
+              k &&
+              k !== 'DEFAULT_SHOP' &&
+              k !== 'default_shop' &&
+              k !== 'independent-shop' &&
+              k !== 'navya-boutique',
+            ),
+          ),
+      ),
+    );
+
+    const dbShops =
+      candidateShopKeys.length > 0
+        ? await prisma.shop.findMany({
+            where: {
+              deletedAt: null,
+              OR: [
+                { id: { in: candidateShopKeys } },
+                { slug: { in: candidateShopKeys } },
+                { shopCode: { in: candidateShopKeys } },
+              ],
+            },
+            select: { id: true, slug: true, shopCode: true, ownerId: true },
+          })
+        : [];
+
+    const shopLookup = new Map<string, { id: string; ownerId: string }>();
+    for (const s of dbShops) {
+      if (s.id) shopLookup.set(s.id, s);
+      if (s.slug) shopLookup.set(s.slug, s);
+      if (s.shopCode) shopLookup.set(s.shopCode, s);
+    }
+
     const preparedItems = input.items.map((item) => {
       const prod = productMap.get(item.productId);
+      const candidateKey = item.shopId || prod?.shopId;
+      const matchedShop = candidateKey
+        ? shopLookup.get(candidateKey) || shopLookup.get(candidateKey.toLowerCase())
+        : null;
+      const canonicalShop = matchedShop || defaultShop;
+      const resolvedShopId = canonicalShop?.id || candidateKey || 'DEFAULT_SHOP';
+
       return {
         ...item,
-        shopId: item.shopId || prod?.shopId || 'DEFAULT_SHOP',
+        shopId: resolvedShopId,
+        canonicalShop,
         name: item.name || prod?.name || 'Fashion Item',
         sku: item.sku || prod?.sku || 'SKU-ITEM',
+        compareAtPrice: item.compareAtPrice ?? (prod as any)?.compareAtPrice ?? item.price,
       };
     });
 
-    // 1b. Pre-resolve unique shops in a single query outside the transaction
-    const uniqueShopIds = Array.from(new Set(preparedItems.map((i) => i.shopId)));
-    const dbShops = await prisma.shop.findMany({
-      where: { id: { in: uniqueShopIds } },
-      select: { id: true, ownerId: true },
-    });
-    const shopMap = new Map(dbShops.map((s) => [s.id, s]));
+    // 1b. Map resolved shops for vendor order creation
+    const shopMap = new Map<string, { id: string; ownerId: string }>();
+    if (defaultShop) {
+      shopMap.set(defaultShop.id, defaultShop);
+    }
+    for (const s of dbShops) {
+      shopMap.set(s.id, s);
+    }
 
     // 1c. Resolve Applied Coupon and Multi-Seller / Item Allocations (BM-10)
     let resolvedCoupon: any = null;
@@ -388,54 +448,7 @@ export class OrderRepository {
           },
         });
 
-        // b. Create Order Items with Coupon Snapshots (BM-10)
-        for (const item of preparedItems) {
-          if (!productMap.has(item.productId)) {
-            let cat = await tx.category.findFirst({ select: { id: true } });
-            if (!cat) {
-              cat = await tx.category.create({
-                data: { name: 'General', slug: `general-${Date.now()}` },
-              });
-            }
-            await tx.product.create({
-              data: {
-                id: item.productId,
-                name: item.name || 'Product',
-                slug: `prod-${item.productId.replace(/[^a-zA-Z0-9]/g, '').slice(-8)}-${Date.now()}`,
-                sku: item.sku || `SKU-${item.productId.slice(-8)}`,
-                description: item.name || 'Product description',
-                price: item.price,
-                stock: 100,
-                categoryId: cat.id,
-              },
-            });
-            productMap.set(item.productId, { id: item.productId } as any);
-          }
-
-          const itmAlloc = couponAllocation?.itemAllocations?.find(
-            (a: any) => a.productId === item.productId,
-          );
-
-          await tx.orderItem.create({
-            data: {
-              orderId: order.id,
-              productId: item.productId,
-              variantId: item.variantId || null,
-              name: item.name,
-              sku: item.sku,
-              price: item.price,
-              quantity: item.quantity,
-              total: item.total,
-              taxRate: item.taxRate ? Number(item.taxRate) : undefined,
-              taxAmount: item.taxAmount ? Number(item.taxAmount) : undefined,
-              couponId: resolvedCoupon?.id || null,
-              navyaCouponAmount: itmAlloc ? itmAlloc.navyaCouponAmount : 0,
-              sellerCouponAmount: itmAlloc ? itmAlloc.sellerCouponAmount : 0,
-            },
-          });
-        }
-
-        // c. Group Items by Seller / Shop for Vendor Orders
+        // b. Group Items by Seller / Shop for Vendor Orders & Item Linking
         const itemsByShop = new Map<string, typeof preparedItems>();
         for (const itm of preparedItems) {
           const list = itemsByShop.get(itm.shopId) || [];
@@ -445,45 +458,122 @@ export class OrderRepository {
 
         for (const [shopId, sItems] of Array.from(itemsByShop.entries())) {
           const sSubtotal = sItems.reduce((sum, i) => sum + Number(i.total), 0);
-          const shopRecord = shopMap.get(shopId);
+          const shopRecord = shopMap.get(shopId) || defaultShop;
+          const targetShopId = shopRecord?.id || shopId;
 
-          if (shopRecord) {
-            const vendorOrderNumber = `${orderNumber}-${shopId.slice(-4)}`;
-            let shopCommission = 0;
-            let shopPayout = 0;
-            for (const item of sItems) {
-              const commRes = CommissionService.calculateItemCommission({
-                mrp: (item as any).compareAtPrice || item.price,
-                sellingPrice: item.price,
-                quantity: item.quantity,
+          // Vendor Order Number (unique per shop and master order)
+          const shopSuffix =
+            targetShopId
+              .replace(/[^a-zA-Z0-9]/g, '')
+              .slice(-4)
+              .toUpperCase() || 'VEND';
+          const vendorOrderNumber = `${orderNumber}-${shopSuffix}`;
+
+          let shopCommission = 0;
+          let shopPayout = 0;
+          let totalMrp = 0;
+
+          // Pre-calculate commercial values for all items in this shop
+          const itemCalculations = sItems.map((item) => {
+            const itemMrp = (item as any).compareAtPrice || item.price;
+            totalMrp += Number(itemMrp) * item.quantity;
+            const commRes = CommissionService.calculateItemCommission({
+              mrp: itemMrp,
+              sellingPrice: item.price,
+              quantity: item.quantity,
+            });
+            shopCommission = CommissionService.roundMoney(
+              shopCommission + commRes.commissionAmount,
+            );
+            shopPayout = CommissionService.roundMoney(shopPayout + commRes.sellerTotalPayout);
+            return { item, commRes };
+          });
+
+          const sAlloc = couponAllocation?.sellerAllocations?.find(
+            (s: any) => s.sellerId === shopId || s.sellerId === targetShopId,
+          );
+          const sCouponDiscount = sAlloc ? sAlloc.allocatedDiscount : 0;
+
+          const adjustedShopPayout =
+            couponFundingType === 'SELLER'
+              ? Math.max(0, CommissionService.roundMoney(shopPayout - sCouponDiscount))
+              : shopPayout;
+
+          // Create Child Vendor Order (Section 1, 9, 21)
+          const vendorOrder = await tx.vendorOrder.create({
+            data: {
+              masterOrderId: order.id,
+              shopId: targetShopId,
+              vendorOrderNumber,
+              totalAmount: sSubtotal,
+              totalMrp,
+              commissionAmount: shopCommission,
+              vendorPayoutAmount: adjustedShopPayout,
+              allocatedCouponAmount: sCouponDiscount,
+              couponFundingType: sCouponDiscount > 0 ? couponFundingType : null,
+              status: isCod ? OrderStatus.PENDING : finalOrderStatus,
+              shippingStatus: 'PENDING',
+            },
+          });
+
+          // Create Order Items with Commercial Snapshots linked to VendorOrder & Shop
+          for (const { item, commRes } of itemCalculations) {
+            if (!productMap.has(item.productId)) {
+              let cat = await tx.category.findFirst({ select: { id: true } });
+              if (!cat) {
+                cat = await tx.category.create({
+                  data: { name: 'General', slug: `general-${Date.now()}` },
+                });
+              }
+              await tx.product.create({
+                data: {
+                  id: item.productId,
+                  name: item.name || 'Product',
+                  slug: `prod-${item.productId.replace(/[^a-zA-Z0-9]/g, '').slice(-8)}-${Date.now()}`,
+                  sku: item.sku || `SKU-${item.productId.slice(-8)}`,
+                  description: item.name || 'Product description',
+                  price: item.price,
+                  stock: 100,
+                  categoryId: cat.id,
+                  shopId: targetShopId,
+                },
               });
-              shopCommission = CommissionService.roundMoney(
-                shopCommission + commRes.commissionAmount,
-              );
-              shopPayout = CommissionService.roundMoney(shopPayout + commRes.sellerTotalPayout);
+              productMap.set(item.productId, { id: item.productId } as any);
             }
 
-            const sAlloc = couponAllocation?.sellerAllocations?.find(
-              (s: any) => s.sellerId === shopId,
+            const itmAlloc = couponAllocation?.itemAllocations?.find(
+              (a: any) => a.productId === item.productId,
             );
-            const sCouponDiscount = sAlloc ? sAlloc.allocatedDiscount : 0;
 
-            const adjustedShopPayout =
-              couponFundingType === 'SELLER'
-                ? Math.max(0, CommissionService.roundMoney(shopPayout - sCouponDiscount))
-                : shopPayout;
-
-            await tx.vendorOrder.create({
+            await tx.orderItem.create({
               data: {
-                masterOrderId: order.id,
-                shopId,
-                vendorOrderNumber,
-                totalAmount: sSubtotal,
-                commissionAmount: shopCommission,
-                vendorPayoutAmount: adjustedShopPayout,
-                allocatedCouponAmount: sCouponDiscount,
-                couponFundingType: sCouponDiscount > 0 ? couponFundingType : null,
-                status: 'PENDING',
+                orderId: order.id,
+                productId: item.productId,
+                variantId: item.variantId || null,
+                shopId: targetShopId,
+                vendorOrderId: vendorOrder.id,
+                name: item.name,
+                sku: item.sku,
+                price: item.price,
+                quantity: item.quantity,
+                total: item.total,
+                mrp: (item as any).compareAtPrice || item.price,
+                sellingPrice: item.price,
+                commissionRate: commRes.commissionRate,
+                commissionAmount: commRes.commissionAmount,
+                commissionBaseAmount: commRes.commissionBaseAmount,
+                sellerBasePayout: commRes.sellerBasePayout,
+                sellerGstAmount: commRes.sellerGstAmount,
+                sellerTotalPayout: commRes.sellerTotalPayout,
+                sellerGstStatus: commRes.sellerGstStatus,
+                taxRate: item.taxRate ? Number(item.taxRate) : undefined,
+                taxAmount: item.taxAmount ? Number(item.taxAmount) : undefined,
+                couponId: resolvedCoupon?.id || null,
+                navyaCouponAmount: itmAlloc ? itmAlloc.navyaCouponAmount : 0,
+                sellerCouponAmount: itmAlloc ? itmAlloc.sellerCouponAmount : 0,
+                policyType: 'RETURN_AND_REPLACEMENT',
+                returnAllowed: true,
+                replacementAllowed: true,
               },
             });
           }
