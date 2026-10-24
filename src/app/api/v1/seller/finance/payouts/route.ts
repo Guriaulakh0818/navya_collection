@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { CommissionService } from '@/backend/services/commission.service';
+import { ensureOrderSchemaSynced } from '@/lib/order-schema-guard';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    await ensureOrderSchemaSynced().catch(() => {});
+
     const { searchParams } = new URL(request.url);
     const shopId = searchParams.get('shopId');
 
@@ -26,23 +29,42 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 1. Fetch Vendor Orders for Shop with Settlement & Items
-    const vendorOrders = await prisma.vendorOrder.findMany({
-      where: { shopId: targetShopId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        masterOrder: {
-          select: {
-            orderNumber: true,
-            paymentStatus: true,
-            paymentMethod: true,
-            createdAt: true,
+    // 1. Fetch Vendor Orders for Shop with Settlement & Items (with fallback if settlement table not ready)
+    let vendorOrders: any[] = [];
+    try {
+      vendorOrders = await prisma.vendorOrder.findMany({
+        where: { shopId: targetShopId },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          masterOrder: {
+            select: {
+              orderNumber: true,
+              paymentStatus: true,
+              paymentMethod: true,
+              createdAt: true,
+            },
           },
+          settlement: true,
+          items: true,
         },
-        settlement: true,
-        items: true,
-      },
-    });
+      });
+    } catch {
+      vendorOrders = await prisma.vendorOrder.findMany({
+        where: { shopId: targetShopId },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          masterOrder: {
+            select: {
+              orderNumber: true,
+              paymentStatus: true,
+              paymentMethod: true,
+              createdAt: true,
+            },
+          },
+          items: true,
+        },
+      });
+    }
 
     // 2. Fetch Payout History
     const payouts = await prisma.vendorPayout.findMany({

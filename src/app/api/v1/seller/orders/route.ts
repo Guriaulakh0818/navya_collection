@@ -15,6 +15,7 @@ import { LabelService } from '@/backend/services/shipping/label.service';
 import { MultiSellerShipmentService } from '@/backend/services/shipping/multi-seller-shipment.service';
 import { PickupService } from '@/backend/services/shipping/pickup.service';
 import { StatusAggregatorService } from '@/backend/services/shipping/status-aggregator.service';
+import { ensureOrderSchemaSynced } from '@/lib/order-schema-guard';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -117,6 +118,8 @@ function getValidShippingStatus(status: string, explicitShippingStatus?: string)
  */
 export async function GET(request: NextRequest) {
   try {
+    await ensureOrderSchemaSynced().catch(() => {});
+
     // 1. Resolve user token from cookies or Authorization header
     const cookieStore = await cookies();
     const token =
@@ -353,83 +356,98 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const vendorOrders = await prisma.vendorOrder.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        shop: {
-          select: {
-            id: true,
-            shopCode: true,
-            name: true,
-            slug: true,
-            logo: true,
-            city: true,
-            state: true,
-            pincode: true,
-            sellerProfile: { select: { gstin: true, legalName: true, businessAddress: true } },
+    let vendorOrders: any[] = [];
+
+    try {
+      vendorOrders = await prisma.vendorOrder.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          shop: {
+            select: {
+              id: true,
+              shopCode: true,
+              name: true,
+              slug: true,
+              logo: true,
+              city: true,
+              state: true,
+              pincode: true,
+              sellerProfile: { select: { gstin: true, legalName: true, businessAddress: true } },
+            },
           },
-        },
-        masterOrder: {
-          select: {
-            id: true,
-            orderNumber: true,
-            paymentStatus: true,
-            paymentMethod: true,
-            createdAt: true,
-            address: true,
-            user: { select: { name: true, email: true, mobile: true } },
+          masterOrder: {
+            select: {
+              id: true,
+              orderNumber: true,
+              paymentStatus: true,
+              paymentMethod: true,
+              createdAt: true,
+              address: true,
+              user: { select: { name: true, email: true, mobile: true } },
+            },
           },
-        },
-        shipments: {
-          include: {
-            items: true,
-            pickupLocation: true,
-            trackingEvents: { orderBy: { eventTimestamp: 'desc' } },
+          shipments: {
+            include: {
+              items: true,
+              pickupLocation: true,
+              trackingEvents: { orderBy: { eventTimestamp: 'desc' } },
+            },
+            orderBy: { createdAt: 'desc' },
           },
-          orderBy: { createdAt: 'desc' },
-        },
-        items: {
-          include: {
-            product: {
-              select: {
-                name: true,
-                sku: true,
-                returnPolicyType: true,
-                returnAllowed: true,
-                returnWindowDays: true,
-                replacementAllowed: true,
-                replacementWindowDays: true,
-                images: {
-                  select: { imageUrl: true },
-                  take: 1,
-                  orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+          items: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                  sku: true,
+                  returnPolicyType: true,
+                  returnAllowed: true,
+                  returnWindowDays: true,
+                  replacementAllowed: true,
+                  replacementWindowDays: true,
+                  images: {
+                    select: { imageUrl: true },
+                    take: 1,
+                    orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
+                  },
                 },
               },
             },
-            returnItems: {
-              include: { returnRequest: true },
+          },
+        },
+      });
+    } catch (queryErr: any) {
+      console.warn('⚠️ [SELLER_ORDERS_QUERY_FALLBACK]', queryErr?.message);
+      vendorOrders = await prisma.vendorOrder.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          shop: true,
+          masterOrder: {
+            include: {
+              address: true,
+              user: { select: { name: true, email: true, mobile: true } },
+            },
+          },
+          items: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                  sku: true,
+                  returnPolicyType: true,
+                  images: {
+                    select: { imageUrl: true },
+                    take: 1,
+                  },
+                },
+              },
             },
           },
         },
-        settlement: {
-          select: {
-            id: true,
-            settlementNumber: true,
-            status: true,
-            grossProductValue: true,
-            commissionAmount: true,
-            forwardShippingActual: true,
-            reverseShippingActual: true,
-            returnShippingDeduction: true,
-            netSettlementAmount: true,
-            settlementEligibilityDate: true,
-            deliveryDate: true,
-            holdReason: true,
-          },
-        },
-      },
-    });
+      });
+    }
 
     return NextResponse.json({
       success: true,

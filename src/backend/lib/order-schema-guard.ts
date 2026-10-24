@@ -249,6 +249,70 @@ export async function ensureOrderSchemaSynced(force = false): Promise<void> {
         ),
         runSafeSql(
           `
+          CREATE TABLE IF NOT EXISTS "seller_settlements" (
+            "id" TEXT NOT NULL PRIMARY KEY,
+            "settlementNumber" TEXT NOT NULL UNIQUE,
+            "masterOrderId" TEXT NOT NULL,
+            "vendorOrderId" TEXT UNIQUE,
+            "shopId" TEXT NOT NULL,
+            "sellerId" TEXT NOT NULL,
+            "grossProductValue" DECIMAL(10,2) NOT NULL,
+            "totalMrp" DECIMAL(10,2),
+            "refundedProductValue" DECIMAL(10,2) NOT NULL DEFAULT 0,
+            "commissionRate" DECIMAL(5,2) NOT NULL DEFAULT 10.00,
+            "commissionAmount" DECIMAL(10,2) NOT NULL,
+            "commissionReversal" DECIMAL(10,2) NOT NULL DEFAULT 0,
+            "sellerBasePayout" DECIMAL(10,2),
+            "sellerGstStatus" TEXT,
+            "sellerGstRate" DECIMAL(5,2) DEFAULT 0,
+            "sellerGstAmount" DECIMAL(10,2) DEFAULT 0,
+            "refundedGstAmount" DECIMAL(10,2) DEFAULT 0,
+            "sellerTotalPayout" DECIMAL(10,2),
+            "forwardShippingActual" DECIMAL(10,2) NOT NULL DEFAULT 0,
+            "reverseShippingActual" DECIMAL(10,2) NOT NULL DEFAULT 0,
+            "returnShippingDeduction" DECIMAL(10,2) NOT NULL DEFAULT 0,
+            "sellerDiscounts" DECIMAL(10,2) NOT NULL DEFAULT 0,
+            "sellerFundedShippingDeduction" DECIMAL(10,2) NOT NULL DEFAULT 0,
+            "otherDeductions" DECIMAL(10,2) NOT NULL DEFAULT 0,
+            "adjustments" DECIMAL(10,2) NOT NULL DEFAULT 0,
+            "netSettlementAmount" DECIMAL(10,2) NOT NULL,
+            "status" TEXT NOT NULL DEFAULT 'PENDING_SETTLEMENT',
+            "holdReason" TEXT,
+            "deliveryDate" TIMESTAMP(3),
+            "settlementEligibilityDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "settledAt" TIMESTAMP(3),
+            "vendorPayoutId" TEXT,
+            "notes" TEXT,
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+          );
+        `,
+          'CREATE_SELLER_SETTLEMENTS_TABLE',
+        ),
+        runSafeSql(
+          `
+          CREATE TABLE IF NOT EXISTS "seller_adjustments" (
+            "id" TEXT NOT NULL PRIMARY KEY,
+            "adjustmentNumber" TEXT NOT NULL UNIQUE,
+            "shopId" TEXT NOT NULL,
+            "sellerId" TEXT NOT NULL,
+            "settlementId" TEXT,
+            "returnRequestId" TEXT,
+            "type" TEXT NOT NULL,
+            "category" TEXT,
+            "amount" DECIMAL(10,2) NOT NULL,
+            "recoveredAmount" DECIMAL(10,2) NOT NULL DEFAULT 0,
+            "reason" TEXT NOT NULL,
+            "status" TEXT NOT NULL DEFAULT 'PENDING',
+            "appliedAt" TIMESTAMP(3),
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+          );
+        `,
+          'CREATE_SELLER_ADJUSTMENTS_TABLE',
+        ),
+        runSafeSql(
+          `
           ALTER TABLE "shipments"
             ADD COLUMN IF NOT EXISTS "vendorOrderId" TEXT,
             ADD COLUMN IF NOT EXISTS "pickupLocationId" TEXT,
