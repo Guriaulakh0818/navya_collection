@@ -346,6 +346,8 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       shopSlug: product.shop?.slug || 'shop',
       shopLogo: product.shop?.logo,
     });
+
+    toast(`Added "${product.name}" to cart!`, 'success');
   };
 
   const handleIncreaseVariantQty = async (e: React.MouseEvent) => {

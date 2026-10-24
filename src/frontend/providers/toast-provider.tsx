@@ -32,7 +32,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, 3000);
   }, []);
 
   const contextValue = useMemo(() => ({ toasts, toast }), [toasts, toast]);
@@ -40,34 +40,36 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      <div className="fixed inset-x-0 bottom-6 z-[9999] flex flex-col items-center gap-2.5 pointer-events-none px-4">
+      {/* Centered phone flash message popup */}
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-3 pointer-events-none px-4">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex items-center gap-2.5 rounded-full px-5 py-3 text-xs sm:text-sm font-bold shadow-2xl backdrop-blur-md transition-all animate-in fade-in slide-in-from-bottom-3 duration-300 ${
+            onClick={() => setToasts((prev) => prev.filter((item) => item.id !== t.id))}
+            className={`pointer-events-auto flex items-center gap-3 rounded-full px-5 py-3 sm:px-6 sm:py-3.5 text-xs sm:text-sm font-bold shadow-2xl backdrop-blur-md transition-all duration-200 animate-in fade-in zoom-in-95 cursor-pointer active:scale-95 ${
               t.variant === 'error'
-                ? 'bg-red-950/95 text-red-100 border border-red-500/50 shadow-red-950/50 ring-1 ring-red-500/30'
-                : t.variant === 'success'
-                  ? 'bg-emerald-950/95 text-emerald-100 border border-emerald-500/50 shadow-emerald-950/50 ring-1 ring-emerald-500/30'
-                  : 'bg-slate-900/95 text-white border border-slate-700/60 shadow-slate-950/50'
+                ? 'bg-navy-900/95 text-white border border-red-500/60 shadow-black/70 ring-1 ring-red-500/30'
+                : 'bg-navy-900/95 text-white border border-orange/50 shadow-black/70 ring-1 ring-orange/30'
             }`}
           >
             {t.variant === 'error' && (
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-500 text-white font-extrabold text-[10px]">
+              <span className="flex h-5 w-5 sm:h-6 sm:w-6 shrink-0 items-center justify-center rounded-full bg-red-500 text-white font-extrabold text-[11px] sm:text-xs shadow-xs">
                 ✕
               </span>
             )}
             {t.variant === 'success' && (
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white font-extrabold text-[10px]">
+              <span className="flex h-5 w-5 sm:h-6 sm:w-6 shrink-0 items-center justify-center rounded-full bg-orange text-white font-extrabold text-[11px] sm:text-xs shadow-xs">
                 ✓
               </span>
             )}
             {(!t.variant || t.variant === 'info') && (
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-orange text-white font-extrabold text-[10px]">
+              <span className="flex h-5 w-5 sm:h-6 sm:w-6 shrink-0 items-center justify-center rounded-full bg-orange text-white font-extrabold text-[11px] sm:text-xs shadow-xs">
                 ℹ
               </span>
             )}
-            <span className="tracking-tight">{t.message}</span>
+            <span className="tracking-tight text-white leading-snug line-clamp-2 max-w-[78vw] sm:max-w-md">
+              {t.message}
+            </span>
           </div>
         ))}
       </div>
