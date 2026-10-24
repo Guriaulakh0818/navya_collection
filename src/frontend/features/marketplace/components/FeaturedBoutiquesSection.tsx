@@ -204,7 +204,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
         <div className="lg:col-span-4 xl:col-span-3">
           <div className="relative h-full min-h-[250px] lg:min-h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-gradient-to-br from-orange/10 to-navy-900/10 p-6 flex flex-col justify-between">
             <Image
-              src="/images/editorial/boutique_merchant_promo.jpg"
+              src="/images/editorial/boutique_merchant_promo.png"
               alt="Real Stores Real People Real Fashion"
               fill
               sizes="(max-width: 1024px) 100vw, 25vw"

@@ -213,7 +213,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
         <div className="lg:col-span-4 xl:col-span-3">
           <div className="relative h-full min-h-[340px] lg:min-h-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-slate-900 p-6 flex flex-col justify-between group">
             <Image
-              src="/images/editorial/latest_arrivals_model.jpg"
+              src="/images/editorial/latest_arrivals_model.png"
               alt="Latest Arrivals from Local Boutiques"
               fill
               sizes="(max-width: 1024px) 100vw, 25vw"
