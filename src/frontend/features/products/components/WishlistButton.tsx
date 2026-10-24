@@ -4,7 +4,6 @@ import { Heart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import type { Product } from '@/features/products/types/product.types';
-import { useToast } from '@/providers';
 import { useWishlistStore } from '@/stores';
 
 export type WishlistButtonProps = {
@@ -28,10 +27,9 @@ export function WishlistButton({
   showLabel = false,
   activeLabel = 'Wishlisted',
   inactiveLabel = 'Add to Wishlist',
-  showToast = true,
+  showToast = false,
 }: WishlistButtonProps) {
   const [mounted, setMounted] = useState(false);
-  const { toast } = useToast();
 
   const pid = product?.id || product?.productId || '';
   const vid = variant?.id || null;
@@ -54,9 +52,6 @@ export function WishlistButton({
 
     if (activeInWishlist) {
       await removeItem(pid, vid);
-      if (showToast) {
-        toast(`Removed ${product.name || 'item'} from your wishlist.`, 'info');
-      }
     } else {
       const selectedSize =
         variant?.size ||
@@ -105,14 +100,6 @@ export function WishlistButton({
         selectedColor,
         variantName,
       });
-
-      if (showToast) {
-        const variantSuffix = [selectedColor, selectedSize].filter(Boolean).join(', ');
-        toast(
-          `Added ${product.name || 'item'}${variantSuffix ? ` (${variantSuffix})` : ''} to wishlist!`,
-          'success',
-        );
-      }
     }
   };
 

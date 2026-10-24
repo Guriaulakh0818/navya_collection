@@ -8,14 +8,12 @@ import Link from 'next/link';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/providers/auth-provider';
-import { useToast } from '@/providers/toast-provider';
 import { useCartStore, useWishlistStore } from '@/stores';
 import { formatPrice } from '@/utils/format-price';
 
 export default function MultiVendorWishlistPage() {
   const [mounted, setMounted] = useState(false);
   const { user } = useAuth();
-  const { toast } = useToast();
 
   const items = useWishlistStore((s) => s.items);
   const removeItem = useWishlistStore((s) => s.removeItem);
@@ -56,18 +54,15 @@ export default function MultiVendorWishlistPage() {
     });
 
     await removeItem(item.productId, item.variantId);
-    toast(`Moved "${item.name}"${variantLabel ? ` (${variantLabel})` : ''} to bag!`, 'success');
   };
 
   const handleRemove = async (item: any) => {
     await removeItem(item.productId, item.variantId);
-    toast(`Removed "${item.name}" from your wishlist.`, 'info');
   };
 
   const handleClear = async () => {
     if (items.length === 0) return;
     await clearWishlist();
-    toast('Your wishlist has been cleared.', 'info');
   };
 
   if (!mounted) {

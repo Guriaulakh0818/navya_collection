@@ -28,7 +28,6 @@ import { useRouter } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Drawer } from '@/components/ui/drawer';
-import { useToast } from '@/providers';
 import { useCartStore, useWishlistStore } from '@/stores';
 
 import { ProductCard } from './ProductCard';
@@ -101,7 +100,6 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
     removeItem: removeWishlistItem,
     isInWishlist,
   } = useWishlistStore();
-  const { toast } = useToast();
   const router = useRouter();
 
   const [mounted, setMounted] = useState(false);
@@ -346,8 +344,6 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       shopSlug: product.shop?.slug || 'shop',
       shopLogo: product.shop?.logo,
     });
-
-    toast(`Added "${product.name}" to cart!`, 'success');
   };
 
   const handleIncreaseVariantQty = async (e: React.MouseEvent) => {
@@ -498,7 +494,6 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
 
     if (currentlyWishlisted) {
       await removeWishlistItem(pid, vid);
-      toast(`Removed "${product.name}" from your wishlist.`, 'info');
     } else {
       await addWishlistItem({
         productId: pid,
@@ -518,12 +513,6 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
         selectedColor: activeColor || activeVariant?.color || null,
         variantName: activeVariant?.name || null,
       });
-
-      const variantDetail = [activeColor, activeSize].filter(Boolean).join(', ');
-      toast(
-        `Added "${product.name}"${variantDetail ? ` (${variantDetail})` : ''} to wishlist!`,
-        'success',
-      );
     }
   };
 

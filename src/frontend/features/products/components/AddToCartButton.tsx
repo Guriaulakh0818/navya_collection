@@ -123,8 +123,6 @@ export function AddToCartButton({ product, className, disabled, compact }: AddTo
       shopSlug: shopInfo.slug || 'navya-collection',
       shopLogo: shopInfo.logo,
     });
-
-    toast?.(`Added "${product.name}" to cart!`, 'success');
   };
 
   const handleDecrease = async (e: React.MouseEvent) => {
