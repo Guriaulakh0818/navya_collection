@@ -553,28 +553,60 @@ export function SellerInventoryManager() {
                                 {product.category?.name || 'Boutique Collection'}
                               </span>
                               {hasVariants && (
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setExpandedVariants((prev) => ({
-                                      ...prev,
-                                      [product.id]: !prev[product.id],
-                                    }))
-                                  }
-                                  className="inline-flex items-center gap-1 text-[10px] text-orange hover:text-orange/80 font-bold mt-1 cursor-pointer"
-                                >
-                                  {isExpanded ? (
-                                    <>
-                                      <ChevronUp className="w-3 h-3" /> Hide{' '}
-                                      {product.variants?.length} Sizes
-                                    </>
-                                  ) : (
-                                    <>
-                                      <ChevronDown className="w-3 h-3" /> View{' '}
-                                      {product.variants?.length} Sizes
-                                    </>
-                                  )}
-                                </button>
+                                <div className="mt-2 space-y-1.5">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                                      Variants Stock:
+                                    </span>
+                                    {product.variants?.map((v) => {
+                                      const vStock =
+                                        stockInputs[v.id] !== undefined
+                                          ? stockInputs[v.id]
+                                          : v.stock;
+                                      return (
+                                        <span
+                                          key={v.id}
+                                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border transition-colors ${
+                                            vStock <= 0
+                                              ? 'bg-rose-50 text-rose-700 border-rose-300'
+                                              : vStock <= 5
+                                                ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                                : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                          }`}
+                                          title={`SKU: ${v.sku} | Price: ₹${v.price}`}
+                                        >
+                                          <span className="font-sans font-bold">
+                                            {v.size || v.color || 'Variant'}:
+                                          </span>
+                                          <span className="font-black">{vStock}</span>
+                                        </span>
+                                      );
+                                    })}
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setExpandedVariants((prev) => ({
+                                        ...prev,
+                                        [product.id]: !prev[product.id],
+                                      }))
+                                    }
+                                    className="inline-flex items-center gap-1 text-[11px] text-orange hover:text-orange/80 font-black cursor-pointer"
+                                  >
+                                    {isExpanded ? (
+                                      <>
+                                        <ChevronUp className="w-3.5 h-3.5" /> Hide Variant Details (
+                                        {product.variants?.length})
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ChevronDown className="w-3.5 h-3.5" /> Adjust Individual
+                                        Variant Stocks ({product.variants?.length})
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </div>
@@ -759,76 +791,153 @@ export function SellerInventoryManager() {
 
                       {/* Expandable Variant Sub-Rows (for sizes/colors) */}
                       {hasVariants && isExpanded && (
-                        <tr className="bg-slate-50/70 border-b border-slate-200">
-                          <td colSpan={5} className="py-3 px-6">
-                            <div className="bg-white rounded-2xl border border-slate-200 p-3 space-y-2">
-                              <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                                Individual Size / Variant Quantities:
-                              </span>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <tr className="bg-slate-50/80 border-b border-slate-200">
+                          <td colSpan={5} className="py-4 px-6">
+                            <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 shadow-xs">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-black text-navy uppercase tracking-wider block">
+                                  Variant Inventory Breakdown ({product.variants?.length} Options):
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  Each size/color variant has its own independent live stock.
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {product.variants?.map((v) => {
                                   const vStock =
                                     stockInputs[v.id] !== undefined ? stockInputs[v.id] : v.stock;
                                   const isVUpdating = savingStockIds[v.id];
+                                  const isVSaved = savedTickIds[v.id];
 
                                   return (
                                     <div
                                       key={v.id}
-                                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2"
+                                      className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all space-y-2.5"
                                     >
-                                      <div>
-                                        <span className="text-xs font-bold text-navy block">
-                                          {v.size ? `Size: ${v.size}` : v.name || 'Standard'}
-                                        </span>
-                                        <span className="text-[9px] text-slate-400 font-mono">
-                                          SKU: {v.sku}
-                                        </span>
+                                      {/* Variant Info & Current Stock Badge */}
+                                      <div className="flex items-start justify-between gap-2">
+                                        <div>
+                                          <span className="text-xs font-black text-navy block">
+                                            {v.size ? `Size: ${v.size}` : v.name || 'Standard'}
+                                            {v.color ? ` • ${v.color}` : ''}
+                                          </span>
+                                          <span className="text-[9px] text-slate-400 font-mono block">
+                                            SKU: {v.sku}
+                                          </span>
+                                        </div>
+
+                                        {/* Stock Level Badge */}
+                                        <div>
+                                          {vStock <= 0 ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-700 border border-rose-300">
+                                              Out of Stock
+                                            </span>
+                                          ) : vStock <= 5 ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-800 border border-amber-300">
+                                              Low ({vStock})
+                                            </span>
+                                          ) : (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-800 border border-emerald-300">
+                                              In Stock ({vStock})
+                                            </span>
+                                          )}
+                                        </div>
                                       </div>
 
-                                      <div className="flex items-center gap-1">
-                                        <button
-                                          type="button"
-                                          disabled={isVUpdating || vStock <= 0}
-                                          onClick={() =>
-                                            handleUpdateVariantStock(
-                                              product.id,
-                                              v.id,
-                                              Math.max(0, vStock - 1),
-                                            )
-                                          }
-                                          className="w-6 h-6 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 flex items-center justify-center text-xs font-bold"
-                                        >
-                                          -
-                                        </button>
-                                        <input
-                                          type="number"
-                                          min="0"
-                                          value={vStock}
-                                          onChange={(e) => {
-                                            const val = parseInt(e.target.value, 10);
-                                            setStockInputs((prev) => ({
-                                              ...prev,
-                                              [v.id]: isNaN(val) ? 0 : val,
-                                            }));
-                                          }}
-                                          onBlur={() =>
-                                            handleUpdateVariantStock(product.id, v.id, vStock)
-                                          }
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') e.currentTarget.blur();
-                                          }}
-                                          className="w-14 text-center py-1 bg-white border border-slate-300 rounded-lg text-xs font-bold font-mono"
-                                        />
-                                        <button
-                                          type="button"
-                                          disabled={isVUpdating}
-                                          onClick={() =>
-                                            handleUpdateVariantStock(product.id, v.id, vStock + 1)
-                                          }
-                                          className="w-6 h-6 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 flex items-center justify-center text-xs font-bold"
-                                        >
-                                          +
-                                        </button>
+                                      {/* Counter + Input */}
+                                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                                        <div className="flex items-center gap-1.5">
+                                          <button
+                                            type="button"
+                                            disabled={isVUpdating || vStock <= 0}
+                                            onClick={() =>
+                                              handleUpdateVariantStock(
+                                                product.id,
+                                                v.id,
+                                                Math.max(0, vStock - 1),
+                                              )
+                                            }
+                                            className="w-7 h-7 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 flex items-center justify-center text-xs font-black text-slate-700 cursor-pointer disabled:opacity-40"
+                                            title="Decrease variant stock by 1"
+                                          >
+                                            <Minus className="w-3 h-3" />
+                                          </button>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            value={vStock}
+                                            onChange={(e) => {
+                                              const val = parseInt(e.target.value, 10);
+                                              setStockInputs((prev) => ({
+                                                ...prev,
+                                                [v.id]: isNaN(val) ? 0 : val,
+                                              }));
+                                            }}
+                                            onBlur={() =>
+                                              handleUpdateVariantStock(product.id, v.id, vStock)
+                                            }
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter') e.currentTarget.blur();
+                                            }}
+                                            className="w-16 text-center py-1 bg-white border border-slate-300 focus:border-navy focus:outline-none rounded-lg text-xs font-black font-mono text-navy"
+                                          />
+                                          <button
+                                            type="button"
+                                            disabled={isVUpdating}
+                                            onClick={() =>
+                                              handleUpdateVariantStock(product.id, v.id, vStock + 1)
+                                            }
+                                            className="w-7 h-7 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 flex items-center justify-center text-xs font-black text-slate-700 cursor-pointer disabled:opacity-40"
+                                            title="Increase variant stock by 1"
+                                          >
+                                            <Plus className="w-3 h-3" />
+                                          </button>
+
+                                          {isVUpdating ? (
+                                            <RefreshCw className="w-3 h-3 text-orange animate-spin ml-1" />
+                                          ) : isVSaved ? (
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 ml-1" />
+                                          ) : null}
+                                        </div>
+
+                                        {/* Quick Variant Refill Chips */}
+                                        <div className="flex items-center gap-1">
+                                          <button
+                                            type="button"
+                                            disabled={isVUpdating}
+                                            onClick={() =>
+                                              handleUpdateVariantStock(product.id, v.id, vStock + 5)
+                                            }
+                                            className="px-1.5 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-600 text-[9px] font-bold border border-slate-200 cursor-pointer"
+                                          >
+                                            +5
+                                          </button>
+                                          <button
+                                            type="button"
+                                            disabled={isVUpdating}
+                                            onClick={() =>
+                                              handleUpdateVariantStock(
+                                                product.id,
+                                                v.id,
+                                                vStock + 10,
+                                              )
+                                            }
+                                            className="px-1.5 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-600 text-[9px] font-bold border border-slate-200 cursor-pointer"
+                                          >
+                                            +10
+                                          </button>
+                                          <button
+                                            type="button"
+                                            disabled={isVUpdating || vStock === 0}
+                                            onClick={() =>
+                                              handleUpdateVariantStock(product.id, v.id, 0)
+                                            }
+                                            className="px-1.5 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 text-[9px] font-extrabold border border-rose-200 cursor-pointer disabled:opacity-40"
+                                          >
+                                            Set 0
+                                          </button>
+                                        </div>
                                       </div>
                                     </div>
                                   );

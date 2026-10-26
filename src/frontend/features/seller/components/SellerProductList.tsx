@@ -396,6 +396,11 @@ export function SellerProductList() {
                           <span className="text-[10px] text-slate-500 font-mono">
                             slug: {p.slug}
                           </span>
+                          {p.variants && p.variants.length > 0 && (
+                            <span className="text-[10px] text-orange font-bold font-sans block mt-0.5">
+                              {p.variants.length} Variants Available
+                            </span>
+                          )}
                         </div>
                       </td>
 
@@ -414,15 +419,47 @@ export function SellerProductList() {
                       </td>
 
                       <td className="py-4 px-6 font-semibold font-mono">
-                        <span
-                          className={`px-2.5 py-1 rounded-md text-[10px] font-bold ${
-                            p.stock <= 5
-                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                              : 'bg-slate-100 text-slate-700 border border-slate-200'
-                          }`}
-                        >
-                          {p.stock} Units
-                        </span>
+                        <div className="flex flex-col gap-1.5">
+                          <span
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold w-fit ${
+                              p.stock <= 0
+                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                : p.stock <= 5
+                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  : 'bg-slate-100 text-slate-700 border border-slate-200'
+                            }`}
+                          >
+                            {p.stock} Units Total
+                          </span>
+
+                          {p.variants && p.variants.length > 0 && (
+                            <div className="space-y-1">
+                              <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider block font-sans">
+                                Variant Stocks:
+                              </span>
+                              <div className="flex flex-wrap gap-1 max-w-[240px]">
+                                {p.variants.map((v: any) => (
+                                  <span
+                                    key={v.id}
+                                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${
+                                      v.stock <= 0
+                                        ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                        : v.stock <= 5
+                                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    }`}
+                                    title={`SKU: ${v.sku} | Price: ₹${v.price}`}
+                                  >
+                                    <span className="font-sans font-extrabold">
+                                      {v.size || v.color || 'Var'}:
+                                    </span>
+                                    <span>{v.stock}</span>
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </td>
 
                       <td className="py-4 px-6">
