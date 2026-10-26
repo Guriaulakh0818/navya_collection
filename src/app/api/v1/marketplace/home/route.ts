@@ -159,17 +159,21 @@ export async function GET() {
             ...s,
             banner: '/images/default-shop-banner.png',
             logo:
-              s.slug === 'navya-collection' || s.name?.toLowerCase().includes('navya')
+              s.slug === 'navya-collection' || s.name?.toLowerCase().trim() === 'navya collection'
                 ? '/images/navya-logo.png'
-                : s.logo,
+                : s.logo === '/images/navya-logo.png' || s.logo === '/images/logo.png'
+                  ? null
+                  : s.logo,
           })),
           recentShops: (recentShops || []).map((s) => ({
             ...s,
             banner: '/images/default-shop-banner.png',
             logo:
-              s.slug === 'navya-collection' || s.name?.toLowerCase().includes('navya')
+              s.slug === 'navya-collection' || s.name?.toLowerCase().trim() === 'navya collection'
                 ? '/images/navya-logo.png'
-                : s.logo,
+                : s.logo === '/images/navya-logo.png' || s.logo === '/images/logo.png'
+                  ? null
+                  : s.logo,
           })),
           trendingProducts,
           newArrivals,

@@ -58,9 +58,11 @@ function sanitizeShop(s: any) {
     name: String(s.name || ''),
     slug: String(s.slug || ''),
     logo:
-      s.slug === 'navya-collection' || s.name?.toLowerCase().includes('navya')
+      s.slug === 'navya-collection' || s.name?.toLowerCase().trim() === 'navya collection'
         ? '/images/navya-logo.png'
-        : s.logo || null,
+        : s.logo === '/images/navya-logo.png' || s.logo === '/images/logo.png'
+          ? null
+          : s.logo || null,
     banner: '/images/default-shop-banner.png',
     rating: s.rating !== null && s.rating !== undefined ? Number(s.rating) : null,
     reviewCount: s.reviewCount ? Number(s.reviewCount) : 0,

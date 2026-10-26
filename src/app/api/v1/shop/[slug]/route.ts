@@ -157,9 +157,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             ...shop,
             banner: '/images/default-shop-banner.png',
             logo:
-              shop.slug === 'navya-collection' || shop.name?.toLowerCase().includes('navya')
+              shop.slug === 'navya-collection' ||
+              shop.name?.toLowerCase().trim() === 'navya collection'
                 ? '/images/navya-logo.png'
-                : shop.logo,
+                : shop.logo === '/images/navya-logo.png' || shop.logo === '/images/logo.png'
+                  ? null
+                  : shop.logo,
           },
           products,
           categories: shopCategories,

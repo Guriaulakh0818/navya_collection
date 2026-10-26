@@ -14,6 +14,8 @@ import { useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { ShopAvatar } from '@/frontend/components/ui/default-profile-avatar';
+
 interface ShopWithProducts {
   id: string;
   name: string;
@@ -116,8 +118,13 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
             const ratingDisplay = shop.rating ? Number(shop.rating).toFixed(1) : null;
             const reviewsCount = shop.reviewCount || 0;
             const isNavya =
-              shop.slug === 'navya-collection' || shop.name?.toLowerCase().includes('navya');
-            const shopLogo = isNavya ? '/images/navya-logo.png' : shop.logo;
+              shop.slug === 'navya-collection' ||
+              shop.name?.toLowerCase().trim() === 'navya collection';
+            const shopLogo = isNavya
+              ? '/images/navya-logo.png'
+              : shop.logo === '/images/navya-logo.png'
+                ? null
+                : shop.logo;
 
             return (
               <div
@@ -141,19 +148,13 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                 <div className="p-4 sm:p-5 -mt-8 relative z-10 space-y-3 flex-1 flex flex-col justify-between">
                   <div>
                     <div className="flex items-end justify-between gap-2 mb-2.5">
-                      <div className="w-13 h-13 rounded-2xl bg-white border-2 border-orange/40 overflow-hidden shrink-0 relative flex items-center justify-center shadow-md select-none">
-                        {shopLogo ? (
-                          <Image
-                            src={shopLogo}
-                            alt={shop.name}
-                            fill
-                            sizes="52px"
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <Building2 className="w-6 h-6 text-orange" />
-                        )}
-                      </div>
+                      <ShopAvatar
+                        logo={shop.logo}
+                        shopName={shop.name}
+                        isNavya={isNavya}
+                        size={52}
+                        className="w-13 h-13 rounded-2xl shadow-md border-2 border-slate-200/90"
+                      />
 
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-2xs">
                         <ShieldCheck className="w-3 h-3 text-emerald-600" />

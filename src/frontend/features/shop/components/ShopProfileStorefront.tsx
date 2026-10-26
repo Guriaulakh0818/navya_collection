@@ -21,6 +21,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { ShopAvatar } from '@/frontend/components/ui/default-profile-avatar';
+
 export function ShopProfileStorefront({
   shop,
   products: initialProducts,
@@ -110,19 +112,17 @@ export function ShopProfileStorefront({
         <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-md backdrop-blur-xl space-y-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white border-2 border-orange/30 overflow-hidden shrink-0 flex items-center justify-center shadow-md select-none">
-                <Image
-                  src={
-                    shop.slug === 'navya-collection'
-                      ? '/images/navya-logo.png'
-                      : shop.logo || '/images/navya-logo.png'
-                  }
-                  alt={shop.name}
-                  width={96}
-                  height={96}
-                  className="w-full h-full object-contain p-1 select-none overflow-hidden"
-                />
-              </div>
+              <ShopAvatar
+                logo={shop.logo}
+                shopName={shop.name}
+                isNavya={
+                  shop.slug === 'navya-collection' ||
+                  shop.name?.toLowerCase().trim() === 'navya collection'
+                }
+                size={96}
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl shadow-md border-2 border-slate-200/90"
+                priority
+              />
 
               <div>
                 <div className="flex items-center gap-2 flex-wrap">

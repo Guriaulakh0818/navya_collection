@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { ProductCard } from '@/features/products/components/ProductCard';
+import { ShopAvatar } from '@/frontend/components/ui/default-profile-avatar';
 import {
   CITY_SEO_THRESHOLDS,
   formatCityDisplayName,
@@ -354,19 +355,16 @@ export default async function CityMarketplacePage({ params }: Props) {
                 className="group bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md hover:border-orange transition-all flex flex-col justify-between space-y-4"
               >
                 <div className="flex items-start gap-3.5">
-                  <div className="w-14 h-14 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 relative overflow-hidden">
-                    {shop.logo ? (
-                      <Image
-                        src={shop.logo}
-                        alt={shop.name}
-                        fill
-                        unoptimized
-                        className="object-cover"
-                      />
-                    ) : (
-                      <Store className="w-6 h-6 text-slate-400" />
-                    )}
-                  </div>
+                  <ShopAvatar
+                    logo={shop.logo}
+                    shopName={shop.name}
+                    isNavya={
+                      shop.slug === 'navya-collection' ||
+                      shop.name?.toLowerCase().trim() === 'navya collection'
+                    }
+                    size={56}
+                    className="w-14 h-14 rounded-2xl shrink-0 shadow-xs border border-slate-200/90"
+                  />
                   <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <h3 className="font-bold text-navy text-base group-hover:text-orange transition-colors truncate">

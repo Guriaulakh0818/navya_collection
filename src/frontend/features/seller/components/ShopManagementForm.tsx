@@ -24,6 +24,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 
+import { DefaultProfileAvatarSilhouette } from '@/frontend/components/ui/default-profile-avatar';
+
 export function ShopManagementForm() {
   const searchParams = useSearchParams();
   const tabParam = searchParams ? searchParams.get('tab') : null;
@@ -376,7 +378,7 @@ export function ShopManagementForm() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                   Boutique Logo Badge
                 </label>
-                <div className="relative w-28 h-28 bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden group flex items-center justify-center shadow-xs">
+                <div className="relative w-28 h-28 bg-slate-100 border-2 border-slate-200 rounded-2xl overflow-hidden group flex items-center justify-center shadow-xs">
                   {formData.logo ? (
                     <Image
                       src={formData.logo}
@@ -386,10 +388,11 @@ export function ShopManagementForm() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Building2 className="w-8 h-8 text-orange" />
+                    <DefaultProfileAvatarSilhouette className="w-full h-full" />
                   )}
-                  <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-all">
+                  <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center cursor-pointer transition-all text-white">
                     <Upload className="w-5 h-5 text-white" />
+                    <span className="text-[10px] font-bold mt-1 text-white">Upload Logo</span>
                     <input
                       type="file"
                       accept="image/*"
