@@ -1,6 +1,9 @@
 'use client';
 
 import {
+  Archive,
+  ArchiveRestore,
+  Boxes,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -155,6 +158,30 @@ export function SellerProductList() {
     }
   };
 
+  const handleToggleArchive = async (id: string, currentStatus: string) => {
+    const nextStatus = currentStatus === 'archived' ? 'active' : 'archived';
+    try {
+      const res = await fetch(`/api/v1/seller/products/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(
+          data.message ||
+            `Product ${nextStatus === 'archived' ? 'archived' : 'activated'} successfully!`,
+          'success',
+        );
+        fetchProducts();
+      } else {
+        showToast(data.message || 'Failed to update status.', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'An error occurred.', 'error');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Toast Banner */}
@@ -210,6 +237,14 @@ export function SellerProductList() {
             <RefreshCw className={`w-3.5 h-3.5 ${isReconciling ? 'animate-spin' : ''}`} />
             {isReconciling ? 'Syncing Photos...' : 'Sync Main Photos'}
           </button>
+
+          <Link
+            href="/seller/inventory"
+            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2"
+          >
+            <Boxes className="w-4 h-4 text-amber-400" />
+            Inventory & Stocks
+          </Link>
 
           <Link
             href="/seller/products/new"
@@ -424,6 +459,21 @@ export function SellerProductList() {
 
                       <td className="py-4 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleToggleArchive(p.id, p.status)}
+                            className="p-2 bg-slate-100 hover:bg-amber-500 hover:text-white text-slate-700 rounded-lg border border-slate-200 transition-all"
+                            title={
+                              p.status === 'archived'
+                                ? 'Unarchive (Publish to Store)'
+                                : 'Archive (Hide from Store)'
+                            }
+                          >
+                            {p.status === 'archived' ? (
+                              <ArchiveRestore className="w-4 h-4 text-emerald-600" />
+                            ) : (
+                              <Archive className="w-4 h-4 text-slate-600" />
+                            )}
+                          </button>
                           <Link
                             href={`/seller/products/${p.id}/edit`}
                             className="p-2 bg-slate-100 hover:bg-navy hover:text-white text-slate-700 rounded-lg border border-slate-200 transition-all"

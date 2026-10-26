@@ -2,6 +2,7 @@
 
 import {
   BarChart3,
+  Boxes,
   Building2,
   CheckCircle2,
   Clock,
@@ -32,6 +33,7 @@ const SELLER_NAV = [
   { name: 'Apply Leave (Vacation)', href: '/seller/shop?tab=vacation', icon: Palmtree },
   { name: 'Shop Customization', href: '/seller/shop', icon: Store },
   { name: 'Products Catalog', href: '/seller/products', icon: ShoppingBag },
+  { name: 'Inventory & Stocks', href: '/seller/inventory', icon: Boxes },
   { name: 'Vendor Orders', href: '/seller/orders', icon: Package },
   { name: 'Merchant Profile', href: '/seller/profile', icon: User },
   { name: 'Settings & Bank', href: '/seller/settings', icon: Settings },

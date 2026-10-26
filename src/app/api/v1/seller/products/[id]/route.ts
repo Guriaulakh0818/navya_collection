@@ -520,12 +520,26 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     const body = await request.json();
-    const { stockDelta, newStock, variantId, variantStockUpdates } = body;
+    const { stockDelta, newStock, variantId, variantStockUpdates, status } = body;
 
     let updatedStock = Number(product.stock);
+    let updatedStatus = product.status;
     const updatedVariants: any[] = [];
 
     await prisma.$transaction(async (tx) => {
+      // 0. Update Status if provided (e.g. archive / active / draft)
+      if (status && typeof status === 'string') {
+        const normalizedStatus = status.toLowerCase();
+        const validStatuses = ['active', 'archived', 'draft', 'pending_approval'];
+        if (validStatuses.includes(normalizedStatus)) {
+          await tx.product.update({
+            where: { id },
+            data: { status: normalizedStatus },
+          });
+          updatedStatus = normalizedStatus;
+        }
+      }
+
       // 1. If variant-level batch updates are provided
       if (Array.isArray(variantStockUpdates) && variantStockUpdates.length > 0) {
         for (const vUp of variantStockUpdates) {
@@ -624,12 +638,17 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       });
     });
 
+    const actionMessage = status
+      ? `Product "${product.name}" status updated to ${updatedStatus}.`
+      : `Stock updated successfully for "${product.name}". Current stock: ${updatedStock}`;
+
     return NextResponse.json({
       success: true,
-      message: `Stock updated successfully for "${product.name}". Current stock: ${updatedStock}`,
+      message: actionMessage,
       data: {
         id: product.id,
         stock: updatedStock,
+        status: updatedStatus,
         variants: updatedVariants,
       },
     });

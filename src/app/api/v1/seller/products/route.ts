@@ -82,6 +82,7 @@ export async function GET(request: NextRequest) {
     }
 
     const status = searchParams.get('status') || 'ALL';
+    const stockFilter = searchParams.get('stockFilter');
     const query = (searchParams.get('q') || '').trim().toLowerCase();
     const categoryId = searchParams.get('categoryId');
     const page = parseInt(searchParams.get('page') || '1', 10);
@@ -98,6 +99,14 @@ export async function GET(request: NextRequest) {
 
     if (status !== 'ALL') {
       whereCondition.status = status;
+    }
+
+    if (stockFilter === 'in_stock') {
+      whereCondition.stock = { gt: 0 };
+    } else if (stockFilter === 'low_stock') {
+      whereCondition.stock = { gt: 0, lte: 5 };
+    } else if (stockFilter === 'out_of_stock') {
+      whereCondition.stock = { lte: 0 };
     }
 
     if (categoryId) {
@@ -144,6 +153,15 @@ export async function GET(request: NextRequest) {
       }),
       archived: await prisma.product.count({
         where: { ...shopFilter, status: 'archived', deletedAt: null },
+      }),
+      inStock: await prisma.product.count({
+        where: { ...shopFilter, stock: { gt: 0 }, deletedAt: null },
+      }),
+      lowStock: await prisma.product.count({
+        where: { ...shopFilter, stock: { gt: 0, lte: 5 }, deletedAt: null },
+      }),
+      outOfStock: await prisma.product.count({
+        where: { ...shopFilter, stock: { lte: 0 }, deletedAt: null },
       }),
     };
 
