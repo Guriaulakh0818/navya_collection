@@ -2,7 +2,9 @@
 
 import {
   Building2,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   FileText,
   Home,
   Mail,
@@ -40,6 +42,7 @@ export function ShopProfileStorefront({
   const [sortOption, setSortOption] = useState<string>('newest');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoadingCatalog, setIsLoadingCatalog] = useState<boolean>(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
 
   // Filter Catalog Fetcher (Strict Shop Isolation)
   const filterCatalog = async (q: string, cat: string, sort: string) => {
@@ -135,9 +138,42 @@ export function ShopProfileStorefront({
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-xl line-clamp-2">
-                  {shop.description || `${shop.name} boutique partner on JiivaaKart marketplace.`}
-                </p>
+                {(() => {
+                  const shopDesc =
+                    shop.description || `${shop.name} boutique partner on JiivaaKart marketplace.`;
+                  const isLong = shopDesc.length > 110;
+
+                  return (
+                    <div className="mt-1 max-w-2xl">
+                      <p
+                        className={`text-xs sm:text-sm text-slate-600 leading-relaxed transition-all ${
+                          !isDescriptionExpanded ? 'line-clamp-2' : ''
+                        }`}
+                      >
+                        {shopDesc}
+                      </p>
+                      {isLong && (
+                        <button
+                          type="button"
+                          onClick={() => setIsDescriptionExpanded((prev) => !prev)}
+                          className="mt-1 text-xs text-orange hover:text-orange/80 font-extrabold inline-flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          {isDescriptionExpanded ? (
+                            <>
+                              <span>Show less</span>
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </>
+                          ) : (
+                            <>
+                              <span>Read more</span>
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 <div className="flex items-center gap-4 mt-3 text-xs text-slate-600 flex-wrap">
                   {shop.rating && shop.rating > 0 && shop.reviewCount && shop.reviewCount > 0 ? (
