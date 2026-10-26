@@ -15,7 +15,7 @@ import {
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-const CACHE_KEY = 'navya_seller_dashboard_cache';
+const CACHE_KEY = 'navya_seller_dashboard_cache_v3';
 
 function DashboardSkeleton() {
   return (
@@ -152,6 +152,12 @@ export default function SellerDashboardPage() {
   const shop = data?.shop || {};
   const recentOrders = data?.recentOrders || [];
   const monthlyRevenue = data?.monthlyRevenue || [];
+  const fulfillment = data?.fulfillment || {
+    total: 0,
+    delivered: { count: 0, percentage: 0 },
+    pendingDispatch: { count: 0, percentage: 0 },
+    returns: { count: 0, percentage: 0 },
+  };
 
   return (
     <div className="space-y-8">
@@ -269,16 +275,27 @@ export default function SellerDashboardPage() {
           <div className="h-48 pt-6 flex items-end justify-between gap-4 border-b border-slate-200 pb-2">
             {monthlyRevenue.map((item: any, idx: number) => {
               const maxRev = Math.max(...monthlyRevenue.map((m: any) => m.revenue), 1000);
-              const heightPct = Math.max(15, Math.min(100, (item.revenue / maxRev) * 100));
+              const heightPct =
+                item.revenue > 0 ? Math.max(12, Math.min(100, (item.revenue / maxRev) * 100)) : 4;
 
               return (
                 <div key={idx} className="flex-1 flex flex-col items-center gap-2 group">
-                  <div className="text-[10px] font-mono text-navy font-bold opacity-0 group-hover:opacity-100 transition-all">
-                    ₹{item.revenue}
+                  <div
+                    className={`text-[10px] font-mono font-bold transition-all ${
+                      item.revenue > 0
+                        ? 'text-navy opacity-80 group-hover:opacity-100 group-hover:scale-110'
+                        : 'text-slate-300 opacity-0 group-hover:opacity-100'
+                    }`}
+                  >
+                    ₹{Number(item.revenue || 0).toLocaleString('en-IN')}
                   </div>
                   <div
                     style={{ height: `${heightPct}%` }}
-                    className="w-full bg-gradient-to-t from-navy/30 via-navy/70 to-navy rounded-t-lg transition-all group-hover:brightness-110"
+                    className={`w-full rounded-t-lg transition-all group-hover:brightness-110 ${
+                      item.revenue > 0
+                        ? 'bg-gradient-to-t from-navy/40 via-navy/80 to-navy'
+                        : 'bg-slate-100'
+                    }`}
                   />
                   <span className="text-[10px] text-slate-500 font-semibold">{item.month}</span>
                 </div>
@@ -289,41 +306,77 @@ export default function SellerDashboardPage() {
 
         {/* Fulfillment Summary */}
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm space-y-4">
-          <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-            <Truck className="w-4 h-4 text-navy shrink-0" />
-            <span>Order Fulfillment Status</span>
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+              <Truck className="w-4 h-4 text-navy shrink-0" />
+              <span>Order Fulfillment Status</span>
+            </h3>
+            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+              {fulfillment.total} Total Orders
+            </span>
+          </div>
 
           <div className="space-y-4 pt-2">
             <div>
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-slate-600 font-medium">Delivered Orders</span>
-                <span className="text-emerald-600 font-bold">85%</span>
+                <span className="text-emerald-600 font-bold">
+                  {fulfillment.delivered.percentage}%
+                  <span className="text-slate-400 font-normal ml-1">
+                    ({fulfillment.delivered.count})
+                  </span>
+                </span>
               </div>
               <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div className="bg-emerald-500 h-full w-[85%]" />
+                <div
+                  className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${fulfillment.delivered.percentage}%` }}
+                />
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-slate-600 font-medium">Pending Dispatch</span>
-                <span className="text-orange font-bold">12%</span>
+                <span className="text-orange font-bold">
+                  {fulfillment.pendingDispatch.percentage}%
+                  <span className="text-slate-400 font-normal ml-1">
+                    ({fulfillment.pendingDispatch.count})
+                  </span>
+                </span>
               </div>
               <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div className="bg-orange h-full w-[12%]" />
+                <div
+                  className="bg-orange h-full rounded-full transition-all duration-500"
+                  style={{ width: `${fulfillment.pendingDispatch.percentage}%` }}
+                />
               </div>
             </div>
 
             <div>
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-slate-600 font-medium">Returns & Exchanges</span>
-                <span className="text-rose-600 font-bold">3%</span>
+                <span className="text-rose-600 font-bold">
+                  {fulfillment.returns.percentage}%
+                  <span className="text-slate-400 font-normal ml-1">
+                    ({fulfillment.returns.count})
+                  </span>
+                </span>
               </div>
               <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                <div className="bg-rose-500 h-full w-[3%]" />
+                <div
+                  className="bg-rose-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${fulfillment.returns.percentage}%` }}
+                />
               </div>
             </div>
+
+            {fulfillment.total === 0 && (
+              <p className="text-[11px] text-slate-400 pt-1 text-center font-medium">
+                Live fulfillment percentages will automatically update as customer orders are placed
+                and processed.
+              </p>
+            )}
           </div>
         </div>
       </div>

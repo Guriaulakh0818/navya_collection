@@ -143,6 +143,7 @@ export async function GET(request: Request) {
       inventoryAggregation,
       recentOrders,
       pastOrders,
+      allVendorOrders,
     ] = await Promise.all([
       prisma.product.count({
         where: { shopId: shop.id, deletedAt: null },
@@ -223,6 +224,14 @@ export async function GET(request: Request) {
         },
         orderBy: { createdAt: 'asc' },
       }),
+      prisma.vendorOrder.findMany({
+        where: { shopId: shop.id },
+        select: {
+          id: true,
+          status: true,
+          shippingStatus: true,
+        },
+      }),
     ]);
 
     const totalRevenue = Number(
@@ -230,6 +239,54 @@ export async function GET(request: Request) {
     );
 
     const totalInventoryStock = inventoryAggregation._sum.stock || 0;
+
+    // Calculate live Order Fulfillment metrics from database
+    let deliveredCount = 0;
+    let pendingDispatchCount = 0;
+    let returnsCount = 0;
+
+    allVendorOrders.forEach((order) => {
+      const isDelivered = order.status === 'DELIVERED' || order.shippingStatus === 'DELIVERED';
+      const isReturnOrCancel =
+        ['RETURN_REQUESTED', 'RETURNED', 'EXCHANGED', 'RTO', 'CANCELLED'].includes(order.status) ||
+        ['RTO', 'CANCELLED', 'FAILED', 'RTO_INITIATED', 'RTO_IN_TRANSIT', 'RTO_DELIVERED'].includes(
+          order.shippingStatus,
+        );
+
+      if (isDelivered) {
+        deliveredCount++;
+      } else if (isReturnOrCancel) {
+        returnsCount++;
+      } else {
+        pendingDispatchCount++;
+      }
+    });
+
+    const totalFulfillmentOrders = allVendorOrders.length;
+    const deliveredPct =
+      totalFulfillmentOrders > 0 ? Math.round((deliveredCount / totalFulfillmentOrders) * 100) : 0;
+    const pendingPct =
+      totalFulfillmentOrders > 0
+        ? Math.round((pendingDispatchCount / totalFulfillmentOrders) * 100)
+        : 0;
+    const returnsPct =
+      totalFulfillmentOrders > 0 ? Math.round((returnsCount / totalFulfillmentOrders) * 100) : 0;
+
+    const fulfillment = {
+      total: totalFulfillmentOrders,
+      delivered: {
+        count: deliveredCount,
+        percentage: deliveredPct,
+      },
+      pendingDispatch: {
+        count: pendingDispatchCount,
+        percentage: pendingPct,
+      },
+      returns: {
+        count: returnsCount,
+        percentage: returnsPct,
+      },
+    };
 
     const monthNames = [
       'Jan',
@@ -291,6 +348,7 @@ export async function GET(request: Request) {
         },
         monthlyRevenue,
         recentOrders,
+        fulfillment,
       },
     };
 
