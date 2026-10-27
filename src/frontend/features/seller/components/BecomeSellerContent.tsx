@@ -1,9 +1,10 @@
 'use client';
 
-import { IndianRupee, Loader2, Sparkles, Store, Truck, Users } from 'lucide-react';
+import { IndianRupee, Loader2, Lock, Sparkles, Store, Truck, Users } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { SellerLoginCard } from '@/frontend/features/seller/components/SellerLoginCard';
 import { SellerRegistrationWizard } from '@/frontend/features/seller/components/SellerRegistrationWizard';
 import {
   SellerStatusData,
@@ -15,6 +16,7 @@ export function BecomeSellerContent() {
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   const [statusData, setStatusData] = useState<SellerStatusData | null>(null);
   const [forceNewForm, setForceNewForm] = useState(false);
+  const [portalMode, setPortalMode] = useState<'register' | 'login'>('register');
 
   const fetchSellerStatus = useCallback(async () => {
     setIsLoadingStatus(true);
@@ -51,6 +53,12 @@ export function BecomeSellerContent() {
 
   useEffect(() => {
     fetchSellerStatus();
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab') === 'login' || params.get('mode') === 'login') {
+        setPortalMode('login');
+      }
+    }
   }, [fetchSellerStatus]);
 
   if (isLoadingStatus) {
@@ -78,7 +86,7 @@ export function BecomeSellerContent() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 py-12 px-4 sm:px-6 lg:px-8 font-sans">
       {/* Hero Header */}
-      <div className="max-w-4xl mx-auto text-center space-y-4 mb-12">
+      <div className="max-w-4xl mx-auto text-center space-y-4 mb-8">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange/10 border border-orange/20 text-orange text-xs font-extrabold uppercase tracking-widest shadow-xs">
           <Sparkles className="w-4 h-4 text-orange animate-pulse" />
           Multi-Vendor Seller Network
@@ -95,9 +103,44 @@ export function BecomeSellerContent() {
         </p>
       </div>
 
-      {/* Embedded 8-Step Seller Onboarding Wizard (Placed at the top as requested) */}
+      {/* Segmented Pill Switcher: Register New Store vs Existing Merchant Login */}
+      <div className="max-w-md mx-auto mb-10">
+        <div className="grid grid-cols-2 p-1.5 bg-slate-200/80 rounded-2xl shadow-inner border border-slate-300/40">
+          <button
+            type="button"
+            onClick={() => setPortalMode('register')}
+            className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              portalMode === 'register'
+                ? 'bg-white text-navy shadow-sm'
+                : 'text-slate-600 hover:text-navy hover:bg-white/40'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-orange" />
+            <span>Register Store</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPortalMode('login')}
+            className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              portalMode === 'login'
+                ? 'bg-white text-navy shadow-sm'
+                : 'text-slate-600 hover:text-navy hover:bg-white/40'
+            }`}
+          >
+            <Lock className="w-4 h-4 text-orange" />
+            <span>Merchant Login</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Active Portal View: Registration Wizard or Dedicated Merchant Login */}
       <div className="mb-12">
-        <SellerRegistrationWizard />
+        {portalMode === 'register' ? (
+          <SellerRegistrationWizard onSwitchToLogin={() => setPortalMode('login')} />
+        ) : (
+          <SellerLoginCard onSwitchToRegister={() => setPortalMode('register')} />
+        )}
       </div>
 
       {/* Feature Highlights Grid (Placed below registration form as requested) */}

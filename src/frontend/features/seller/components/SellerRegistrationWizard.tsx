@@ -2,6 +2,7 @@
 
 import {
   AlertCircle,
+  ArrowRight,
   Building2,
   CheckCircle2,
   FileCheck,
@@ -31,7 +32,11 @@ const STEPS = [
   { id: 8, name: 'Review & Submit', icon: CheckCircle2 },
 ];
 
-export function SellerRegistrationWizard() {
+export function SellerRegistrationWizard({
+  onSwitchToLogin,
+}: {
+  onSwitchToLogin?: () => void;
+} = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
@@ -930,6 +935,22 @@ export function SellerRegistrationWizard() {
       {/* STEP 1: Email Verification */}
       {currentStep === 1 && (
         <div className="space-y-6">
+          {onSwitchToLogin && (
+            <div className="p-3.5 rounded-xl bg-orange/5 border border-orange/20 text-slate-700 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+              <span className="font-semibold text-navy">
+                Already registered your store with JiivaaKart?
+              </span>
+              <button
+                type="button"
+                onClick={onSwitchToLogin}
+                className="text-orange font-extrabold hover:underline inline-flex items-center gap-1 cursor-pointer self-start sm:self-auto"
+              >
+                <span>Merchant Login (Password / OTP)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           <h2 className="text-lg font-extrabold text-navy flex items-center gap-2">
             <Mail className="w-5 h-5 text-orange" />
             Step 1: Email Verification
