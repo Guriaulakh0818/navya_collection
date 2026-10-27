@@ -1008,6 +1008,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     return () => clearTimeout(timer);
   }, [
     formData.name,
+    formData.description,
     formData.price,
     formData.compareAtPrice,
     formData.fabric,
