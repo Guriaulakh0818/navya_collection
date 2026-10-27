@@ -123,6 +123,7 @@ export function ProductCard({ product }: ProductCardProps) {
                   title={cv.color}
                 >
                   {cv.imageUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={cv.imageUrl}
                       alt={cv.color}
