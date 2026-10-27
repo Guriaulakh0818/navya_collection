@@ -189,7 +189,11 @@ export default async function middleware(req: NextRequest) {
   }
 
   if (isSellerSubdomain) {
-    if (pathname === '/login') {
+    if (pathname === '/' || pathname === '/register') {
+      rewriteUrl.pathname = '/become-seller';
+      effectivePathname = '/become-seller';
+      shouldRewrite = true;
+    } else if (pathname === '/login') {
       rewriteUrl.pathname = '/login';
       effectivePathname = '/login';
       shouldRewrite = true;

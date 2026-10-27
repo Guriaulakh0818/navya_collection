@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -6,11 +7,13 @@ import { ProductDetailClient } from '@/frontend/features/products/components/Pro
 import { ProductService } from '@/frontend/features/products/services/product.service';
 import { prisma } from '@/lib/prisma';
 
+export const revalidate = 600; // Incremental Static Revalidation (ISR) every 10 minutes
+
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function getFormattedProduct(slug: string) {
+const getFormattedProduct = cache(async (slug: string) => {
   try {
     const res = await ProductService.getProductByIdOrSlug(slug);
     if (res?.success && res?.data) {
@@ -155,7 +158,7 @@ async function getFormattedProduct(slug: string) {
     console.error(`Error fetching product by slug (${slug}):`, error);
   }
   return null;
-}
+});
 
 async function getProductDiscoveryData(
   productId: string,

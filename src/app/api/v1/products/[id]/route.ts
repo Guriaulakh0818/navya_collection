@@ -86,6 +86,19 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     const result = await ProductService.updateProduct(id, validation.data);
 
+    if (result.success) {
+      try {
+        const { revalidatePath, revalidateTag } = await import('next/cache');
+        revalidatePath('/');
+        revalidatePath('/shop');
+        revalidatePath(`/product/${id}`);
+        revalidateTag('marketplace-home');
+        revalidateTag('products');
+      } catch (err) {
+        console.warn('Cache revalidation error on product update:', err);
+      }
+    }
+
     return NextResponse.json(
       {
         success: result.success,
@@ -134,6 +147,19 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
     const result = await ProductService.deleteProduct(id);
+
+    if (result.success) {
+      try {
+        const { revalidatePath, revalidateTag } = await import('next/cache');
+        revalidatePath('/');
+        revalidatePath('/shop');
+        revalidatePath(`/product/${id}`);
+        revalidateTag('marketplace-home');
+        revalidateTag('products');
+      } catch (err) {
+        console.warn('Cache revalidation error on product delete:', err);
+      }
+    }
 
     return NextResponse.json(
       {

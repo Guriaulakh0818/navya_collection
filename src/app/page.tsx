@@ -1,6 +1,4 @@
 import { Metadata } from 'next';
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
 
 import { FeaturedBoutiquesSection } from '@/frontend/features/marketplace/components/FeaturedBoutiquesSection';
 import { FreshArrivalsSection } from '@/frontend/features/marketplace/components/FreshArrivalsSection';
@@ -13,11 +11,9 @@ import { TrendingProductsSection } from '@/frontend/features/marketplace/compone
 import { WhyShopNavyaSection } from '@/frontend/features/marketplace/components/WhyShopNavyaSection';
 import { HOMEPAGE_FAQS } from '@/frontend/features/marketplace/constants/homepage-faqs';
 import { getMarketplaceHomeData } from '@/frontend/features/marketplace/services/marketplace-data';
-import { BecomeSellerContent } from '@/frontend/features/seller/components/BecomeSellerContent';
 import { generateFaqSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 120; // Incremental Static Revalidation (ISR) every 2 minutes
 
 export const metadata: Metadata = {
   title: SEO_CONSTANTS.DEFAULT_TITLE,
@@ -50,24 +46,6 @@ export const metadata: Metadata = {
 };
 
 export default async function MultiVendorMarketplaceHomePage() {
-  let host = '';
-  try {
-    const headersList = await headers();
-    host = (headersList.get('x-forwarded-host') || headersList.get('host') || '').toLowerCase();
-  } catch {
-    host = '';
-  }
-
-  // If accessed via admin.navyacollection.store or admin subdomain, redirect to admin dashboard
-  if (host.startsWith('admin.') || host.includes('admin.navyacollection.store')) {
-    redirect('/admin/dashboard');
-  }
-
-  // If accessed via seller.navyacollection.store or seller subdomain, render the Become Seller portal
-  if (host.startsWith('seller.') || host.includes('seller.navyacollection.store')) {
-    return <BecomeSellerContent />;
-  }
-
   let featuredShops: any[] = [];
   let trendingProducts: any[] = [];
   let newArrivals: any[] = [];

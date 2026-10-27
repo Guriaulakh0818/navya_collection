@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { prisma } from '@/lib/prisma';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 120; // 2 minutes Edge CDN cache
 
 export async function GET() {
   try {
@@ -115,7 +114,7 @@ export async function GET() {
       },
       {
         headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',
         },
       },
     );

@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -5,11 +6,13 @@ import { generateShopJsonLdSchemas, generateShopMetadata, JsonLd } from '@/featu
 import { ShopProfileStorefront } from '@/frontend/features/shop/components/ShopProfileStorefront';
 import { prisma } from '@/lib/prisma';
 
+export const revalidate = 300; // Incremental Static Revalidation (ISR) every 5 minutes
+
 interface ShopPageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function getApprovedShopBySlug(slug: string) {
+const getApprovedShopBySlug = cache(async (slug: string) => {
   if (!slug) return null;
   const cleanSlug = slug.toLowerCase().trim();
 
@@ -122,7 +125,7 @@ async function getApprovedShopBySlug(slug: string) {
     console.error(`Error fetching shop by slug (${slug}):`, error);
     return null;
   }
-}
+});
 
 export async function generateMetadata({ params }: ShopPageProps): Promise<Metadata> {
   const { slug } = await params;

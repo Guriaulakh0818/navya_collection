@@ -21,7 +21,7 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 600; // Incremental Static Revalidation (ISR) every 10 minutes
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

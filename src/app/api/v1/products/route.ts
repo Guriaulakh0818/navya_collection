@@ -93,6 +93,18 @@ export async function POST(request: NextRequest) {
 
     const result = await ProductService.createProduct(validation.data);
 
+    if (result.success) {
+      try {
+        const { revalidatePath, revalidateTag } = await import('next/cache');
+        revalidatePath('/');
+        revalidatePath('/shop');
+        revalidateTag('marketplace-home');
+        revalidateTag('products');
+      } catch (err) {
+        console.warn('Cache revalidation error on product creation:', err);
+      }
+    }
+
     return NextResponse.json(
       {
         success: result.success,

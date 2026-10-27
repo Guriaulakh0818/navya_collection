@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 
 import { OfferService } from '@/backend/services/offer.service';
 import { CATEGORIES } from '@/features/categories/constants/category.constants';
@@ -96,7 +97,7 @@ function sanitizeOffer(o: any) {
   };
 }
 
-export const getMarketplaceHomeData = safeCache(async () => {
+const fetchMarketplaceHomeData = async () => {
   try {
     const [
       featuredShops,
@@ -372,4 +373,17 @@ export const getMarketplaceHomeData = safeCache(async () => {
       offers: [],
     };
   }
+};
+
+const getCachedMarketplaceHomeData = unstable_cache(
+  fetchMarketplaceHomeData,
+  ['marketplace-home-data'],
+  {
+    revalidate: 120, // 2 minutes
+    tags: ['marketplace-home', 'products', 'shops'],
+  },
+);
+
+export const getMarketplaceHomeData = safeCache(async () => {
+  return getCachedMarketplaceHomeData();
 });
