@@ -122,7 +122,13 @@ export function ProductCard({ product }: ProductCardProps) {
                   title={cv.color}
                 >
                   {cv.imageUrl ? (
-                    <img src={cv.imageUrl} alt={cv.color} className="w-full h-full object-cover" />
+                    <img
+                      src={cv.imageUrl}
+                      alt={cv.color}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <span className="w-full h-full bg-slate-200 text-[8px] flex items-center justify-center font-bold text-slate-600">
                       {cv.color.charAt(0)}

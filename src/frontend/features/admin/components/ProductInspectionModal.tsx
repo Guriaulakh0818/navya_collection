@@ -280,6 +280,8 @@ export function ProductInspectionModal({
                   <img
                     src={activeImage}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
@@ -319,6 +321,8 @@ export function ProductInspectionModal({
                           <img
                             src={img.imageUrl}
                             alt={`Photo ${idx + 1}`}
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-cover"
                           />
                           {img.isPrimary && (
@@ -357,6 +361,8 @@ export function ProductInspectionModal({
                           <img
                             src={vImg.imageUrl}
                             alt={vImg.label || 'Variant'}
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-cover"
                           />
                         </button>
@@ -610,6 +616,8 @@ export function ProductInspectionModal({
                                   <img
                                     src={v.imageUrl}
                                     alt={v.name || 'Variant'}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (

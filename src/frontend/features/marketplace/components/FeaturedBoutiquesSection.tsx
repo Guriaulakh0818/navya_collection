@@ -137,7 +137,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                     src={bannerUrl}
                     alt="Style That Speaks - JiivaaKart"
                     fill
-                    priority={index < 2}
+                    priority={index < 1}
                     sizes="290px"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />

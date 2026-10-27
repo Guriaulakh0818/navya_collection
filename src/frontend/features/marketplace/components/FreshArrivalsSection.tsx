@@ -122,7 +122,7 @@ export function FreshArrivalsSection({ products }: FreshArrivalsSectionProps) {
                     alt={p.name}
                     fill
                     unoptimized
-                    priority={index < 3}
+                    priority={index < 1}
                     sizes="220px"
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />

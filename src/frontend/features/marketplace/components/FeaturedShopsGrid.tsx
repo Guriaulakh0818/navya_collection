@@ -53,7 +53,7 @@ export const FeaturedShopsGrid = React.memo(function FeaturedShopsGrid({
                 src={bannerUrl}
                 alt="Style That Speaks - JiivaaKart"
                 fill
-                priority={index < 2}
+                priority={index < 1}
                 sizes="(max-width: 640px) 280px, 320px"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
               />

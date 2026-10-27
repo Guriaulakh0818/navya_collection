@@ -431,6 +431,8 @@ export function AiStudioEnhancerModal({
                   <img
                     src={previewOriginalUrl}
                     alt="Original Upload"
+                    loading="lazy"
+                    decoding="async"
                     className={`max-w-full max-h-[440px] object-contain rounded-xl shadow-xs ${
                       !cutoutBase64 || viewMode === 'before' ? 'block' : 'hidden'
                     }`}

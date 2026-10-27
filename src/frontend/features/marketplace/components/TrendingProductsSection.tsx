@@ -138,7 +138,7 @@ export function TrendingProductsSection({ products }: TrendingProductsSectionPro
                       src={imageSrc}
                       alt={p.name}
                       fill
-                      priority={index < 2}
+                      priority={index < 1}
                       sizes="240px"
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />

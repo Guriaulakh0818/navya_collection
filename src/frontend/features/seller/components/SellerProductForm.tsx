@@ -2566,6 +2566,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                   <img
                     src={q.previewUrl}
                     alt="Uploading"
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover opacity-50"
                   />
                   <span className="absolute text-[10px] font-bold text-navy bg-white/90 px-2 py-0.5 rounded-full shadow-xs">
@@ -2591,6 +2593,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                   <img
                     src={img.imageUrl}
                     alt={`Product ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                   {img.isPrimary && (
