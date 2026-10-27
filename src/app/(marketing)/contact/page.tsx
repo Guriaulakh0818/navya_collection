@@ -10,6 +10,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${SEO_CONSTANTS.SITE_URL}/contact`,
   },
+  robots: {
+    index: true,
+    follow: true,
+    'max-image-preview': 'large',
+    'max-snippet': -1,
+    'max-video-preview': -1,
+  },
   openGraph: {
     title: `Contact Us | ${SEO_CONSTANTS.SITE_NAME}`,
     description:

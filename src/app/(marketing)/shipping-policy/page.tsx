@@ -12,6 +12,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${SEO_CONSTANTS.SITE_URL}/shipping-policy`,
   },
+  robots: {
+    index: true,
+    follow: true,
+    'max-image-preview': 'large',
+    'max-snippet': -1,
+    'max-video-preview': -1,
+  },
   openGraph: {
     title: `Shipping Policy & Delivery Information | ${SEO_CONSTANTS.SITE_NAME}`,
     description:

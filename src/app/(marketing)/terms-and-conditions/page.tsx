@@ -12,6 +12,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: `${SEO_CONSTANTS.SITE_URL}/terms-and-conditions`,
   },
+  robots: {
+    index: true,
+    follow: true,
+    'max-image-preview': 'large',
+    'max-snippet': -1,
+    'max-video-preview': -1,
+  },
   openGraph: {
     title: `Terms & Conditions | ${SEO_CONSTANTS.SITE_NAME}`,
     description:
