@@ -8,6 +8,20 @@ import { ProductService } from '@/frontend/features/products/services/product.se
 import { prisma } from '@/lib/prisma';
 
 export const revalidate = 600; // Incremental Static Revalidation (ISR) every 10 minutes
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  try {
+    const products = await prisma.product.findMany({
+      where: { status: 'active', deletedAt: null },
+      select: { slug: true },
+      take: 50,
+    });
+    return products.filter((p) => Boolean(p.slug)).map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;

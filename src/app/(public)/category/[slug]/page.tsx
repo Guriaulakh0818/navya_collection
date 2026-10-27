@@ -345,6 +345,11 @@ type Props = {
 };
 
 export const revalidate = 300; // Incremental Static Revalidation (ISR) every 5 minutes
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  return CATEGORIES.map((cat) => ({ slug: cat.slug }));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

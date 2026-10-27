@@ -7,6 +7,20 @@ import { ShopProfileStorefront } from '@/frontend/features/shop/components/ShopP
 import { prisma } from '@/lib/prisma';
 
 export const revalidate = 300; // Incremental Static Revalidation (ISR) every 5 minutes
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  try {
+    const shops = await prisma.shop.findMany({
+      where: { status: 'APPROVED', deletedAt: null },
+      select: { slug: true },
+      take: 20,
+    });
+    return shops.filter((s) => Boolean(s.slug)).map((s) => ({ slug: s.slug }));
+  } catch {
+    return [];
+  }
+}
 
 interface ShopPageProps {
   params: Promise<{ slug: string }>;
