@@ -348,7 +348,14 @@ export const revalidate = 300; // Incremental Static Revalidation (ISR) every 5 
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  return CATEGORIES.map((cat) => ({ slug: cat.slug }));
+  const slugs = new Set<string>();
+  CATEGORIES.forEach((cat) => {
+    if (cat.slug) slugs.add(cat.slug);
+    (cat.subCategories || []).forEach((sub) => {
+      if (sub.slug) slugs.add(sub.slug);
+    });
+  });
+  return Array.from(slugs).map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
