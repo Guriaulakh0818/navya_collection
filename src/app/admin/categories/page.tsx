@@ -223,7 +223,7 @@ export default function AdminCategoriesPage() {
       {/* Header Banner */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-navy text-white p-6 sm:p-8 rounded-3xl shadow-xl">
         <div>
-          <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-gold text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-amber-300 text-xs font-bold uppercase tracking-wider mb-2">
             <Layers className="h-4 w-4" />
             <span>Garment Taxonomy &amp; Catalog Governance</span>
           </div>
@@ -239,7 +239,7 @@ export default function AdminCategoriesPage() {
         {!isSupervisor && (
           <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
             <Button
-              className="rounded-xl bg-gold/90 hover:bg-gold text-navy text-xs font-extrabold px-4 py-2.5 gap-2 cursor-pointer shadow-md disabled:opacity-50"
+              className="rounded-xl bg-amber-400 hover:bg-amber-300 text-navy text-xs font-black px-4 py-2.5 gap-2 cursor-pointer shadow-md disabled:opacity-50 transition-all active:scale-95"
               onClick={handleSyncTaxonomy}
               disabled={isSyncingTaxonomy}
             >
