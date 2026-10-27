@@ -1,12 +1,11 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 
 export const metadata = {
-  robots: {
-    index: false,
-    follow: true,
+  alternates: {
+    canonical: 'https://jiivaakart.com/category/kids',
   },
 };
 
 export default function KidsRedirectPage() {
-  redirect('/category/kids');
+  permanentRedirect('/category/kids');
 }

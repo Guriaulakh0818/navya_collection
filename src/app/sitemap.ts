@@ -111,38 +111,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    // Query active database categories with at least 1 public product (directly or via child subcategories)
-    const publicProductCondition = {
-      status: 'active',
-      deletedAt: null,
-      shop: {
-        status: 'APPROVED' as const,
-        deletedAt: null,
-      },
-    };
-
+    // 2. Canonical Public Categories across marketplace taxonomy
     dbCategories = await prisma.category.findMany({
       where: {
         deletedAt: null,
         status: 'active',
-        OR: [
-          {
-            products: {
-              some: publicProductCondition,
-            },
-          },
-          {
-            children: {
-              some: {
-                deletedAt: null,
-                status: 'active',
-                products: {
-                  some: publicProductCondition,
-                },
-              },
-            },
-          },
-        ],
       },
       select: { slug: true, updatedAt: true },
     });
@@ -150,6 +123,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const cat of dbCategories) {
       if (cat.slug && cat.slug !== 'all') {
         categoryMap.set(cat.slug.toLowerCase().trim(), cat.updatedAt || now);
+      }
+    }
+
+    // Also include curated taxonomy categories & subcategories from CATEGORIES constants
+    for (const cat of CATEGORIES) {
+      if (cat.slug && cat.slug !== 'all' && !categoryMap.has(cat.slug.toLowerCase().trim())) {
+        categoryMap.set(cat.slug.toLowerCase().trim(), now);
+      }
+      if (cat.subCategories) {
+        for (const sub of cat.subCategories) {
+          if (sub.slug && sub.slug !== 'all' && !categoryMap.has(sub.slug.toLowerCase().trim())) {
+            categoryMap.set(sub.slug.toLowerCase().trim(), now);
+          }
+        }
       }
     }
   } catch (error) {

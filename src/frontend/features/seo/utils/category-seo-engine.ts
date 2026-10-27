@@ -74,7 +74,7 @@ export function generateCategoryMetadata(
   const fullTitle = category.metaTitle || `${category.name} | ${SEO_CONSTANTS.SITE_NAME}`;
   const description = buildNaturalCategoryDescription(category, options?.parentName);
   const imageUrl = category.banner || category.image || SEO_CONSTANTS.DEFAULT_OG_IMAGE;
-  const isIndexable = options?.hasPublicProducts !== false;
+  const isIndexable = category.status !== 'inactive';
 
   return {
     title: { absolute: fullTitle },

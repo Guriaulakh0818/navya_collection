@@ -1,12 +1,11 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 
 export const metadata = {
-  robots: {
-    index: false,
-    follow: true,
+  alternates: {
+    canonical: 'https://jiivaakart.com/category/women',
   },
 };
 
 export default function WomenRedirectPage() {
-  redirect('/category/women');
+  permanentRedirect('/category/women');
 }

@@ -43,7 +43,11 @@ export function FooterLinks({ title, links }: FooterLinksProps) {
       <ul className="mt-3 space-y-2">
         {links.map((link) => (
           <li key={link.href}>
-            <Link href={link.href} className="text-sm text-slate-600 hover:text-navy">
+            <Link
+              href={link.href}
+              className="text-sm text-slate-600 hover:text-navy"
+              rel={['/cart', '/wishlist', '/account'].includes(link.href) ? 'nofollow' : undefined}
+            >
               {link.label}
             </Link>
           </li>

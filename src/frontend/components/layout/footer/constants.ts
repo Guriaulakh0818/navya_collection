@@ -20,7 +20,7 @@ export const footerLinks = {
     { href: '/category/men', label: "Men's Collection" },
     { href: '/category/kids', label: "Kids' Fashion" },
     { href: '/category/best-sellers', label: 'Best Sellers' },
-    { href: '/shops', label: 'Boutique Shops' },
+    { href: '/shop', label: 'Boutique Shops' },
   ],
   policies: [
     { href: '/privacy-policy', label: 'Privacy Policy' },

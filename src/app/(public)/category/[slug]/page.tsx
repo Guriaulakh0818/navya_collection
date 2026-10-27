@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound, permanentRedirect, redirect } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import {
@@ -351,11 +351,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const cleanSlug = (slug || '').toLowerCase().trim();
 
   if (CATEGORY_ALIAS_MAP[cleanSlug]) {
+    const targetSlug = CATEGORY_ALIAS_MAP[cleanSlug];
     return {
+      title: `Redirecting... | JiivaaKart`,
       alternates: {
-        canonical: `https://jiivaakart.com/category/${CATEGORY_ALIAS_MAP[cleanSlug]}`,
+        canonical: `https://jiivaakart.com/category/${targetSlug}`,
       },
-      robots: { index: false, follow: true },
     };
   }
 
@@ -496,7 +497,7 @@ export default async function CategoryPage({ params }: Props) {
   const cleanSlug = (slug || '').toLowerCase().trim();
 
   if (CATEGORY_ALIAS_MAP[cleanSlug]) {
-    redirect(`/category/${CATEGORY_ALIAS_MAP[cleanSlug]}`);
+    permanentRedirect(`/category/${CATEGORY_ALIAS_MAP[cleanSlug]}`);
   }
 
   let dbCategory: any = null;
