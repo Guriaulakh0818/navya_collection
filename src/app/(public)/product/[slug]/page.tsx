@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
+import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 
 import { generateProductJsonLdSchemas, generateProductMetadata, JsonLd } from '@/features/seo';
@@ -15,7 +16,7 @@ export async function generateStaticParams() {
     const products = await prisma.product.findMany({
       where: { status: 'active', deletedAt: null },
       select: { slug: true },
-      take: 50,
+      take: 500, // Pre-render all active catalog products instead of only 50
     });
     return products.filter((p) => Boolean(p.slug)).map((p) => ({ slug: p.slug }));
   } catch {
@@ -27,9 +28,17 @@ interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
 
+const getCachedProductBySlug = unstable_cache(
+  async (slug: string) => {
+    return await ProductService.getProductByIdOrSlug(slug);
+  },
+  ['product-detail-raw-v1'],
+  { revalidate: 600, tags: ['products'] },
+);
+
 const getFormattedProduct = cache(async (slug: string) => {
   try {
-    const res = await ProductService.getProductByIdOrSlug(slug);
+    const res = await getCachedProductBySlug(slug);
     if (res?.success && res?.data) {
       const dbProd = res.data;
       const reviews =
@@ -174,16 +183,18 @@ const getFormattedProduct = cache(async (slug: string) => {
   return null;
 });
 
-const getProductDiscoveryData = cache(
+const getCachedProductDiscoveryRaw = unstable_cache(
   async (productId: string, categoryId?: string | null, shopId?: string | null) => {
     try {
       const baseInclude = {
         images: {
           where: { deletedAt: null },
           orderBy: [{ isPrimary: 'desc' as const }, { sortOrder: 'asc' as const }],
+          take: 2, // only top 2 images needed for card display & hover
         },
         variants: {
           where: { deletedAt: null },
+          take: 5, // only top 5 color variations needed
         },
         shop: {
           select: {
@@ -214,19 +225,16 @@ const getProductDiscoveryData = cache(
         rating: p.rating ? Number(p.rating) : null,
         reviewCount: p.reviewCount ? Number(p.reviewCount) : 0,
         stock: p.stock ?? 0,
-        images: (p.images || []).map((img: any) => ({
+        images: (p.images || []).slice(0, 2).map((img: any) => ({
           id: img.id,
           imageUrl: img.imageUrl,
           url: img.imageUrl,
           alt: img.altText || p.name,
           isPrimary: Boolean(img.isPrimary),
         })),
-        variants: (p.variants || []).map((v: any) => ({
+        variants: (p.variants || []).slice(0, 5).map((v: any) => ({
           id: v.id,
           color: v.color || (v.attributes as any)?.color || null,
-          size: v.size || (v.attributes as any)?.size || null,
-          price: Number(v.price ?? p.price ?? 0),
-          compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : null,
           imageUrl: v.imageUrl || (v.attributes as any)?.imageUrl || null,
         })),
         shop: p.shop
@@ -248,30 +256,13 @@ const getProductDiscoveryData = cache(
           : null,
       });
 
-      // 1. Similar Category Products (Up to 12)
+      // 1. Similar Category Products (Up to 8)
       const similarPromise = categoryId
         ? prisma.product
             .findMany({
               where: {
                 id: { not: productId },
                 categoryId,
-                deletedAt: null,
-                status: 'active',
-              },
-              take: 12,
-              orderBy: { createdAt: 'desc' },
-              include: baseInclude,
-            })
-            .catch(() => [])
-        : Promise.resolve([]);
-
-      // 2. Same Boutique Store Products (Up to 8)
-      const shopPromise = shopId
-        ? prisma.product
-            .findMany({
-              where: {
-                id: { not: productId },
-                shopId,
                 deletedAt: null,
                 status: 'active',
               },
@@ -282,7 +273,24 @@ const getProductDiscoveryData = cache(
             .catch(() => [])
         : Promise.resolve([]);
 
-      // 3. Trending across JiivaaKart (Up to 30)
+      // 2. Same Boutique Store Products (Up to 6)
+      const shopPromise = shopId
+        ? prisma.product
+            .findMany({
+              where: {
+                id: { not: productId },
+                shopId,
+                deletedAt: null,
+                status: 'active',
+              },
+              take: 6,
+              orderBy: { createdAt: 'desc' },
+              include: baseInclude,
+            })
+            .catch(() => [])
+        : Promise.resolve([]);
+
+      // 3. Trending across JiivaaKart (Up to 12)
       const trendingPromise = prisma.product
         .findMany({
           where: {
@@ -290,7 +298,7 @@ const getProductDiscoveryData = cache(
             deletedAt: null,
             status: 'active',
           },
-          take: 30,
+          take: 12,
           orderBy: [{ rating: 'desc' }, { createdAt: 'desc' }],
           include: baseInclude,
         })
@@ -306,11 +314,11 @@ const getProductDiscoveryData = cache(
       const shopProducts = shopRaw.map(formatProduct);
       const trendingProducts = trendingRaw.map(formatProduct);
 
-      // If similar category products are fewer than 6, supplement from trending
-      if (similarProds.length < 6) {
+      // If similar category products are fewer than 4, supplement from trending
+      if (similarProds.length < 4) {
         const existingIds = new Set([productId, ...similarProds.map((p) => p.id)]);
         const backfill = trendingProducts.filter((p) => !existingIds.has(p.id));
-        similarProds = [...similarProds, ...backfill.slice(0, 10 - similarProds.length)];
+        similarProds = [...similarProds, ...backfill.slice(0, 6 - similarProds.length)];
       }
 
       return {
@@ -326,6 +334,14 @@ const getProductDiscoveryData = cache(
         trendingProducts: [],
       };
     }
+  },
+  ['product-discovery-v2'],
+  { revalidate: 600, tags: ['products', 'marketplace-home'] },
+);
+
+const getProductDiscoveryData = cache(
+  async (productId: string, categoryId?: string | null, shopId?: string | null) => {
+    return await getCachedProductDiscoveryRaw(productId, categoryId, shopId);
   },
 );
 

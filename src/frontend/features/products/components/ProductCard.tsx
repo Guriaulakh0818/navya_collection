@@ -50,6 +50,7 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Product Image Container */}
       <Link
         href={`/product/${product.slug}`}
+        prefetch={true}
         className="relative aspect-[4/5] w-full overflow-hidden bg-brand-divider block cursor-pointer select-none"
       >
         {imageSrc ? (
@@ -99,7 +100,7 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Product Info */}
       <div className="p-2 sm:p-2.5 flex-1 flex flex-col justify-between space-y-1.5 bg-white">
         <div>
-          <Link href={`/product/${product.slug}`}>
+          <Link href={`/product/${product.slug}`} prefetch={true}>
             <h3 className="font-bold text-navy text-xs sm:text-sm group-hover:text-orange transition-colors line-clamp-1 leading-snug">
               {product.name}
             </h3>
