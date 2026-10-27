@@ -1194,7 +1194,7 @@ export const MAIN_CATEGORY_GROUPS: MainCategoryGroup[] = [
       subtitle:
         'Shop directly from authentic designer boutiques, verified artisans & premium stores',
       image: '/images/categories/category-shops.png',
-      link: '/shops',
+      link: '/shop',
     },
     subSections: [
       {

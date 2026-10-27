@@ -87,7 +87,7 @@ export default async function middleware(req: NextRequest) {
   if (process.env.NODE_ENV === 'production' && proto === 'http') {
     const httpsUrl = new URL(
       `${pathname}${req.nextUrl.search}`,
-      `https://${currentHost || 'navyacollection.store'}`,
+      `https://${currentHost || 'jiivaakart.com'}`,
     );
     return NextResponse.redirect(httpsUrl, 308);
   }

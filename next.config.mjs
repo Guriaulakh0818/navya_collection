@@ -125,7 +125,7 @@ const nextConfig = {
       },
       {
         source: '/shops',
-        destination: '/shop?view=shops',
+        destination: '/shop',
         permanent: true,
       },
       // Category Aliases (308 Permanent SEO Redirects)

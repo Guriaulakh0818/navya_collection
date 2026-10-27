@@ -73,7 +73,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
     { label: '  • Men Wear', href: '/category/men', icon: Shirt },
     { label: '  • Women Wear', href: '/category/women', icon: Shirt },
     { label: '  • Kids Wear', href: '/category/kids', icon: Baby },
-    { label: '  • Shops & Boutiques', href: '/shops', icon: Store },
+    { label: '  • Shops & Boutiques', href: '/shop', icon: Store },
     isVerifiedSeller
       ? { label: 'Seller Dashboard', href: '/seller/dashboard', icon: Store }
       : { label: 'Become a Seller', href: '/become-seller', icon: Store },

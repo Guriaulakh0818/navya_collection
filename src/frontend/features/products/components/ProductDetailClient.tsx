@@ -1476,7 +1476,7 @@ export function ProductDetailClient({
                 Kids
               </Link>
               <Link
-                href="/shops"
+                href="/shop"
                 className="px-3.5 py-1.5 bg-white/10 hover:bg-white hover:text-navy-900 text-white font-bold text-xs rounded-xl border border-white/20 transition-all backdrop-blur-xs"
               >
                 Boutiques

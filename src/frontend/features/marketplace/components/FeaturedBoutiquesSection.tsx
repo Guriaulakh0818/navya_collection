@@ -233,7 +233,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                 cities.
               </p>
               <Link
-                href="/shops"
+                href="/shop"
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange hover:bg-orange-600 text-white text-xs sm:text-sm font-bold shadow-md transition-colors mt-2 w-fit"
               >
                 <span>Browse All Partner Boutiques</span>

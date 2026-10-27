@@ -63,9 +63,9 @@ const megaCategoriesData = [
   },
   {
     title: 'Shops',
-    href: '/shops',
+    href: '/shop',
     items: [
-      { name: 'All Partner Boutiques', href: '/shops' },
+      { name: 'All Partner Boutiques', href: '/shop' },
       { name: 'Trending Shops', href: '/category/trending-shops' },
       { name: 'Top-Rated Boutiques', href: '/category/top-rated-shops' },
       { name: 'New Boutiques', href: '/category/new-shops' },
