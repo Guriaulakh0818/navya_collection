@@ -3426,6 +3426,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                     <img
                                       src={colorImgUrl}
                                       alt={clr}
+                                      loading="lazy"
+                                      decoding="async"
                                       className="w-full h-full object-cover"
                                     />
                                     <button
@@ -3542,6 +3544,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                             <img
                                               src={img.imageUrl}
                                               alt=""
+                                              loading="lazy"
+                                              decoding="async"
                                               className="w-full h-full object-cover"
                                             />
                                           </button>
@@ -3695,6 +3699,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                                     <img
                                                       src={v.imageUrl}
                                                       alt=""
+                                                      loading="lazy"
+                                                      decoding="async"
                                                       className="w-full h-full object-cover"
                                                     />
                                                     <button
@@ -3960,6 +3966,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                     <img
                                       src={v.imageUrl}
                                       alt=""
+                                      loading="lazy"
+                                      decoding="async"
                                       className="w-full h-full object-cover"
                                     />
                                   </div>
@@ -4175,6 +4183,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                                       <img
                                         src={v.imageUrl}
                                         alt="Variant"
+                                        loading="lazy"
+                                        decoding="async"
                                         className="w-full h-full object-cover"
                                       />
                                       <button

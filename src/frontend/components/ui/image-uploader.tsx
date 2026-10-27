@@ -327,6 +327,8 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
                 <img
                   src={img.secureUrl || img.url}
                   alt={img.altText || `Product Image ${idx + 1}`}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
                 />
 
