@@ -13,6 +13,7 @@ import {
   Percent,
   Plus,
   RotateCcw,
+  Search,
   Send,
   ShieldCheck,
   ShoppingBag,
@@ -42,7 +43,12 @@ import {
   SIZE_SYSTEMS,
 } from '@/config/product-attribute-engine';
 import { AiStudioEnhancerModal } from '@/frontend/features/seller/components/AiStudioEnhancerModal';
-import { autoCategorizeProduct } from '@/shared/utils/auto-categorizer';
+import {
+  autoCategorizeProduct,
+  ExtractedAttributes,
+  RankedCategoryCandidate,
+  SpotlightCurationItem,
+} from '@/shared/utils/auto-categorizer';
 
 type ProductFormProps = {
   productId?: string;
@@ -308,6 +314,11 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
     Array.from(new Set(initialCategoryIds.length > 0 ? initialCategoryIds : ['cat_women_sarees'])),
   );
+  const [liveTopCandidates, setLiveTopCandidates] = useState<RankedCategoryCandidate[]>([]);
+  const [liveSpotlightCurations, setLiveSpotlightCurations] = useState<SpotlightCurationItem[]>([]);
+  const [extractedAttributes, setExtractedAttributes] = useState<ExtractedAttributes | null>(null);
+  const [categorySearchQuery, setCategorySearchQuery] = useState('');
+  const [isLiveCategorizing, setIsLiveCategorizing] = useState(false);
 
   const [formData, setFormData] = useState(() => getDefaultFormData(initialData));
 
@@ -957,6 +968,103 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     });
   };
 
+  // Live As-You-Type Smart Categorization & Attribute Extraction
+  useEffect(() => {
+    const title = (formData.name || '').trim();
+    if (title.length < 3) {
+      setLiveTopCandidates([]);
+      setLiveSpotlightCurations([]);
+      setExtractedAttributes(null);
+      return;
+    }
+
+    setIsLiveCategorizing(true);
+    const timer = setTimeout(() => {
+      let userSelectedGender: 'men' | 'women' | 'kids' = 'women';
+      if (activeDeptId === 'dept_men' || selectedMainCat === 'group_men') {
+        userSelectedGender = 'men';
+      } else if (activeDeptId === 'dept_kids' || selectedMainCat === 'group_kids') {
+        userSelectedGender = 'kids';
+      } else {
+        userSelectedGender = 'women';
+      }
+
+      const res = autoCategorizeProduct({
+        name: formData.name,
+        description: formData.description,
+        price: Number(formData.price),
+        compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : undefined,
+        fabric: formData.fabric,
+        occasion: formData.occasion,
+        gender: userSelectedGender,
+      });
+
+      setLiveTopCandidates(res.topCandidates || []);
+      setLiveSpotlightCurations(res.spotlightCurations || []);
+      setExtractedAttributes(res.extractedAttributes || null);
+      setIsLiveCategorizing(false);
+    }, 280);
+
+    return () => clearTimeout(timer);
+  }, [
+    formData.name,
+    formData.price,
+    formData.compareAtPrice,
+    formData.fabric,
+    formData.occasion,
+    activeDeptId,
+    selectedMainCat,
+  ]);
+
+  const handleApplyCandidate = (candidate: RankedCategoryCandidate) => {
+    // 1. Assign primary category and retain non-conflicting spotlight/tags
+    setSelectedCategoryIds((prev) => {
+      const nonCatIds = prev.filter((id) => !id.startsWith('cat_'));
+      return Array.from(new Set([candidate.categoryId, ...nonCatIds]));
+    });
+    setFormData((prev) => ({
+      ...prev,
+      categoryId: candidate.categoryId,
+    }));
+
+    // 2. Synchronize Department & Subcategory in Category Engine
+    setActiveDeptId(candidate.deptId);
+    setActiveSubId(candidate.subId);
+
+    // 3. Synchronize Category Mapping browser tabs
+    setSelectedMainCat(candidate.departmentGroup);
+    const foundMain = CATEGORY_TAXONOMY.find((c) => c.id === candidate.departmentGroup);
+    if (foundMain && foundMain.sections.length > 0) {
+      setSelectedSectionId(foundMain.sections[0].id);
+    }
+
+    // 4. Synchronize Product Type & Garment Template
+    handleProductTypeChange(candidate.suggestedProductType, true);
+
+    showToast(`✓ Applied "${candidate.name}" (${candidate.matchPercentage}% match)`, 'success');
+  };
+
+  const handleApplyExtractedAttributes = () => {
+    if (!extractedAttributes) return;
+    setFormData((prev) => ({
+      ...prev,
+      fabric: extractedAttributes.fabric || prev.fabric,
+      pattern: extractedAttributes.pattern || prev.pattern,
+      sleeve: extractedAttributes.sleeve || prev.sleeve,
+      taxGstRate: extractedAttributes.suggestedGstRate
+        ? extractedAttributes.suggestedGstRate
+        : prev.taxGstRate,
+      hsnCode: extractedAttributes.suggestedHsnCode || prev.hsnCode,
+    }));
+    showToast('✓ Auto-filled fabric, pattern & tax details from title!', 'success');
+  };
+
+  const toggleSpotlightTag = (spotId: string) => {
+    setSelectedCategoryIds((prev) =>
+      prev.includes(spotId) ? prev.filter((id) => id !== spotId) : [...prev, spotId],
+    );
+  };
+
   const handleAutoDetectCategories = () => {
     if (!formData.name.trim()) {
       showToast('Please enter a Product Name first to auto-detect categories.', 'error');
@@ -1022,6 +1130,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     if (res.suggestedProductType) {
       handleProductTypeChange(res.suggestedProductType, true);
     }
+
+    setLiveTopCandidates(res.topCandidates || []);
+    setLiveSpotlightCurations(res.spotlightCurations || []);
+    setExtractedAttributes(res.extractedAttributes || null);
 
     showToast(
       `Auto-detected ${res.categoryIds.length} categories for ${
@@ -2071,17 +2183,89 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 text-xs">
           <div className="md:col-span-2">
-            <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-              Product Name / Title <span className="text-rose-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block font-bold text-slate-700 uppercase tracking-wider">
+                Product Name / Title <span className="text-rose-500">*</span>
+              </label>
+              {isLiveCategorizing && (
+                <span className="text-[10px] font-bold text-orange flex items-center gap-1 animate-pulse">
+                  <Sparkles className="w-3 h-3" /> Analyzing garment...
+                </span>
+              )}
+            </div>
             <input
               type="text"
               required
               placeholder="e.g. Royal Blue Banarasi Silk Saree with Gold Zari Border"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-slate-900 font-bold focus:border-navy focus:bg-white focus:outline-none transition-all"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-slate-900 font-bold focus:border-navy focus:bg-white focus:outline-none transition-all shadow-2xs"
             />
+
+            {/* LIVE AI SHORTLISTED CATEGORIES BAR */}
+            {liveTopCandidates.length > 0 && (
+              <div className="mt-2.5 p-3 rounded-xl bg-gradient-to-r from-orange-50/70 via-amber-50/40 to-white border border-orange/25 shadow-2xs space-y-2">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 text-xs font-black text-navy">
+                    <Sparkles className="w-3.5 h-3.5 text-orange animate-pulse" />
+                    <span>AI Shortlisted Categories:</span>
+                    <span className="text-[10px] font-semibold text-slate-500 hidden sm:inline">
+                      (1-Click auto-sets category, size chart & attributes)
+                    </span>
+                  </div>
+                  {extractedAttributes &&
+                    (extractedAttributes.fabric || extractedAttributes.pattern) && (
+                      <button
+                        type="button"
+                        onClick={handleApplyExtractedAttributes}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange/10 hover:bg-orange/20 text-orange font-extrabold text-[10px] transition-all cursor-pointer border border-orange/20 active:scale-95"
+                        title="Auto-fill detected attributes from product name"
+                      >
+                        <Sparkles className="w-3 h-3" /> Auto-fill{' '}
+                        {extractedAttributes.fabric || extractedAttributes.pattern}
+                      </button>
+                    )}
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  {liveTopCandidates.map((candidate, idx) => {
+                    const isCurrentActive =
+                      selectedCategoryIds[0] === candidate.categoryId ||
+                      formData.categoryId === candidate.categoryId;
+                    return (
+                      <button
+                        key={candidate.categoryId}
+                        type="button"
+                        onClick={() => handleApplyCandidate(candidate)}
+                        className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border shadow-2xs active:scale-95 ${
+                          isCurrentActive
+                            ? 'bg-navy text-white border-navy ring-2 ring-navy/20 font-black'
+                            : 'bg-white hover:bg-orange/5 text-slate-700 hover:text-navy border-slate-200 hover:border-orange/40'
+                        }`}
+                      >
+                        {isCurrentActive ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        ) : (
+                          <span className="w-4 h-4 rounded-full bg-slate-100 group-hover:bg-orange/10 text-slate-600 group-hover:text-orange text-[10px] font-black flex items-center justify-center">
+                            {idx + 1}
+                          </span>
+                        )}
+                        <span>{candidate.name}</span>
+                        <span
+                          className={`px-1.5 py-0.2 rounded-md text-[10px] font-extrabold ${
+                            isCurrentActive
+                              ? 'bg-white/20 text-emerald-300'
+                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          }`}
+                        >
+                          {candidate.matchPercentage}% match
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -2281,6 +2465,58 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               </button>
             </div>
 
+            {/* 4-TIER SPOTLIGHT & STORE CURATIONS */}
+            {liveSpotlightCurations.length > 0 && (
+              <div className="p-3 bg-gradient-to-r from-amber-50/60 via-orange-50/30 to-white rounded-xl border border-amber-200/70 space-y-2">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                    <span className="text-xs font-black text-navy uppercase tracking-wider">
+                      Auto-Curated Spotlight & Collections
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    Tagged automatically by style, price & discount rules
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {liveSpotlightCurations.map((spot) => {
+                    const isSelected = selectedCategoryIds.includes(spot.id);
+                    return (
+                      <button
+                        key={spot.id}
+                        type="button"
+                        onClick={() => toggleSpotlightTag(spot.id)}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border active:scale-95 ${
+                          isSelected
+                            ? 'bg-amber-500 text-white border-amber-600 shadow-2xs font-extrabold'
+                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                        }`}
+                        title={spot.reason}
+                      >
+                        {isSelected ? (
+                          <CheckCircle2 className="w-3 h-3 text-white" />
+                        ) : (
+                          <Plus className="w-3 h-3 text-slate-400" />
+                        )}
+                        <span>{spot.name}</span>
+                        {spot.badge && (
+                          <span
+                            className={`px-1 py-0.2 rounded text-[9px] font-black uppercase ${
+                              isSelected ? 'bg-black/20 text-white' : 'bg-slate-100 text-slate-500'
+                            }`}
+                          >
+                            {spot.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Selected Category Tags Chips */}
             <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 bg-white rounded-xl border border-slate-200">
               {selectedCategoryIds.length === 0 ? (
@@ -2309,28 +2545,61 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               )}
             </div>
 
-            {/* Category Browser Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {CATEGORY_TAXONOMY.map((mainCat) => (
+            {/* Category Search & Filter */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search categories & collections (e.g. Kurta, Saree, Denim, Cargo, Korean)..."
+                value={categorySearchQuery}
+                onChange={(e) => setCategorySearchQuery(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-navy font-medium"
+              />
+              {categorySearchQuery && (
                 <button
-                  key={mainCat.id}
                   type="button"
-                  onClick={() => handleMainCategoryChange(mainCat.id)}
-                  className={`px-3 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all cursor-pointer ${
-                    selectedMainCat === mainCat.id
-                      ? 'bg-navy text-white shadow-xs'
-                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                  }`}
+                  onClick={() => setCategorySearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer text-xs"
                 >
-                  {mainCat.name}
+                  ✕
                 </button>
-              ))}
+              )}
             </div>
+
+            {/* Category Browser Tabs (Shown when no search query active) */}
+            {!categorySearchQuery.trim() && (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {CATEGORY_TAXONOMY.map((mainCat) => (
+                  <button
+                    key={mainCat.id}
+                    type="button"
+                    onClick={() => handleMainCategoryChange(mainCat.id)}
+                    className={`px-3 py-1.5 rounded-xl font-bold text-xs whitespace-nowrap transition-all cursor-pointer ${
+                      selectedMainCat === mainCat.id
+                        ? 'bg-navy text-white shadow-xs'
+                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                    }`}
+                  >
+                    {mainCat.name}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Subcategory Checkbox Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 bg-white p-3 rounded-xl border border-slate-200 max-h-48 overflow-y-auto">
               {allFlattenedCategories
-                .filter((c: any) => c.mainGroupId === selectedMainCat)
+                .filter((c: any) => {
+                  if (categorySearchQuery.trim()) {
+                    const q = categorySearchQuery.toLowerCase();
+                    return (
+                      c.name.toLowerCase().includes(q) ||
+                      c.breadcrumb.toLowerCase().includes(q) ||
+                      c.id.toLowerCase().includes(q)
+                    );
+                  }
+                  return c.mainGroupId === selectedMainCat;
+                })
                 .map((cat: any) => {
                   const isChecked = selectedCategoryIds.includes(cat.id);
                   return (
@@ -2348,7 +2617,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                         onChange={() => toggleCategory(cat.id)}
                         className="rounded text-orange focus:ring-orange h-3.5 w-3.5 cursor-pointer"
                       />
-                      <span className="truncate">{cat.name}</span>
+                      <span className="truncate" title={cat.breadcrumb}>
+                        {cat.name}
+                      </span>
                     </label>
                   );
                 })}
