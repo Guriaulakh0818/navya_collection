@@ -13,8 +13,7 @@ const INTERNAL_SYNC_SECRET =
 // POST /api/v1/admin/catalog/sync - Bulk Synchronize Approved Shops & Real Products into Prisma DB
 export async function POST(request: NextRequest) {
   try {
-    const authHeader =
-      request.headers.get('authorization') || request.headers.get('x-sync-secret');
+    const authHeader = request.headers.get('authorization') || request.headers.get('x-sync-secret');
     const isSecretAuthorized =
       authHeader &&
       (authHeader === INTERNAL_SYNC_SECRET || authHeader === `Bearer ${INTERNAL_SYNC_SECRET}`);
@@ -234,6 +233,14 @@ export async function POST(request: NextRequest) {
       if (v.sku) varBySku.set(v.sku, v.id);
     }
 
+    // Preload categories to ensure foreign key safety and smart slug resolution
+    const allDbCategories = await prisma.category.findMany({
+      select: { id: true, slug: true, name: true },
+    });
+    const catById = new Set(allDbCategories.map((c) => c.id));
+    const catBySlug = new Map(allDbCategories.map((c) => [c.slug.toLowerCase(), c.id]));
+    const fallbackCategoryId = allDbCategories[0]?.id;
+
     for (const p of productsToSync) {
       const existingId =
         prodById.get(p.id) ||
@@ -243,6 +250,43 @@ export async function POST(request: NextRequest) {
       let assignedShopId = p.shopId ? shopIdMap.get(p.shopId) : null;
       if (!assignedShopId && fallbackShop) {
         assignedShopId = fallbackShop.id;
+      }
+
+      // Safely resolve categoryId to strictly avoid foreign key violation
+      let resolvedCategoryId = p.categoryId;
+      if (!catById.has(resolvedCategoryId)) {
+        if (catBySlug.has(resolvedCategoryId.toLowerCase())) {
+          resolvedCategoryId = catBySlug.get(resolvedCategoryId.toLowerCase())!;
+        } else if (
+          p.categoryId === 'cat_men_shirts' &&
+          (catBySlug.get('men-shirts') || catBySlug.get('gents-wear'))
+        ) {
+          resolvedCategoryId = (catBySlug.get('men-shirts') || catBySlug.get('gents-wear'))!;
+        } else if (
+          p.categoryId === 'cat_men_tshirts' &&
+          (catBySlug.get('men-t-shirts') || catBySlug.get('gents-wear'))
+        ) {
+          resolvedCategoryId = (catBySlug.get('men-t-shirts') || catBySlug.get('gents-wear'))!;
+        } else if (
+          p.categoryId === 'cat_men_jeans' &&
+          (catBySlug.get('men-jeans') || catBySlug.get('gents-wear'))
+        ) {
+          resolvedCategoryId = (catBySlug.get('men-jeans') || catBySlug.get('gents-wear'))!;
+        } else if (
+          p.categoryId === 'cat_men_trackpants' &&
+          (catBySlug.get('men-track-pants') || catBySlug.get('gents-wear'))
+        ) {
+          resolvedCategoryId = (catBySlug.get('men-track-pants') || catBySlug.get('gents-wear'))!;
+        } else if (
+          p.categoryId === 'cat_baby_boys' &&
+          (catBySlug.get('baby-boys') || catBySlug.get('boys-wear') || catBySlug.get('kids-wear'))
+        ) {
+          resolvedCategoryId = (catBySlug.get('baby-boys') ||
+            catBySlug.get('boys-wear') ||
+            catBySlug.get('kids-wear'))!;
+        } else if (fallbackCategoryId) {
+          resolvedCategoryId = fallbackCategoryId;
+        }
       }
 
       const prodData = {
@@ -262,7 +306,7 @@ export async function POST(request: NextRequest) {
         status: p.status || 'active',
         isFeatured: p.isFeatured || false,
         isNewArrival: p.isNewArrival || false,
-        categoryId: p.categoryId,
+        categoryId: resolvedCategoryId,
         shopId: assignedShopId,
         rating: p.rating || 0,
         reviewCount: p.reviewCount || 0,
@@ -301,7 +345,7 @@ export async function POST(request: NextRequest) {
         status: p.status || 'active',
         isFeatured: p.isFeatured || false,
         isNewArrival: p.isNewArrival || false,
-        categoryId: p.categoryId,
+        categoryId: resolvedCategoryId,
         shopId: assignedShopId,
         rating: p.rating || 0,
         reviewCount: p.reviewCount || 0,
@@ -360,7 +404,9 @@ export async function POST(request: NextRequest) {
           try {
             if (isExisting) {
               await prisma.productImage.updateMany({
-                where: { OR: [{ id: img.id }, { imageUrl: img.imageUrl, productId: activeProdId }] },
+                where: {
+                  OR: [{ id: img.id }, { imageUrl: img.imageUrl, productId: activeProdId }],
+                },
                 data: {
                   imageUrl: img.imageUrl,
                   secureUrl: img.secureUrl,
@@ -395,9 +441,7 @@ export async function POST(request: NextRequest) {
       if (p.variants && p.variants.length > 0) {
         for (const v of p.variants) {
           const variantName =
-            (v as any).name ||
-            `${v.size || ''} ${v.color || ''}`.trim() ||
-            'Standard Variant';
+            (v as any).name || `${v.size || ''} ${v.color || ''}`.trim() || 'Standard Variant';
 
           const existingVarId = varById.get(v.id) || (v.sku ? varBySku.get(v.sku) : undefined);
 

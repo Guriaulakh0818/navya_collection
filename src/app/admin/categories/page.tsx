@@ -203,9 +203,36 @@ export default function AdminCategoriesPage() {
   // Filter Primary Categories vs Subcategories
   const primaryCategories = categories.filter((c) => !c.parentId);
 
-  const getSubcategories = (parentCatId: string) => {
-    return categories.filter((c) => c.parentId === parentCatId);
-  };
+  const getSubcategories = useCallback(
+    (parentCatId: string) => {
+      return categories.filter((c) => c.parentId === parentCatId);
+    },
+    [categories],
+  );
+
+  // Recursively calculate total products (direct + all subcategories & descendants)
+  const getCategoryProductCount = useCallback(
+    (catId: string): number => {
+      const cat = categories.find((c) => c.id === catId);
+      if (!cat) return 0;
+      if (typeof cat.totalProductsCount === 'number') {
+        return cat.totalProductsCount;
+      }
+      // Frontend roll-up fallback if totalProductsCount is not present
+      const visited = new Set<string>();
+      const compute = (id: string): number => {
+        if (visited.has(id)) return 0;
+        visited.add(id);
+        const item = categories.find((c) => c.id === id);
+        const direct = item?._count?.directProducts ?? (item?._count?.products || 0);
+        const children = categories.filter((c) => c.parentId === id);
+        const childrenSum = children.reduce((acc, ch) => acc + compute(ch.id), 0);
+        return direct + childrenSum;
+      };
+      return compute(catId);
+    },
+    [categories],
+  );
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -378,7 +405,7 @@ export default function AdminCategoriesPage() {
                           variant="secondary"
                           className="bg-emerald-50 text-emerald-800 border border-emerald-200 font-extrabold px-3 py-1 text-xs"
                         >
-                          {primaryCat._count?.products || 0} Products
+                          {getCategoryProductCount(primaryCat.id)} Products
                         </Badge>
                       </td>
 
@@ -436,7 +463,10 @@ export default function AdminCategoriesPage() {
                 </p>
                 <h3 className="text-lg font-extrabold text-navy">{activeParentCategory.name}</h3>
                 <p className="text-xs text-slate-600 mt-0.5">
-                  {getSubcategories(activeParentCategory.id).length} sub-types assigned
+                  {getSubcategories(activeParentCategory.id).length} sub-types assigned &bull;{' '}
+                  <span className="font-extrabold text-emerald-700">
+                    {getCategoryProductCount(activeParentCategory.id)} Total Active Products
+                  </span>
                 </p>
               </div>
               {!isSupervisor && (
@@ -468,42 +498,52 @@ export default function AdminCategoriesPage() {
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-                  {getSubcategories(activeParentCategory.id).map((sub) => (
-                    <div
-                      key={sub.id}
-                      className="p-3.5 flex items-center justify-between hover:bg-slate-50/80 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-7 w-7 rounded-lg bg-orange/10 border border-orange/20 flex items-center justify-center text-orange font-bold text-xs">
-                          ✂️
+                  {getSubcategories(activeParentCategory.id).map((sub) => {
+                    const childItems = getSubcategories(sub.id);
+                    return (
+                      <div
+                        key={sub.id}
+                        className="p-3.5 flex items-center justify-between hover:bg-slate-50/80 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="h-7 w-7 rounded-lg bg-orange/10 border border-orange/20 flex items-center justify-center text-orange font-bold text-xs">
+                            ✂️
+                          </div>
+                          <div>
+                            <p className="font-bold text-navy text-xs">{sub.name}</p>
+                            <p className="text-[10px] text-slate-400 font-mono">
+                              {sub.slug}
+                              {childItems.length > 0 && (
+                                <span className="ml-2 font-sans font-semibold text-slate-500">
+                                  ({childItems.length} leaf types)
+                                </span>
+                              )}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-bold text-navy text-xs">{sub.name}</p>
-                          <p className="text-[10px] text-slate-400 font-mono">{sub.slug}</p>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center gap-3">
-                        <Badge
-                          variant="secondary"
-                          className="bg-emerald-50 text-emerald-800 border border-emerald-200 font-extrabold px-2.5 py-0.5 text-[10px]"
-                        >
-                          {sub._count?.products || 0} Products
-                        </Badge>
-
-                        {/* DELETE Button: ONLY visible to OWNER */}
-                        {isOwner && (
-                          <button
-                            onClick={() => handleDelete(sub.id, sub.name)}
-                            className="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 cursor-pointer"
-                            title="Delete Subcategory"
+                        <div className="flex items-center gap-3">
+                          <Badge
+                            variant="secondary"
+                            className="bg-emerald-50 text-emerald-800 border border-emerald-200 font-extrabold px-2.5 py-0.5 text-[10px]"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        )}
+                            {getCategoryProductCount(sub.id)} Products
+                          </Badge>
+
+                          {/* DELETE Button: ONLY visible to OWNER */}
+                          {isOwner && (
+                            <button
+                              onClick={() => handleDelete(sub.id, sub.name)}
+                              className="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 cursor-pointer"
+                              title="Delete Subcategory"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

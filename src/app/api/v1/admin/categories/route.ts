@@ -7,6 +7,51 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Calculates recursive product roll-up counts so parent categories
+ * correctly include products assigned to all leaf & child subcategories.
+ */
+function enrichCategoriesWithRollup(categoriesList: any[]) {
+  const childrenMap = new Map<string, string[]>();
+  const directCountMap = new Map<string, number>();
+
+  for (const cat of categoriesList) {
+    directCountMap.set(cat.id, cat._count?.products || 0);
+    if (cat.parentId) {
+      const list = childrenMap.get(cat.parentId) || [];
+      list.push(cat.id);
+      childrenMap.set(cat.parentId, list);
+    }
+  }
+
+  const getRollupCount = (catId: string, visited = new Set<string>()): number => {
+    if (visited.has(catId)) return 0;
+    visited.add(catId);
+    const direct = directCountMap.get(catId) || 0;
+    const childIds = childrenMap.get(catId) || [];
+    let childrenSum = 0;
+    for (const childId of childIds) {
+      childrenSum += getRollupCount(childId, visited);
+    }
+    return direct + childrenSum;
+  };
+
+  return categoriesList.map((cat) => {
+    const directCount = cat._count?.products || 0;
+    const totalCount = getRollupCount(cat.id);
+    return {
+      ...cat,
+      _count: {
+        ...cat._count,
+        directProducts: directCount,
+        products: totalCount, // Rolled-up total for backward-compatible rendering in table and badges
+      },
+      directProductsCount: directCount,
+      totalProductsCount: totalCount,
+    };
+  });
+}
+
 // GET /api/v1/admin/categories - List live Prisma DB categories (Fast & Bulk-seeded)
 export async function GET(request: NextRequest) {
   try {
@@ -47,7 +92,14 @@ export async function GET(request: NextRequest) {
         description: true,
         parent: { select: { id: true, name: true } },
         _count: {
-          select: { products: { where: { deletedAt: null, status: 'active' } } },
+          select: {
+            products: {
+              where: {
+                deletedAt: null,
+                status: { in: ['active', 'ACTIVE', 'published', 'approved', 'APPROVED'] },
+              },
+            },
+          },
         },
       },
       orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
@@ -102,16 +154,26 @@ export async function GET(request: NextRequest) {
           description: true,
           parent: { select: { id: true, name: true } },
           _count: {
-            select: { products: { where: { deletedAt: null, status: 'active' } } },
+            select: {
+              products: {
+                where: {
+                  deletedAt: null,
+                  status: { in: ['active', 'ACTIVE', 'published', 'approved', 'APPROVED'] },
+                },
+              },
+            },
           },
         },
         orderBy: [{ parentId: 'asc' }, { name: 'asc' }],
       });
     }
 
+    // 3. Compute recursive roll-up product counts (direct + all subcategory descendants)
+    const enrichedCategories = enrichCategoriesWithRollup(categories);
+
     return NextResponse.json({
       success: true,
-      data: categories,
+      data: enrichedCategories,
     });
   } catch (error: any) {
     console.error('❌ GET Admin Categories Error:', error);
