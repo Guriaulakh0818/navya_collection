@@ -231,9 +231,11 @@ async function buildCategoryConditions(
           OR: [
             { parentId: 'group_women' },
             { parent: { slug: 'women' } },
+            { parent: { parentId: 'group_women' } },
             { slug: { startsWith: 'women-' } },
             { parentId: 'group_kids' },
             { parent: { slug: 'kids' } },
+            { parent: { parentId: 'group_kids' } },
             { slug: { startsWith: 'kids-' } },
             { slug: { startsWith: 'boys-' } },
             { slug: { startsWith: 'girls-' } },
@@ -242,11 +244,26 @@ async function buildCategoryConditions(
         },
       },
     });
+    // Never allow women or kids products in Men department
+    andConditions.push({
+      NOT: {
+        OR: [
+          { gender: { equals: 'women', mode: 'insensitive' as const } },
+          { gender: { equals: 'kids', mode: 'insensitive' as const } },
+          { name: { startsWith: 'Women', mode: 'insensitive' as const } },
+          { name: { startsWith: 'Baby', mode: 'insensitive' as const } },
+          { name: { startsWith: 'Girls', mode: 'insensitive' as const } },
+        ],
+      },
+    });
     andConditions.push({
       OR: [
-        { gender: null },
         { gender: { equals: 'men', mode: 'insensitive' as const } },
         { gender: { equals: 'unisex', mode: 'insensitive' as const } },
+        { name: { contains: 'Men', mode: 'insensitive' as const } },
+        { category: { slug: { startsWith: 'men-' } } },
+        { category: { parentId: 'group_men' } },
+        { category: { parent: { parentId: 'group_men' } } },
       ],
     });
   } else if (isWomen) {
@@ -256,9 +273,11 @@ async function buildCategoryConditions(
           OR: [
             { parentId: 'group_men' },
             { parent: { slug: 'men' } },
+            { parent: { parentId: 'group_men' } },
             { slug: { startsWith: 'men-' } },
             { parentId: 'group_kids' },
             { parent: { slug: 'kids' } },
+            { parent: { parentId: 'group_kids' } },
             { slug: { startsWith: 'kids-' } },
             { slug: { startsWith: 'boys-' } },
             { slug: { startsWith: 'girls-' } },
@@ -267,11 +286,30 @@ async function buildCategoryConditions(
         },
       },
     });
+    // Never allow men or kids products in Women department
+    andConditions.push({
+      NOT: {
+        OR: [
+          { gender: { equals: 'men', mode: 'insensitive' as const } },
+          { gender: { equals: 'kids', mode: 'insensitive' as const } },
+          { name: { startsWith: 'Men’s', mode: 'insensitive' as const } },
+          { name: { startsWith: "Men's", mode: 'insensitive' as const } },
+          { name: { startsWith: 'Baby', mode: 'insensitive' as const } },
+          { name: { startsWith: 'Boys', mode: 'insensitive' as const } },
+        ],
+      },
+    });
     andConditions.push({
       OR: [
-        { gender: null },
         { gender: { equals: 'women', mode: 'insensitive' as const } },
         { gender: { equals: 'unisex', mode: 'insensitive' as const } },
+        { name: { contains: 'Women', mode: 'insensitive' as const } },
+        { name: { contains: 'Saree', mode: 'insensitive' as const } },
+        { name: { contains: 'Lehenga', mode: 'insensitive' as const } },
+        { name: { contains: 'Kurti', mode: 'insensitive' as const } },
+        { category: { slug: { startsWith: 'women-' } } },
+        { category: { parentId: 'group_women' } },
+        { category: { parent: { parentId: 'group_women' } } },
       ],
     });
   } else if (isKids) {
@@ -281,19 +319,43 @@ async function buildCategoryConditions(
           OR: [
             { parentId: 'group_men' },
             { parent: { slug: 'men' } },
+            { parent: { parentId: 'group_men' } },
             { slug: { startsWith: 'men-' } },
             { parentId: 'group_women' },
             { parent: { slug: 'women' } },
+            { parent: { parentId: 'group_women' } },
             { slug: { startsWith: 'women-' } },
           ],
         },
       },
     });
+    // Never allow adult men or women products in Kids department
+    andConditions.push({
+      NOT: {
+        OR: [
+          { gender: { equals: 'men', mode: 'insensitive' as const } },
+          { gender: { equals: 'women', mode: 'insensitive' as const } },
+          { name: { startsWith: 'Men’s', mode: 'insensitive' as const } },
+          { name: { startsWith: "Men's", mode: 'insensitive' as const } },
+          { name: { startsWith: 'Women’s', mode: 'insensitive' as const } },
+          { name: { startsWith: "Women's", mode: 'insensitive' as const } },
+        ],
+      },
+    });
     andConditions.push({
       OR: [
-        { gender: null },
         { gender: { equals: 'kids', mode: 'insensitive' as const } },
         { gender: { equals: 'unisex', mode: 'insensitive' as const } },
+        { name: { contains: 'Baby', mode: 'insensitive' as const } },
+        { name: { contains: 'Boy', mode: 'insensitive' as const } },
+        { name: { contains: 'Girl', mode: 'insensitive' as const } },
+        { name: { contains: 'Kid', mode: 'insensitive' as const } },
+        { category: { slug: { startsWith: 'kids-' } } },
+        { category: { slug: { startsWith: 'baby-' } } },
+        { category: { slug: { startsWith: 'boys-' } } },
+        { category: { slug: { startsWith: 'girls-' } } },
+        { category: { parentId: 'group_kids' } },
+        { category: { parent: { parentId: 'group_kids' } } },
       ],
     });
   }
@@ -575,6 +637,33 @@ export default async function CategoryPage({ params }: Props) {
       !isSweatshirt &&
       (cleanSlug.includes('shirt') || categoryLower.includes('shirt'));
 
+    const isMen =
+      cleanSlug === 'men' ||
+      cleanSlug.startsWith('men-') ||
+      cleanSlug === 'all-men-clothing' ||
+      cleanSlug === 'men-clothing' ||
+      category?.id === 'group_men' ||
+      category?.parentId === 'group_men';
+
+    const isWomen =
+      cleanSlug === 'women' ||
+      cleanSlug.startsWith('women-') ||
+      cleanSlug === 'all-women-clothing' ||
+      cleanSlug === 'women-clothing' ||
+      category?.id === 'group_women' ||
+      category?.parentId === 'group_women';
+
+    const isKids =
+      cleanSlug === 'kids' ||
+      cleanSlug.startsWith('kids-') ||
+      cleanSlug.startsWith('baby-') ||
+      cleanSlug.startsWith('boys-') ||
+      cleanSlug.startsWith('girls-') ||
+      cleanSlug.startsWith('teen') ||
+      cleanSlug === 'all-kids-fashion' ||
+      category?.id === 'group_kids' ||
+      category?.parentId === 'group_kids';
+
     const rawProducts = await prisma.product.findMany({
       where: {
         status: 'active',
@@ -597,11 +686,43 @@ export default async function CategoryPage({ params }: Props) {
       orderBy: { createdAt: 'desc' },
     });
 
-    // High-Precision in-memory filter to guarantee shirts vs t-shirts vs sweaters never mix
+    // High-Precision in-memory filter to guarantee department isolation and category precision
     const filteredProducts = rawProducts.filter((p: any) => {
       const pName = (p.name || '').toLowerCase();
       const pDesc = (p.description || '').toLowerCase();
       const pText = `${pName} ${pDesc}`;
+      const pGender = (p.gender || '').toLowerCase();
+
+      // Guard 1: Department Cross-contamination Prevention
+      if (
+        isMen &&
+        (pGender === 'women' ||
+          pGender === 'kids' ||
+          pName.startsWith('women') ||
+          pName.startsWith('baby') ||
+          pName.startsWith('girls'))
+      ) {
+        return false;
+      }
+      if (
+        isWomen &&
+        (pGender === 'men' ||
+          pGender === 'kids' ||
+          pName.startsWith('men') ||
+          pName.startsWith('baby') ||
+          pName.startsWith('boys'))
+      ) {
+        return false;
+      }
+      if (
+        isKids &&
+        (pGender === 'men' ||
+          pGender === 'women' ||
+          pName.startsWith('men') ||
+          pName.startsWith('women'))
+      ) {
+        return false;
+      }
 
       if (isShirt) {
         // Must NOT be a T-Shirt, Sweatshirt, Hoodie or Sweater

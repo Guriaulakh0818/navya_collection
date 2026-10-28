@@ -101,7 +101,56 @@ export async function GET() {
     }
 
     const finalShops = dbShops;
-    const finalProducts = dbProducts;
+    const finalProducts = dbProducts.map((p) => {
+      let g = p.gender;
+      if (!g) {
+        const catSlug = p.category?.slug || '';
+        const parentSlug = p.category?.parent?.slug || '';
+        const grandParentSlug = p.category?.parent?.parent?.slug || '';
+        const pName = (p.name || '').toLowerCase();
+
+        if (
+          catSlug.startsWith('men-') ||
+          parentSlug === 'men' ||
+          grandParentSlug === 'men' ||
+          p.category?.parentId === 'group_men' ||
+          pName.includes('men’s') ||
+          pName.includes("men's") ||
+          pName.includes('gents')
+        ) {
+          g = 'men';
+        } else if (
+          catSlug.startsWith('kids-') ||
+          catSlug.startsWith('baby-') ||
+          catSlug.startsWith('boys-') ||
+          catSlug.startsWith('girls-') ||
+          parentSlug === 'kids' ||
+          grandParentSlug === 'kids' ||
+          p.category?.parentId === 'group_kids' ||
+          pName.includes('baby') ||
+          pName.includes('boy') ||
+          pName.includes('girl') ||
+          pName.includes('kid')
+        ) {
+          g = 'kids';
+        } else if (
+          catSlug.startsWith('women-') ||
+          parentSlug === 'women' ||
+          grandParentSlug === 'women' ||
+          p.category?.parentId === 'group_women' ||
+          pName.includes('women') ||
+          pName.includes('saree') ||
+          pName.includes('lehenga') ||
+          pName.includes('kurti')
+        ) {
+          g = 'women';
+        }
+      }
+      return {
+        ...p,
+        gender: g || p.gender,
+      };
+    });
 
     return NextResponse.json(
       {

@@ -118,7 +118,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'men-s-wine-maroon-textured-full-sleeve-casual-shirt',
       sku: 'NVC-000008',
       brand: null,
-      gender: null,
+      gender: 'men',
       ageGroup: null,
       fabric: null,
       description:
@@ -138,7 +138,7 @@ export const catalogSeed: CatalogSeedType = {
       metaDescription:
         'Shop men’s wine maroon textured casual shirt by Navya Collection. Stylish full-sleeve design with chest pocket and button-down collar, perfect for casual and smart-casual wear.',
       metaKeywords:
-        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_women_sale_under_499, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_korean_store, cat_men_new_arrivals, gents-wear, men’s maroon shirt, wine colour shirt for men, maroon textured shirt, men’s casual maroon shirt, full sleeve maroon shirt, stylish maroon shirt for men, men’s textured casual shirt, regular fit maroon shirt, men’s button down shirt, premium casual shirt for men, Navya Collection shirt, men-formal-shirts, formal shirts, men',
+        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_korean_store, cat_men_new_arrivals, gents-wear, men’s maroon shirt, wine colour shirt for men, maroon textured shirt, men’s casual maroon shirt, full sleeve maroon shirt, stylish maroon shirt for men, men’s textured casual shirt, regular fit maroon shirt, men’s button down shirt, premium casual shirt for men, Navya Collection shirt, men-formal-shirts, formal shirts, men',
       canonicalUrl: null,
       ogImage: null,
       robots: null,
@@ -209,7 +209,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'men-s-wine-maroon-textured-full-sleeve-casual-shirt-1',
       sku: 'NVC-000009',
       brand: null,
-      gender: null,
+      gender: 'men',
       ageGroup: null,
       fabric: null,
       description:
@@ -229,7 +229,7 @@ export const catalogSeed: CatalogSeedType = {
       metaDescription:
         'Shop men’s wine maroon textured casual shirt by Navya Collection. Stylish full-sleeve design with chest pocket and button-down collar, perfect for casual and smart-casual wear.',
       metaKeywords:
-        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_women_sale_under_499, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_korean_store, cat_men_new_arrivals, gents-wear, men’s maroon shirt, wine colour shirt for men, maroon textured shirt, men’s casual maroon shirt, full sleeve maroon shirt, stylish maroon shirt for men, men’s textured casual shirt, regular fit maroon shirt, men’s button down shirt, premium casual shirt for men, Navya Collection shirt, men-shirts, shirts, men, men-formal-shirts, formal shirts',
+        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_korean_store, cat_men_new_arrivals, gents-wear, men’s maroon shirt, wine colour shirt for men, maroon textured shirt, men’s casual maroon shirt, full sleeve maroon shirt, stylish maroon shirt for men, men’s textured casual shirt, regular fit maroon shirt, men’s button down shirt, premium casual shirt for men, Navya Collection shirt, men-shirts, shirts, men, men-formal-shirts, formal shirts',
       canonicalUrl: null,
       ogImage: null,
       robots: null,
@@ -320,7 +320,7 @@ export const catalogSeed: CatalogSeedType = {
       metaDescription:
         'Shop men’s olive green textured casual shirt by Navya Collection. Stylish full-sleeve design with a premium textured finish, perfect for casual and everyday wear',
       metaKeywords:
-        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_women_sale_under_499, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_korean_store, cat_men_new_arrivals, gents-wear, men’s olive green shirt, olive green casual shirt for men, men’s textured shirt, olive green full sleeve shirt, stylish green shirt for men, men’s regular fit shirt, premium casual shirt for men, men’s everyday wear shirt, olive green button down shirt, casual wear shirt for men, Navya Collection shirt, men-shirts, shirts, men, men-formal-shirts, formal shirts',
+        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_korean_store, cat_men_new_arrivals, gents-wear, men’s olive green shirt, olive green casual shirt for men, men’s textured shirt, olive green full sleeve shirt, stylish green shirt for men, men’s regular fit shirt, premium casual shirt for men, men’s everyday wear shirt, olive green button down shirt, casual wear shirt for men, Navya Collection shirt, men-shirts, shirts, men, men-formal-shirts, formal shirts',
       canonicalUrl: null,
       ogImage: null,
       robots: null,
@@ -391,7 +391,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'men-s-grey-camo-print-relaxed-fit-track-lower',
       sku: 'NVC-000016',
       brand: null,
-      gender: null,
+      gender: 'men',
       ageGroup: null,
       fabric: null,
       description:
@@ -482,7 +482,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'men-s-white-blue-vertical-striped-full-sleeve-shirt',
       sku: 'NVC-000018',
       brand: null,
-      gender: null,
+      gender: 'men',
       ageGroup: null,
       fabric: null,
       description:
@@ -502,7 +502,7 @@ export const catalogSeed: CatalogSeedType = {
       metaDescription:
         'Shop men’s white and blue striped full sleeve shirt with classic collar, button closure and chest pocket. Perfect for casual and smart-casual looks.',
       metaKeywords:
-        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_women_sale_under_499, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_korean_store, cat_men_new_arrivals, men-shirts, shirts, men, men-topwear, topwear, women-western-wear, western wear, women, budget-finds, budget finds, in the spotlight, trending, trending now, new-season, new season',
+        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_korean_store, cat_men_new_arrivals, men-shirts, shirts, men, men-topwear, topwear, women-western-wear, western wear, women, budget-finds, budget finds, in the spotlight, trending, trending now, new-season, new season',
       canonicalUrl: null,
       ogImage: null,
       robots: null,
@@ -573,7 +573,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'men-s-grey-printed-full-sleeve-casual-shirt',
       sku: 'NVC-000005',
       brand: null,
-      gender: null,
+      gender: 'men',
       ageGroup: null,
       fabric: null,
       description:
@@ -664,7 +664,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'baby-boys-printed-t-shirt-shorts-set-1',
       sku: 'NVC-000020',
       brand: 'Mackly',
-      gender: null,
+      gender: 'kids',
       ageGroup: null,
       fabric: '100% Cotton (Skin-Friendly)',
       description:
@@ -736,7 +736,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'men-s-black-oversized-graphic-print-cotton-t-shirt',
       sku: 'NVC-000012',
       brand: null,
-      gender: null,
+      gender: 'men',
       ageGroup: null,
       fabric: null,
       description:
@@ -756,7 +756,7 @@ export const catalogSeed: CatalogSeedType = {
       metaDescription:
         '\nShop Men’s Black Graphic Print T-Shirt at Navya Collection. Stylish front and back prints with a comfortable fit, perfect for casual wear, outings, travel, and everyday looks.',
       metaKeywords:
-        'cat_men_tshirts, cat_men_topwear, group_men, spot_budget_finds, cat_women_sale_under_499, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_trendy_street, spot_genz_fashion, spot_korean_store, cat_men_new_arrivals, gents-wear, Men’s Black Graphic Print T-Shirt, Black Graphic T-Shirt for Men, Men’s Printed T-Shirt, Black Printed T-Shirt, Men’s Casual T-Shirt, Men’s Black T-Shirt, Graphic Print T-Shirt, T-Shirt, Trendy Black T-Shirt for Men, Casual Graphic T-Shirt, men-t-shirts, t-shirts, men, men-sports-t-shirts, sports t-shirts',
+        'cat_men_tshirts, cat_men_topwear, group_men, spot_budget_finds, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_trendy_street, spot_genz_fashion, spot_korean_store, cat_men_new_arrivals, gents-wear, Men’s Black Graphic Print T-Shirt, Black Graphic T-Shirt for Men, Men’s Printed T-Shirt, Black Printed T-Shirt, Men’s Casual T-Shirt, Men’s Black T-Shirt, Graphic Print T-Shirt, T-Shirt, Trendy Black T-Shirt for Men, Casual Graphic T-Shirt, men-t-shirts, t-shirts, men, men-sports-t-shirts, sports t-shirts',
       canonicalUrl: null,
       ogImage: null,
       robots: null,
@@ -827,7 +827,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'men-s-beige-textured-full-sleeve-casual-shirt',
       sku: 'NVC-000007',
       brand: null,
-      gender: null,
+      gender: 'men',
       ageGroup: null,
       fabric: null,
       description:
@@ -847,7 +847,7 @@ export const catalogSeed: CatalogSeedType = {
       metaDescription:
         'Shop men’s beige textured full sleeve shirt by Navya Collection. Stylish button-down design with chest pocket and premium textured finish for casual and semi-formal wear.',
       metaKeywords:
-        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_women_sale_under_499, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_korean_store, cat_men_new_arrivals, gents-wear, men’s beige shirt, beige textured shirt for men, men’s casual beige shirt, beige full sleeve shirt, men’s textured casual shirt, stylish beige shirt for men, men’s regular fit shirt, beige button down shirt, premium casual shirt for men, men’s everyday wear shirt, Navya Collection shirt, men-formal-shirts, formal shirts, men, men-shirts, shirts',
+        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_korean_store, cat_men_new_arrivals, gents-wear, men’s beige shirt, beige textured shirt for men, men’s casual beige shirt, beige full sleeve shirt, men’s textured casual shirt, stylish beige shirt for men, men’s regular fit shirt, beige button down shirt, premium casual shirt for men, men’s everyday wear shirt, Navya Collection shirt, men-formal-shirts, formal shirts, men, men-shirts, shirts',
       canonicalUrl: null,
       ogImage: null,
       robots: null,
@@ -918,7 +918,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'men-s-white-textured-casual-full-sleeve-shirt',
       sku: 'NVC-000003',
       brand: null,
-      gender: null,
+      gender: 'men',
       ageGroup: null,
       fabric: null,
       description:
@@ -938,7 +938,7 @@ export const catalogSeed: CatalogSeedType = {
       metaDescription:
         '\nShop men’s white textured casual shirt by Navya Collection. Premium look, comfortable fit and stylish design, perfect for casual, office and everyday wear.',
       metaKeywords:
-        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_women_sale_under_499, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_festivals_india, spot_korean_store, cat_men_new_arrivals, gents-wear, men’s white textured shirt, white casual shirt for men, men’s full sleeve white shirt, premium white shirt for men, textured casual shirt, men’s white regular fit shirt, stylish white shirt for men, white button down shirt, men’s casual wear shirt, Navya Collection shirt, men-shirts, shirts, men, men-formal-shirts, formal shirts',
+        'cat_men_shirts, cat_men_topwear, group_men, spot_budget_finds, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_festivals_india, spot_korean_store, cat_men_new_arrivals, gents-wear, men’s white textured shirt, white casual shirt for men, men’s full sleeve white shirt, premium white shirt for men, textured casual shirt, men’s white regular fit shirt, stylish white shirt for men, white button down shirt, men’s casual wear shirt, Navya Collection shirt, men-shirts, shirts, men, men-formal-shirts, formal shirts',
       canonicalUrl: null,
       ogImage: null,
       robots: null,
@@ -1009,7 +1009,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'men-s-premium-blue-white-checkered-casual-shirt',
       sku: 'NVC-000004',
       brand: null,
-      gender: null,
+      gender: 'men',
       ageGroup: null,
       fabric: null,
       description:
@@ -1302,7 +1302,7 @@ export const catalogSeed: CatalogSeedType = {
       metaDescription:
         '\nShop the Adidas White Graphic T-Shirt with bold blue front and back prints. A stylish streetwear essential for casual, everyday and trendy looks.',
       metaKeywords:
-        'cat_men_tshirts, cat_men_topwear, group_men, spot_budget_finds, cat_women_sale_under_499, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_trendy_street, spot_genz_fashion, spot_korean_store, spot_sports_store, gents-wear, Adidas white t-shirt, Adidas graphic t-shirt, white graphic t-shirt, blue graphic t-shirt, Adidas printed t-shirt, men’s white t-shirt, Adidas streetwear t-shirt, casual white t-shirt, branded graphic t-shirt, oversized white t-shirt, men-t-shirts, t-shirts, men, men-sports-t-shirts, sports t-shirts',
+        'cat_men_tshirts, cat_men_topwear, group_men, spot_budget_finds, cat_men_sale_under_499, group_spotlight, spot_trending_now, spot_new_on_navya, spot_new_season, spot_best_sellers, spot_top_rated, spot_shop_vibe, spot_trendy_street, spot_genz_fashion, spot_korean_store, spot_sports_store, gents-wear, Adidas white t-shirt, Adidas graphic t-shirt, white graphic t-shirt, blue graphic t-shirt, Adidas printed t-shirt, men’s white t-shirt, Adidas streetwear t-shirt, casual white t-shirt, branded graphic t-shirt, oversized white t-shirt, men-t-shirts, t-shirts, men, men-sports-t-shirts, sports t-shirts',
       canonicalUrl: null,
       ogImage: null,
       robots: null,
@@ -1373,7 +1373,7 @@ export const catalogSeed: CatalogSeedType = {
       slug: 'men-s-grey-abstract-printed-full-sleeve-casual-shirt',
       sku: 'NVC-000010',
       brand: null,
-      gender: null,
+      gender: 'men',
       ageGroup: null,
       fabric: null,
       description:

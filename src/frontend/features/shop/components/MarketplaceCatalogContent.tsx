@@ -126,40 +126,77 @@ export function MarketplaceCatalogContent() {
     const parentId = prod.category?.parentId || '';
     const grandParentId = prod.category?.parent?.parentId || '';
 
-    const matchesCategory =
-      selectedCategory === 'all' ||
-      catSlug === selectedCategory ||
-      prod.categoryId === selectedCategory ||
-      parentCatSlug === selectedCategory ||
-      parentId === selectedCategory ||
-      grandParentCatSlug === selectedCategory ||
-      grandParentId === selectedCategory ||
-      (selectedCategory === 'men' &&
-        (prod.gender?.toLowerCase() === 'men' ||
+    const pGender = (prod.gender || '').toLowerCase();
+    const pName = (prod.name || '').toLowerCase();
+
+    let isCategoryMatch = false;
+    if (selectedCategory === 'all') {
+      isCategoryMatch = true;
+    } else if (selectedCategory === 'men') {
+      isCategoryMatch =
+        (pGender === 'men' ||
           catSlug.startsWith('men-') ||
           parentCatSlug === 'men' ||
-          parentId === 'group_men')) ||
-      (selectedCategory === 'women' &&
-        (prod.gender?.toLowerCase() === 'women' ||
+          parentId === 'group_men' ||
+          pName.includes('men')) &&
+        pGender !== 'women' &&
+        pGender !== 'kids' &&
+        !pName.startsWith('women') &&
+        !pName.startsWith('baby');
+    } else if (selectedCategory === 'women') {
+      isCategoryMatch =
+        (pGender === 'women' ||
           catSlug.startsWith('women-') ||
           parentCatSlug === 'women' ||
-          parentId === 'group_women')) ||
-      (selectedCategory === 'kids' &&
-        (prod.gender?.toLowerCase() === 'kids' ||
+          parentId === 'group_women' ||
+          pName.includes('women') ||
+          pName.includes('saree') ||
+          pName.includes('lehenga') ||
+          pName.includes('kurti')) &&
+        pGender !== 'men' &&
+        pGender !== 'kids' &&
+        !pName.startsWith('men') &&
+        !pName.startsWith('baby');
+    } else if (selectedCategory === 'kids') {
+      isCategoryMatch =
+        (pGender === 'kids' ||
           catSlug.startsWith('kids-') ||
           catSlug.startsWith('baby-') ||
           catSlug.startsWith('boys-') ||
           catSlug.startsWith('girls-') ||
           parentCatSlug === 'kids' ||
-          parentId === 'group_kids')) ||
-      ((selectedCategory === 'men-kurtas' || selectedCategory === 'men-kurta-sets') &&
-        (catSlug.includes('kurta') || prod.name?.toLowerCase().includes('kurta'))) ||
-      ((selectedCategory === 'women-kurtas' || selectedCategory === 'women-kurta-sets') &&
-        (catSlug.includes('kurt') || prod.name?.toLowerCase().includes('kurt'))) ||
-      (selectedCategory === 'activewear' &&
-        (catSlug.includes('active') ||
-          catSlug.includes('track') ||
-          prod.name?.toLowerCase().includes('track')));
+          parentId === 'group_kids' ||
+          pName.includes('baby') ||
+          pName.includes('kid')) &&
+        pGender !== 'men' &&
+        pGender !== 'women' &&
+        !pName.startsWith('men') &&
+        !pName.startsWith('women');
+    } else if (selectedCategory === 'men-kurtas' || selectedCategory === 'men-kurta-sets') {
+      isCategoryMatch =
+        (catSlug.includes('kurta') || pName.includes('kurta')) &&
+        pGender !== 'women' &&
+        !catSlug.startsWith('women-') &&
+        !pName.includes('women');
+    } else if (selectedCategory === 'women-kurtas' || selectedCategory === 'women-kurta-sets') {
+      isCategoryMatch =
+        (catSlug.includes('kurt') || pName.includes('kurt')) &&
+        pGender !== 'men' &&
+        !catSlug.startsWith('men-') &&
+        !pName.includes('men');
+    } else if (selectedCategory === 'activewear') {
+      isCategoryMatch =
+        catSlug.includes('active') || catSlug.includes('track') || pName.includes('track');
+    } else {
+      isCategoryMatch =
+        catSlug === selectedCategory ||
+        prod.categoryId === selectedCategory ||
+        parentCatSlug === selectedCategory ||
+        parentId === selectedCategory ||
+        grandParentCatSlug === selectedCategory ||
+        grandParentId === selectedCategory;
+    }
+    const matchesCategory = isCategoryMatch;
 
     // Support URL search parameter filters (gender, occasion, style, filter)
     const genderParam = (searchParams.get('gender') || '').toLowerCase();
@@ -170,26 +207,45 @@ export function MarketplaceCatalogContent() {
     let matchesGender = true;
     if (genderParam === 'men') {
       matchesGender =
-        prod.gender?.toLowerCase() === 'men' ||
-        prod.gender?.toLowerCase() === 'unisex' ||
-        catSlug.startsWith('men-') ||
-        parentCatSlug === 'men' ||
-        parentId === 'group_men';
+        (pGender === 'men' ||
+          pGender === 'unisex' ||
+          catSlug.startsWith('men-') ||
+          parentCatSlug === 'men' ||
+          parentId === 'group_men' ||
+          pName.includes('men')) &&
+        pGender !== 'women' &&
+        pGender !== 'kids' &&
+        !pName.startsWith('women') &&
+        !pName.startsWith('baby');
     } else if (genderParam === 'women') {
       matchesGender =
-        prod.gender?.toLowerCase() === 'women' ||
-        prod.gender?.toLowerCase() === 'unisex' ||
-        catSlug.startsWith('women-') ||
-        parentCatSlug === 'women' ||
-        parentId === 'group_women';
+        (pGender === 'women' ||
+          pGender === 'unisex' ||
+          catSlug.startsWith('women-') ||
+          parentCatSlug === 'women' ||
+          parentId === 'group_women' ||
+          pName.includes('women') ||
+          pName.includes('saree') ||
+          pName.includes('lehenga') ||
+          pName.includes('kurti')) &&
+        pGender !== 'men' &&
+        pGender !== 'kids' &&
+        !pName.startsWith('men') &&
+        !pName.startsWith('baby');
     } else if (genderParam === 'kids') {
       matchesGender =
-        prod.gender?.toLowerCase() === 'kids' ||
-        catSlug.startsWith('kids-') ||
-        catSlug.startsWith('baby-') ||
-        catSlug.startsWith('boys-') ||
-        catSlug.startsWith('girls-') ||
-        parentId === 'group_kids';
+        (pGender === 'kids' ||
+          pGender === 'unisex' ||
+          catSlug.startsWith('kids-') ||
+          catSlug.startsWith('baby-') ||
+          catSlug.startsWith('boys-') ||
+          catSlug.startsWith('girls-') ||
+          pName.includes('baby') ||
+          pName.includes('kid')) &&
+        pGender !== 'men' &&
+        pGender !== 'women' &&
+        !pName.startsWith('men') &&
+        !pName.startsWith('women');
     }
 
     let matchesCurated = true;

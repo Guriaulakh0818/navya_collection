@@ -252,40 +252,70 @@ export async function POST(request: NextRequest) {
         assignedShopId = fallbackShop.id;
       }
 
-      // Safely resolve categoryId to strictly avoid foreign key violation
+      // Auto-derive gender if missing to enforce department boundaries
+      const derivedGender =
+        p.gender ||
+        (p.name?.toLowerCase().includes('men') || p.slug?.toLowerCase().includes('men')
+          ? 'men'
+          : p.name?.toLowerCase().includes('baby') ||
+              p.name?.toLowerCase().includes('boy') ||
+              p.name?.toLowerCase().includes('girl') ||
+              p.name?.toLowerCase().includes('kid')
+            ? 'kids'
+            : p.name?.toLowerCase().includes('women') ||
+                p.name?.toLowerCase().includes('saree') ||
+                p.name?.toLowerCase().includes('lehenga') ||
+                p.name?.toLowerCase().includes('kurti')
+              ? 'women'
+              : 'unisex');
+
+      // Safely resolve categoryId to strictly avoid foreign key violation and wrong department assignment
       let resolvedCategoryId = p.categoryId;
       if (!catById.has(resolvedCategoryId)) {
         if (catBySlug.has(resolvedCategoryId.toLowerCase())) {
           resolvedCategoryId = catBySlug.get(resolvedCategoryId.toLowerCase())!;
         } else if (
-          p.categoryId === 'cat_men_shirts' &&
+          (p.categoryId === 'cat_men_shirts' || p.categoryId === 'shirts') &&
           (catBySlug.get('men-shirts') || catBySlug.get('gents-wear'))
         ) {
           resolvedCategoryId = (catBySlug.get('men-shirts') || catBySlug.get('gents-wear'))!;
         } else if (
-          p.categoryId === 'cat_men_tshirts' &&
+          (p.categoryId === 'cat_men_tshirts' || p.categoryId === 't-shirts') &&
           (catBySlug.get('men-t-shirts') || catBySlug.get('gents-wear'))
         ) {
           resolvedCategoryId = (catBySlug.get('men-t-shirts') || catBySlug.get('gents-wear'))!;
         } else if (
-          p.categoryId === 'cat_men_jeans' &&
+          (p.categoryId === 'cat_men_jeans' || p.categoryId === 'jeans') &&
           (catBySlug.get('men-jeans') || catBySlug.get('gents-wear'))
         ) {
           resolvedCategoryId = (catBySlug.get('men-jeans') || catBySlug.get('gents-wear'))!;
         } else if (
-          p.categoryId === 'cat_men_trackpants' &&
+          (p.categoryId === 'cat_men_trackpants' || p.categoryId === 'track-pants') &&
           (catBySlug.get('men-track-pants') || catBySlug.get('gents-wear'))
         ) {
           resolvedCategoryId = (catBySlug.get('men-track-pants') || catBySlug.get('gents-wear'))!;
         } else if (
-          p.categoryId === 'cat_baby_boys' &&
+          (p.categoryId === 'cat_baby_boys' || p.categoryId === 'baby-boys') &&
           (catBySlug.get('baby-boys') || catBySlug.get('boys-wear') || catBySlug.get('kids-wear'))
         ) {
           resolvedCategoryId = (catBySlug.get('baby-boys') ||
             catBySlug.get('boys-wear') ||
             catBySlug.get('kids-wear'))!;
-        } else if (fallbackCategoryId) {
-          resolvedCategoryId = fallbackCategoryId;
+        } else {
+          // Department-safe fallback (never cross Men into Women or vice versa)
+          if (derivedGender === 'men') {
+            resolvedCategoryId =
+              catBySlug.get('men-shirts') || catBySlug.get('men') || fallbackCategoryId;
+          } else if (derivedGender === 'kids') {
+            resolvedCategoryId =
+              catBySlug.get('baby-boys') ||
+              catBySlug.get('boys-fashion') ||
+              catBySlug.get('kids') ||
+              fallbackCategoryId;
+          } else {
+            resolvedCategoryId =
+              catBySlug.get('women-sarees') || catBySlug.get('women') || fallbackCategoryId;
+          }
         }
       }
 
@@ -294,7 +324,7 @@ export async function POST(request: NextRequest) {
         slug: p.slug,
         sku: p.sku,
         brand: p.brand,
-        gender: p.gender,
+        gender: derivedGender,
         ageGroup: p.ageGroup,
         fabric: p.fabric,
         description: p.description,
@@ -333,7 +363,7 @@ export async function POST(request: NextRequest) {
         slug: p.slug,
         sku: p.sku,
         brand: p.brand,
-        gender: p.gender,
+        gender: derivedGender,
         ageGroup: p.ageGroup,
         fabric: p.fabric,
         description: p.description,
@@ -493,6 +523,93 @@ export async function POST(request: NextRequest) {
 
     const hasMore = offset + limit < totalSeedProducts;
     const nextOffset = hasMore ? offset + limit : null;
+
+    // 4. On final batch, heal all live database products to guarantee department isolation
+    if (!hasMore) {
+      try {
+        const allLiveProducts = await prisma.product.findMany({
+          select: { id: true, name: true, slug: true, gender: true, categoryId: true },
+        });
+
+        for (const lp of allLiveProducts) {
+          const pName = (lp.name || '').toLowerCase();
+          const pSlug = (lp.slug || '').toLowerCase();
+          let targetGender = lp.gender;
+
+          if (!targetGender || targetGender === 'unisex') {
+            if (
+              pName.includes('men’s') ||
+              pName.includes("men's") ||
+              pName.includes('gents') ||
+              pSlug.includes('men-')
+            ) {
+              targetGender = 'men';
+            } else if (
+              pName.includes('baby') ||
+              pName.includes('boy') ||
+              pName.includes('girl') ||
+              pName.includes('kids') ||
+              pSlug.includes('baby-') ||
+              pSlug.includes('boys-')
+            ) {
+              targetGender = 'kids';
+            } else if (
+              pName.includes('women') ||
+              pName.includes('saree') ||
+              pName.includes('lehenga') ||
+              pName.includes('kurti') ||
+              pSlug.includes('women-')
+            ) {
+              targetGender = 'women';
+            }
+          }
+
+          let targetCategoryId = lp.categoryId;
+          if (targetGender === 'men' && (pName.includes('shirt') || pSlug.includes('shirt'))) {
+            const correctMenCatId = catBySlug.get('men-shirts');
+            if (correctMenCatId && targetCategoryId !== correctMenCatId) {
+              targetCategoryId = correctMenCatId;
+            }
+          } else if (
+            targetGender === 'men' &&
+            (pName.includes('jeans') || pSlug.includes('jeans'))
+          ) {
+            const correctMenCatId = catBySlug.get('men-jeans');
+            if (correctMenCatId && targetCategoryId !== correctMenCatId) {
+              targetCategoryId = correctMenCatId;
+            }
+          } else if (
+            targetGender === 'men' &&
+            (pName.includes('track') || pSlug.includes('track'))
+          ) {
+            const correctMenCatId = catBySlug.get('men-track-pants');
+            if (correctMenCatId && targetCategoryId !== correctMenCatId) {
+              targetCategoryId = correctMenCatId;
+            }
+          } else if (
+            targetGender === 'kids' &&
+            (pName.includes('baby') || pSlug.includes('baby'))
+          ) {
+            const correctKidsCatId = catBySlug.get('baby-boys') || catBySlug.get('boys-fashion');
+            if (correctKidsCatId && targetCategoryId !== correctKidsCatId) {
+              targetCategoryId = correctKidsCatId;
+            }
+          }
+
+          if (targetGender !== lp.gender || targetCategoryId !== lp.categoryId) {
+            await prisma.product.update({
+              where: { id: lp.id },
+              data: {
+                gender: targetGender || undefined,
+                categoryId: targetCategoryId || undefined,
+              },
+            });
+          }
+        }
+      } catch (healErr) {
+        console.warn('Live department healing warning:', healErr);
+      }
+    }
 
     return NextResponse.json({
       success: true,
