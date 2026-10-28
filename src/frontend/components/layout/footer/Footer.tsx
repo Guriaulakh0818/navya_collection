@@ -222,6 +222,16 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
+                  <Link href="/seller-agreement" className="hover:text-orange transition-colors">
+                    Seller Agreement
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/cancellation-policy" className="hover:text-orange transition-colors">
+                    Cancellation Policy
+                  </Link>
+                </li>
+                <li>
                   <Link
                     href="/terms-and-conditions"
                     className="hover:text-orange transition-colors"
