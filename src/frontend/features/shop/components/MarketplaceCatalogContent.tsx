@@ -56,12 +56,19 @@ export function MarketplaceCatalogContent() {
     const maxP = searchParams.get('maxPrice') || '';
     const minP = searchParams.get('minPrice') || '';
     const sort = searchParams.get('sort') || '';
+    const filter = (searchParams.get('filter') || '').toLowerCase();
 
     if (q) setSearchQuery(q);
     if (cat !== 'all') setSelectedCategory(cat);
     if (maxP) setMaxPrice(maxP);
     if (minP) setMinPrice(minP);
-    if (sort) setSortBy(sort === 'rating' ? 'popular' : sort);
+    if (sort) {
+      setSortBy(sort === 'rating' ? 'popular' : sort);
+    } else if (filter === 'offers' || filter === 'sale' || filter === 'discount') {
+      setSortBy('discount');
+    } else {
+      setSortBy('newest');
+    }
     if (view === 'shops' || view === 'shops-grid' || view === 'shops_grid') {
       setActiveView('shops');
     } else if (view === 'products') {
@@ -216,6 +223,21 @@ export function MarketplaceCatalogContent() {
         pName.includes('dress') ||
         pName.includes('top') ||
         pName.includes('denim');
+    } else if (filterParam === 'new') {
+      // 1. New Arrivals: Explicitly flagged as isNewArrival or added within recent 60 days
+      const isRecent = prod.createdAt
+        ? Date.now() - new Date(prod.createdAt).getTime() <= 60 * 24 * 60 * 60 * 1000
+        : false;
+      matchesCurated = Boolean(prod.isNewArrival || isRecent);
+    } else if (filterParam === 'offers' || filterParam === 'sale' || filterParam === 'discount') {
+      // 2. Offers & Deals: Products with active compareAtPrice discount
+      const priceNum = Number(prod.price || 0);
+      const comparePriceNum = Number(prod.compareAtPrice || 0);
+      matchesCurated = comparePriceNum > priceNum && priceNum > 0;
+    } else if (filterParam === 'trending') {
+      matchesCurated = Boolean(
+        prod.isFeatured || (prod.rating || 0) >= 4.2 || (prod.reviewCount || 0) > 2,
+      );
     } else if (filterParam === 'best_seller') {
       matchesCurated = (prod.rating || 0) >= 4.0 || prod.isFeatured || (prod.reviewCount || 0) > 0;
     }
@@ -246,6 +268,14 @@ export function MarketplaceCatalogContent() {
     if (sortBy === 'price_asc') return Number(a.price) - Number(b.price);
     if (sortBy === 'price_desc') return Number(b.price) - Number(a.price);
     if (sortBy === 'popular') return (Number(b.rating) || 0) - (Number(a.rating) || 0);
+    if (sortBy === 'discount') {
+      const getDiscPct = (item: any) => {
+        const p = Number(item.price || 0);
+        const cp = Number(item.compareAtPrice || 0);
+        return cp > p && cp > 0 ? (cp - p) / cp : 0;
+      };
+      return getDiscPct(b) - getDiscPct(a);
+    }
     return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
   });
 
@@ -264,33 +294,101 @@ export function MarketplaceCatalogContent() {
 
   const availableCities = Array.from(new Set(shops.map((s) => s.city).filter(Boolean)));
 
+  // Dynamic header metadata based on active filter
+  const activeFilter = (searchParams.get('filter') || '').toLowerCase();
+
+  const getPageHeaderInfo = () => {
+    if (activeFilter === 'new') {
+      return {
+        title: 'Fresh & New Arrivals',
+        icon: Sparkles,
+        subtitle: 'Discover latest seasonal drops & freshly added boutique designs across India',
+        breadcrumbLabel: 'New Arrivals',
+        badgeLabel: 'New Arrivals Active',
+      };
+    }
+    if (activeFilter === 'offers' || activeFilter === 'sale' || activeFilter === 'discount') {
+      return {
+        title: 'Exclusive Offers & Deals',
+        icon: Sparkles,
+        subtitle: 'Handpicked boutique styles on special discount & limited-time clearance deals',
+        breadcrumbLabel: 'Offers & Discounts',
+        badgeLabel: 'Offers & Deals Active',
+      };
+    }
+    if (activeFilter === 'trending') {
+      return {
+        title: 'Trending Right Now',
+        icon: Sparkles,
+        subtitle: 'Most popular and high-demand boutique styles shoppers are loving right now',
+        breadcrumbLabel: 'Trending',
+        badgeLabel: 'Trending Active',
+      };
+    }
+    if (activeFilter === 'best_seller') {
+      return {
+        title: 'Best Sellers & Top-Rated',
+        icon: Star,
+        subtitle: 'Highest rated styles from verified boutique partners across India',
+        breadcrumbLabel: 'Best Sellers',
+        badgeLabel: 'Best Sellers Active',
+      };
+    }
+    return {
+      title: 'Boutique Marketplace',
+      icon: null,
+      subtitle:
+        'Shop exclusive designer fashion directly from trusted boutique storefronts across India',
+      breadcrumbLabel: 'Marketplace Shops',
+      badgeLabel: null,
+    };
+  };
+
+  const headerInfo = getPageHeaderInfo();
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-20 font-sans">
       {/* 1. BREADCRUMBS & HERO BANNER */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Marketplace Shops' }]} />
+          <Breadcrumb
+            items={[
+              { label: 'Home', href: '/' },
+              ...(activeFilter
+                ? [{ label: 'Shop', href: '/shop' }, { label: headerInfo.breadcrumbLabel }]
+                : [{ label: 'Marketplace Shops' }]),
+            ]}
+          />
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4 space-y-4">
         {/* Clean, compact page title row */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 pb-2 border-b border-slate-200">
-          <div className="flex items-baseline gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-black text-navy tracking-tight">
-              Boutique Marketplace
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-2 border-b border-slate-200">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-black text-navy tracking-tight flex items-center gap-2">
+              {headerInfo.icon && <headerInfo.icon className="w-5 h-5 text-orange shrink-0" />}
+              <span>{headerInfo.title}</span>
             </h1>
             <span className="text-xs sm:text-sm font-semibold text-slate-500">
               (
               {activeView === 'products'
-                ? `${products.length} products`
-                : `${shops.length} verified boutiques`}
+                ? `${filteredProducts.length} ${filteredProducts.length === 1 ? 'product' : 'products'}`
+                : `${filteredShops.length} verified boutiques`}
               )
             </span>
+            {headerInfo.badgeLabel && (
+              <Link
+                href="/shop"
+                className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-orange/10 hover:bg-orange/20 text-orange border border-orange/20 rounded-full text-[11px] font-bold transition-colors ml-1 cursor-pointer"
+                title="Clear filter and view all products"
+              >
+                <span>{headerInfo.badgeLabel}</span>
+                <X className="w-3 h-3" />
+              </Link>
+            )}
           </div>
-          <p className="text-xs text-slate-500 hidden sm:block">
-            Shop exclusive designer fashion directly from trusted boutique storefronts across India
-          </p>
+          <p className="text-xs text-slate-500 hidden sm:block">{headerInfo.subtitle}</p>
         </div>
 
         {/* 2. SEARCH & VIEW SWITCHER BAR */}
@@ -383,6 +481,7 @@ export function MarketplaceCatalogContent() {
                 className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 font-bold focus:border-navy focus:outline-none cursor-pointer ml-auto"
               >
                 <option value="newest">Newest Arrivals</option>
+                <option value="discount">Biggest Discounts</option>
                 <option value="price_asc">Price: Low to High</option>
                 <option value="price_desc">Price: High to Low</option>
                 <option value="popular">Customer Rating</option>
@@ -405,55 +504,87 @@ export function MarketplaceCatalogContent() {
               </div>
             ) : sortedProducts.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                {sortedProducts.map((product) => (
-                  <Link
-                    key={product.id}
-                    href={`/product/${product.slug}`}
-                    className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-navy hover:shadow-xl transition-all flex flex-col justify-between"
-                  >
-                    <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
-                      {product.images?.[0]?.imageUrl ? (
-                        <Image
-                          src={product.images[0].imageUrl}
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400">
-                          <Package className="w-12 h-12" />
-                        </div>
-                      )}
+                {sortedProducts.map((product) => {
+                  const priceNum = Number(product.price || 0);
+                  const comparePriceNum = Number(product.compareAtPrice || 0);
+                  const hasDiscount = comparePriceNum > priceNum && priceNum > 0;
+                  const discountPct = hasDiscount
+                    ? Math.round(((comparePriceNum - priceNum) / comparePriceNum) * 100)
+                    : 0;
+                  const isRecent = product.createdAt
+                    ? Date.now() - new Date(product.createdAt).getTime() <= 60 * 24 * 60 * 60 * 1000
+                    : false;
+                  const isNew = Boolean(product.isNewArrival || isRecent);
 
-                      {product.category?.name && (
-                        <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-full text-[10px] font-extrabold text-navy shadow-xs border border-slate-100">
-                          {product.category.name}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
-                      <div>
-                        <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-navy transition-colors">
-                          {product.name}
-                        </h3>
-                        {product.shop?.name && (
-                          <p className="text-[11px] text-slate-500 mt-0.5">{product.shop.name}</p>
+                  return (
+                    <Link
+                      key={product.id}
+                      href={`/product/${product.slug}`}
+                      className="group bg-white border border-slate-200 rounded-3xl overflow-hidden hover:border-navy hover:shadow-xl transition-all flex flex-col justify-between"
+                    >
+                      <div className="aspect-[3/4] bg-slate-100 relative overflow-hidden select-none">
+                        {product.images?.[0]?.imageUrl ? (
+                          <Image
+                            src={product.images[0].imageUrl}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-400">
+                            <Package className="w-12 h-12" />
+                          </div>
                         )}
+
+                        {product.category?.name && (
+                          <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/95 backdrop-blur-md rounded-full text-[10px] font-extrabold text-navy shadow-xs border border-slate-100">
+                            {product.category.name}
+                          </div>
+                        )}
+
+                        {/* Top-Right Badge: Discount % or Fresh NEW */}
+                        {discountPct > 0 ? (
+                          <div className="absolute top-3 right-3 px-2 py-0.5 bg-gradient-to-r from-red-600 to-orange text-white rounded-full text-[10px] font-black shadow-sm">
+                            {discountPct}% OFF
+                          </div>
+                        ) : isNew ? (
+                          <div className="absolute top-3 right-3 px-2 py-0.5 bg-navy text-white rounded-full text-[10px] font-extrabold shadow-sm flex items-center gap-1">
+                            <Sparkles className="w-2.5 h-2.5 text-orange" />
+                            NEW
+                          </div>
+                        ) : null}
                       </div>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <span className="text-base font-black text-navy font-mono">
-                          ₹{Number(product.price || 0).toLocaleString('en-IN')}
-                        </span>
-                        <span className="text-xs text-orange font-extrabold group-hover:translate-x-1 transition-transform">
-                          Buy Now →
-                        </span>
+                      <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
+                        <div>
+                          <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm line-clamp-1 group-hover:text-navy transition-colors">
+                            {product.name}
+                          </h3>
+                          {product.shop?.name && (
+                            <p className="text-[11px] text-slate-500 mt-0.5">{product.shop.name}</p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                          <div className="flex items-baseline gap-1.5 flex-wrap">
+                            <span className="text-base font-black text-navy font-mono">
+                              ₹{priceNum.toLocaleString('en-IN')}
+                            </span>
+                            {hasDiscount && (
+                              <span className="text-[11px] text-slate-400 line-through font-mono">
+                                ₹{comparePriceNum.toLocaleString('en-IN')}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-orange font-extrabold group-hover:translate-x-1 transition-transform">
+                            Buy Now →
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
               <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center space-y-4">
@@ -462,8 +593,19 @@ export function MarketplaceCatalogContent() {
                   No products found matching your filters
                 </h3>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  Try clearing your search filters or selecting another category.
+                  Try clearing your search filters or browse our complete boutique collection.
                 </p>
+                {activeFilter && (
+                  <div>
+                    <Link
+                      href="/shop"
+                      className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-navy text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors shadow-sm"
+                    >
+                      <span>Explore All Products</span>
+                      <span>→</span>
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>
