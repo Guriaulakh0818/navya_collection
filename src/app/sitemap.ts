@@ -1,5 +1,10 @@
 import { MetadataRoute } from 'next';
 
+import {
+  CATEGORY_ALIAS_MAP,
+  CATEGORY_TAXONOMY,
+  getFlattenedCategoryOptions,
+} from '@/config/categories.config';
 import { CITY_SEO_THRESHOLDS, slugifyCity } from '@/features/seo';
 import { CATEGORIES } from '@/frontend/features/categories/constants/category.constants';
 import { prisma } from '@/lib/prisma';
@@ -94,7 +99,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // 2. Canonical Public Categories with Public Products ONLY
+  // 2. Canonical Public Categories across marketplace taxonomy
   const categoryMap = new Map<string, Date>();
   let dbCategories: Array<{ slug: string; updatedAt: Date }> = [];
   let dbShops: Array<{ slug: string; updatedAt: Date }> = [];
@@ -111,7 +116,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    // 2. Canonical Public Categories across marketplace taxonomy
+    // A. Query database categories
     dbCategories = await prisma.category.findMany({
       where: {
         deletedAt: null,
@@ -121,24 +126,66 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
     for (const cat of dbCategories) {
-      if (cat.slug && cat.slug !== 'all') {
+      if (cat.slug && cat.slug !== 'all' && cat.slug !== 'shops') {
         categoryMap.set(cat.slug.toLowerCase().trim(), cat.updatedAt || now);
       }
     }
 
-    // Also include curated taxonomy categories & subcategories from CATEGORIES constants
+    // B. Include canonical taxonomy top-level groups
+    for (const group of CATEGORY_TAXONOMY) {
+      if (
+        group.slug &&
+        group.slug !== 'all' &&
+        group.slug !== 'shops' &&
+        !categoryMap.has(group.slug.toLowerCase().trim())
+      ) {
+        categoryMap.set(group.slug.toLowerCase().trim(), now);
+      }
+    }
+
+    // C. Include all flattened canonical subcategories and leaf items
+    const flattenedTaxonomy = getFlattenedCategoryOptions();
+    for (const item of flattenedTaxonomy) {
+      if (
+        item.slug &&
+        item.slug !== 'all' &&
+        item.slug !== 'shops' &&
+        !categoryMap.has(item.slug.toLowerCase().trim())
+      ) {
+        categoryMap.set(item.slug.toLowerCase().trim(), now);
+      }
+    }
+
+    // D. Include curated taxonomy categories & subcategories from CATEGORIES constants
     for (const cat of CATEGORIES) {
-      if (cat.slug && cat.slug !== 'all' && !categoryMap.has(cat.slug.toLowerCase().trim())) {
+      if (
+        cat.slug &&
+        cat.slug !== 'all' &&
+        cat.slug !== 'shops' &&
+        !categoryMap.has(cat.slug.toLowerCase().trim())
+      ) {
         categoryMap.set(cat.slug.toLowerCase().trim(), now);
       }
       if (cat.subCategories) {
         for (const sub of cat.subCategories) {
-          if (sub.slug && sub.slug !== 'all' && !categoryMap.has(sub.slug.toLowerCase().trim())) {
+          if (
+            sub.slug &&
+            sub.slug !== 'all' &&
+            sub.slug !== 'shops' &&
+            !categoryMap.has(sub.slug.toLowerCase().trim())
+          ) {
             categoryMap.set(sub.slug.toLowerCase().trim(), now);
           }
         }
       }
     }
+
+    // E. Strictly purge any alias/redirect slugs and non-category paths so only 200 OK canonicals appear in sitemap
+    for (const alias of Object.keys(CATEGORY_ALIAS_MAP)) {
+      categoryMap.delete(alias.toLowerCase().trim());
+    }
+    categoryMap.delete('all');
+    categoryMap.delete('shops');
   } catch (error) {
     console.warn('[Sitemap] Database categories query fallback:', error);
   }

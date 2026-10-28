@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { CATEGORY_ALIAS_MAP } from '@/config/categories.config';
 import {
   CATEGORIES,
   DEFAULT_PAGE_SIZE,
@@ -14,46 +15,6 @@ import {
   generateCategoryMetadata,
   JsonLd,
 } from '@/frontend/features/seo';
-
-const CATEGORY_ALIAS_MAP: Record<string, string> = {
-  sarees: 'women-sarees',
-  'banarasi-sarees': 'women-sarees',
-  'kanjeevaram-silk-sarees': 'women-sarees',
-  'chanderi-sarees': 'women-sarees',
-  lehengas: 'women-lehengas',
-  'bridal-lehengas': 'women-lehengas',
-  'partywear-lehengas': 'women-lehengas',
-  kurtis: 'women-kurtas',
-  'kurtis-tunics': 'women-kurtas',
-  'anarkalis-suits': 'women-kurta-sets',
-  'silk-anarkali-sets': 'women-kurta-sets',
-  'salwar-suits': 'women-kurta-sets',
-  suits: 'women-kurta-sets',
-  dresses: 'women-dresses',
-  'phulkari-dupattas': 'women-scarves-stoles',
-  'dupattas-stoles': 'women-scarves-stoles',
-  'gents-mens-couture': 'men',
-  'designer-kurta-pajamas': 'men-kurta-sets',
-  'indo-western-fusion': 'women-indian-wear',
-  shirts: 'men-shirts',
-  't-shirts': 'men-t-shirts',
-  jeans: 'men-jeans',
-  trousers: 'men-trousers',
-  cargos: 'men-cargo-pants',
-  'cargo-pants': 'men-cargo-pants',
-  cargo: 'men-cargo-pants',
-  chinos: 'men-chinos',
-  'track-pants': 'men-track-pants',
-  blazers: 'men-blazers',
-  watches: 'men-watches',
-  'boys-clothing': 'boys-fashion',
-  'girls-clothing': 'girls-fashion',
-  'teen-trends': 'teens-fashion',
-  'women-handbags': 'women-bags',
-  handbags: 'women-bags',
-  clutches: 'women-bags',
-  'women-winter-outerwear': 'women-jackets',
-};
 
 async function getDescendantCategoryIds(prisma: any, rootCategoryId: string): Promise<string[]> {
   const matchingIds = new Set<string>([rootCategoryId]);
@@ -364,10 +325,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (CATEGORY_ALIAS_MAP[cleanSlug]) {
     const targetSlug = CATEGORY_ALIAS_MAP[cleanSlug];
+    const destinationUrl =
+      targetSlug === 'shop'
+        ? 'https://jiivaakart.com/shop'
+        : `https://jiivaakart.com/category/${targetSlug}`;
     return {
       title: `Redirecting... | JiivaaKart`,
       alternates: {
-        canonical: `https://jiivaakart.com/category/${targetSlug}`,
+        canonical: destinationUrl,
+      },
+      robots: {
+        index: false,
+        follow: true,
       },
     };
   }
@@ -509,7 +478,9 @@ export default async function CategoryPage({ params }: Props) {
   const cleanSlug = (slug || '').toLowerCase().trim();
 
   if (CATEGORY_ALIAS_MAP[cleanSlug]) {
-    permanentRedirect(`/category/${CATEGORY_ALIAS_MAP[cleanSlug]}`);
+    const targetSlug = CATEGORY_ALIAS_MAP[cleanSlug];
+    const destinationPath = targetSlug === 'shop' ? '/shop' : `/category/${targetSlug}`;
+    permanentRedirect(destinationPath);
   }
 
   let dbCategory: any = null;
