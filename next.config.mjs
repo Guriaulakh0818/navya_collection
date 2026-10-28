@@ -204,17 +204,6 @@ const nextConfig = {
         has: [
           {
             type: 'host',
-            value: 'www.jiivaakart.com',
-          },
-        ],
-        destination: 'https://jiivaakart.com/:path*',
-        permanent: true,
-      },
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
             value: 'www.navyacollection.store',
           },
         ],

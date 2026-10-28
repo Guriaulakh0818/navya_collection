@@ -69,11 +69,7 @@ export default async function middleware(req: NextRequest) {
     'https'
   ).toLowerCase();
 
-  // 2. WWW CANONICALIZATION (www.jiivaakart.com → jiivaakart.com & legacy www.navyacollection.store)
-  if (currentHost === 'www.jiivaakart.com') {
-    const canonicalUrl = new URL(`${pathname}${req.nextUrl.search}`, 'https://jiivaakart.com');
-    return NextResponse.redirect(canonicalUrl, 308);
-  }
+  // 2. WWW CANONICALIZATION (legacy www.navyacollection.store)
   if (currentHost === 'www.navyacollection.store') {
     const canonicalUrl = new URL(
       `${pathname}${req.nextUrl.search}`,
