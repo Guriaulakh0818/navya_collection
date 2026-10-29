@@ -508,6 +508,210 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
       { term: /\b(outerwear|winter|zip\s+up|puffer)\b/i, weight: 20, reason: 'Outerwear style' },
     ],
   },
+  {
+    categoryId: 'cat_women_panties',
+    name: "Women's Panties",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sub_women_innerwear',
+    productType: 'women_panties',
+    departmentGroup: 'group_women',
+    parentCategoryIds: ['cat_women_innerwear'],
+    primaryTerms: [
+      {
+        term: /\b(panties?|panty|briefs?|boyshorts?|hipster|thongs?|bikini\s+panty)\b/i,
+        weight: 75,
+        reason: 'Women panties',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(seamless|cotton|pack\s+of|innerwear|stretch)\b/i,
+        weight: 20,
+        reason: 'Panties attributes',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_women_bras',
+    name: "Women's Bras",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sub_women_innerwear',
+    productType: 'women_bras',
+    departmentGroup: 'group_women',
+    parentCategoryIds: ['cat_women_innerwear'],
+    primaryTerms: [
+      {
+        term: /\b(bras?|sports\s+bra|padded\s+bra|t-?shirt\s+bra|push\s+up\s+bra|bralette)\b/i,
+        weight: 75,
+        reason: 'Women bra',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(seamless|padded|wirefree|underwire|cotton)\b/i,
+        weight: 20,
+        reason: 'Bra styling',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_women_lingerie',
+    name: "Women's Lingerie",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sub_women_innerwear',
+    productType: 'women_lingerie',
+    departmentGroup: 'group_women',
+    parentCategoryIds: ['cat_women_innerwear'],
+    primaryTerms: [
+      {
+        term: /\b(lingerie|babydoll|nightdress|chemise|teddy|corset)\b/i,
+        weight: 75,
+        reason: 'Women lingerie',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(lace|satin|sheer|sexy|bridal)\b/i, weight: 20, reason: 'Lingerie features' },
+    ],
+  },
+  {
+    categoryId: 'cat_women_camisoles',
+    name: "Women's Camisoles",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sub_women_innerwear',
+    productType: 'women_camisoles',
+    departmentGroup: 'group_women',
+    parentCategoryIds: ['cat_women_innerwear'],
+    primaryTerms: [
+      {
+        term: /\b(camisoles?|tank\s+slip|slip|spaghetti\s+top)\b/i,
+        weight: 75,
+        reason: 'Women camisole',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(cotton|pure\s+cotton|tank|innerwear)\b/i,
+        weight: 20,
+        reason: 'Camisole attributes',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_women_shapewear',
+    name: "Women's Shapewear",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sub_women_shapewear',
+    productType: 'women_shapewear',
+    departmentGroup: 'group_women',
+    parentCategoryIds: ['cat_women_shapewear_sec'],
+    primaryTerms: [
+      {
+        term: /\b(shapewear|body\s+shaper|tummy\s+tucker|waist\s+cincher|saree\s+shapewear)\b/i,
+        weight: 75,
+        reason: 'Women shapewear',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(compression|high\s+waist|slimming|seamless)\b/i,
+        weight: 20,
+        reason: 'Shapewear features',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_women_thermals',
+    name: "Women's Thermals",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sub_women_winter_essentials',
+    productType: 'women_thermals',
+    departmentGroup: 'group_women',
+    parentCategoryIds: ['cat_women_winter_essentials'],
+    primaryTerms: [
+      {
+        term: /\b(thermals?|thermal\s+set|winter\s+thermal|thermal\s+top|thermal\s+bottom)\b/i,
+        weight: 75,
+        reason: 'Women thermals',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(winter|warm|fleece|innerwear|body\s+warmer)\b/i,
+        weight: 20,
+        reason: 'Thermal features',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_women_lounge_sets',
+    name: "Women's Lounge Sets",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sub_women_loungewear',
+    productType: 'women_sleepwear',
+    departmentGroup: 'group_women',
+    parentCategoryIds: ['cat_women_comfort_wear'],
+    primaryTerms: [
+      {
+        term: /\b(loungewear|lounge\s+set|comfort\s+wear)\b/i,
+        weight: 75,
+        reason: 'Women loungewear',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(cotton|relax|sleep|comfort|set)\b/i,
+        weight: 20,
+        reason: 'Loungewear attributes',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_women_night_suits',
+    name: "Women's Night Suits",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sub_women_sleepwear',
+    productType: 'women_sleepwear',
+    departmentGroup: 'group_women',
+    parentCategoryIds: ['cat_women_sleepwear'],
+    primaryTerms: [
+      {
+        term: /\b(night\s+suit|nightwear|nighty|nightie|sleepwear|pyjama\s+set)\b/i,
+        weight: 75,
+        reason: 'Women night suit',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(print|floral|cotton|soft|sleep)\b/i, weight: 20, reason: 'Night suit features' },
+    ],
+  },
+  {
+    categoryId: 'cat_men_thermals',
+    name: "Men's Thermals",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'men_essentials',
+    productType: 'men_thermals',
+    departmentGroup: 'group_men',
+    parentCategoryIds: ['cat_men_winter_essentials'],
+    primaryTerms: [
+      {
+        term: /\b(thermals?|thermal\s+innerwear|body\s+warmer|thermal\s+set)\b/i,
+        weight: 75,
+        reason: 'Men thermals',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(winter|warm|fleece|innerwear)\b/i, weight: 20, reason: 'Thermal features' },
+    ],
+  },
 
   // ===========================================================================
   // MEN CATEGORIES
@@ -804,6 +1008,54 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
     ],
   },
   {
+    categoryId: 'cat_men_trackpants',
+    name: "Men's Track Pants",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'men_bottomwear',
+    productType: 'men_trackpants',
+    departmentGroup: 'group_men',
+    parentCategoryIds: ['cat_men_bottomwear'],
+    primaryTerms: [
+      {
+        term: /\b(track\s*pants?|track\s*lowers?|lowers?|joggers?|sweatpants?|gym\s+pants?|active\s+pants?)\b/i,
+        weight: 65,
+        reason: 'Track pants / lower',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(fleece|drawstring|relaxed\s+fit|camo|sporty|active|cotton\s+blend)\b/i,
+        weight: 20,
+        reason: 'Lower / tracksuit styling',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_men_jackets',
+    name: "Men's Jackets",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'men_topwear',
+    productType: 'men_jackets',
+    departmentGroup: 'group_men',
+    parentCategoryIds: ['cat_men_topwear'],
+    primaryTerms: [
+      {
+        term: /\b(jackets?|winter\s+jacket|bomber\s+jacket|puffer\s+jacket|windcheater|leather\s+jacket)\b/i,
+        weight: 65,
+        reason: 'Men jacket',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(zipper|winter|warm|padded|quilted|hooded)\b/i,
+        weight: 20,
+        reason: 'Jacket features',
+      },
+    ],
+  },
+  {
     categoryId: 'cat_men_blazers',
     name: "Men's Blazers & Suits",
     department: 'men',
@@ -831,6 +1083,38 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
   // ===========================================================================
   // KIDS CATEGORIES
   // ===========================================================================
+  // Boys Shirts
+  {
+    categoryId: 'cat_boys_shirts',
+    name: "Boys' Shirts",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_boys',
+    productType: 'kids_boys_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_boys', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(boys?\s+shirts?|boys?\s+casual\s+shirt|boys?\s+printed\s+shirt|boys?\s+checked\s+shirt|boys?\s+striped\s+shirt|boys?\s+full\s+sleeve\s+shirt)\b/i,
+        weight: 75,
+        reason: 'Boys shirt',
+      },
+      {
+        term: /\b(printed\s+shirt|checked\s+shirt|casual\s+shirt|full\s+sleeve\s+shirt)\b/i,
+        weight: 50,
+        reason: 'Shirt garment',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(button|collar|cotton|printed|checked|full\s+sleeve)\b/i,
+        weight: 20,
+        reason: 'Shirt styling',
+      },
+    ],
+    negativeTerms: [/\b(t-?shirt|tee|polo|kurta|sweater|cardigan)\b/i],
+  },
+  // Boys T-Shirts
   {
     categoryId: 'cat_boys_tshirts',
     name: "Boys' T-Shirts",
@@ -842,18 +1126,176 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
     parentCategoryIds: ['cat_kids_boys', 'cat_kids_all_fashion'],
     primaryTerms: [
       {
-        term: /\b(boys?\s+t-?shirt|boys?\s+tee|graphic\s+tee\s+for\s+boys?)\b/i,
-        weight: 65,
+        term: /\b(boys?\s+t-?shirts?|boys?\s+tees?|graphic\s+tee\s+for\s+boys?|boys?\s+textured\s+full\s+sleeve\s+t-?shirt)\b/i,
+        weight: 75,
         reason: 'Boy t-shirt',
+      },
+      { term: /\b(t-?shirts?|tees?)\b/i, weight: 50, reason: 'T-shirt garment' },
+    ],
+    contextTerms: [
+      {
+        term: /\b(cartoon|printed|half\s+sleeve|cotton|textured)\b/i,
+        weight: 20,
+        reason: 'Kids graphics',
+      },
+    ],
+    negativeTerms: [/\b(polo|collared|shirt\s+formal)\b/i],
+  },
+  // Boys Polos
+  {
+    categoryId: 'cat_boys_polos',
+    name: "Boys' Polos",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_boys',
+    productType: 'kids_boys_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_boys', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(boys?\s+polos?|boys?\s+polo\s+t-?shirt|collared\s+t-?shirt\s+for\s+boys?)\b/i,
+        weight: 75,
+        reason: 'Boy polo',
+      },
+      { term: /\b(polos?|polo\s+t-?shirt)\b/i, weight: 55, reason: 'Polo garment' },
+    ],
+    contextTerms: [{ term: /\b(collar|matty|pique)\b/i, weight: 20, reason: 'Polo feature' }],
+  },
+  // Boys Sweaters & Jackets
+  {
+    categoryId: 'cat_boys_jackets',
+    name: "Boys' Jackets & Sweaters",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_boys',
+    productType: 'kids_boys_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_boys', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(boys?\s+sweaters?|boys?\s+knitted\s+winter\s+sweater|boys?\s+cardigans?|boys?\s+jackets?|boys?\s+hoodies?)\b/i,
+        weight: 80,
+        reason: 'Boy winterwear / sweater',
+      },
+      {
+        term: /\b(knitted\s+winter\s+sweater|winter\s+sweater|cardigans?|jackets?|hoodies?)\b/i,
+        weight: 55,
+        reason: 'Winter garment',
       },
     ],
     contextTerms: [
-      { term: /\b(cartoon|printed|half\s+sleeve|cotton)\b/i, weight: 20, reason: 'Kids graphics' },
+      {
+        term: /\b(knitted|woolen|warm|winter|pullover|full\s+sleeve)\b/i,
+        weight: 20,
+        reason: 'Winter styling',
+      },
+    ],
+    negativeTerms: [/\b(girls?|baby\s+girls?)\b/i],
+  },
+  // Boys Ethnic Wear
+  {
+    categoryId: 'cat_boys_ethnic',
+    name: "Boys' Ethnic Wear & Party Suits",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_boys',
+    productType: 'kids_ethnic_wear',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_boys', 'cat_kids_ethnic', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(boys?\s+kurta|boys?\s+kurta\s+set|boys?\s+kurta\s+pajama|boys?\s+sherwani|kids?\s+party\s+wear\s+suit|party\s+wear\s+suit|dhoti\s+kurta\s+for\s+boys?|boys?\s+ethnic)\b/i,
+        weight: 75,
+        reason: 'Boys ethnic / suit',
+      },
+      {
+        term: /\b(kurta\s+set|kurta\s+pajama|sherwani|embroidered\s+kurta)\b/i,
+        weight: 55,
+        reason: 'Ethnic set',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(embroidered|festive|wedding|party\s+wear|traditional)\b/i,
+        weight: 20,
+        reason: 'Ethnic festive',
+      },
     ],
   },
+  // Boys Jeans
   {
-    categoryId: 'cat_girls_dresses',
-    name: "Girls' Dresses & Frocks",
+    categoryId: 'cat_boys_jeans',
+    name: "Boys' Jeans",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_boys',
+    productType: 'kids_boys_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_boys', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(boys?\s+jeans|boys?\s+denims?)\b/i,
+        weight: 75,
+        reason: 'Boys jeans',
+      },
+      { term: /\b(jeans|denims?)\b/i, weight: 50, reason: 'Denim' },
+    ],
+    contextTerms: [
+      { term: /\b(washed|elastic\s+waist|denim)\b/i, weight: 20, reason: 'Denim fit' },
+    ],
+  },
+  // Boys Trousers
+  {
+    categoryId: 'cat_boys_trousers',
+    name: "Boys' Trousers & Pants",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_boys',
+    productType: 'kids_boys_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_boys', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(boys?\s+trousers?|boys?\s+pants?|boys?\s+chinos?)\b/i,
+        weight: 75,
+        reason: 'Boys trousers',
+      },
+      { term: /\b(trousers?|chinos?)\b/i, weight: 50, reason: 'Trousers' },
+    ],
+    contextTerms: [
+      { term: /\b(cotton|drawstring|regular\s+fit)\b/i, weight: 20, reason: 'Trouser attributes' },
+    ],
+  },
+  // Boys General Fashion / Tracksuits
+  {
+    categoryId: 'cat_kids_boys',
+    name: "Boys' Fashion & Sets",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_boys',
+    productType: 'kids_boys_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(boys?\s+tracksuit|kids?\s+tracksuit|fleece\s+tracksuit|winter\s+tracksuit\s+set|boys?\s+clothing|boys?\s+fashion)\b/i,
+        weight: 70,
+        reason: 'Boys clothing set / tracksuit',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(tracksuit|fleece|track\s+set|matching\s+set)\b/i,
+        weight: 25,
+        reason: 'Tracksuit feature',
+      },
+    ],
+    negativeTerms: [/\b(girls?)\b/i],
+  },
+  // Girls Tops & Tees
+  {
+    categoryId: 'cat_girls_tops_tees',
+    name: "Girls' Tops & Tees",
     department: 'kids',
     deptId: 'dept_kids',
     subId: 'kids_girls',
@@ -862,42 +1304,199 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
     parentCategoryIds: ['cat_kids_girls', 'cat_kids_all_fashion'],
     primaryTerms: [
       {
-        term: /\b(girls?\s+dress|frocks?|girls?\s+frock|party\s+dress\s+for\s+girls?)\b/i,
-        weight: 65,
-        reason: 'Girl dress/frock',
+        term: /\b(girls?\s+tops?|girls?\s+tees?|girls?\s+t-?shirts?|girls?\s+textured\s+top)\b/i,
+        weight: 75,
+        reason: 'Girls top/tee',
+      },
+      { term: /\b(textured\s+top|crop\s+top|tops?|tees?)\b/i, weight: 50, reason: 'Top garment' },
+    ],
+    contextTerms: [
+      { term: /\b(ruffle|printed|ribbed|cotton|cute)\b/i, weight: 20, reason: 'Top styling' },
+    ],
+  },
+  // Girls Dresses & Gowns
+  {
+    categoryId: 'cat_girls_dresses',
+    name: "Girls' Dresses & Gowns",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_girls',
+    productType: 'kids_girls_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_girls', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(girls?\s+dresses?|frocks?|girls?\s+frock|girls?\s+party\s+wear\s+gown|party\s+wear\s+gown|girls?\s+gowns?|party\s+dress\s+for\s+girls?)\b/i,
+        weight: 75,
+        reason: 'Girls dress/gown',
+      },
+      { term: /\b(gowns?|dresses?|frocks?)\b/i, weight: 50, reason: 'Dress garment' },
+    ],
+    contextTerms: [
+      {
+        term: /\b(ruffle|princess|birthday|cute|tulle|flared|party\s+wear)\b/i,
+        weight: 25,
+        reason: 'Frock/gown styling',
+      },
+    ],
+  },
+  // Girls Jackets & Cardigans
+  {
+    categoryId: 'cat_girls_jackets',
+    name: "Girls' Jackets & Cardigans",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_girls',
+    productType: 'kids_girls_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_girls', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(girls?\s+cardigans?|girls?\s+knitted\s+winter\s+cardigan|girls?\s+sweaters?|girls?\s+jackets?|girls?\s+hoodies?)\b/i,
+        weight: 80,
+        reason: 'Girls cardigan / jacket',
+      },
+      {
+        term: /\b(knitted\s+winter\s+cardigan|cardigans?|winter\s+cardigan)\b/i,
+        weight: 55,
+        reason: 'Cardigan garment',
       },
     ],
     contextTerms: [
       {
-        term: /\b(ruffle|princess|birthday|cute|tulle|flared)\b/i,
-        weight: 25,
-        reason: 'Frock styling',
+        term: /\b(knitted|warm|winter|button|soft|cozy)\b/i,
+        weight: 20,
+        reason: 'Cardigan feature',
+      },
+    ],
+    negativeTerms: [/\b(boys?)\b/i],
+  },
+  // Girls Ethnic Wear
+  {
+    categoryId: 'cat_girls_ethnic',
+    name: "Girls' Ethnic Wear",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_girls',
+    productType: 'kids_ethnic_wear',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_girls', 'cat_kids_ethnic', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(girls?\s+printed\s+kurti|girls?\s+kurtis?|girls?\s+lehenga|girls?\s+anarkali|girls?\s+ethnic)\b/i,
+        weight: 75,
+        reason: 'Girls ethnic wear',
+      },
+      { term: /\b(kurtis?|lehenga\s+choli|ethnic\s+set)\b/i, weight: 50, reason: 'Ethnic garment' },
+    ],
+    contextTerms: [
+      {
+        term: /\b(festive|diwali|wedding|traditional|printed)\b/i,
+        weight: 20,
+        reason: 'Ethnic festive',
       },
     ],
   },
+  // Girls General Fashion & Fleece
   {
-    categoryId: 'cat_kids_ethnic_wear',
-    name: "Kids' Ethnic Wear",
+    categoryId: 'cat_kids_girls',
+    name: "Girls' Fashion & Sets",
     department: 'kids',
     deptId: 'dept_kids',
-    subId: 'kids_ethnic',
-    productType: 'kids_ethnic_wear',
+    subId: 'kids_girls',
+    productType: 'kids_girls_clothing',
     departmentGroup: 'group_kids',
     parentCategoryIds: ['cat_kids_all_fashion'],
     primaryTerms: [
       {
-        term: /\b(kids?\s+ethnic|boys?\s+kurta|girls?\s+lehenga|kids?\s+sherwani|dhoti\s+kurta\s+for\s+boys?)\b/i,
-        weight: 65,
-        reason: 'Kids ethnic',
+        term: /\b(girls?\s+fleece|girls?\s+tracksuit|girls?\s+clothing|girls?\s+fashion)\b/i,
+        weight: 70,
+        reason: 'Girls clothing / fleece set',
       },
     ],
     contextTerms: [
-      { term: /\b(festive|diwali|wedding|traditional)\b/i, weight: 20, reason: 'Kids festive' },
+      {
+        term: /\b(fleece|tracksuit|matching\s+set|pink)\b/i,
+        weight: 25,
+        reason: 'Fleece tracksuit',
+      },
     ],
   },
+  // Baby Boys
+  {
+    categoryId: 'cat_baby_boys',
+    name: 'Baby Boys Outfits & Sets',
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_baby',
+    productType: 'kids_baby_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_baby', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(baby\s+boys?|baby\s+boys?\s+sweater|baby\s+boys?\s+printed\s+t-?shirt|baby\s+boys?\s+woolen\s+sweater|round\s+neck\s+sweater\s+&\s+pant\s+set|woolen\s+sweater\s+&\s+pant\s+set)\b/i,
+        weight: 80,
+        reason: 'Baby boy outfit set',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(infant|toddler|sweater\s+&\s+pant|t-?shirt\s+&\s+shorts|baby)\b/i,
+        weight: 25,
+        reason: 'Baby boy outfit',
+      },
+    ],
+  },
+  // Baby Girls
+  {
+    categoryId: 'cat_baby_girls',
+    name: 'Baby Girls Outfits & Frocks',
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_baby',
+    productType: 'kids_baby_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_baby', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(baby\s+girls?|baby\s+girls?\s+frock|baby\s+girls?\s+dress|baby\s+girls?\s+set)\b/i,
+        weight: 80,
+        reason: 'Baby girl outfit',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(infant|newborn|baby|cute|pink)\b/i, weight: 25, reason: 'Baby girl attributes' },
+    ],
+  },
+  // Baby Sets
+  {
+    categoryId: 'cat_baby_sets',
+    name: 'Baby Sets & Combos',
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_baby',
+    productType: 'kids_baby_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: ['cat_kids_baby', 'cat_kids_all_fashion'],
+    primaryTerms: [
+      {
+        term: /\b(baby\s+sets?|infant\s+sets?|sweater\s+&\s+pant\s+set|t-?shirt\s+&\s+shorts\s+set|2\s*piece\s+baby\s+set)\b/i,
+        weight: 75,
+        reason: 'Baby set',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(soft\s+cotton|snap\s+button|baby|infant)\b/i,
+        weight: 20,
+        reason: 'Baby set features',
+      },
+    ],
+  },
+  // Baby Rompers
   {
     categoryId: 'cat_baby_rompers',
-    name: 'Baby Rompers & Sets',
+    name: 'Baby Rompers & Sleepsuits',
     department: 'kids',
     deptId: 'dept_kids',
     subId: 'kids_baby',
@@ -907,7 +1506,7 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
     primaryTerms: [
       {
         term: /\b(rompers?|onesies?|baby\s+suit|infant\s+wear|newborn\s+clothing|bodysuit)\b/i,
-        weight: 65,
+        weight: 75,
         reason: 'Baby romper',
       },
     ],
@@ -918,6 +1517,25 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
         reason: 'Infant wear features',
       },
     ],
+  },
+  // All Kids Fashion Fallback
+  {
+    categoryId: 'cat_kids_all_fashion',
+    name: "All Kids' Fashion",
+    department: 'kids',
+    deptId: 'dept_kids',
+    subId: 'kids_all',
+    productType: 'kids_boys_clothing',
+    departmentGroup: 'group_kids',
+    parentCategoryIds: [],
+    primaryTerms: [
+      {
+        term: /\b(kids?\s+fashion|kids?\s+wear|kids?\s+clothing|children\s+wear)\b/i,
+        weight: 50,
+        reason: 'Kids umbrella category',
+      },
+    ],
+    contextTerms: [{ term: /\b(child|kids|toddler)\b/i, weight: 20, reason: 'Kids context' }],
   },
 ];
 
@@ -1028,30 +1646,68 @@ export function autoCategorizeProduct(
 
   // Determine explicit or inferred gender
   let gender = (product.gender || '').toLowerCase().trim();
-  if (!gender) {
+  if (
+    gender.includes('baby') ||
+    gender.includes('boy') ||
+    gender.includes('girl') ||
+    gender.includes('kid')
+  ) {
+    gender = 'kids';
+  } else if (gender.includes('women') || gender.includes('lad')) {
+    gender = 'women';
+  } else if (gender.includes('men') || gender.includes('gent')) {
+    gender = 'men';
+  } else {
+    // 1. First, check title (product.name) directly for explicit gender indicators
+    // This prevents boilerplate descriptions (e.g. copied saree text) from hijacking men's or kids items!
+    const title = product.name || '';
     if (
       hasWord(
-        fullText,
-        /\b(women|woman|ladies|female|mrs|miss|saree|sari|lehenga|kurti|anarkali|choli|bra|bras|pantie|panties|lingerie|camisole|petticoat|frock)\b/i,
-      )
-    ) {
-      gender = 'women';
-    } else if (
-      hasWord(
-        fullText,
-        /\b(men|man|gents|male|mr|sherwani|dhoti|kurta\s+pajama|nehru\s+jacket|bandhgala|boxers?|briefs?)\b/i,
-      )
-    ) {
-      gender = 'men';
-    } else if (
-      hasWord(
-        fullText,
-        /\b(kids?|baby|infant|toddler|newborn|children|boys?\s+clothing|girls?\s+clothing)\b/i,
+        title,
+        /\b(kids?|baby|babies|infant|infants|toddler|toddlers|newborn|newborns|child|children|boys?|girls?)\b/i,
       )
     ) {
       gender = 'kids';
-    } else {
+    } else if (
+      hasWord(
+        title,
+        /\b(women|woman|womens|women's|women’s|ladies|female|mrs|miss|saree|sari|saris|sarees|lehenga|lehengas|kurti|kurtis|anarkali|choli|ghagra|dupatta|dupattas|bra|bras|pantie|panties|lingerie|camisole|petticoat|frock|shapewear|body\s*shaper|tummy\s*tucker)\b/i,
+      )
+    ) {
       gender = 'women';
+    } else if (
+      hasWord(
+        title,
+        /\b(men|man|mens|men's|men’s|gents|male|mr|sherwani|dhoti|kurta\s+pajama|nehru\s+jacket|bandhgala|boxers?|briefs?)\b/i,
+      )
+    ) {
+      gender = 'men';
+    } else {
+      // 2. If title does not have explicit gender indicator, check fullText (title + description)
+      if (
+        hasWord(
+          fullText,
+          /\b(kids?|baby|babies|infant|infants|toddler|toddlers|newborn|newborns|child|children|boys?|girls?)\b/i,
+        )
+      ) {
+        gender = 'kids';
+      } else if (
+        hasWord(
+          fullText,
+          /\b(women|woman|womens|women's|women’s|ladies|female|mrs|miss|saree|sari|saris|sarees|lehenga|lehengas|kurti|kurtis|anarkali|choli|ghagra|dupatta|dupattas|bra|bras|pantie|panties|lingerie|camisole|petticoat|frock|shapewear|body\s*shaper|tummy\s*tucker)\b/i,
+        )
+      ) {
+        gender = 'women';
+      } else if (
+        hasWord(
+          fullText,
+          /\b(men|man|mens|men's|men’s|gents|male|mr|sherwani|dhoti|kurta\s+pajama|nehru\s+jacket|bandhgala|boxers?|briefs?)\b/i,
+        )
+      ) {
+        gender = 'men';
+      } else {
+        gender = 'men';
+      }
     }
   }
 
@@ -1063,6 +1719,11 @@ export function autoCategorizeProduct(
   }[] = [];
 
   for (const rule of CATEGORY_RULES) {
+    // Strictly isolate departments so a rule from another department cannot override
+    if (gender === 'kids' && rule.department !== 'kids') continue;
+    if (gender === 'men' && rule.department !== 'men') continue;
+    if (gender === 'women' && rule.department !== 'women') continue;
+
     let score = 0;
     const reasons: string[] = [];
 
@@ -1131,8 +1792,14 @@ export function autoCategorizeProduct(
   });
 
   // Assign Top Candidate categories to output
-  let primaryCategoryId = 'cat_women_sarees';
-  let suggestedProductType = 'women_sarees';
+  let primaryCategoryId =
+    gender === 'kids'
+      ? 'cat_kids_all_fashion'
+      : gender === 'men'
+        ? 'cat_men_shirts'
+        : 'cat_women_sarees';
+  let suggestedProductType =
+    gender === 'kids' ? 'kids_boys_clothing' : gender === 'men' ? 'men_shirts' : 'women_sarees';
   let departmentGroup:
     'group_men' | 'group_women' | 'group_kids' | 'group_spotlight' | 'group_shops' =
     gender === 'men' ? 'group_men' : gender === 'kids' ? 'group_kids' : 'group_women';

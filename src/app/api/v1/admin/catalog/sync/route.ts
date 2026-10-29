@@ -253,21 +253,43 @@ export async function POST(request: NextRequest) {
       }
 
       // Auto-derive gender if missing to enforce department boundaries
-      const derivedGender =
-        p.gender ||
-        (p.name?.toLowerCase().includes('men') || p.slug?.toLowerCase().includes('men')
-          ? 'men'
-          : p.name?.toLowerCase().includes('baby') ||
-              p.name?.toLowerCase().includes('boy') ||
-              p.name?.toLowerCase().includes('girl') ||
-              p.name?.toLowerCase().includes('kid')
-            ? 'kids'
-            : p.name?.toLowerCase().includes('women') ||
-                p.name?.toLowerCase().includes('saree') ||
-                p.name?.toLowerCase().includes('lehenga') ||
-                p.name?.toLowerCase().includes('kurti')
-              ? 'women'
-              : 'unisex');
+      const pNameLower = (p.name || '').toLowerCase();
+      let derivedGender = (p.gender || '').toLowerCase().trim();
+      if (
+        derivedGender.includes('baby') ||
+        derivedGender.includes('boy') ||
+        derivedGender.includes('girl') ||
+        derivedGender.includes('kid') ||
+        pNameLower.startsWith('baby') ||
+        pNameLower.startsWith('boy') ||
+        pNameLower.startsWith('girl') ||
+        pNameLower.startsWith('kid') ||
+        /\b(baby|babies|infant|infants|toddler|toddlers|newborn|child|children|kids?|boys?|girls?)\b/i.test(
+          pNameLower,
+        )
+      ) {
+        derivedGender = 'kids';
+      } else if (
+        derivedGender.includes('women') ||
+        derivedGender.includes('lad') ||
+        pNameLower.startsWith('women') ||
+        pNameLower.startsWith('lad') ||
+        /\b(women|woman|womens|women's|women’s|ladies|female|saree|sari|lehenga|kurti|anarkali|choli|dupatta)\b/i.test(
+          pNameLower,
+        )
+      ) {
+        derivedGender = 'women';
+      } else if (
+        derivedGender.includes('men') ||
+        derivedGender.includes('gent') ||
+        pNameLower.startsWith('men') ||
+        pNameLower.startsWith('gent') ||
+        /\b(men|man|mens|men's|men’s|gents|male|sherwani|nehru)\b/i.test(pNameLower)
+      ) {
+        derivedGender = 'men';
+      } else {
+        derivedGender = 'men';
+      }
 
       // Safely resolve categoryId to strictly avoid foreign key violation and wrong department assignment
       let resolvedCategoryId = p.categoryId;

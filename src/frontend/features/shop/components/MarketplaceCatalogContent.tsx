@@ -142,7 +142,10 @@ export function MarketplaceCatalogContent() {
         pGender !== 'women' &&
         pGender !== 'kids' &&
         !pName.startsWith('women') &&
-        !pName.startsWith('baby');
+        !pName.startsWith('baby') &&
+        !pName.startsWith('boys') &&
+        !pName.startsWith('girls') &&
+        !pName.startsWith('kids');
     } else if (selectedCategory === 'women') {
       isCategoryMatch =
         (pGender === 'women' ||
@@ -156,7 +159,10 @@ export function MarketplaceCatalogContent() {
         pGender !== 'men' &&
         pGender !== 'kids' &&
         !pName.startsWith('men') &&
-        !pName.startsWith('baby');
+        !pName.startsWith('baby') &&
+        !pName.startsWith('boys') &&
+        !pName.startsWith('girls') &&
+        !pName.startsWith('kids');
     } else if (selectedCategory === 'kids') {
       isCategoryMatch =
         (pGender === 'kids' ||
@@ -167,6 +173,8 @@ export function MarketplaceCatalogContent() {
           parentCatSlug === 'kids' ||
           parentId === 'group_kids' ||
           pName.includes('baby') ||
+          pName.includes('boy') ||
+          pName.includes('girl') ||
           pName.includes('kid')) &&
         pGender !== 'men' &&
         pGender !== 'women' &&
@@ -240,7 +248,10 @@ export function MarketplaceCatalogContent() {
         pGender !== 'women' &&
         pGender !== 'kids' &&
         !pName.startsWith('women') &&
-        !pName.startsWith('baby');
+        !pName.startsWith('baby') &&
+        !pName.startsWith('boys') &&
+        !pName.startsWith('girls') &&
+        !pName.startsWith('kids');
     } else if (genderParam === 'women') {
       matchesGender =
         (pGender === 'women' ||
@@ -255,7 +266,10 @@ export function MarketplaceCatalogContent() {
         pGender !== 'men' &&
         pGender !== 'kids' &&
         !pName.startsWith('men') &&
-        !pName.startsWith('baby');
+        !pName.startsWith('baby') &&
+        !pName.startsWith('boys') &&
+        !pName.startsWith('girls') &&
+        !pName.startsWith('kids');
     } else if (genderParam === 'kids') {
       matchesGender =
         (pGender === 'kids' ||

@@ -167,13 +167,17 @@ async function buildCategoryConditions(
     matchingIds.add('cat_kids_sleepwear');
     matchingIds.add('cat_kids_socks');
   }
-  if (cleanSlug === 'all-men-clothing' || cleanSlug === 'men-clothing') {
+  if (cleanSlug === 'all-men-clothing' || cleanSlug === 'men-clothing' || cleanSlug === 'men') {
     const menDescendants = await getDescendantCategoryIds(prisma, 'men');
     menDescendants.forEach((id) => matchingIds.add(id));
     const menDescendantsStatic = await getDescendantCategoryIds(prisma, 'group_men');
     menDescendantsStatic.forEach((id) => matchingIds.add(id));
   }
-  if (cleanSlug === 'all-women-clothing' || cleanSlug === 'women-clothing') {
+  if (
+    cleanSlug === 'all-women-clothing' ||
+    cleanSlug === 'women-clothing' ||
+    cleanSlug === 'women'
+  ) {
     const womenDescendants = await getDescendantCategoryIds(prisma, 'women');
     womenDescendants.forEach((id) => matchingIds.add(id));
     const womenDescendantsStatic = await getDescendantCategoryIds(prisma, 'group_women');
@@ -213,6 +217,26 @@ async function buildCategoryConditions(
     orConditions.push({ category: { slug: { startsWith: 'boys-' } } });
     orConditions.push({ category: { slug: { startsWith: 'girls-' } } });
     orConditions.push({ category: { slug: { startsWith: 'kids-' } } });
+  } else if (
+    cleanSlug === 'all-men-clothing' ||
+    cleanSlug === 'men-clothing' ||
+    cleanSlug === 'men'
+  ) {
+    orConditions.push({ gender: { equals: 'men', mode: 'insensitive' as const } });
+    orConditions.push({ category: { slug: { startsWith: 'men-' } } });
+    orConditions.push({ category: { parentId: 'group_men' } });
+    orConditions.push({ category: { parent: { parentId: 'group_men' } } });
+    orConditions.push({ category: { parent: { slug: 'men' } } });
+  } else if (
+    cleanSlug === 'all-women-clothing' ||
+    cleanSlug === 'women-clothing' ||
+    cleanSlug === 'women'
+  ) {
+    orConditions.push({ gender: { equals: 'women', mode: 'insensitive' as const } });
+    orConditions.push({ category: { slug: { startsWith: 'women-' } } });
+    orConditions.push({ category: { parentId: 'group_women' } });
+    orConditions.push({ category: { parent: { parentId: 'group_women' } } });
+    orConditions.push({ category: { parent: { slug: 'women' } } });
   } else if (cleanSlug === 'baby-fashion') {
     orConditions.push({ category: { slug: { startsWith: 'baby-' } } });
     orConditions.push({ categoryId: 'cat_baby_boys' });
@@ -794,31 +818,50 @@ export default async function CategoryPage({ params }: Props) {
       const pText = `${pName} ${pDesc}`;
       const pGender = (p.gender || '').toLowerCase();
 
+      // Derive effective gender
+      let effGender = pGender;
+      if (
+        pName.startsWith('baby') ||
+        pName.startsWith('boy') ||
+        pName.startsWith('girl') ||
+        pName.startsWith('kid')
+      ) {
+        effGender = 'kids';
+      } else if (pName.startsWith('men') || pName.startsWith('gent')) {
+        effGender = 'men';
+      } else if (pName.startsWith('women') || pName.startsWith('lad')) {
+        effGender = 'women';
+      }
+
       // Guard 1: Department Cross-contamination Prevention
       if (
         isMen &&
-        (pGender === 'women' ||
-          pGender === 'kids' ||
+        (effGender === 'women' ||
+          effGender === 'kids' ||
           pName.startsWith('women') ||
           pName.startsWith('baby') ||
-          pName.startsWith('girls'))
+          pName.startsWith('boys') ||
+          pName.startsWith('girls') ||
+          pName.startsWith('kids'))
       ) {
         return false;
       }
       if (
         isWomen &&
-        (pGender === 'men' ||
-          pGender === 'kids' ||
+        (effGender === 'men' ||
+          effGender === 'kids' ||
           pName.startsWith('men') ||
           pName.startsWith('baby') ||
-          pName.startsWith('boys'))
+          pName.startsWith('boys') ||
+          pName.startsWith('girls') ||
+          pName.startsWith('kids'))
       ) {
         return false;
       }
       if (
         isKids &&
-        (pGender === 'men' ||
-          pGender === 'women' ||
+        (effGender === 'men' ||
+          effGender === 'women' ||
           pName.startsWith('men') ||
           pName.startsWith('women'))
       ) {

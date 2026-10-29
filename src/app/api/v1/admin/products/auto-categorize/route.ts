@@ -7,6 +7,9 @@ import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { prisma } from '@/lib/prisma';
 import { autoCategorizeProduct } from '@/shared/utils/auto-categorizer';
 
+const INTERNAL_SYNC_SECRET =
+  process.env.INTERNAL_SYNC_SECRET || 'navya_prod_sync_taxonomy_secret_2026';
+
 function getJwtSecretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET || 'navya_collection_jwt_secret_key_2026_min_32chars';
   return new TextEncoder().encode(secret);
@@ -27,11 +30,19 @@ async function getAdminUser() {
 // POST /api/v1/admin/products/auto-categorize - 1-Click Auto-Categorize All or Specific Product
 export async function POST(request: NextRequest) {
   try {
+    const authHeader = request.headers.get('authorization') || request.headers.get('x-sync-secret');
+    const isSecretAuthorized =
+      authHeader &&
+      (authHeader === INTERNAL_SYNC_SECRET || authHeader === `Bearer ${INTERNAL_SYNC_SECRET}`);
+
     const admin = await getAdminUser();
     const adminRole = (admin as any)?.role ? String((admin as any).role).toUpperCase() : '';
-    if (!admin || !['ADMIN', 'OWNER', 'SUPER_ADMIN', 'SUPERVISOR'].includes(adminRole)) {
+    const isAdminAuthorized =
+      admin && ['ADMIN', 'OWNER', 'SUPER_ADMIN', 'SUPERVISOR'].includes(adminRole);
+
+    if (!isAdminAuthorized && !isSecretAuthorized) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized. Admin access required.' },
+        { success: false, message: 'Unauthorized. Admin access or valid sync secret required.' },
         { status: 403 },
       );
     }
@@ -60,23 +71,31 @@ export async function POST(request: NextRequest) {
     }
 
     let updatedCount = 0;
-    const summary: { id: string; name: string; categories: string[] }[] = [];
+    const summary: { id: string; name: string; gender: string; categoryId: string }[] = [];
 
     for (const prod of targetProducts) {
-      const { primaryCategoryId, categoryIds } = autoCategorizeProduct({
+      const autoRes = autoCategorizeProduct({
         name: prod.name,
         description: prod.description || undefined,
         price: Number(prod.price || 0),
         compareAtPrice: prod.compareAtPrice ? Number(prod.compareAtPrice) : undefined,
-        gender: prod.gender || undefined,
         fabric: prod.fabric || undefined,
         occasion: prod.occasion || undefined,
       });
 
-      const validCategoryId = await resolveValidCategoryId(primaryCategoryId);
+      const resolvedGender =
+        autoRes.departmentGroup === 'group_kids'
+          ? 'kids'
+          : autoRes.departmentGroup === 'group_women'
+            ? 'women'
+            : 'men';
+
+      const validCategoryId = await resolveValidCategoryId(autoRes.primaryCategoryId);
 
       // Clean category tags for metaKeywords indexing
-      const catTags = categoryIds.map((c) => c.replace(/[^a-zA-Z0-9_-]/g, '')).filter(Boolean);
+      const catTags = autoRes.categoryIds
+        .map((c) => c.replace(/[^a-zA-Z0-9_-]/g, ''))
+        .filter(Boolean);
 
       // Preserve only non-category user search keywords
       const existingTags = prod.metaKeywords
@@ -98,6 +117,7 @@ export async function POST(request: NextRequest) {
         where: { id: prod.id },
         data: {
           categoryId: validCategoryId,
+          gender: resolvedGender,
           metaKeywords: combinedKeywords,
           isNewArrival: true,
           isFeatured: true,
@@ -108,7 +128,8 @@ export async function POST(request: NextRequest) {
       summary.push({
         id: prod.id,
         name: prod.name,
-        categories: categoryIds,
+        gender: resolvedGender,
+        categoryId: validCategoryId,
       });
     }
 
