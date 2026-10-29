@@ -248,8 +248,11 @@ export async function POST(request: NextRequest) {
         (p.sku ? prodBySku.get(p.sku) : undefined);
 
       let assignedShopId = p.shopId ? shopIdMap.get(p.shopId) : null;
-      if (!assignedShopId && fallbackShop) {
-        assignedShopId = fallbackShop.id;
+      if (!assignedShopId) {
+        console.warn(
+          `[Catalog Sync] Preserving seller isolation: product "${p.name}" (${p.id}) has unmapped shopId "${p.shopId}". Skipping without cross-assignment.`,
+        );
+        continue;
       }
 
       // Auto-derive gender if missing to enforce department boundaries

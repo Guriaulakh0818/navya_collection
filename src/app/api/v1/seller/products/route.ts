@@ -60,15 +60,38 @@ export async function GET(request: NextRequest) {
     }
 
     if (!shop) {
+      // 1. Direct match by ownerId or shop email (case-insensitive)
       shop = await prisma.shop.findFirst({
         where: {
           deletedAt: null,
-          OR: [{ ownerId: userId }, ...(user?.email ? [{ email: user.email }] : [])],
+          OR: [
+            { ownerId: userId },
+            ...(user?.email
+              ? [{ email: { equals: user.email, mode: 'insensitive' as const } }]
+              : []),
+          ],
         },
       });
     }
 
+    if (!shop) {
+      // 2. Check User.ownedShops relation
+      const userWithShop = await prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+          ownedShops: {
+            where: { deletedAt: null },
+            take: 1,
+          },
+        },
+      });
+      if (userWithShop?.ownedShops?.[0]) {
+        shop = userWithShop.ownedShops[0];
+      }
+    }
+
     if (!shop && isPlatformAdminOrOwner) {
+      // 3. Platform Admin/Owner flagship store access
       shop = await prisma.shop.findFirst({
         where: { slug: 'navya-collection', deletedAt: null },
       });
@@ -98,7 +121,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (status !== 'ALL') {
-      whereCondition.status = status;
+      whereCondition.status = { equals: status.toLowerCase(), mode: 'insensitive' };
     }
 
     if (stockFilter === 'in_stock') {

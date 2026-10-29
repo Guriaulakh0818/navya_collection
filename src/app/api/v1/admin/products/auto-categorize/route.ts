@@ -119,8 +119,6 @@ export async function POST(request: NextRequest) {
           categoryId: validCategoryId,
           gender: resolvedGender,
           metaKeywords: combinedKeywords,
-          isNewArrival: true,
-          isFeatured: true,
         },
       });
 
