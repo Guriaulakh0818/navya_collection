@@ -334,8 +334,10 @@ export function SellerInventoryManager() {
             <span>{t('nav.inventory', 'Inventory & Stock Manager')}</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1 font-medium">
-            Easily increase or decrease live stock quantities, archive off-season products, or
-            delete unwanted listings in 1 click.
+            {t(
+              'inventory.subtitle',
+              'Easily increase or decrease live stock quantities, archive off-season products, or delete unwanted listings in 1 click.',
+            )}
           </p>
         </div>
 
@@ -347,7 +349,7 @@ export function SellerInventoryManager() {
             title="Refresh Inventory"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <span>{t('inventory.refreshBtn', 'Refresh')}</span>
           </button>
 
           <Link
@@ -355,7 +357,7 @@ export function SellerInventoryManager() {
             className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-navy font-bold rounded-xl text-xs transition-colors"
           >
             <ShoppingBag className="w-3.5 h-3.5" />
-            <span>Full Catalog</span>
+            <span>{t('productList.title', 'Product Catalog')}</span>
           </Link>
 
           <Link
@@ -363,7 +365,7 @@ export function SellerInventoryManager() {
             className="flex items-center gap-1.5 px-4 py-2 bg-orange hover:bg-orange/90 text-white font-extrabold rounded-xl text-xs transition-colors shadow-xs"
           >
             <Plus className="w-4 h-4" />
-            <span>+ Add Product</span>
+            <span>{t('nav.addProduct', '+ Add Product')}</span>
           </Link>
         </div>
       </div>
@@ -373,7 +375,7 @@ export function SellerInventoryManager() {
         {/* Card 1: Total */}
         <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-            Total Listings
+            {t('inventory.totalListings', 'Total Listings')}
           </span>
           <span className="text-xl sm:text-2xl font-black text-navy mt-1 block">
             {counts.ALL || 0}
@@ -384,7 +386,7 @@ export function SellerInventoryManager() {
         {/* Card 2: Healthy Stock */}
         <div className="bg-white border border-emerald-200/80 rounded-2xl p-4 shadow-2xs bg-gradient-to-br from-white to-emerald-50/30">
           <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">
-            In Stock
+            {t('productList.inStock', 'In Stock')}
           </span>
           <span className="text-xl sm:text-2xl font-black text-emerald-700 mt-1 block">
             {counts.inStock || 0}
@@ -395,7 +397,7 @@ export function SellerInventoryManager() {
         {/* Card 3: Low Stock */}
         <div className="bg-white border border-amber-200 rounded-2xl p-4 shadow-2xs bg-gradient-to-br from-white to-amber-50/40">
           <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block">
-            Low Stock (≤5)
+            {t('productList.lowStock', 'Low Stock')} (≤5)
           </span>
           <span className="text-xl sm:text-2xl font-black text-amber-700 mt-1 block">
             {counts.lowStock || 0}
@@ -406,7 +408,7 @@ export function SellerInventoryManager() {
         {/* Card 4: Out of Stock */}
         <div className="bg-white border border-rose-200 rounded-2xl p-4 shadow-2xs bg-gradient-to-br from-white to-rose-50/40">
           <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider block">
-            Out of Stock (0)
+            {t('productList.outOfStock', 'Out of Stock')} (0)
           </span>
           <span className="text-xl sm:text-2xl font-black text-rose-700 mt-1 block">
             {counts.outOfStock || 0}
@@ -417,7 +419,7 @@ export function SellerInventoryManager() {
         {/* Card 5: Archived */}
         <div className="bg-white border border-slate-300 rounded-2xl p-4 shadow-2xs col-span-2 sm:col-span-1">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-            Archived
+            {t('productList.tabArchived', 'Archived')}
           </span>
           <span className="text-xl sm:text-2xl font-black text-slate-700 mt-1 block">
             {counts.archived || 0}
@@ -430,12 +432,24 @@ export function SellerInventoryManager() {
       <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4 shadow-xs">
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-2 border-b border-slate-100">
           {[
-            { id: 'ALL', label: 'All Products', count: counts.ALL },
-            { id: 'in_stock', label: 'In Stock', count: counts.inStock },
-            { id: 'low_stock', label: 'Low Stock (≤5)', count: counts.lowStock },
-            { id: 'out_of_stock', label: 'Out of Stock (0)', count: counts.outOfStock },
-            { id: 'archived', label: 'Archived', count: counts.archived },
-            { id: 'draft', label: 'Drafts', count: counts.draft },
+            { id: 'ALL', label: t('productList.tabAll', 'All Products'), count: counts.ALL },
+            { id: 'in_stock', label: t('productList.inStock', 'In Stock'), count: counts.inStock },
+            {
+              id: 'low_stock',
+              label: `${t('productList.lowStock', 'Low Stock')} (≤5)`,
+              count: counts.lowStock,
+            },
+            {
+              id: 'out_of_stock',
+              label: `${t('productList.outOfStock', 'Out of Stock')} (0)`,
+              count: counts.outOfStock,
+            },
+            {
+              id: 'archived',
+              label: t('productList.tabArchived', 'Archived'),
+              count: counts.archived,
+            },
+            { id: 'draft', label: t('productList.tabDraft', 'Drafts'), count: counts.draft },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (

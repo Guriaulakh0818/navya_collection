@@ -3283,11 +3283,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
           <div className="min-w-0 pr-1">
             <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
-              <Truck className="w-4 h-4 text-orange shrink-0" /> Section 4: Shipping & Packaging
-              Specifications
+              <Truck className="w-4 h-4 text-orange shrink-0" />{' '}
+              {t('form.sectionShippingTitle', 'Section 4: Shipping & Packaging Specifications')}
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Physical package dead weight and dimensions used for courier rate estimation.
+              {t(
+                'form.sectionShippingSubtitle',
+                'Physical package dead weight and dimensions used for courier rate estimation.',
+              )}
             </p>
           </div>
           <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
@@ -3298,7 +3301,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
           <div>
             <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[10px]">
-              Dead Weight (Grams) <span className="text-rose-500">*</span>
+              {t('form.deadWeight', 'Dead Weight (Grams)')} <span className="text-rose-500">*</span>
             </label>
             <input
               type="number"
@@ -3311,7 +3314,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           <div>
             <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[10px]">
-              Package Length (cm)
+              {t('form.packageLength', 'Package Length (cm)')}
             </label>
             <input
               type="number"
@@ -3324,7 +3327,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           <div>
             <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[10px]">
-              Package Width (cm)
+              {t('form.packageWidth', 'Package Width (cm)')}
             </label>
             <input
               type="number"
@@ -3337,7 +3340,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           <div>
             <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[10px]">
-              Package Height (cm)
+              {t('form.packageHeight', 'Package Height (cm)')}
             </label>
             <input
               type="number"
@@ -3350,7 +3353,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           <div className="sm:col-span-2">
             <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[10px]">
-              Country of Origin
+              {t('form.countryOfOrigin', 'Country of Origin')}
             </label>
             <input
               type="text"
@@ -3362,7 +3365,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           <div className="sm:col-span-2">
             <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1 text-[10px]">
-              Manufacturer / Packer Details
+              {t('form.manufacturerDetails', 'Manufacturer / Packer Details')}
             </label>
             <input
               type="text"
@@ -3379,12 +3382,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
           <div className="min-w-0 pr-1">
             <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
-              <RotateCcw className="w-4 h-4 text-orange shrink-0" /> Section 5: Return & Replacement
-              Policy <span className="text-rose-500">*</span>
+              <RotateCcw className="w-4 h-4 text-orange shrink-0" />{' '}
+              {t('form.sectionReturnTitle', 'Section 5: Return & Replacement Policy')}{' '}
+              <span className="text-rose-500">*</span>
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Select one of the 3 standardized customer return & replacement options enforced across
-              the marketplace.
+              {t(
+                'form.sectionReturnSubtitle',
+                'Select one of the 3 standardized customer return & replacement options enforced across the marketplace.',
+              )}
             </p>
           </div>
           <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
@@ -3418,10 +3424,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 )}
               </div>
             </div>
-            <h3 className="font-extrabold text-navy text-sm mb-1">Return + Replacement</h3>
+            <h3 className="font-extrabold text-navy text-sm mb-1">
+              {t('form.returnOptionA', 'Return + Replacement')}
+            </h3>
             <p className="text-[11px] text-slate-600 leading-relaxed mb-4">
-              Allows customers to request either a full return or a product replacement within the
-              verified eligibility windows.
+              {t(
+                'form.returnOptionADesc',
+                'Allows customers to request either a full return or a product replacement within the verified eligibility windows.',
+              )}
             </p>
             <div className="bg-white/80 rounded-xl p-3 border border-slate-200 space-y-1.5 text-xs">
               <div className="flex justify-between">
@@ -3460,10 +3470,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 )}
               </div>
             </div>
-            <h3 className="font-extrabold text-navy text-sm mb-1">Replacement Only</h3>
+            <h3 className="font-extrabold text-navy text-sm mb-1">
+              {t('form.returnOptionB', 'Replacement Only')}
+            </h3>
             <p className="text-[11px] text-slate-600 leading-relaxed mb-4">
-              Returns for refund are not allowed. Customers may only request replacement for size or
-              damaged items.
+              {t(
+                'form.returnOptionBDesc',
+                'Returns for refund are not allowed. Customers may only request replacement for size or damaged items.',
+              )}
             </p>
             <div className="bg-white/80 rounded-xl p-3 border border-slate-200 space-y-1.5 text-xs">
               <div className="flex justify-between">
@@ -3500,10 +3514,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 {formData.returnPolicyType === 'NONE' && <CheckCircle2 className="w-3.5 h-3.5" />}
               </div>
             </div>
-            <h3 className="font-extrabold text-navy text-sm mb-1">None (Final Sale)</h3>
+            <h3 className="font-extrabold text-navy text-sm mb-1">
+              {t('form.returnOptionC', 'None (Final Sale)')}
+            </h3>
             <p className="text-[11px] text-slate-600 leading-relaxed mb-4">
-              Strictly no returns or replacements are accepted once the parcel has been delivered to
-              the customer.
+              {t(
+                'form.returnOptionCDesc',
+                'Strictly no returns or replacements are accepted once the parcel has been delivered to the customer.',
+              )}
             </p>
             <div className="bg-white/80 rounded-xl p-3 border border-slate-200 space-y-1.5 text-xs">
               <div className="flex justify-between">
@@ -3532,12 +3550,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         <div className="flex items-start sm:items-center justify-between border-b border-slate-100 pb-2.5 gap-2">
           <div className="min-w-0 pr-1">
             <h2 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5 sm:gap-2">
-              <Boxes className="w-4 h-4 text-orange shrink-0" /> Section 6: Product Variant Matrix &
-              Photo Gallery
+              <Boxes className="w-4 h-4 text-orange shrink-0" />{' '}
+              {t('form.sectionVariantsTitle', 'Section 6: Product Variant Matrix & Photo Gallery')}
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Color-first grouped matrix with variant-specific photos and category sizes (
-              {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name}).
+              {t(
+                'form.sectionVariantsSubtitle',
+                'Color-first grouped matrix with variant-specific photos and category sizes.',
+              )}{' '}
+              ({SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name}).
             </p>
           </div>
           <span className="shrink-0 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap">
@@ -3548,10 +3569,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         {/* Variant Mode Selection */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           {[
-            { id: 'NONE', label: 'Single Product (No Variants)' },
-            { id: 'SIZE_ONLY', label: 'Size Only Variants' },
-            { id: 'COLOR_ONLY', label: 'Color Only Variants' },
-            { id: 'SIZE_AND_COLOR', label: 'Color + Size Matrix' },
+            { id: 'NONE', label: t('form.variantSingle', 'Single Product (No Variants)') },
+            { id: 'SIZE_ONLY', label: t('form.variantSizeOnly', 'Size Only Variants') },
+            { id: 'COLOR_ONLY', label: t('form.variantColorOnly', 'Color Only Variants') },
+            { id: 'SIZE_AND_COLOR', label: t('form.variantBoth', 'Color + Size Matrix') },
           ].map((mode) => (
             <button
               key={mode.id}
@@ -3582,7 +3603,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                   <div className="flex items-center justify-between">
                     <label className="block font-bold text-navy uppercase tracking-wider text-xs">
-                      Step 1: Select Available Sizes (
+                      {t('form.step1Sizes', 'Step 1: Select Available Sizes')} (
                       {SIZE_SYSTEMS[activeTemplate.sizeSystemId]?.name})
                     </label>
                     <span className="text-[11px] text-navy font-bold">
@@ -3613,7 +3634,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                   <div className="flex items-center gap-2 pt-2">
                     <input
                       type="text"
-                      placeholder="Custom size (e.g. Free Size, Plus 46)"
+                      placeholder={t(
+                        'form.customSizePlaceholder',
+                        'Custom size (e.g. Free Size, Plus 46)',
+                      )}
                       value={customSizeInput}
                       onChange={(e) => setCustomSizeInput(e.target.value)}
                       onKeyDown={(e) =>
@@ -3626,7 +3650,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                       onClick={handleAddCustomSize}
                       className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-xl cursor-pointer"
                     >
-                      Add Size
+                      {t('form.addSizeBtn', 'Add Size')}
                     </button>
                   </div>
                 </div>
@@ -3635,7 +3659,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 <div className="space-y-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                   <div>
                     <label className="block font-bold text-navy uppercase tracking-wider text-xs">
-                      Step 2: Select Product Colors
+                      {t('form.step2Colors', 'Step 2: Select Product Colors')}
                     </label>
                     <p className="text-[11px] text-slate-500 mt-0.5">
                       Select all colors this product is made in. You can choose which colors are

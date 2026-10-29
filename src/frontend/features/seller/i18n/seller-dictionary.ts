@@ -279,6 +279,147 @@ export const SELLER_DICTIONARY = {
       hi: 'आपकी दुकान में माल पहचानने का कोड या टैग नंबर।',
     },
 
+    // Shipping Section
+    sectionShippingTitle: {
+      en: 'Section 4: Shipping & Packaging Specifications',
+      hinglish: 'Section 4: Delivery & Packing Jankari (Shipping)',
+      hi: 'सेक्शन 4: डिलीवरी व पैकेजिंग जानकारी (Shipping)',
+    },
+    sectionShippingSubtitle: {
+      en: 'Physical package dead weight and dimensions used for courier rate estimation.',
+      hinglish: 'Courier aur delivery ke hisaab ke liye packet ka wajan aur size bharein.',
+      hi: 'कूरियर और डिलीवरी के हिसाब के लिए पैकेट का वज़न और साइज़ भरें।',
+    },
+    deadWeight: {
+      en: 'Dead Weight (Grams)',
+      hinglish: 'Packet ka Wajan (Grams me)',
+      hi: 'पैकेट का वज़न (Grams में)',
+    },
+    packageLength: {
+      en: 'Package Length (cm)',
+      hinglish: 'Packet ki Lambai (Length cm)',
+      hi: 'पैकेट की लंबाई (cm)',
+    },
+    packageWidth: {
+      en: 'Package Width (cm)',
+      hinglish: 'Packet ki Choudai (Width cm)',
+      hi: 'पैकेट की चौड़ाई (cm)',
+    },
+    packageHeight: {
+      en: 'Package Height (cm)',
+      hinglish: 'Packet ki Unchai (Height cm)',
+      hi: 'पैकेट की ऊंचाई (cm)',
+    },
+    countryOfOrigin: {
+      en: 'Country of Origin',
+      hinglish: 'Kis Desh me Bana Hai (Country of Origin)',
+      hi: 'किस देश में बना है (Country of Origin)',
+    },
+    manufacturerDetails: {
+      en: 'Manufacturer / Packer Details',
+      hinglish: 'Factory ya Dukan ki Jankari (Manufacturer/Packer)',
+      hi: 'फैक्ट्री या दुकान की जानकारी (Manufacturer/Packer)',
+    },
+
+    // Return & Replacement Policy
+    sectionReturnTitle: {
+      en: 'Section 5: Return & Replacement Policy',
+      hinglish: 'Section 5: Customer Wapasi / Exchange Niyam (Return Policy)',
+      hi: 'सेक्शन 5: ग्राहक वापसी / एक्सचेंज नियम (Return Policy)',
+    },
+    sectionReturnSubtitle: {
+      en: 'Select one of the 3 standardized customer return & replacement options.',
+      hinglish: 'Customer ke liye 3 me se koi 1 return/exchange option chunein.',
+      hi: 'ग्राहक के लिए 3 में से कोई 1 रिटर्न/एक्सचेंज विकल्प चुनें।',
+    },
+    returnOptionA: {
+      en: 'Return + Replacement',
+      hinglish: 'Wapasi aur Exchange Dono Manzoor (Return + Replacement)',
+      hi: 'वापसी और एक्सचेंज दोनों मंजूर (Return + Replacement)',
+    },
+    returnOptionADesc: {
+      en: 'Allows customers to request either a full return or a product replacement within eligibility windows.',
+      hinglish: 'Customer ko pasand na aane par wapas ya size badalwane ki poori chhoot.',
+      hi: 'ग्राहक को पसंद न आने पर वापस करने या साइज़ बदलवाने की पूरी छूट।',
+    },
+    returnOptionB: {
+      en: 'Replacement Only',
+      hinglish: 'Sirf Size Exchange Hoga (Replacement Only - Paise wapas nahi)',
+      hi: 'सिर्फ साइज़ एक्सचेंज होगा (Replacement Only - पैसे वापस नहीं)',
+    },
+    returnOptionBDesc: {
+      en: 'Defect or size exchange allowed. No monetary returns allowed.',
+      hinglish: 'Sirf size chhota/bada hone par piece badla jayega, paise wapas nahi honge.',
+      hi: 'सिर्फ साइज़ छोटा/बड़ा होने पर पीस बदला जाएगा, पैसे वापस नहीं होंगे।',
+    },
+    returnOptionC: {
+      en: 'No Returns (Non-Returnable)',
+      hinglish: 'Koi Wapasi Nahi (Non-Returnable / Final Sale)',
+      hi: 'कोई वापसी नहीं (Non-Returnable / Final Sale)',
+    },
+    returnOptionCDesc: {
+      en: 'Zero return or exchange allowed unless physically damaged during delivery transit.',
+      hinglish: 'Delivery ke baad product na wapas hoga na exchange hoga.',
+      hi: 'डिलीवरी के बाद प्रोडक्ट न वापस होगा न एक्सचेंज होगा।',
+    },
+
+    // Variants (Sizes & Colors)
+    sectionVariantsTitle: {
+      en: 'Section 6: Product Variant Matrix & Photo Gallery',
+      hinglish: 'Section 6: Sizes, Rang aur Photos (Variants & Gallery)',
+      hi: 'सेक्शन 6: साइज़, रंग और फोटो (Variants & Gallery)',
+    },
+    sectionVariantsSubtitle: {
+      en: 'Color-first grouped matrix with variant-specific photos and category sizes.',
+      hinglish: 'Alag-alag size aur rang ke hisaab se photos aur stock jodein.',
+      hi: 'अलग-अलग साइज़ और रंग के हिसाब से फोटो और स्टॉक जोड़ें।',
+    },
+    variantSingle: {
+      en: 'Single Product (No Variants)',
+      hinglish: 'Ek hi Size / Ek hi Rang (No Variants)',
+      hi: 'एक ही साइज़ / एक ही रंग (No Variants)',
+    },
+    variantSizeOnly: {
+      en: 'Size Only Variants',
+      hinglish: 'Alag-alag Sizes (S, M, L, XL...)',
+      hi: 'अलग-अलग साइज़ (S, M, L, XL...)',
+    },
+    variantColorOnly: {
+      en: 'Color Only Variants',
+      hinglish: 'Alag-alag Rang (Colors Only)',
+      hi: 'अलग-अलग रंग (Colors Only)',
+    },
+    variantBoth: {
+      en: 'Color + Size Matrix',
+      hinglish: 'Size aur Rang Dono (Color + Size)',
+      hi: 'साइज़ और रंग दोनों (Color + Size)',
+    },
+    step1Sizes: {
+      en: 'Step 1: Select Available Sizes',
+      hinglish: 'Step 1: Dukan me kon-kon se Sizes available hain chunein',
+      hi: 'स्टेप 1: दुकान में कौन-कौन से साइज़ उपलब्ध हैं चुनें',
+    },
+    step2Colors: {
+      en: 'Step 2: Select Product Colors',
+      hinglish: 'Step 2: Product ke Rang (Colors) chunein',
+      hi: 'स्टेप 2: प्रोडक्ट के रंग (Colors) चुनें',
+    },
+    addSizeBtn: {
+      en: 'Add Size',
+      hinglish: '+ Size Jodein',
+      hi: '+ साइज़ जोड़ें',
+    },
+    customSizePlaceholder: {
+      en: 'Custom size (e.g. Free Size, Plus 46)',
+      hinglish: 'Apna size likhein (jaise: Free Size, 28, 30, 3XL)',
+      hi: 'अपना साइज़ लिखें (जैसे: Free Size, 28, 30, 3XL)',
+    },
+    addColorBtn: {
+      en: 'Add Color',
+      hinglish: '+ Rang Jodein',
+      hi: '+ रंग जोड़ें',
+    },
+
     // Variants (Sizes & Colors)
     sectionVariants: {
       en: 'Variants (Sizes & Colors)',
@@ -477,6 +618,80 @@ export const SELLER_DICTIONARY = {
       en: 'Low Stock',
       hinglish: 'Kam Stock Bacha Hai',
       hi: 'कम स्टॉक बचा है',
+    },
+    subtitle: {
+      en: 'Manage your boutique products, variants, prices, inventory stock levels, and publication status.',
+      hinglish: 'Apni dukan ke products, sizes, kimat aur stock ka hisaab yahan dekhein.',
+      hi: 'अपनी दुकान के प्रोडक्ट्स, साइज़, कीमत और स्टॉक का हिसाब यहाँ देखें।',
+    },
+    thItem: {
+      en: 'Product Item',
+      hinglish: 'Product / Samaan',
+      hi: 'प्रोडक्ट / सामान',
+    },
+    thSku: {
+      en: 'SKU / Category',
+      hinglish: 'SKU & Category',
+      hi: 'SKU और कैटेगरी',
+    },
+    thPrice: {
+      en: 'Selling Price',
+      hinglish: 'Bikri Kimat (Price)',
+      hi: 'बिक्री कीमत (Price)',
+    },
+    thStock: {
+      en: 'Inventory Stock',
+      hinglish: 'Kul Stock (Pieces)',
+      hi: 'कुल स्टॉक (Pieces)',
+    },
+    thReturn: {
+      en: 'Return Policy',
+      hinglish: 'Wapasi Suvidha',
+      hi: 'वापसी सुविधा',
+    },
+    thStatus: {
+      en: 'Status',
+      hinglish: 'Status (Haal)',
+      hi: 'स्थिति (Status)',
+    },
+    thActions: {
+      en: 'Actions',
+      hinglish: 'Actions / Badlav',
+      hi: 'कार्रवाई (Actions)',
+    },
+    searchBtn: {
+      en: 'Search',
+      hinglish: 'Khojein',
+      hi: 'खोजें',
+    },
+    noProducts: {
+      en: 'No products found in this category.',
+      hinglish: 'Is category me koi product nahi mila.',
+      hi: 'इस कैटेगरी में कोई प्रोडक्ट नहीं मिला।',
+    },
+    noProductsHint: {
+      en: 'Click "Add New Product" to create your boutique listing.',
+      hinglish: 'Naya product dalne ke liye "+ Naya Product Dalein" button par click karein.',
+      hi: 'नया प्रोडक्ट डालने के लिए "+ नया प्रोडक्ट जोड़ें" बटन पर क्लिक करें।',
+    },
+  },
+
+  // Inventory & Stock Specific
+  inventory: {
+    totalListings: {
+      en: 'Total Listings',
+      hinglish: 'Kul Products (Listings)',
+      hi: 'कुल प्रोडक्ट्स (Listings)',
+    },
+    subtitle: {
+      en: 'Easily increase or decrease live stock quantities, archive off-season products, or delete unwanted listings in 1 click.',
+      hinglish: 'Dukan ka stock asani se kam ya jyada karein, ya purane product hatayein.',
+      hi: 'दुकान का स्टॉक आसानी से कम या ज्यादा करें, या पुराने प्रोडक्ट हटाएं।',
+    },
+    refreshBtn: {
+      en: 'Refresh',
+      hinglish: 'Refresh Karein',
+      hi: 'रिफ्रेश करें',
     },
   },
 };

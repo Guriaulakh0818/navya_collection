@@ -211,11 +211,13 @@ export function SellerProductList() {
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
             <ShoppingBag className="w-6 h-6 text-navy" />
-            Seller Product Catalog
+            {t('productList.title', 'Seller Product Catalog')}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Manage your boutique products, variants, prices, inventory stock levels, and publication
-            status.
+            {t(
+              'productList.subtitle',
+              'Manage your boutique products, variants, prices, inventory stock levels, and publication status.',
+            )}
           </p>
         </div>
 
@@ -329,7 +331,7 @@ export function SellerProductList() {
             type="submit"
             className="px-4 py-2.5 bg-navy hover:bg-navy/90 text-white font-bold text-xs rounded-xl shadow-xs transition-all"
           >
-            Search
+            {t('productList.searchBtn', 'Search')}
           </button>
         </form>
       </div>
@@ -344,9 +346,14 @@ export function SellerProductList() {
         ) : products.length === 0 ? (
           <div className="p-12 text-center text-slate-500 space-y-2">
             <ShoppingBag className="w-10 h-10 text-slate-300 mx-auto" />
-            <p className="font-bold text-slate-800 text-sm">No products found in this category.</p>
+            <p className="font-bold text-slate-800 text-sm">
+              {t('productList.noProducts', 'No products found in this category.')}
+            </p>
             <p className="text-xs text-slate-500">
-              Click &quot;Add New Product&quot; to create your boutique listing.
+              {t(
+                'productList.noProductsHint',
+                'Click "Add New Product" to create your boutique listing.',
+              )}
             </p>
           </div>
         ) : (
@@ -362,13 +369,13 @@ export function SellerProductList() {
                       className="rounded border-slate-300 text-navy focus:ring-0 cursor-pointer"
                     />
                   </th>
-                  <th className="py-4 px-6">Product Item</th>
-                  <th className="py-4 px-6">SKU / Category</th>
-                  <th className="py-4 px-6">Selling Price</th>
-                  <th className="py-4 px-6">Inventory Stock</th>
-                  <th className="py-4 px-6">Return Policy</th>
-                  <th className="py-4 px-6">Status</th>
-                  <th className="py-4 px-6 text-right">Actions</th>
+                  <th className="py-4 px-6">{t('productList.thItem', 'Product Item')}</th>
+                  <th className="py-4 px-6">{t('productList.thSku', 'SKU / Category')}</th>
+                  <th className="py-4 px-6">{t('productList.thPrice', 'Selling Price')}</th>
+                  <th className="py-4 px-6">{t('productList.thStock', 'Inventory Stock')}</th>
+                  <th className="py-4 px-6">{t('productList.thReturn', 'Return Policy')}</th>
+                  <th className="py-4 px-6">{t('productList.thStatus', 'Status')}</th>
+                  <th className="py-4 px-6 text-right">{t('productList.thActions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
