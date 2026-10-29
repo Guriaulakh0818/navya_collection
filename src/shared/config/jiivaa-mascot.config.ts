@@ -427,6 +427,24 @@ export const JIIVAA_ASSETS: Record<string, MascotAsset> = {
     description: 'Navy blue curved visor baseball cap with embroidered JiivaaKart logo.',
     suggestedUseCases: ['Merchandise Store / Free Swag Offer', 'Delivery Partner ID Badge'],
   },
+  propCoffeeCup: {
+    id: 'prop-5-coffee-cup',
+    name: 'Coffee Cup',
+    title: 'Branded JiivaaKart To-Go Coffee Cup',
+    path: '/brand/jiivaa/crops/prop-5-coffee-cup.png',
+    category: 'prop',
+    description: 'White to-go paper coffee cup with black lid and JiivaaKart logo.',
+    suggestedUseCases: ['Morning Deals Notification', 'Break Time Offers', 'Lifestyle Merch'],
+  },
+  propPhoneWallpaper: {
+    id: 'prop-6-phone-wallpaper',
+    name: 'Phone Wallpaper',
+    title: 'JiivaaKart Mobile Phone Case / Wallpaper',
+    path: '/brand/jiivaa/crops/prop-6-phone-wallpaper.png',
+    category: 'prop',
+    description: 'Smartphone with JiivaaKart logo printed on the back.',
+    suggestedUseCases: ['Mobile App Download Banner', 'PWA Install Prompt', 'Mobile Exclusives'],
+  },
 
   // Brand Badges
   brandLogoCard: {
@@ -435,8 +453,18 @@ export const JIIVAA_ASSETS: Record<string, MascotAsset> = {
     title: 'JiivaaKart STYLE THAT SPEAKS Logo',
     path: '/brand/jiivaa/crops/brand-logo-card.png',
     category: 'brand',
-    description: 'Official shopping bag motif logo with JK initials and STYLE THAT SPEAKS tagline.',
+    description:
+      'Official modern wordmark logo: Jiivaa in Navy Blue #0A2342, Kart in Orange #F28C28, and STYLE THAT SPEAKS tagline.',
     suggestedUseCases: ['Navbar Brand Header', 'Footer Logo', 'Invoice / Bill Header'],
+  },
+  brandLogoTransparent: {
+    id: 'brand-logo-transparent',
+    name: 'Official Logo (Transparent)',
+    title: 'JiivaaKart Transparent Wordmark',
+    path: '/brand/jiivaa/crops/brand-logo-transparent.png',
+    category: 'brand',
+    description: 'Isolated transparent wordmark logo for dark and light UI headers and cards.',
+    suggestedUseCases: ['Navbar Brand Header', 'Mobile Header', 'Footer Logo', 'Invoice Header'],
   },
   brandColorsCard: {
     id: 'brand-colors-card',
