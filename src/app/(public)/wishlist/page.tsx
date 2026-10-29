@@ -93,15 +93,33 @@ export default function MultiVendorWishlistPage() {
           ]}
           className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 py-3 sm:py-4"
         />
-        <div className="mx-auto max-w-md px-4 py-16 sm:py-24 text-center space-y-4">
-          <div className="w-16 h-16 bg-white border border-slate-200 rounded-3xl flex items-center justify-center mx-auto text-rose-500 shadow-sm">
-            <Heart className="h-8 w-8 text-rose-500" />
+        <div className="mx-auto max-w-md px-4 py-12 sm:py-16 text-center space-y-5">
+          {/* Jiivaa Love Mascot */}
+          <div className="relative mx-auto w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
+            <div className="absolute inset-0 bg-radial from-rose-500/20 via-rose-500/5 to-transparent rounded-full blur-xl pointer-events-none" />
+            <div className="relative z-10 w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-white border border-rose-100 shadow-md p-2 flex items-center justify-center overflow-hidden">
+              <Image
+                src="/brand/jiivaa/crops/journey/12-love.png"
+                alt="Jiivaa - Love Wishlist"
+                width={160}
+                height={165}
+                className="w-full h-full object-contain select-none"
+                priority
+              />
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-rose-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1 border border-white">
+              <span>Wishlist</span>
+            </div>
           </div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-navy">YOUR WISHLIST IS EMPTY</h1>
-          <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
-            Explore verified designer ethnic fashion & luxury boutique stores on JiivaaKart and save
-            your favorites.
-          </p>
+
+          <div className="space-y-1.5">
+            <h1 className="text-xl sm:text-2xl font-black text-navy tracking-tight">
+              Aapki Wishlist Abhi Khali Hai!
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm mx-auto">
+              Save styles you adore and Jiivaa will keep them ready for your next shopping haul.
+            </p>
+          </div>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
             <Button
               className="w-full sm:w-auto rounded-xl bg-orange hover:bg-orange/90 text-white font-extrabold px-6 py-2.5 text-xs shadow-md shadow-orange/20 cursor-pointer uppercase tracking-wider"

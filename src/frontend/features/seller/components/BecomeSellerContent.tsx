@@ -2,6 +2,7 @@
 
 import { IndianRupee, Loader2, Lock, Sparkles, Store, Truck, Users } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import { SellerLoginCard } from '@/frontend/features/seller/components/SellerLoginCard';
@@ -85,22 +86,45 @@ export function BecomeSellerContent() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      {/* Hero Header */}
-      <div className="max-w-4xl mx-auto text-center space-y-4 mb-8">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange/10 border border-orange/20 text-orange text-xs font-extrabold uppercase tracking-widest shadow-xs">
-          <Sparkles className="w-4 h-4 text-orange animate-pulse" />
-          Multi-Vendor Seller Network
+      {/* Hero Header with Jiivaa Mascot */}
+      <div className="max-w-4xl mx-auto mb-8 bg-gradient-to-br from-white via-orange/5 to-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
+        <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-6">
+          <div className="md:col-span-8 space-y-3 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange/10 border border-orange/20 text-orange text-[11px] font-extrabold uppercase tracking-wider shadow-2xs">
+              <Sparkles className="w-3.5 h-3.5 text-orange animate-pulse" />
+              <span>Multi-Vendor Seller Network</span>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-navy tracking-tight leading-tight">
+              Sell Your Fashion on <br className="hidden sm:inline" />
+              <span className="text-orange">JiivaaKart Marketplace</span>
+            </h1>
+
+            <p className="text-xs sm:text-sm text-slate-600 max-w-xl font-medium leading-relaxed">
+              Expand your boutique from Hisar, Jaipur, Surat or Delhi to shoppers across India with
+              0% setup friction and verified courier door-pickup.
+            </p>
+          </div>
+
+          <div className="md:col-span-4 flex items-center justify-center">
+            <div className="relative w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
+              <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-xl pointer-events-none" />
+              <div className="relative z-10 w-32 h-32 sm:w-40 sm:h-40 rounded-2xl bg-white border border-orange-200 shadow-sm p-2 flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/brand/jiivaa/crops/journey/08-seller-onboarding.png"
+                  alt="Jiivaa - Seller Onboarding"
+                  width={160}
+                  height={170}
+                  className="w-full h-full object-contain select-none"
+                  priority
+                />
+              </div>
+              <div className="absolute -bottom-1 -right-1 bg-navy text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs border border-white">
+                Seller Hub
+              </div>
+            </div>
+          </div>
         </div>
-
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-navy tracking-tight leading-tight">
-          Sell Your Fashion &amp; Apparel on <br className="hidden sm:inline" />
-          <span className="text-orange font-extrabold">JiivaaKart Marketplace</span>
-        </h1>
-
-        <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
-          Expand your clothing store from Hisar, Jaipur, Surat or Delhi to customers across India.
-          Complete your application to unlock seller privileges.
-        </p>
       </div>
 
       {/* Segmented Pill Switcher: Register New Store vs Existing Merchant Login */}

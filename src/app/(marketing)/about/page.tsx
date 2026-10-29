@@ -1,5 +1,6 @@
 import { Heart, HelpCircle, ShieldCheck, Sparkles, Store, Truck, Users } from 'lucide-react';
 import { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
@@ -153,6 +154,58 @@ export default function AboutPage() {
               >
                 Register Your Boutique &rarr;
               </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Meet Jiivaa Spotlight Card */}
+        <div className="bg-gradient-to-br from-[#FFFDFB] via-[#FFF8F0] to-[#FFF3E6] border border-orange-200/80 rounded-3xl p-6 sm:p-10 shadow-xs">
+          <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-6 sm:gap-8">
+            <div className="md:col-span-8 space-y-3.5 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange/10 border border-orange/20 text-orange text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-orange" />
+                <span>The Face of JiivaaKart</span>
+              </div>
+
+              <h2 className="font-heading text-3xl sm:text-4xl font-black text-navy tracking-tight">
+                Meet <span className="text-orange">Jiivaa</span>
+              </h2>
+
+              <p className="text-sm sm:text-base font-serif italic text-navy/80">
+                &ldquo;Same Style. Bigger Stories. For Every Indian Store.&rdquo;
+              </p>
+
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
+                Jiivaa embodies the youthful spirit, warmth, and entrepreneurial energy of
+                contemporary India. Sporting her signature silver Indian jhumkas and vibrant
+                tracksuit, she bridges neighborhood boutiques with shoppers across the nation —
+                ensuring trust, speed, and real local fashion in every delivery.
+              </p>
+
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1">
+                <span className="px-3 py-1 rounded-full bg-white text-navy text-[11px] font-bold border border-slate-200 shadow-2xs">
+                  ❤️ Loves Fashion
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white text-navy text-[11px] font-bold border border-slate-200 shadow-2xs">
+                  🏪 Supports Local Sellers
+                </span>
+                <span className="px-3 py-1 rounded-full bg-white text-navy text-[11px] font-bold border border-slate-200 shadow-2xs">
+                  🚀 Connects All India
+                </span>
+              </div>
+            </div>
+
+            <div className="md:col-span-4 flex items-center justify-center">
+              <div className="relative w-44 h-56 sm:w-52 sm:h-64 flex items-center justify-center">
+                <div className="absolute inset-0 bg-radial from-orange/25 via-orange/5 to-transparent rounded-full blur-2xl pointer-events-none" />
+                <Image
+                  src="/brand/jiivaa/crops/jiivaa-hero-mascot-transparent.png"
+                  alt="Meet Jiivaa - Official Mascot"
+                  width={444}
+                  height={820}
+                  className="relative z-10 w-full h-full object-contain drop-shadow-md select-none hover:scale-105 transition-transform"
+                />
+              </div>
             </div>
           </div>
         </div>

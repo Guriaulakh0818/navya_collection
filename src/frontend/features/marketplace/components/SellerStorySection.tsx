@@ -82,14 +82,25 @@ export function SellerStorySection() {
             </div>
           </div>
 
-          {/* Script Callout Tag */}
-          <div className="bg-white/80 border border-orange/30 rounded-2xl px-4 py-3 shadow-2xs text-center sm:text-left">
-            <p className="font-serif italic text-sm font-bold text-navy-900 leading-tight">
-              Local Businesses
-            </p>
-            <p className="font-serif italic text-sm font-bold text-orange leading-tight">
-              Stronger Together
-            </p>
+          {/* Script Callout Tag with Jiivaa Mascot */}
+          <div className="bg-white/90 border border-orange/30 rounded-2xl p-3 shadow-2xs flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-orange/10 border border-orange/20 overflow-hidden shrink-0 flex items-center justify-center p-0.5">
+              <Image
+                src="/brand/jiivaa/crops/journey/08-seller-onboarding.png"
+                alt="Jiivaa Seller Support"
+                width={160}
+                height={170}
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div>
+              <p className="font-serif italic text-xs font-bold text-navy-900 leading-tight">
+                Local Stores
+              </p>
+              <p className="font-serif italic text-xs font-bold text-orange leading-tight">
+                Stronger Together
+              </p>
+            </div>
           </div>
         </div>
       </div>

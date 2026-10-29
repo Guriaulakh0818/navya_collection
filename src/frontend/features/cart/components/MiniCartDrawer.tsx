@@ -61,21 +61,32 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
       side="right"
     >
       {items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-6 py-16 text-center h-full">
-          <div className="h-16 w-16 rounded-full bg-brand-divider flex items-center justify-center text-brand-muted mb-4">
-            <ShoppingBag className="h-8 w-8 text-orange" />
+        <div className="flex flex-col items-center justify-center p-6 py-12 text-center h-full space-y-4">
+          <div className="relative mx-auto w-28 h-28 flex items-center justify-center">
+            <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-lg pointer-events-none" />
+            <div className="relative z-10 w-24 h-24 rounded-2xl bg-white border border-orange-200 shadow-sm p-1.5 flex items-center justify-center overflow-hidden">
+              <Image
+                src="/brand/jiivaa/crops/journey/04-add-to-cart.png"
+                alt="Jiivaa - Empty Cart"
+                width={160}
+                height={165}
+                className="w-full h-full object-contain select-none"
+              />
+            </div>
           </div>
-          <h3 className="font-heading text-xl font-bold text-navy">Your cart is empty</h3>
-          <p className="mt-1 text-xs text-brand-muted max-w-xs">
-            Explore luxury ethnic couture and boutique collections!
-          </p>
+          <div>
+            <h3 className="font-heading text-lg font-bold text-navy">Your cart is empty</h3>
+            <p className="mt-1 text-xs text-brand-muted max-w-xs">
+              Explore authentic local boutique fashion across India!
+            </p>
+          </div>
           <Button
-            className="mt-6 rounded-full bg-navy hover:bg-navy-hover text-white text-xs font-extrabold px-6 shadow-sm cursor-pointer"
+            className="rounded-full bg-orange hover:bg-orange-600 text-white text-xs font-bold px-6 shadow-sm cursor-pointer"
             onClick={onClose}
             asChild
           >
             <Link href="/shop" className="text-white hover:text-white">
-              Start Shopping
+              Start Shopping &rarr;
             </Link>
           </Button>
         </div>

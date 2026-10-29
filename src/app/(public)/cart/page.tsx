@@ -54,22 +54,40 @@ export default function MultiVendorCartPage() {
           items={[{ label: 'Home', href: '/' }, { label: 'Shopping Bag' }]}
           className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3.5"
         />
-        <div className="mx-auto max-w-4xl px-4 py-16 sm:py-20 text-center space-y-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange/10 border-2 border-orange/20 rounded-3xl flex items-center justify-center mx-auto text-orange shadow-xs">
-            <ShoppingBag className="h-8 w-8 sm:h-10 sm:w-10" />
+        <div className="mx-auto max-w-lg px-4 py-12 sm:py-16 text-center space-y-5">
+          {/* Jiivaa Mascot Empty Cart Delight */}
+          <div className="relative mx-auto w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
+            <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-xl pointer-events-none" />
+            <div className="relative z-10 w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-white border-2 border-orange-100 shadow-md p-2 flex items-center justify-center overflow-hidden">
+              <Image
+                src="/brand/jiivaa/crops/journey/04-add-to-cart.png"
+                alt="Jiivaa - Add to Cart"
+                width={160}
+                height={165}
+                className="w-full h-full object-contain select-none"
+                priority
+              />
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-navy text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1 border border-white">
+              <span>JiivaaKart</span>
+            </div>
           </div>
-          <h1 className="text-xl sm:text-3xl font-extrabold text-navy">
-            Your Shopping Bag is Empty
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
-            Discover luxury sarees, lehengas, and designer couture from verified boutique partner
-            stores.
-          </p>
+
+          <div className="space-y-1.5">
+            <h1 className="text-xl sm:text-2xl font-black text-navy tracking-tight">
+              Aapka Cart Abhi Khali Hai!
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 max-w-sm mx-auto leading-relaxed">
+              Discover unique styles from verified local boutiques across India. Jiivaa is waiting
+              to pack your favorites!
+            </p>
+          </div>
+
           <Button
-            className="mt-3 rounded-2xl bg-orange hover:bg-orange-600 text-white font-extrabold px-6 sm:px-8 py-3 text-xs shadow-md shadow-orange/25 cursor-pointer"
+            className="rounded-full bg-orange hover:bg-orange-600 text-white font-extrabold px-6 sm:px-8 py-2.5 text-xs shadow-md shadow-orange/25 cursor-pointer"
             asChild
           >
-            <Link href="/shop">Explore Boutique Collection</Link>
+            <Link href="/shop">Start Shopping &rarr;</Link>
           </Button>
         </div>
       </div>

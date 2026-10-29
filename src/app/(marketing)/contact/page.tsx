@@ -1,5 +1,6 @@
-import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { Mail, MapPin, MessageCircle, Phone, Sparkles } from 'lucide-react';
 import { Metadata } from 'next';
+import Image from 'next/image';
 
 import { generateBreadcrumbSchema, JsonLd, SEO_CONSTANTS } from '@/frontend/features/seo';
 
@@ -53,15 +54,41 @@ export default function ContactPage() {
     <div className="mx-auto max-w-6xl px-4 py-14">
       {/* Breadcrumb Structured Data */}
       <JsonLd data={breadcrumbSchema} />
-      <div className="mb-10 text-center md:text-left">
-        <p className="text-xs font-black uppercase tracking-[0.25em] text-orange">Get in Touch</p>
-        <h1 className="mt-2 font-heading text-4xl md:text-5xl font-extrabold text-navy">
-          We&apos;d love to hear from you.
-        </h1>
-        <p className="mt-3 text-slate-600 font-medium text-base max-w-xl">
-          Have a question about your order, shipping, or seller onboarding? Reach out directly via
-          email or WhatsApp.
-        </p>
+      <div className="mb-10 bg-gradient-to-br from-white via-orange/5 to-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
+        <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-6">
+          <div className="md:col-span-8 text-center md:text-left space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange/10 border border-orange/20 text-orange text-[10px] font-black uppercase tracking-wider">
+              <Sparkles className="w-3 h-3 text-orange animate-pulse" />
+              <span>Jiivaa Support Desk</span>
+            </div>
+            <h1 className="font-heading text-3xl md:text-4xl font-extrabold text-navy tracking-tight">
+              We&apos;d love to hear from you.
+            </h1>
+            <p className="text-slate-600 font-medium text-xs sm:text-sm max-w-xl leading-relaxed">
+              Have a question about your boutique order, delivery tracking, or seller onboarding?
+              Reach out directly to our team — Jiivaa is here to help!
+            </p>
+          </div>
+
+          <div className="md:col-span-4 flex items-center justify-center">
+            <div className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center">
+              <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-xl pointer-events-none" />
+              <div className="relative z-10 w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white border border-orange-200 shadow-sm p-1.5 flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/brand/jiivaa/crops/journey/07-customer-support.png"
+                  alt="Jiivaa - Customer Support"
+                  width={160}
+                  height={165}
+                  className="w-full h-full object-contain select-none"
+                  priority
+                />
+              </div>
+              <div className="absolute -bottom-1 -right-1 bg-navy text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-xs border border-white">
+                24/7 Help
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 items-start">
