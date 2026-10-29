@@ -1480,15 +1480,6 @@ model Offer {
   startDate      DateTime?
   endDate        DateTime?
 
-  // BM-05 Promotional Free Shipping Configuration
-  costBearer               String?  @default("NAVYA") // NAVYA, SELLER
-  shippingMode             String?  @default("STANDARD")
-  minSellerSubtotal        Decimal? @db.Decimal(10, 2)
-  maxSellerSubtotal        Decimal? @db.Decimal(10, 2)
-  paymentMethodEligibility String?  @default("ALL") // ALL, PREPAID, COD
-  priority                 Int      @default(10)
-  maxShippingSubsidy       Decimal? @db.Decimal(10, 2)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
