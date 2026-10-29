@@ -74,6 +74,15 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
     const cleanCode = targetCode.trim().toUpperCase();
     if (!cleanCode) return;
 
+    // Fast-path client validation for active coupons
+    const knownCoupon = activeCoupons.find((c) => c.code.toUpperCase() === cleanCode);
+    if (knownCoupon && knownCoupon.minOrderAmount > cartAmount) {
+      setErrorMsg(
+        `Minimum order amount of ₹${knownCoupon.minOrderAmount.toLocaleString('en-IN')} required to use coupon '${cleanCode}'.`,
+      );
+      return;
+    }
+
     setIsLoading(true);
     setApplyingCode(cleanCode);
     setErrorMsg(null);

@@ -1,57 +1,50 @@
 import { Prisma } from '@prisma/client';
 
+import { cache } from '@/backend/lib/cache';
 import { prisma } from '@/lib/prisma';
 
 import { CreateCouponInput, UpdateCouponInput } from '../schemas/coupon.schema';
 
 export class CouponRepository {
-  private static dummySeedPurged = false;
-
   /**
-   * Automatically purge the mock/seed coupons (WELCOME500, NAVYA10, FESTIVE20, BRIDAL15)
-   * so the storefront and checkout only display offers and promotions configured live by the admin.
+   * Helper to invalidate memory cache keys related to coupons
    */
-  private static async purgeDummySeedCoupons(): Promise<void> {
-    if (this.dummySeedPurged) return;
-    try {
-      if (typeof (prisma as any)?.coupon?.deleteMany === 'function') {
-        await (prisma as any).coupon.deleteMany({
-          where: {
-            code: { in: ['WELCOME500', 'NAVYA10', 'FESTIVE20', 'BRIDAL15'] },
-            usages: { none: {} },
-          },
-        });
-      }
-      if (typeof (prisma as any)?.coupon?.updateMany === 'function') {
-        await (prisma as any).coupon.updateMany({
-          where: {
-            code: { in: ['WELCOME500', 'NAVYA10', 'FESTIVE20', 'BRIDAL15'] },
-            isActive: true,
-          },
-          data: {
-            isActive: false,
-          },
-        });
-      }
-      this.dummySeedPurged = true;
-    } catch {
-      // In test suites with mocked prisma, fail gracefully
+  public static invalidateCache(code?: string, userId?: string) {
+    if (code) {
+      cache.delete(`coupon:code:${code.trim().toUpperCase()}`);
+    }
+    cache.delete('coupons:active:all');
+    cache.delete('coupons:admin:all');
+    if (userId) {
+      cache.delete(`coupon:usage:*:${userId}`);
     }
   }
 
   /**
-   * Finds a coupon by unique coupon code.
+   * Finds a coupon by unique coupon code (with ultra-fast in-memory caching).
    */
   static async findByCode(code: string) {
-    await this.purgeDummySeedCoupons();
     const cleanCode = code.trim().toUpperCase();
+    const cacheKey = `coupon:code:${cleanCode}`;
+
+    const cached = cache.get(cacheKey) as any;
+    if (cached) {
+      return cached;
+    }
+
     try {
-      return await prisma.coupon.findFirst({
+      const coupon = await prisma.coupon.findFirst({
         where: {
           code: cleanCode,
           deletedAt: null,
         },
       });
+
+      if (coupon) {
+        // Cache active coupon for 2 minutes to eliminate repeated DB queries
+        cache.set(cacheKey, coupon, 120_000);
+      }
+      return coupon;
     } catch {
       return null;
     }
@@ -61,13 +54,21 @@ export class CouponRepository {
    * Finds a coupon by ID.
    */
   static async findById(id: string) {
+    const cacheKey = `coupon:id:${id}`;
+    const cached = cache.get(cacheKey) as any;
+    if (cached) return cached;
+
     try {
-      return await prisma.coupon.findFirst({
+      const coupon = await prisma.coupon.findFirst({
         where: {
           id,
           deletedAt: null,
         },
       });
+      if (coupon) {
+        cache.set(cacheKey, coupon, 120_000);
+      }
+      return coupon;
     } catch {
       return null;
     }
@@ -77,7 +78,6 @@ export class CouponRepository {
    * Retrieves all non-deleted coupons for Admin management panel.
    */
   static async findAll() {
-    await this.purgeDummySeedCoupons();
     try {
       return await prisma.coupon.findMany({
         where: {
@@ -112,13 +112,18 @@ export class CouponRepository {
   }
 
   /**
-   * Retrieves active, non-expired public coupons.
+   * Retrieves active, non-expired public coupons (with in-memory cache).
    */
   static async findAllActive(shopId?: string | null) {
-    await this.purgeDummySeedCoupons();
+    const cacheKey = `coupons:active:${shopId || 'all'}`;
+    const cached = cache.get(cacheKey) as any;
+    if (cached && Array.isArray(cached)) {
+      return cached;
+    }
+
     const now = new Date();
     try {
-      return await prisma.coupon.findMany({
+      const coupons = await prisma.coupon.findMany({
         where: {
           isActive: true,
           deletedAt: null,
@@ -129,6 +134,11 @@ export class CouponRepository {
           minOrderAmount: 'asc',
         },
       });
+
+      if (coupons && coupons.length > 0) {
+        cache.set(cacheKey, coupons, 60_000); // 1 minute cache
+      }
+      return coupons;
     } catch {
       return [];
     }
@@ -142,11 +152,23 @@ export class CouponRepository {
     userId: string,
     tx?: Prisma.TransactionClient,
   ): Promise<number> {
+    const cacheKey = `coupon:usage:${couponId}:${userId}`;
+    if (!tx) {
+      const cached = cache.get(cacheKey);
+      if (typeof cached === 'number') {
+        return cached;
+      }
+    }
+
     const client = tx || prisma;
     try {
-      return await client.couponUsage.count({
+      const count = await client.couponUsage.count({
         where: { couponId, userId },
       });
+      if (!tx) {
+        cache.set(cacheKey, count, 60_000); // 1 minute cache
+      }
+      return count;
     } catch {
       return 0;
     }
@@ -304,7 +326,7 @@ export class CouponRepository {
     const startDate = data.startDate ? new Date(data.startDate) : new Date();
 
     try {
-      return await prisma.coupon.create({
+      const created = await prisma.coupon.create({
         data: {
           code: data.code.trim().toUpperCase(),
           title: data.title?.trim() || null,
@@ -326,6 +348,8 @@ export class CouponRepository {
           excludedProducts: data.excludedProducts || [],
         },
       });
+      this.invalidateCache(created.code);
+      return created;
     } catch (err: any) {
       throw new Error(`Failed to create coupon: ${err.message}`);
     }
@@ -336,7 +360,7 @@ export class CouponRepository {
    */
   static async update(id: string, data: UpdateCouponInput) {
     try {
-      return await prisma.coupon.update({
+      const updated = await prisma.coupon.update({
         where: { id },
         data: {
           ...(data.code ? { code: data.code.trim().toUpperCase() } : {}),
@@ -366,6 +390,8 @@ export class CouponRepository {
             : {}),
         },
       });
+      this.invalidateCache(updated.code);
+      return updated;
     } catch {
       throw new Error('Coupon not found');
     }
@@ -376,13 +402,15 @@ export class CouponRepository {
    */
   static async softDelete(id: string) {
     try {
-      return await prisma.coupon.update({
+      const deleted = await prisma.coupon.update({
         where: { id },
         data: {
           deletedAt: new Date(),
           isActive: false,
         },
       });
+      this.invalidateCache(deleted.code);
+      return deleted;
     } catch {
       return null;
     }

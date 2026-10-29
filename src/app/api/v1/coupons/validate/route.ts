@@ -1,8 +1,42 @@
+import jwt from 'jsonwebtoken';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { validateCouponSchema } from '@/features/coupons/schemas/coupon.schema';
 import { CouponService } from '@/features/coupons/services/coupon.service';
-import { getCurrentUser } from '@/lib/session';
+
+/**
+ * Fast synchronous user ID extraction from headers / session JWT without slow DB roundtrips.
+ */
+function getFastUserId(request: NextRequest): string {
+  const userIdHeader = request.headers.get('x-user-id');
+  if (userIdHeader && userIdHeader.trim()) return userIdHeader.trim();
+
+  const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+  let token =
+    authHeader && authHeader.toLowerCase().startsWith('bearer ')
+      ? authHeader.substring(7).trim()
+      : null;
+
+  if (!token) {
+    token =
+      request.cookies.get('navya_session')?.value ||
+      request.cookies.get('navya_admin_session')?.value ||
+      null;
+  }
+
+  if (token) {
+    try {
+      const decoded = jwt.decode(token) as { userId?: string };
+      if (decoded && decoded.userId) {
+        return decoded.userId;
+      }
+    } catch {
+      // Safe fallback
+    }
+  }
+
+  return '';
+}
 
 /**
  * POST /api/v1/coupons/validate
@@ -11,9 +45,7 @@ import { getCurrentUser } from '@/lib/session';
  */
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    const userIdHeader = request.headers.get('x-user-id');
-    const userId = user?.id || userIdHeader || '';
+    const userId = getFastUserId(request);
 
     const body = await request.json();
     const validationResult = validateCouponSchema.safeParse(body);

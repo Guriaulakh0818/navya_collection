@@ -11,7 +11,12 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const response = await CouponService.getActiveCoupons();
-    return NextResponse.json(response, { status: response.statusCode });
+    return NextResponse.json(response, {
+      status: response.statusCode,
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error: any) {
     console.error('[API_GET_ACTIVE_COUPONS_ERROR]', error);
     return NextResponse.json(
