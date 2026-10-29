@@ -1,50 +1,74 @@
 'use client';
 
 import { ShoppingBag, Store } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
+
+import { JIIVAA_ASSETS } from '@/config/jiivaa-mascot.config';
 
 export function MarketplaceHero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-orange/5 rounded-3xl border border-slate-200/90 shadow-xs p-5 sm:p-7 md:p-8 my-3 sm:my-4">
-      {/* Background Glows */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-orange/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-navy-900/5 rounded-full blur-3xl pointer-events-none" />
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#FFFDFB] via-[#FFF9F2] to-[#FFF3E6]/70 rounded-3xl border border-orange-100/90 shadow-xs p-4 sm:p-6 md:p-8 lg:p-10 my-3 sm:my-4">
+      {/* Warm Ambient Brand Glows */}
+      <div className="absolute -top-12 -right-12 w-72 sm:w-96 h-72 sm:h-96 bg-orange/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-10 left-1/4 w-60 h-60 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 space-y-3.5 sm:space-y-4">
-        {/* Eyebrow Pill */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold shadow-2xs">
-          <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
-          <span>Local Stores • Real Fashion • Nationwide</span>
+      <div className="relative z-10 grid grid-cols-12 items-center gap-3 sm:gap-6 lg:gap-8">
+        {/* Left Column: Eyebrow + Headline + Subtitle + Action Buttons */}
+        <div className="col-span-7 sm:col-span-7 md:col-span-7 lg:col-span-7 xl:col-span-8 space-y-2.5 sm:space-y-4">
+          {/* Eyebrow Pill */}
+          <div className="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1 rounded-full bg-white/90 border border-orange-200/70 text-slate-700 text-[10px] sm:text-xs font-semibold shadow-2xs backdrop-blur-xs">
+            <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
+            <span className="truncate">Local Stores • Real Fashion • Nationwide</span>
+          </div>
+
+          {/* Headline & Subtitle */}
+          <div className="space-y-1.5 sm:space-y-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-[38px] xl:text-[44px] font-black tracking-tight text-navy-900 leading-[1.15] font-sans">
+              Har Gali Ka Style, Ab India Ke{' '}
+              <span className="text-orange block sm:inline">Har Shehar Tak.</span>
+            </h1>
+            <p className="text-[11px] sm:text-xs md:text-sm lg:text-base text-slate-600 font-medium leading-relaxed max-w-xl">
+              Discover fashion from verified local boutiques and clothing stores&nbsp;— trendy,
+              affordable and uniquely Indian.
+            </p>
+          </div>
+
+          {/* Action CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3.5 pt-1 sm:pt-2">
+            <Link
+              href="/shop"
+              className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 md:px-7 py-2.5 sm:py-3 bg-orange hover:bg-orange-600 text-white font-bold text-xs sm:text-sm rounded-full shadow-md shadow-orange/25 transition-all duration-200 active:scale-95 cursor-pointer text-center"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+              <span>Shop Fashion →</span>
+            </Link>
+
+            <Link
+              href="/become-seller"
+              className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 md:px-7 py-2.5 sm:py-3 bg-white text-navy-900 border-2 border-navy-900 hover:bg-navy-900 hover:text-white font-bold text-xs sm:text-sm rounded-full shadow-2xs transition-all duration-200 active:scale-95 cursor-pointer text-center"
+            >
+              <Store className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange shrink-0" />
+              <span>Become a Seller</span>
+            </Link>
+          </div>
         </div>
 
-        {/* Headline & Subtitle */}
-        <div className="space-y-1.5 sm:space-y-2">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[38px] xl:text-[42px] font-black tracking-tight text-navy-900 leading-tight font-sans">
-            Har Gali Ka Style, Ab India Ke <span className="text-orange">Har Shehar Tak.</span>
-          </h1>
-          <p className="text-xs sm:text-sm md:text-base text-slate-600 font-medium leading-relaxed max-w-2xl [text-wrap:balance]">
-            Discover fashion from verified local boutiques and clothing stores&nbsp;— trendy,
-            affordable and uniquely Indian.
-          </p>
-        </div>
+        {/* Right Column: Jiivaa Brand Mascot (Official Company Face) */}
+        <div className="col-span-5 sm:col-span-5 md:col-span-5 lg:col-span-5 xl:col-span-4 flex items-end justify-center sm:justify-end relative">
+          <div className="relative w-full max-w-[190px] sm:max-w-[240px] md:max-w-[280px] lg:max-w-[320px] xl:max-w-[340px] flex items-end justify-center">
+            {/* Subtle Character Backlight */}
+            <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-xl pointer-events-none scale-90" />
 
-        {/* Action CTA Buttons */}
-        <div className="flex flex-wrap items-center gap-3 pt-1">
-          <Link
-            href="/shop"
-            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 sm:py-3 bg-orange hover:bg-orange-600 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-orange/25 transition-all duration-200 active:scale-95 cursor-pointer"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            <span>Shop Fashion →</span>
-          </Link>
-
-          <Link
-            href="/become-seller"
-            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 sm:py-3 bg-white text-navy-900 border-2 border-navy-900 hover:bg-navy-900 hover:text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-all duration-200 active:scale-95 cursor-pointer"
-          >
-            <Store className="w-4 h-4 text-orange" />
-            <span>Become a Seller</span>
-          </Link>
+            <Image
+              src={JIIVAA_ASSETS.heroMascotTransparent.path}
+              alt="Jiivaa - The Face of JiivaaKart"
+              width={444}
+              height={820}
+              priority
+              className="relative z-10 w-auto h-auto max-h-[220px] sm:max-h-[280px] md:max-h-[320px] lg:max-h-[380px] object-contain drop-shadow-md select-none transition-transform duration-300 hover:scale-[1.02]"
+            />
+          </div>
         </div>
       </div>
     </section>

@@ -54,6 +54,21 @@ export const JIIVAA_VISUAL_DNA = {
 
 export const JIIVAA_ASSETS: Record<string, MascotAsset> = {
   // Hero Assets
+  heroMascotTransparent: {
+    id: 'hero-mascot-transparent',
+    name: 'Hero Mascot (Transparent)',
+    title: 'Jiivaa Standing Hero (Isolated)',
+    path: '/brand/jiivaa/crops/jiivaa-hero-mascot-transparent.png',
+    category: 'hero',
+    description:
+      'High-res transparent cutout of Jiivaa pointing forward with shopping bag, orange heart & sparkle doodles.',
+    suggestedUseCases: [
+      'Homepage Hero Banner',
+      'Mobile Homepage Hero',
+      'Marketing Popups',
+      'Category Headers',
+    ],
+  },
   heroFullBanner: {
     id: 'hero-full-banner',
     name: 'Hero Full Banner',
