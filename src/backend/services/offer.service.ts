@@ -42,7 +42,7 @@ const DEFAULT_FIRST_ORDER_OFFER: OfferData = {
 };
 
 export class OfferService {
-  private static isTableInitialized = true;
+  private static isTableInitialized = false;
 
   /**
    * Automatically ensure the 'offers' table and indexes exist in the PostgreSQL database if needed.
@@ -67,6 +67,22 @@ export class OfferService {
           CONSTRAINT "offers_pkey" PRIMARY KEY ("id")
         );
       `);
+
+      // Safely ensure BM-05 columns exist in the database table
+      await prisma
+        .$executeRawUnsafe(
+          `
+        ALTER TABLE "offers" ADD COLUMN IF NOT EXISTS "costBearer" TEXT DEFAULT 'NAVYA';
+        ALTER TABLE "offers" ADD COLUMN IF NOT EXISTS "shippingMode" TEXT DEFAULT 'STANDARD';
+        ALTER TABLE "offers" ADD COLUMN IF NOT EXISTS "minSellerSubtotal" DECIMAL(10,2);
+        ALTER TABLE "offers" ADD COLUMN IF NOT EXISTS "maxSellerSubtotal" DECIMAL(10,2);
+        ALTER TABLE "offers" ADD COLUMN IF NOT EXISTS "paymentMethodEligibility" TEXT DEFAULT 'ALL';
+        ALTER TABLE "offers" ADD COLUMN IF NOT EXISTS "priority" INTEGER DEFAULT 10;
+        ALTER TABLE "offers" ADD COLUMN IF NOT EXISTS "maxShippingSubsidy" DECIMAL(10,2);
+      `,
+        )
+        .catch(() => {});
+
       try {
         await prisma.$executeRawUnsafe(
           `CREATE INDEX IF NOT EXISTS "offers_type_idx" ON "offers"("type");`,
@@ -162,12 +178,43 @@ export class OfferService {
       if (error?.message?.includes('does not exist') || error?.code === 'P2021') {
         this.isTableInitialized = false;
         await this.ensureTableExists();
-        const created = await (prisma as any).offer.create({ data });
-        return {
-          ...created,
-          value: Number(created.value || 0),
-          minCartValue: Number(created.minCartValue || 0),
-        };
+        try {
+          const created = await (prisma as any).offer.create({ data });
+          return {
+            ...created,
+            value: Number(created.value || 0),
+            minCartValue: Number(created.minCartValue || 0),
+          };
+        } catch {
+          // Robust raw SQL insert fallback
+          const id = 'off_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+          await prisma.$executeRawUnsafe(
+            `INSERT INTO "offers" ("id", "title", "description", "type", "value", "minCartValue", "firstOrderOnly", "isActive", "startDate", "endDate", "createdAt", "updatedAt")
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+            id,
+            data.title,
+            data.description || null,
+            data.type || 'FREE_DELIVERY',
+            data.value || 0,
+            data.minCartValue || 0,
+            Boolean(data.firstOrderOnly),
+            data.isActive !== undefined ? Boolean(data.isActive) : true,
+            data.startDate || null,
+            data.endDate || null,
+          );
+          return {
+            id,
+            title: data.title,
+            description: data.description,
+            type: data.type,
+            value: Number(data.value || 0),
+            minCartValue: Number(data.minCartValue || 0),
+            firstOrderOnly: Boolean(data.firstOrderOnly),
+            isActive: data.isActive !== undefined ? Boolean(data.isActive) : true,
+            startDate: data.startDate,
+            endDate: data.endDate,
+          };
+        }
       }
       throw error;
     }
