@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 
@@ -13,6 +13,12 @@ type ProductImageGalleryProps = {
   renderOverlay?: React.ReactNode;
 };
 
+const getImgSrc = (img: any): string => {
+  if (!img) return '';
+  if (typeof img === 'string') return img.trim();
+  return (img.url || img.imageUrl || img.secureUrl || '').trim();
+};
+
 export function ProductImageGallery({
   images,
   activeImageUrl,
@@ -22,12 +28,13 @@ export function ProductImageGallery({
   const [activeIdx, setActiveIdx] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [failedUrls, setFailedUrls] = useState<Record<string, boolean>>({});
   const thumbnailRef = useRef<HTMLDivElement>(null);
 
   // Automatically sync active image when a variant with a photo is selected
   useEffect(() => {
     if (activeImageUrl && images && images.length > 0) {
-      const foundIdx = images.findIndex((img) => (img.url || img.imageUrl) === activeImageUrl);
+      const foundIdx = images.findIndex((img) => getImgSrc(img) === activeImageUrl.trim());
       if (foundIdx !== -1) {
         setActiveIdx(foundIdx);
       }
@@ -53,6 +60,8 @@ export function ProductImageGallery({
   }
 
   const activeImg = images[activeIdx] || images[0];
+  const activeSrc = getImgSrc(activeImg);
+  const isCurrentFailed = !activeSrc || Boolean(failedUrls[activeSrc]);
 
   const handleNext = () => {
     setActiveIdx((prev) => (prev + 1) % images.length);
@@ -99,14 +108,32 @@ export function ProductImageGallery({
           'relative aspect-[3/4] w-full max-w-[420px] lg:max-w-[450px] xl:max-w-[480px] max-h-[480px] sm:max-h-[520px] lg:max-h-[550px] mx-auto overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-100 border border-slate-200 shadow-sm group touch-pan-y'
         }
       >
-        <Image
-          src={activeImg.url}
-          alt={activeImg.alt || 'Product image'}
-          fill
-          className="object-cover object-top transition-all duration-500 group-hover:scale-105 select-none overflow-hidden [text-indent:-9999px]"
-          sizes="(min-width: 1024px) 35vw, 100vw"
-          priority
-        />
+        {!isCurrentFailed ? (
+          <Image
+            src={activeSrc}
+            alt={activeImg.alt || 'Product image'}
+            fill
+            unoptimized={true}
+            onError={() => {
+              if (activeSrc) {
+                setFailedUrls((prev) => ({ ...prev, [activeSrc]: true }));
+              }
+            }}
+            className="object-cover object-top transition-all duration-500 group-hover:scale-105 select-none overflow-hidden [text-indent:-9999px]"
+            sizes="(min-width: 1024px) 35vw, 100vw"
+            priority
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-slate-50 to-orange-50/20 flex flex-col items-center justify-center p-6 text-center">
+            <ImageIcon className="w-12 h-12 text-slate-300 mb-2" />
+            <span className="font-heading text-lg font-bold text-navy/50 uppercase tracking-widest block">
+              JIIVAAKART
+            </span>
+            <span className="text-[11px] text-slate-400 mt-1 font-medium">
+              Image preview loading or unavailable
+            </span>
+          </div>
+        )}
 
         {/* Floating Custom Overlay (e.g. Wishlist button pinned directly to photo) */}
         {renderOverlay}
@@ -153,25 +180,42 @@ export function ProductImageGallery({
             className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scroll-smooth"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {images.map((img, idx) => (
-              <button
-                key={img.id || idx}
-                type="button"
-                onClick={() => setActiveIdx(idx)}
-                className={`relative h-13 w-13 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-xl sm:rounded-2xl border-2 transition-all cursor-pointer snap-start ${
-                  activeIdx === idx
-                    ? 'border-navy shadow-md scale-95 ring-2 ring-navy/30 opacity-100'
-                    : 'border-slate-200 opacity-70 hover:opacity-100'
-                }`}
-              >
-                <Image
-                  src={img.url}
-                  alt={img.alt || `Thumbnail ${idx + 1}`}
-                  fill
-                  className="object-cover object-top transition-all duration-300 select-none overflow-hidden [text-indent:-9999px]"
-                />
-              </button>
-            ))}
+            {images.map((img, idx) => {
+              const thumbSrc = getImgSrc(img);
+              const isThumbFailed = !thumbSrc || Boolean(failedUrls[thumbSrc]);
+
+              return (
+                <button
+                  key={img.id || idx}
+                  type="button"
+                  onClick={() => setActiveIdx(idx)}
+                  className={`relative h-13 w-13 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-xl sm:rounded-2xl border-2 transition-all cursor-pointer snap-start ${
+                    activeIdx === idx
+                      ? 'border-navy shadow-md scale-95 ring-2 ring-navy/30 opacity-100'
+                      : 'border-slate-200 opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  {!isThumbFailed ? (
+                    <Image
+                      src={thumbSrc}
+                      alt={img.alt || `Thumbnail ${idx + 1}`}
+                      fill
+                      unoptimized={true}
+                      onError={() => {
+                        if (thumbSrc) {
+                          setFailedUrls((prev) => ({ ...prev, [thumbSrc]: true }));
+                        }
+                      }}
+                      className="object-cover object-top transition-all duration-300 select-none overflow-hidden [text-indent:-9999px]"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+                      <ImageIcon className="w-4 h-4 text-slate-300" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

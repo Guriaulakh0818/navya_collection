@@ -83,12 +83,17 @@ const getFormattedProduct = cache(async (slug: string) => {
             }
           : null,
         images: (() => {
-          const combinedImages = (dbProd.images || []).map((img: any) => ({
-            id: img.id,
-            url: img.imageUrl,
-            alt: img.altText || dbProd.name,
-            isPrimary: Boolean(img.isPrimary),
-          }));
+          const combinedImages = (dbProd.images || []).map((img: any) => {
+            const src =
+              img.imageUrl || img.url || img.secureUrl || (typeof img === 'string' ? img : '');
+            return {
+              id: img.id,
+              url: src,
+              imageUrl: src,
+              alt: img.altText || dbProd.name,
+              isPrimary: Boolean(img.isPrimary),
+            };
+          });
 
           if (dbProd.variants && dbProd.variants.length > 0) {
             dbProd.variants.forEach((v: any) => {

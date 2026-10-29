@@ -361,6 +361,15 @@ export async function GET() {
         gender: g,
         category: resolvedCategory,
         categoryId: resolvedCategory?.id || p.categoryId,
+        images: (p.images || []).map((img: any) => {
+          const src =
+            img.imageUrl || img.url || img.secureUrl || (typeof img === 'string' ? img : '');
+          return {
+            ...img,
+            url: src,
+            imageUrl: src,
+          };
+        }),
       };
     });
 

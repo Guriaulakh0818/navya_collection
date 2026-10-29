@@ -18,6 +18,7 @@ type ProductCardProps = {
 
 export function ProductCard({ product }: ProductCardProps) {
   const [hoveredImage, setHoveredImage] = useState<string | null>(null);
+  const [hasImgError, setHasImgError] = useState(false);
   const discount = calculateDiscount(product.price, product.compareAtPrice);
   const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
   const defaultImageSrc =
@@ -53,12 +54,13 @@ export function ProductCard({ product }: ProductCardProps) {
         prefetch={true}
         className="relative aspect-[4/5] w-full overflow-hidden bg-brand-divider block cursor-pointer select-none"
       >
-        {imageSrc ? (
+        {imageSrc && !hasImgError ? (
           <Image
             src={imageSrc}
             alt={(primaryImage as any)?.alt || (primaryImage as any)?.altText || product.name}
             fill
             unoptimized={true}
+            onError={() => setHasImgError(true)}
             className="object-cover group-hover:scale-105 transition-transform duration-500 select-none overflow-hidden [text-indent:-9999px]"
             sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
           />

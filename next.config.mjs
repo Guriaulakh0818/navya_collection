@@ -29,6 +29,7 @@ const nextConfig = {
     ],
   },
   images: {
+    unoptimized: true,
     contentDispositionType: 'inline',
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 86400,
