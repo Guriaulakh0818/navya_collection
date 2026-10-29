@@ -1,0 +1,70 @@
+{
+  "mascotName": "Jiivaa",
+  "brand": "JiivaaKart",
+  "tagline": "Same Style. Bigger Stories. For Every Indian Store.",
+  "brandTagline": "STYLE THAT SPEAKS",
+  "version": "1.0.0",
+  "colors": {
+    "navy": "#0A2342",
+    "orange": "#F28C28",
+    "white": "#FFFFFF"
+  },
+  "visualDNA": {
+    "style": "Anime Chibi young Indian girl, approx 3-heads tall",
+    "hair": "Rich dark brown hair, high ponytail, orange hair tie, two cheek-framing front bangs",
+    "earrings": "Traditional silver Indian jhumkas on both ears in every outfit",
+    "eyes": "Big expressive dark brown eyes with distinct upper-left catchlights"
+  },
+  "masterSheet": "/brand/jiivaa/jiivaa-master-sheet.jpg",
+  "assets": {
+    "hero": {
+      "fullBanner": "/brand/jiivaa/crops/hero-full-banner.png",
+      "headAvatar": "/brand/jiivaa/crops/hero-head-avatar.png",
+      "badge": "/brand/jiivaa/crops/meet-jiivaa-badge.png",
+      "taglineCard": "/brand/jiivaa/crops/brand-mission-tagline.png"
+    },
+    "expressions": {
+      "happy": "/brand/jiivaa/crops/expression-1-happy.png",
+      "winking": "/brand/jiivaa/crops/expression-2-winking.png",
+      "excited": "/brand/jiivaa/crops/expression-3-excited.png",
+      "thinking": "/brand/jiivaa/crops/expression-4-thinking.png",
+      "cute": "/brand/jiivaa/crops/expression-5-cute.png",
+      "confident": "/brand/jiivaa/crops/expression-6-confident.png"
+    },
+    "avatars": {
+      "happy": "/brand/jiivaa/crops/avatar-1-happy.png",
+      "winking": "/brand/jiivaa/crops/avatar-2-winking.png",
+      "excited": "/brand/jiivaa/crops/avatar-3-excited.png",
+      "thinking": "/brand/jiivaa/crops/avatar-4-thinking.png",
+      "cute": "/brand/jiivaa/crops/avatar-5-cute.png",
+      "confident": "/brand/jiivaa/crops/avatar-6-confident.png"
+    },
+    "outfits": {
+      "signatureEveryday": "/brand/jiivaa/crops/outfit-1-signature-everyday.png",
+      "traditionalFestive": "/brand/jiivaa/crops/outfit-2-traditional-festive.png",
+      "shoppingCasual": "/brand/jiivaa/crops/outfit-3-shopping-casual.png",
+      "sellerSupport": "/brand/jiivaa/crops/outfit-4-seller-support-onboarding.png",
+      "diwaliFestive": "/brand/jiivaa/crops/outfit-5-diwali-festive.png",
+      "travelBackpack": "/brand/jiivaa/crops/outfit-6-travel-backpack.png",
+      "travelLuggage": "/brand/jiivaa/crops/outfit-7-travel-luggage.png"
+    },
+    "turnaround": {
+      "all": "/brand/jiivaa/crops/turnaround-all.png",
+      "front": "/brand/jiivaa/crops/turnaround-1-front.png",
+      "sideLeft": "/brand/jiivaa/crops/turnaround-2-side-left.png",
+      "back": "/brand/jiivaa/crops/turnaround-3-back.png",
+      "sideRight": "/brand/jiivaa/crops/turnaround-4-side-right.png"
+    },
+    "props": {
+      "all": "/brand/jiivaa/crops/props-all.png",
+      "shoppingBag": "/brand/jiivaa/crops/prop-1-shopping-bag.png",
+      "packagingBox": "/brand/jiivaa/crops/prop-2-packaging-box.png",
+      "laptop": "/brand/jiivaa/crops/prop-3-laptop.png",
+      "cap": "/brand/jiivaa/crops/prop-4-cap.png"
+    },
+    "brandCards": {
+      "logo": "/brand/jiivaa/crops/brand-logo-card.png",
+      "colors": "/brand/jiivaa/crops/brand-colors-card.png"
+    }
+  }
+}

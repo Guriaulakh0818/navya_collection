@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jiivaa - Official Brand Mascot & Assets Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0A2342;
+      --orange: #F28C28;
+      --white: #FFFFFF;
+      --bg: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --border: #E2E8F0;
+      --text: #1E293B;
+      --text-muted: #64748B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 32px 20px 80px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      background: linear-gradient(135deg, var(--navy) 0%, #133963 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 40px 32px;
+      margin-bottom: 36px;
+      box-shadow: 0 10px 30px rgba(10, 35, 66, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+    header h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; }
+    header h1 span { color: var(--orange); }
+    header p { margin-top: 8px; color: #E2E8F0; font-size: 1.05rem; }
+    .dna-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .badge {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: white;
+    }
+    .badge.orange { background: var(--orange); color: white; border-color: var(--orange); }
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin: 36px 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 24px;
+      background: var(--orange);
+      border-radius: 3px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(10, 35, 66, 0.08);
+      border-color: #CBD5E1;
+    }
+    .img-box {
+      width: 100%;
+      height: 190px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F1F5F9;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .img-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .card-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .card-path {
+      font-family: monospace;
+      font-size: 0.72rem;
+      color: var(--orange);
+      background: #FFF7ED;
+      padding: 3px 8px;
+      border-radius: 6px;
+      word-break: break-all;
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+    .master-view {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .master-view img {
+      width: 100%;
+      max-height: 600px;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Meet <span>Jiivaa</span> — Official Brand Face</h1>
+      <p>"Same Style. Bigger Stories. For Every Indian Store." &bull; JiivaaKart</p>
+      <div class="dna-badges">
+        <span class="badge orange">100% Face Consistency</span>
+        <span class="badge">Signature Silver Jhumkas</span>
+        <span class="badge">High Dark Brown Ponytail</span>
+        <span class="badge">Navy #0A2342</span>
+        <span class="badge">Orange #F28C28</span>
+        <span class="badge">37 Modular Crops Saved</span>
+      </div>
+    </header>
+
+    <div class="section-title">Master Character Sheet</div>
+    <div class="master-view">
+      <img src="/brand/jiivaa/jiivaa-master-sheet.jpg" alt="Jiivaa Master Sheet">
+    </div>
+
+    <div class="section-title">Hero Presentation Assets</div>
+    <div class="grid">
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/hero-full-banner.png" alt="Hero Full Banner"></div>
+        <div class="card-title">Hero Full Banner</div>
+        <div class="card-path">/brand/jiivaa/crops/hero-full-banner.png</div>
+        <div class="card-desc">Complete presentation card with headline, hero pointing, bag, & tagline.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/hero-head-avatar.png" alt="Hero Head Avatar"></div>
+        <div class="card-title">Hero Head Avatar</div>
+        <div class="card-path">/brand/jiivaa/crops/hero-head-avatar.png</div>
+        <div class="card-desc">High-res friendly face avatar with silver jhumkas.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/brand-logo-card.png" alt="Logo Card"></div>
+        <div class="card-title">Official Brand Logo</div>
+        <div class="card-path">/brand/jiivaa/crops/brand-logo-card.png</div>
+        <div class="card-desc">JK JiivaaKart with STYLE THAT SPEAKS tagline.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/brand-colors-card.png" alt="Brand Colors"></div>
+        <div class="card-title">Brand Color Palette</div>
+        <div class="card-path">/brand/jiivaa/crops/brand-colors-card.png</div>
+        <div class="card-desc">#0A2342 Navy, #F28C28 Orange, #FFFFFF White.</div>
+      </div>
+    </div>
+
+    <div class="section-title">The 6 Expressions (Same Face)</div>
+    <div class="grid">
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/expression-1-happy.png" alt="Happy"></div>
+        <div class="card-title">1. Happy</div>
+        <div class="card-path">/brand/jiivaa/crops/expression-1-happy.png</div>
+        <div class="card-desc">Order confirmation, account creation success, welcome banners.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/expression-2-winking.png" alt="Winking"></div>
+        <div class="card-title">2. Winking</div>
+        <div class="card-path">/brand/jiivaa/crops/expression-2-winking.png</div>
+        <div class="card-desc">Coupon successfully applied, promo discount unlocked.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/expression-3-excited.png" alt="Excited"></div>
+        <div class="card-title">3. Excited</div>
+        <div class="card-path">/brand/jiivaa/crops/expression-3-excited.png</div>
+        <div class="card-desc">Mega flash sales, festival launches, rewards unlocked.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/expression-4-thinking.png" alt="Thinking"></div>
+        <div class="card-title">4. Thinking</div>
+        <div class="card-path">/brand/jiivaa/crops/expression-4-thinking.png</div>
+        <div class="card-desc">Empty search results, empty cart, 404 page, FAQs.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/expression-5-cute.png" alt="Cute"></div>
+        <div class="card-title">5. Cute</div>
+        <div class="card-path">/brand/jiivaa/crops/expression-5-cute.png</div>
+        <div class="card-desc">Cart abandonment reminder, feedback prompt, newsletter signup.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/expression-6-confident.png" alt="Confident"></div>
+        <div class="card-title">6. Confident</div>
+        <div class="card-path">/brand/jiivaa/crops/expression-6-confident.png</div>
+        <div class="card-desc">Quality N-Assured badge, safe checkout guarantee, verified seller.</div>
+      </div>
+    </div>
+
+    <div class="section-title">The 7 Outfits (Same Face)</div>
+    <div class="grid">
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/outfit-1-signature-everyday.png" alt="Signature Look"></div>
+        <div class="card-title">1. Signature Look (Everyday)</div>
+        <div class="card-path">/brand/jiivaa/crops/outfit-1-signature-everyday.png</div>
+        <div class="card-desc">Navy/Orange tracksuit, chunky sneakers, shopping bag.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/outfit-2-traditional-festive.png" alt="Traditional Look"></div>
+        <div class="card-title">2. Traditional Look (Festive)</div>
+        <div class="card-path">/brand/jiivaa/crops/outfit-2-traditional-festive.png</div>
+        <div class="card-desc">Orange embroidered kurti, namaste greeting pose.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/outfit-3-shopping-casual.png" alt="Shopping Look"></div>
+        <div class="card-title">3. Shopping Look (Casual)</div>
+        <div class="card-path">/brand/jiivaa/crops/outfit-3-shopping-casual.png</div>
+        <div class="card-desc">White oversized JK hoodie, denim jeans, shopping tote.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/outfit-4-seller-support-onboarding.png" alt="Seller Support"></div>
+        <div class="card-title">4. Seller Support (Onboarding)</div>
+        <div class="card-path">/brand/jiivaa/crops/outfit-4-seller-support-onboarding.png</div>
+        <div class="card-desc">Holding open laptop with JiivaaKart logo for sellers.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/outfit-5-diwali-festive.png" alt="Diwali Look"></div>
+        <div class="card-title">5. Diwali Look (Festive)</div>
+        <div class="card-path">/brand/jiivaa/crops/outfit-5-diwali-festive.png</div>
+        <div class="card-desc">Royal navy & gold lehenga, holding lit festive diya.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/outfit-6-travel-backpack.png" alt="Travel Backpack"></div>
+        <div class="card-title">6. Travel Look (Pan India)</div>
+        <div class="card-path">/brand/jiivaa/crops/outfit-6-travel-backpack.png</div>
+        <div class="card-desc">Navy cap and backpack for express Pan-India shipping.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/outfit-7-travel-luggage.png" alt="Travel Luggage"></div>
+        <div class="card-title">7. Travel Look (Luggage)</div>
+        <div class="card-path">/brand/jiivaa/crops/outfit-7-travel-luggage.png</div>
+        <div class="card-desc">Holding rolling trolley suitcase for logistics.</div>
+      </div>
+    </div>
+
+    <div class="section-title">Character Turnaround (360° Consistency)</div>
+    <div class="grid">
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/turnaround-1-front.png" alt="Turnaround Front"></div>
+        <div class="card-title">1. Front View</div>
+        <div class="card-path">/brand/jiivaa/crops/turnaround-1-front.png</div>
+        <div class="card-desc">Hands in pockets, standard standing view.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/turnaround-2-side-left.png" alt="Turnaround Left"></div>
+        <div class="card-title">2. Side View (Left)</div>
+        <div class="card-path">/brand/jiivaa/crops/turnaround-2-side-left.png</div>
+        <div class="card-desc">Side profile, orange ponytail tie, silver jhumka.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/turnaround-3-back.png" alt="Turnaround Back"></div>
+        <div class="card-title">3. Back View</div>
+        <div class="card-path">/brand/jiivaa/crops/turnaround-3-back.png</div>
+        <div class="card-desc">Back of hair and jacket with JiivaaKart printed logo.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/turnaround-4-side-right.png" alt="Turnaround Right"></div>
+        <div class="card-title">4. Side View (Right)</div>
+        <div class="card-path">/brand/jiivaa/crops/turnaround-4-side-right.png</div>
+        <div class="card-desc">Right side profile completing 360-degree model.</div>
+      </div>
+    </div>
+
+    <div class="section-title">Branded Props & Elements</div>
+    <div class="grid">
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/prop-1-shopping-bag.png" alt="Shopping Bag"></div>
+        <div class="card-title">Shopping Bag</div>
+        <div class="card-path">/brand/jiivaa/crops/prop-1-shopping-bag.png</div>
+        <div class="card-desc">Branded paper shopping bag with rope handles.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/prop-2-packaging-box.png" alt="Packaging Box"></div>
+        <div class="card-title">Packaging Box</div>
+        <div class="card-path">/brand/jiivaa/crops/prop-2-packaging-box.png</div>
+        <div class="card-desc">Corrugated delivery packaging box with logo.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/prop-3-laptop.png" alt="Laptop"></div>
+        <div class="card-title">Laptop</div>
+        <div class="card-path">/brand/jiivaa/crops/prop-3-laptop.png</div>
+        <div class="card-desc">Laptop displaying JiivaaKart logo on screen.</div>
+      </div>
+      <div class="card">
+        <div class="img-box"><img src="/brand/jiivaa/crops/prop-4-cap.png" alt="Cap"></div>
+        <div class="card-title">Baseball Cap</div>
+        <div class="card-path">/brand/jiivaa/crops/prop-4-cap.png</div>
+        <div class="card-desc">Navy baseball cap with embroidered logo.</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
