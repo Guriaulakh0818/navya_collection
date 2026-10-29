@@ -387,6 +387,14 @@ export function ProductDetailClient({
 
   const currentVariantQuantity = currentCartItem?.quantity || 0;
 
+  const maxAvailableStock = useMemo(() => {
+    const raw = activeVariant?.stock ?? product.stock;
+    if (typeof raw === 'number' && raw > 0) {
+      return Math.min(raw, 99);
+    }
+    return 99;
+  }, [activeVariant?.stock, product.stock]);
+
   const handleAddToCart = async () => {
     const { main: variantLabel } = getCleanVariantLabel(activeVariant, product.name);
     const hasAttributes = Boolean(
@@ -413,7 +421,7 @@ export function ProductDetailClient({
       price: price,
       compareAtPrice: compareAtPrice,
       quantity: 1,
-      availableStock: Math.min(activeVariant?.stock ?? product.stock ?? 99, 99),
+      availableStock: maxAvailableStock,
       image:
         activeVariantImageUrl || product.images?.[0]?.url || product.images?.[0]?.imageUrl || '',
       shopId: product.shop?.id || product.shopId || 'independent-shop',
@@ -427,8 +435,7 @@ export function ProductDetailClient({
     e.preventDefault();
     e.stopPropagation();
     if (!currentCartItem) return;
-    const maxStock = Math.min(activeVariant?.stock ?? product.stock ?? 99, 99);
-    if (currentVariantQuantity >= maxStock) return;
+    if (currentVariantQuantity >= maxAvailableStock) return;
     await updateQuantity(currentCartItem.id, currentVariantQuantity + 1);
   };
 
@@ -436,12 +443,13 @@ export function ProductDetailClient({
     e.preventDefault();
     e.stopPropagation();
     if (!currentCartItem) return;
-    const maxStock = Math.min(activeVariant?.stock ?? product.stock ?? 99, 99);
     if (currentVariantQuantity <= 1) {
       await removeItem(currentCartItem.id, activeVariant?.id || null);
     } else {
       const targetQty =
-        currentVariantQuantity > maxStock ? maxStock - 1 : currentVariantQuantity - 1;
+        currentVariantQuantity > maxAvailableStock
+          ? maxAvailableStock - 1
+          : currentVariantQuantity - 1;
       await updateQuantity(currentCartItem.id, Math.max(1, targetQty));
     }
   };
@@ -918,16 +926,12 @@ export function ProductDetailClient({
                 <button
                   type="button"
                   onClick={handleIncreaseVariantQty}
-                  disabled={
-                    currentVariantQuantity >=
-                    Math.min(activeVariant?.stock ?? product.stock ?? 10, 10)
-                  }
+                  disabled={currentVariantQuantity >= maxAvailableStock}
                   className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg sm:rounded-xl bg-orange hover:bg-orange-600 text-white flex items-center justify-center transition-all active:scale-90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-2xs"
                   aria-label="Increase quantity"
                   title={
-                    currentVariantQuantity >=
-                    Math.min(activeVariant?.stock ?? product.stock ?? 10, 10)
-                      ? 'Maximum available stock reached'
+                    currentVariantQuantity >= maxAvailableStock
+                      ? `Maximum available stock reached (${maxAvailableStock} items)`
                       : 'Increase quantity'
                   }
                 >
