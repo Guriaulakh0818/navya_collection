@@ -47,15 +47,15 @@ export function AddToCartButton({ product, className, disabled, compact }: AddTo
 
   // Determine realistic available stock
   const rawStock = defaultVariant?.stock ?? product?.stock;
-  // Maximum allowed per item: actual stock, capped at a maximum of 10 for consumer protection
+  // Maximum allowed per item: based on available stock, capped only at 99
   const maxStock = useMemo(() => {
     if (cartItem?.availableStock && cartItem.availableStock > 0) {
-      return Math.min(cartItem.availableStock, 10);
+      return Math.min(cartItem.availableStock, 99);
     }
     if (typeof rawStock === 'number') {
-      return rawStock > 0 ? Math.min(rawStock, 10) : 0;
+      return rawStock > 0 ? Math.min(rawStock, 99) : 0;
     }
-    return 10;
+    return 99;
   }, [cartItem?.availableStock, rawStock]);
 
   const isOutOfStock = Boolean(

@@ -413,7 +413,7 @@ export function ProductDetailClient({
       price: price,
       compareAtPrice: compareAtPrice,
       quantity: 1,
-      availableStock: Math.min(activeVariant?.stock ?? product.stock ?? 10, 10),
+      availableStock: Math.min(activeVariant?.stock ?? product.stock ?? 99, 99),
       image:
         activeVariantImageUrl || product.images?.[0]?.url || product.images?.[0]?.imageUrl || '',
       shopId: product.shop?.id || product.shopId || 'independent-shop',
@@ -427,7 +427,7 @@ export function ProductDetailClient({
     e.preventDefault();
     e.stopPropagation();
     if (!currentCartItem) return;
-    const maxStock = Math.min(activeVariant?.stock ?? product.stock ?? 10, 10);
+    const maxStock = Math.min(activeVariant?.stock ?? product.stock ?? 99, 99);
     if (currentVariantQuantity >= maxStock) return;
     await updateQuantity(currentCartItem.id, currentVariantQuantity + 1);
   };
@@ -436,7 +436,7 @@ export function ProductDetailClient({
     e.preventDefault();
     e.stopPropagation();
     if (!currentCartItem) return;
-    const maxStock = Math.min(activeVariant?.stock ?? product.stock ?? 10, 10);
+    const maxStock = Math.min(activeVariant?.stock ?? product.stock ?? 99, 99);
     if (currentVariantQuantity <= 1) {
       await removeItem(currentCartItem.id, activeVariant?.id || null);
     } else {

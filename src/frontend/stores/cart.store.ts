@@ -357,7 +357,7 @@ export const useCartStore = create<CartStore>()(
           const existing = updatedItems[existingIndex];
           const rawLimit = input.availableStock || existing.availableStock;
           const maxStock =
-            typeof rawLimit === 'number' && rawLimit > 0 ? Math.min(rawLimit, 10) : 10;
+            typeof rawLimit === 'number' && rawLimit > 0 ? Math.min(rawLimit, 99) : 99;
           const newQty = Math.min(existing.quantity + quantityToAdd, maxStock);
 
           updatedItems[existingIndex] = {
@@ -371,7 +371,7 @@ export const useCartStore = create<CartStore>()(
         } else {
           const rawLimit = input.availableStock;
           const maxStock =
-            typeof rawLimit === 'number' && rawLimit > 0 ? Math.min(rawLimit, 10) : 10;
+            typeof rawLimit === 'number' && rawLimit > 0 ? Math.min(rawLimit, 99) : 99;
           const newItem: CartStoreItem = {
             id: input.id || `item_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
             productId: input.productId,
@@ -443,7 +443,7 @@ export const useCartStore = create<CartStore>()(
           if (i.id === itemIdOrProductId || (!i.variantId && i.productId === itemIdOrProductId)) {
             const rawLimit = i.availableStock;
             const maxStock =
-              typeof rawLimit === 'number' && rawLimit > 0 ? Math.min(rawLimit, 10) : 10;
+              typeof rawLimit === 'number' && rawLimit > 0 ? Math.min(rawLimit, 99) : 99;
             return { ...i, quantity: Math.min(newQuantity, maxStock), availableStock: maxStock };
           }
           return i;
