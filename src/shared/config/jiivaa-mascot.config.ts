@@ -488,3 +488,303 @@ export function getMascotAssetsByCategory(category: MascotAsset['category']): Ma
  * Master sheet path
  */
 export const JIIVAA_MASTER_SHEET_PATH = '/brand/jiivaa/jiivaa-master-sheet.jpg';
+
+/**
+ * Master Original Sheets (Ultra-HD Source Files)
+ */
+export const JIIVAA_SHEETS = {
+  heroStandingMaster: {
+    id: 'sheet-01-hero-standing-master',
+    title: 'Sheet 01 - Hero Standing Master (Ultra HD)',
+    path: '/brand/jiivaa/sheets/01-hero-standing-master.jpg',
+    description: 'Ultra-HD dedicated standing pose with shopping bag, pointing forward.',
+  },
+  turnaround360: {
+    id: 'sheet-02-turnaround-360',
+    title: 'Sheet 02 - Character Turnaround 360',
+    path: '/brand/jiivaa/sheets/02-turnaround-360.jpg',
+    description: 'Front, Left Side, Back (with JiivaaKart logo), and Right Side views.',
+  },
+  outfits8Looks: {
+    id: 'sheet-03-outfits-8looks',
+    title: 'Sheet 03 - Outfit Variations (8 Looks)',
+    path: '/brand/jiivaa/sheets/03-outfits-8looks.jpg',
+    description:
+      'Signature, Festive Lehenga, Casual Hoodie, Shopping Suit, Seller Support, Diwali Diya, Travel, and Winter Cozy.',
+  },
+  expressions12Emotions: {
+    id: 'sheet-04-expressions-12emotions',
+    title: 'Sheet 04 - Expressions (12 Emotions)',
+    path: '/brand/jiivaa/sheets/04-expressions-12emotions.jpg',
+    description:
+      'Happy, Winking, Excited, Cute, Confident, Thinking, Greeting, Pointing, Shopping, Working, Love, and Surprised.',
+  },
+  journey14Actions: {
+    id: 'sheet-05-journey-14actions',
+    title: 'Sheet 05 - Journey & Actions (14 Stages)',
+    path: '/brand/jiivaa/sheets/05-journey-14actions.jpg',
+    description:
+      'Welcome, Shopping, Deals, Add to Cart, Order Placed, Delivery, Support, Seller, Festive, Travel, Share, Love, Success, and Thank You.',
+  },
+} as const;
+
+/**
+ * 12 Expressions Collection
+ */
+export const JIIVAA_EXPRESSIONS_12 = [
+  {
+    id: 'expr-happy',
+    name: 'Happy',
+    path: '/brand/jiivaa/crops/expressions/expr-1-1-happy.png',
+    useCase: 'Order success, welcome banners',
+  },
+  {
+    id: 'expr-winking',
+    name: 'Winking',
+    path: '/brand/jiivaa/crops/expressions/expr-1-2-winking.png',
+    useCase: 'Coupon applied, discounts unlocked',
+  },
+  {
+    id: 'expr-excited',
+    name: 'Excited',
+    path: '/brand/jiivaa/crops/expressions/expr-1-3-excited.png',
+    useCase: 'Flash sale, jackpot offers',
+  },
+  {
+    id: 'expr-cute',
+    name: 'Cute',
+    path: '/brand/jiivaa/crops/expressions/expr-1-4-cute.png',
+    useCase: 'Wishlist alerts, feedback requests',
+  },
+  {
+    id: 'expr-confident',
+    name: 'Confident',
+    path: '/brand/jiivaa/crops/expressions/expr-1-5-confident.png',
+    useCase: 'Quality N-Assured, safe checkout guarantee',
+  },
+  {
+    id: 'expr-thinking',
+    name: 'Thinking',
+    path: '/brand/jiivaa/crops/expressions/expr-1-6-thinking.png',
+    useCase: 'Empty search, FAQs, 404 page',
+  },
+  {
+    id: 'expr-greeting',
+    name: 'Greeting (Namaste/Wave)',
+    path: '/brand/jiivaa/crops/expressions/expr-2-1-greeting.png',
+    useCase: 'User onboarding, first visit hello',
+  },
+  {
+    id: 'expr-pointing',
+    name: 'Pointing / Guiding',
+    path: '/brand/jiivaa/crops/expressions/expr-2-2-pointing.png',
+    useCase: 'Guided tour, highlighting features',
+  },
+  {
+    id: 'expr-shopping',
+    name: 'Shopping Delight',
+    path: '/brand/jiivaa/crops/expressions/expr-2-3-shopping.png',
+    useCase: 'Cart drawer, checkout flow',
+  },
+  {
+    id: 'expr-working',
+    name: 'Working / Focused',
+    path: '/brand/jiivaa/crops/expressions/expr-2-4-working.png',
+    useCase: 'Processing payment, updating status',
+  },
+  {
+    id: 'expr-love',
+    name: 'Loving / Heart',
+    path: '/brand/jiivaa/crops/expressions/expr-2-5-love.png',
+    useCase: 'Favorites saved, loyal customer perks',
+  },
+  {
+    id: 'expr-surprised',
+    name: 'Surprised / Wow',
+    path: '/brand/jiivaa/crops/expressions/expr-2-6-surprised.png',
+    useCase: 'Huge price drop, mega bumper deal',
+  },
+] as const;
+
+/**
+ * 8 Outfits Collection
+ */
+export const JIIVAA_OUTFITS_8 = [
+  {
+    id: 'outfit-signature',
+    name: 'Signature Everyday Tracksuit',
+    path: '/brand/jiivaa/crops/outfits/outfit-1-signature-everyday.png',
+  },
+  {
+    id: 'outfit-festive-lehenga',
+    name: 'Festive Lehenga Choli',
+    path: '/brand/jiivaa/crops/outfits/outfit-2-festive-lehenga.png',
+  },
+  {
+    id: 'outfit-casual-hoodie',
+    name: 'Casual White Hoodie & Denim',
+    path: '/brand/jiivaa/crops/outfits/outfit-3-casual-hoodie.png',
+  },
+  {
+    id: 'outfit-shopping-suit',
+    name: 'Shopping Suit & Orange Accents',
+    path: '/brand/jiivaa/crops/outfits/outfit-4-shopping-suit.png',
+  },
+  {
+    id: 'outfit-seller-support',
+    name: 'Seller Support with Laptop',
+    path: '/brand/jiivaa/crops/outfits/outfit-5-seller-support.png',
+  },
+  {
+    id: 'outfit-diwali-diya',
+    name: 'Diwali Celebration with Lit Diya',
+    path: '/brand/jiivaa/crops/outfits/outfit-6-diwali-diya.png',
+  },
+  {
+    id: 'outfit-travel',
+    name: 'Pan-India Travel with Cap & Bag',
+    path: '/brand/jiivaa/crops/outfits/outfit-7-travel-pan-india.png',
+  },
+  {
+    id: 'outfit-winter-cozy',
+    name: 'Winter Cozy Jacket',
+    path: '/brand/jiivaa/crops/outfits/outfit-8-winter-cozy.png',
+  },
+] as const;
+
+/**
+ * 14 User Journey & Action Touchpoints
+ */
+export const JIIVAA_JOURNEY_14 = [
+  {
+    id: 'journey-01-welcome',
+    step: 1,
+    name: 'Welcome to JiivaaKart',
+    path: '/brand/jiivaa/crops/journey/01-welcome.png',
+    target: 'Homepage / Signup Modal',
+  },
+  {
+    id: 'journey-02-shopping',
+    step: 2,
+    name: 'Browsing & Shopping',
+    path: '/brand/jiivaa/crops/journey/02-shopping.png',
+    target: 'Catalog / Category Filters',
+  },
+  {
+    id: 'journey-03-best-deals',
+    step: 3,
+    name: 'Best Deals & Discounts',
+    path: '/brand/jiivaa/crops/journey/03-best-deals.png',
+    target: 'Offers / Sale Page',
+  },
+  {
+    id: 'journey-04-add-to-cart',
+    step: 4,
+    name: 'Added to Cart',
+    path: '/brand/jiivaa/crops/journey/04-add-to-cart.png',
+    target: 'Cart Drawer / Flyout',
+  },
+  {
+    id: 'journey-05-order-placed',
+    step: 5,
+    name: 'Order Successfully Placed',
+    path: '/brand/jiivaa/crops/journey/05-order-placed.png',
+    target: 'Checkout Success Page',
+  },
+  {
+    id: 'journey-06-fast-delivery',
+    step: 6,
+    name: 'Fast Pan-India Delivery',
+    path: '/brand/jiivaa/crops/journey/06-fast-delivery.png',
+    target: 'Order Tracking Screen',
+  },
+  {
+    id: 'journey-07-customer-support',
+    step: 7,
+    name: '24/7 Customer Support',
+    path: '/brand/jiivaa/crops/journey/07-customer-support.png',
+    target: 'Helpdesk / Contact Us',
+  },
+  {
+    id: 'journey-08-seller-onboarding',
+    step: 8,
+    name: 'Seller Onboarding Hub',
+    path: '/brand/jiivaa/crops/journey/08-seller-onboarding.png',
+    target: 'Seller Registration Portal',
+  },
+  {
+    id: 'journey-09-festive',
+    step: 9,
+    name: 'Festive Season Celebrations',
+    path: '/brand/jiivaa/crops/journey/09-festive.png',
+    target: 'Diwali / Holiday Campaign',
+  },
+  {
+    id: 'journey-10-travel',
+    step: 10,
+    name: 'Travel & Logistics Express',
+    path: '/brand/jiivaa/crops/journey/10-travel.png',
+    target: 'Shipping Policy / Hubs',
+  },
+  {
+    id: 'journey-11-share',
+    step: 11,
+    name: 'Share with Friends & Family',
+    path: '/brand/jiivaa/crops/journey/11-share.png',
+    target: 'Referral & Social Share',
+  },
+  {
+    id: 'journey-12-love',
+    step: 12,
+    name: 'Loved Products & Wishlist',
+    path: '/brand/jiivaa/crops/journey/12-love.png',
+    target: 'My Wishlist / Favorites',
+  },
+  {
+    id: 'journey-13-success',
+    step: 13,
+    name: 'Milestone & Celebration',
+    path: '/brand/jiivaa/crops/journey/13-success.png',
+    target: 'Loyalty Rewards / Spin Wheel',
+  },
+  {
+    id: 'journey-14-thank-you',
+    step: 14,
+    name: 'Thank You for Shopping',
+    path: '/brand/jiivaa/crops/journey/14-thank-you.png',
+    target: 'Invoice / Order Completed',
+  },
+  {
+    id: 'journey-sitting-box',
+    step: 15,
+    name: 'Jiivaa Sitting on Delivery Box',
+    path: '/brand/jiivaa/crops/journey/hero-sitting-box-thumbsup.png',
+    target: 'Shipping Guarantee / Hero Feature',
+  },
+] as const;
+
+/**
+ * 360 Turnaround Views
+ */
+export const JIIVAA_TURNAROUND_4 = [
+  {
+    id: 'turnaround-front',
+    name: 'Front View',
+    path: '/brand/jiivaa/crops/turnaround/turnaround-1-front.png',
+  },
+  {
+    id: 'turnaround-left',
+    name: 'Left Side View',
+    path: '/brand/jiivaa/crops/turnaround/turnaround-2-left-side.png',
+  },
+  {
+    id: 'turnaround-back',
+    name: 'Back View (with Logo)',
+    path: '/brand/jiivaa/crops/turnaround/turnaround-3-back.png',
+  },
+  {
+    id: 'turnaround-right',
+    name: 'Right Side View',
+    path: '/brand/jiivaa/crops/turnaround/turnaround-4-right-side.png',
+  },
+] as const;

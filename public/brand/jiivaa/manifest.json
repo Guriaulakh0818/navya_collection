@@ -3,7 +3,7 @@
   "brand": "JiivaaKart",
   "tagline": "Same Style. Bigger Stories. For Every Indian Store.",
   "brandTagline": "STYLE THAT SPEAKS",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "colors": {
     "navy": "#0A2342",
     "orange": "#F28C28",
@@ -17,6 +17,13 @@
     "logoOnApparel": "Clean wordmark: Jiivaa (Navy) + Kart (Orange)"
   },
   "masterSheet": "/brand/jiivaa/jiivaa-master-sheet.jpg",
+  "sheets": {
+    "sheet01HeroMaster": "/brand/jiivaa/sheets/01-hero-standing-master.jpg",
+    "sheet02Turnaround360": "/brand/jiivaa/sheets/02-turnaround-360.jpg",
+    "sheet03Outfits8Looks": "/brand/jiivaa/sheets/03-outfits-8looks.jpg",
+    "sheet04Expressions12": "/brand/jiivaa/sheets/04-expressions-12emotions.jpg",
+    "sheet05Journey14Actions": "/brand/jiivaa/sheets/05-journey-14actions.jpg"
+  },
   "assets": {
     "hero": {
       "mascotTransparent": "/brand/jiivaa/crops/jiivaa-hero-mascot-transparent.png",
@@ -29,39 +36,84 @@
       "transparent": "/brand/jiivaa/crops/brand-logo-transparent.png",
       "colors": "/brand/jiivaa/crops/brand-colors-card.png"
     },
-    "expressions": {
-      "happy": "/brand/jiivaa/crops/expression-1-happy.png",
-      "winking": "/brand/jiivaa/crops/expression-2-winking.png",
-      "excited": "/brand/jiivaa/crops/expression-3-excited.png",
-      "thinking": "/brand/jiivaa/crops/expression-4-thinking.png",
-      "cute": "/brand/jiivaa/crops/expression-5-cute.png",
-      "confident": "/brand/jiivaa/crops/expression-6-confident.png"
-    },
-    "avatars": {
-      "happy": "/brand/jiivaa/crops/avatar-1-happy.png",
-      "winking": "/brand/jiivaa/crops/avatar-2-winking.png",
-      "excited": "/brand/jiivaa/crops/avatar-3-excited.png",
-      "thinking": "/brand/jiivaa/crops/avatar-4-thinking.png",
-      "cute": "/brand/jiivaa/crops/avatar-5-cute.png",
-      "confident": "/brand/jiivaa/crops/avatar-6-confident.png"
-    },
-    "outfits": {
-      "everydaySignature": "/brand/jiivaa/crops/outfit-1-everyday-signature.png",
-      "traditionalFestive": "/brand/jiivaa/crops/outfit-2-traditional-festive.png",
-      "casualShopping": "/brand/jiivaa/crops/outfit-3-casual-shopping.png",
-      "sellerSupport": "/brand/jiivaa/crops/outfit-4-seller-support.png",
-      "diwaliFestive": "/brand/jiivaa/crops/outfit-5-diwali-festive.png",
-      "travelPanIndia": "/brand/jiivaa/crops/outfit-6-travel-pan-india.png"
-    },
+    "expressions12": [
+      { "id": "happy", "file": "/brand/jiivaa/crops/expressions/expr-1-1-happy.png" },
+      { "id": "winking", "file": "/brand/jiivaa/crops/expressions/expr-1-2-winking.png" },
+      { "id": "excited", "file": "/brand/jiivaa/crops/expressions/expr-1-3-excited.png" },
+      { "id": "cute", "file": "/brand/jiivaa/crops/expressions/expr-1-4-cute.png" },
+      { "id": "confident", "file": "/brand/jiivaa/crops/expressions/expr-1-5-confident.png" },
+      { "id": "thinking", "file": "/brand/jiivaa/crops/expressions/expr-1-6-thinking.png" },
+      { "id": "greeting", "file": "/brand/jiivaa/crops/expressions/expr-2-1-greeting.png" },
+      { "id": "pointing", "file": "/brand/jiivaa/crops/expressions/expr-2-2-pointing.png" },
+      { "id": "shopping", "file": "/brand/jiivaa/crops/expressions/expr-2-3-shopping.png" },
+      { "id": "working", "file": "/brand/jiivaa/crops/expressions/expr-2-4-working.png" },
+      { "id": "love", "file": "/brand/jiivaa/crops/expressions/expr-2-5-love.png" },
+      { "id": "surprised", "file": "/brand/jiivaa/crops/expressions/expr-2-6-surprised.png" }
+    ],
+    "outfits8": [
+      { "id": "signature", "file": "/brand/jiivaa/crops/outfits/outfit-1-signature-everyday.png" },
+      {
+        "id": "festive-lehenga",
+        "file": "/brand/jiivaa/crops/outfits/outfit-2-festive-lehenga.png"
+      },
+      { "id": "casual-hoodie", "file": "/brand/jiivaa/crops/outfits/outfit-3-casual-hoodie.png" },
+      { "id": "shopping-suit", "file": "/brand/jiivaa/crops/outfits/outfit-4-shopping-suit.png" },
+      { "id": "seller-support", "file": "/brand/jiivaa/crops/outfits/outfit-5-seller-support.png" },
+      { "id": "diwali-diya", "file": "/brand/jiivaa/crops/outfits/outfit-6-diwali-diya.png" },
+      {
+        "id": "travel-pan-india",
+        "file": "/brand/jiivaa/crops/outfits/outfit-7-travel-pan-india.png"
+      },
+      { "id": "winter-cozy", "file": "/brand/jiivaa/crops/outfits/outfit-8-winter-cozy.png" }
+    ],
+    "journey14": [
+      { "step": 1, "name": "Welcome", "file": "/brand/jiivaa/crops/journey/01-welcome.png" },
+      { "step": 2, "name": "Shopping", "file": "/brand/jiivaa/crops/journey/02-shopping.png" },
+      { "step": 3, "name": "Best Deals", "file": "/brand/jiivaa/crops/journey/03-best-deals.png" },
+      {
+        "step": 4,
+        "name": "Add to Cart",
+        "file": "/brand/jiivaa/crops/journey/04-add-to-cart.png"
+      },
+      {
+        "step": 5,
+        "name": "Order Placed",
+        "file": "/brand/jiivaa/crops/journey/05-order-placed.png"
+      },
+      {
+        "step": 6,
+        "name": "Fast Delivery",
+        "file": "/brand/jiivaa/crops/journey/06-fast-delivery.png"
+      },
+      {
+        "step": 7,
+        "name": "Customer Support",
+        "file": "/brand/jiivaa/crops/journey/07-customer-support.png"
+      },
+      {
+        "step": 8,
+        "name": "Seller Onboarding",
+        "file": "/brand/jiivaa/crops/journey/08-seller-onboarding.png"
+      },
+      { "step": 9, "name": "Festive", "file": "/brand/jiivaa/crops/journey/09-festive.png" },
+      { "step": 10, "name": "Travel", "file": "/brand/jiivaa/crops/journey/10-travel.png" },
+      { "step": 11, "name": "Share", "file": "/brand/jiivaa/crops/journey/11-share.png" },
+      { "step": 12, "name": "Love / Wishlist", "file": "/brand/jiivaa/crops/journey/12-love.png" },
+      { "step": 13, "name": "Success", "file": "/brand/jiivaa/crops/journey/13-success.png" },
+      { "step": 14, "name": "Thank You", "file": "/brand/jiivaa/crops/journey/14-thank-you.png" },
+      {
+        "step": 15,
+        "name": "Hero Sitting on Box",
+        "file": "/brand/jiivaa/crops/journey/hero-sitting-box-thumbsup.png"
+      }
+    ],
     "turnaround": {
-      "all": "/brand/jiivaa/crops/turnaround-all.png",
-      "front": "/brand/jiivaa/crops/turnaround-1-front.png",
-      "sideLeft": "/brand/jiivaa/crops/turnaround-2-side-left.png",
-      "back": "/brand/jiivaa/crops/turnaround-3-back.png",
-      "sideRight": "/brand/jiivaa/crops/turnaround-4-side-right.png"
+      "front": "/brand/jiivaa/crops/turnaround/turnaround-1-front.png",
+      "sideLeft": "/brand/jiivaa/crops/turnaround/turnaround-2-left-side.png",
+      "back": "/brand/jiivaa/crops/turnaround/turnaround-3-back.png",
+      "sideRight": "/brand/jiivaa/crops/turnaround/turnaround-4-right-side.png"
     },
     "props": {
-      "all": "/brand/jiivaa/crops/props-all.png",
       "shoppingBag": "/brand/jiivaa/crops/prop-1-shopping-bag.png",
       "packagingBox": "/brand/jiivaa/crops/prop-2-packaging-box.png",
       "laptop": "/brand/jiivaa/crops/prop-3-laptop.png",
