@@ -25,6 +25,8 @@ import Link from 'next/link';
 
 import { DefaultProfileAvatarSilhouette } from '@/frontend/components/ui/default-profile-avatar';
 
+import { useSellerLanguage } from '../context/SellerLanguageContext';
+
 interface Variant {
   id: string;
   name: string | null;
@@ -49,6 +51,7 @@ interface ProductItem {
 }
 
 export function SellerInventoryManager() {
+  const { t } = useSellerLanguage();
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [counts, setCounts] = useState<{
     ALL: number;
@@ -328,7 +331,7 @@ export function SellerInventoryManager() {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-navy tracking-tight flex items-center gap-2.5">
             <Boxes className="w-6 h-6 text-orange shrink-0" />
-            <span>Inventory & Stock Manager</span>
+            <span>{t('nav.inventory', 'Inventory & Stock Manager')}</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1 font-medium">
             Easily increase or decrease live stock quantities, archive off-season products, or

@@ -20,7 +20,10 @@ import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { useSellerLanguage } from '../context/SellerLanguageContext';
+
 export function SellerProductList() {
+  const { t } = useSellerLanguage();
   const [products, setProducts] = useState<any[]>([]);
   const [counts, setCounts] = useState<any>({
     ALL: 0,
@@ -243,14 +246,14 @@ export function SellerProductList() {
             className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2"
           >
             <Boxes className="w-4 h-4 text-amber-400" />
-            Inventory & Stocks
+            {t('nav.inventory', 'Inventory & Stocks')}
           </Link>
 
           <Link
             href="/seller/products/new"
             className="px-5 py-2.5 bg-orange hover:bg-orange/90 text-white font-bold text-xs rounded-xl shadow-md shadow-orange/20 transition-all flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" /> Add New Product
+            <Plus className="w-4 h-4" /> {t('nav.addProduct', 'Add New Product')}
           </Link>
         </div>
       </div>
@@ -259,11 +262,19 @@ export function SellerProductList() {
       <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4 shadow-sm">
         <div className="flex items-center gap-2 border-b border-slate-200 pb-4 max-w-full overflow-x-auto scrollbar-none">
           {[
-            { id: 'ALL', label: 'All Products', count: counts.ALL },
-            { id: 'active', label: 'Active', count: counts.active },
-            { id: 'draft', label: 'Drafts', count: counts.draft },
-            { id: 'pending_approval', label: 'Pending Approval', count: counts.pending_approval },
-            { id: 'archived', label: 'Archived', count: counts.archived },
+            { id: 'ALL', label: t('productList.tabAll', 'All Products'), count: counts.ALL },
+            { id: 'active', label: t('productList.tabActive', 'Active'), count: counts.active },
+            { id: 'draft', label: t('productList.tabDraft', 'Drafts'), count: counts.draft },
+            {
+              id: 'pending_approval',
+              label: t('productList.tabDraft', 'Pending Approval'),
+              count: counts.pending_approval,
+            },
+            {
+              id: 'archived',
+              label: t('productList.tabArchived', 'Archived'),
+              count: counts.archived,
+            },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -305,7 +316,10 @@ export function SellerProductList() {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
             <input
               type="text"
-              placeholder="Search by product name, SKU, or description..."
+              placeholder={t(
+                'productList.searchPlaceholder',
+                'Search by product name, SKU, or description...',
+              )}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:border-navy focus:bg-white focus:outline-none transition-all"

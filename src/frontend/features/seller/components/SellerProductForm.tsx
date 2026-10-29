@@ -50,6 +50,8 @@ import {
   SpotlightCurationItem,
 } from '@/shared/utils/auto-categorizer';
 
+import { useSellerLanguage } from '../context/SellerLanguageContext';
+
 type ProductFormProps = {
   productId?: string;
   initialData?: any;
@@ -252,6 +254,7 @@ function getDefaultFormData(init?: any) {
 }
 
 export function SellerProductForm({ productId, initialData }: ProductFormProps) {
+  const { t } = useSellerLanguage();
   const router = useRouter();
   const [isLoadingProduct, setIsLoadingProduct] = useState(Boolean(productId && !initialData));
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -2073,7 +2076,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           </Link>
           <div className="flex items-center gap-2 sm:gap-2.5">
             <h1 className="text-lg sm:text-xl font-extrabold text-navy tracking-tight">
-              {productId ? 'Edit Product' : 'Add New Product'}
+              {productId
+                ? t('form.pageTitleEdit', 'Edit Product')
+                : t('form.pageTitleNew', 'Add New Product')}
             </h1>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-orange/10 text-orange border border-orange/20">
               {productId ? 'Editing' : 'Draft'}
@@ -2186,7 +2191,8 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
           <div className="md:col-span-2">
             <div className="flex items-center justify-between mb-1">
               <label className="block font-bold text-slate-700 uppercase tracking-wider">
-                Product Name / Title <span className="text-rose-500">*</span>
+                {t('form.productTitle', 'Product Name / Title')}{' '}
+                <span className="text-rose-500">*</span>
               </label>
               {isLiveCategorizing && (
                 <span className="text-[10px] font-bold text-orange flex items-center gap-1 animate-pulse">
@@ -2197,11 +2203,21 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             <input
               type="text"
               required
-              placeholder="e.g. Royal Blue Banarasi Silk Saree with Gold Zari Border"
+              placeholder={t(
+                'form.productTitlePlaceholder',
+                'e.g. Royal Blue Banarasi Silk Saree with Gold Zari Border',
+              )}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-slate-900 font-bold focus:border-navy focus:bg-white focus:outline-none transition-all shadow-2xs"
             />
+            <p className="text-[11px] text-slate-500 mt-1">
+              💡{' '}
+              {t(
+                'form.productTitleHint',
+                'Include brand, type, color, and key feature for best customer visibility.',
+              )}
+            </p>
 
             {/* LIVE AI SHORTLISTED CATEGORIES BAR */}
             {liveTopCandidates.length > 0 && (
@@ -3071,7 +3087,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
           <div className="bg-orange-50/30 p-3.5 rounded-2xl border border-orange/20 space-y-1">
             <label className="block font-bold text-navy uppercase tracking-wider text-[10px]">
-              Selling Price (₹) <span className="text-rose-500">*</span>
+              {t('form.sellingPrice', 'Selling Price (₹)')} <span className="text-rose-500">*</span>
             </label>
             <input
               type="number"
@@ -3082,12 +3098,14 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
               onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
               className="w-full bg-white border border-slate-200 focus:border-orange rounded-xl px-3 py-2 text-navy font-mono font-extrabold text-base focus:outline-none transition-all"
             />
-            <p className="text-[10px] text-slate-500">Final price customer pays</p>
+            <p className="text-[10px] text-slate-500">
+              {t('form.sellingPriceHint', 'Final price customer pays')}
+            </p>
           </div>
 
           <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
             <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">
-              Maximum Retail Price (MRP)
+              {t('form.comparePrice', 'Maximum Retail Price (MRP)')}
             </label>
             <input
               type="number"
@@ -3101,7 +3119,9 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                 Discount: {discountDetails.formattedPercent} OFF
               </p>
             ) : (
-              <p className="text-[10px] text-slate-400">Printed tag MRP</p>
+              <p className="text-[10px] text-slate-400">
+                {t('form.comparePriceHint', 'Printed tag MRP')}
+              </p>
             )}
           </div>
 
@@ -3221,7 +3241,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
           <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1 sm:col-span-2">
             <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">
-              Total Stock Quantity
+              {t('form.stock', 'Total Stock Quantity')}
             </label>
             <input
               type="number"
@@ -3233,7 +3253,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             <p className="text-[10px] text-slate-500">
               {formData.variants.length > 0
                 ? `Auto-calculated from sum of variant stocks (${formData.stock} units)`
-                : 'Direct stock count for standalone item'}
+                : t('form.stockHint', 'Direct stock count for standalone item')}
             </p>
           </div>
 
@@ -4679,7 +4699,7 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             href="/seller/products"
             className="text-xs font-bold text-slate-500 hover:text-navy flex items-center gap-1.5 transition-colors p-1"
           >
-            <ArrowLeft className="w-4 h-4" /> Cancel & Back to Products
+            <ArrowLeft className="w-4 h-4" /> {t('form.cancel', 'Cancel & Back to Products')}
           </Link>
           <span className="text-[11px] text-slate-400 hidden sm:inline">
             Review all sections before final submission
@@ -4698,11 +4718,13 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
             className="w-full sm:w-auto px-8 py-3 bg-orange hover:bg-orange/90 text-white font-extrabold text-sm rounded-xl transition-all flex items-center justify-center gap-2.5 shadow-md shadow-orange/20 cursor-pointer active:scale-95 disabled:opacity-50"
           >
             {isSubmitting ? (
-              <span>Saving product...</span>
+              <span>{t('form.saving', 'Saving product...')}</span>
             ) : (
               <>
                 <Send className="w-4 h-4 text-white" />{' '}
-                {productId ? 'Update Listing' : 'Submit for Approval'}
+                {productId
+                  ? t('form.pageTitleEdit', 'Update Listing')
+                  : t('form.saveActive', 'Publish Product')}
               </>
             )}
           </button>

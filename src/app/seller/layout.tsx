@@ -23,23 +23,48 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { SellerLanguageModal } from '@/frontend/features/seller/components/SellerLanguageModal';
+import { SellerLanguagePill } from '@/frontend/features/seller/components/SellerLanguagePill';
 import { SellerStatusView } from '@/frontend/features/seller/components/SellerStatusView';
+import {
+  SellerLanguageProvider,
+  useSellerLanguage,
+} from '@/frontend/features/seller/context/SellerLanguageContext';
 import { useAuthStore, useCartStore, useWishlistStore } from '@/stores';
 
 const SELLER_NAV = [
-  { name: 'Dashboard', href: '/seller/dashboard', icon: LayoutDashboard },
-  { name: 'Sales Analytics', href: '/seller/analytics', icon: BarChart3 },
-  { name: 'Financial Payouts', href: '/seller/finance/payouts', icon: Landmark },
-  { name: 'Apply Leave (Vacation)', href: '/seller/shop?tab=vacation', icon: Palmtree },
-  { name: 'Shop Customization', href: '/seller/shop', icon: Store },
-  { name: 'Products Catalog', href: '/seller/products', icon: ShoppingBag },
-  { name: 'Inventory & Stocks', href: '/seller/inventory', icon: Boxes },
-  { name: 'Vendor Orders', href: '/seller/orders', icon: Package },
-  { name: 'Merchant Profile', href: '/seller/profile', icon: User },
-  { name: 'Settings & Bank', href: '/seller/settings', icon: Settings },
+  { key: 'nav.dashboard', name: 'Dashboard', href: '/seller/dashboard', icon: LayoutDashboard },
+  { key: 'nav.analytics', name: 'Sales Analytics', href: '/seller/analytics', icon: BarChart3 },
+  {
+    key: 'nav.payouts',
+    name: 'Financial Payouts',
+    href: '/seller/finance/payouts',
+    icon: Landmark,
+  },
+  {
+    key: 'nav.vacation',
+    name: 'Apply Leave (Vacation)',
+    href: '/seller/shop?tab=vacation',
+    icon: Palmtree,
+  },
+  { key: 'nav.shop', name: 'Shop Customization', href: '/seller/shop', icon: Store },
+  { key: 'nav.products', name: 'Products Catalog', href: '/seller/products', icon: ShoppingBag },
+  { key: 'nav.inventory', name: 'Inventory & Stocks', href: '/seller/inventory', icon: Boxes },
+  { key: 'nav.orders', name: 'Vendor Orders', href: '/seller/orders', icon: Package },
+  { key: 'nav.profile', name: 'Merchant Profile', href: '/seller/profile', icon: User },
+  { key: 'nav.settings', name: 'Settings & Bank', href: '/seller/settings', icon: Settings },
 ];
 
 export default function SellerLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SellerLanguageProvider>
+      <SellerLayoutInner>{children}</SellerLayoutInner>
+    </SellerLanguageProvider>
+  );
+}
+
+function SellerLayoutInner({ children }: { children: React.ReactNode }) {
+  const { t } = useSellerLanguage();
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -195,7 +220,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                <span>{item.name}</span>
+                <span>{t(item.key, item.name)}</span>
               </Link>
             );
           })}
@@ -204,6 +229,9 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
 
       {/* Main Content Area */}
       <div className="lg:pl-64 flex flex-col min-h-screen">
+        {/* First-time Language Selection Modal */}
+        <SellerLanguageModal />
+
         {/* Top Header */}
         {/* Top Merchant Header Bar */}
         <header className="h-16 bg-white/95 border-b border-slate-200 sticky top-0 z-30 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between shadow-xs">
@@ -224,18 +252,22 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
                 </strong>
               </span>
               <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 ml-1">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" /> ACTIVE VENDOR
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />{' '}
+                {t('nav.activeVendor', 'ACTIVE VENDOR')}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* Language Switcher Pill */}
+            <SellerLanguagePill />
+
             <Link
               href="/seller/products/new"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-orange hover:bg-orange/90 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
-              <span>+ Add Product</span>
+              <span>{t('nav.addProduct', '+ Add Product')}</span>
             </Link>
 
             <Link
@@ -243,7 +275,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
               target="_blank"
               className="text-xs text-navy hover:text-orange font-bold hidden sm:flex items-center gap-1 transition-colors bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200"
             >
-              <span>View Storefront</span> ↗
+              <span>{t('nav.viewStorefront', 'View Storefront')}</span> ↗
             </Link>
 
             <NotificationBell userId={sellerData?.userId} />
@@ -253,7 +285,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
               className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5 text-rose-600" />
-              <span className="hidden sm:inline">Sign Out</span>
+              <span className="hidden sm:inline">{t('nav.signOut', 'Sign Out')}</span>
             </button>
           </div>
         </header>
