@@ -201,12 +201,24 @@ async function syncTaxonomy() {
     });
 
     if (targetCat) {
+      const isKidProduct =
+        prod.name.toLowerCase().includes('baby') ||
+        prod.name.toLowerCase().includes('kids') ||
+        targetSlug.startsWith('baby-') ||
+        targetSlug.startsWith('boys-') ||
+        targetSlug.startsWith('girls-');
+
       await prisma.product.update({
         where: { id: prod.id },
-        data: { categoryId: targetCat.id },
+        data: {
+          categoryId: targetCat.id,
+          ...(isKidProduct ? { gender: 'kids' } : {}),
+        },
       });
       remappedCount++;
-      console.log(`  ✓ Product "${prod.name}" -> Category "${targetCat.name}" (${targetCat.slug})`);
+      console.log(
+        `  ✓ Product "${prod.name}" -> Category "${targetCat.name}" (${targetCat.slug}) [gender: ${isKidProduct ? 'kids' : 'unchanged'}]`,
+      );
     } else {
       console.warn(`  ⚠️ Target category slug "${targetSlug}" not found in DB!`);
     }

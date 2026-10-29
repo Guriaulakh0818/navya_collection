@@ -96,6 +96,21 @@ export default async function CategoriesPage({
       aggregatedCounts['kids-ethnic-wear'] =
         (aggregatedCounts['kids-ethnic-wear'] || 0) + aggregatedCounts['boys-ethnic-wear'];
     }
+    // Baby subcategories count to baby-fashion
+    const babySubTotal =
+      (aggregatedCounts['baby-boys'] || 0) +
+      (aggregatedCounts['baby-girls'] || 0) +
+      (aggregatedCounts['baby-newborn'] || 0) +
+      (aggregatedCounts['baby-sets'] || 0) +
+      (aggregatedCounts['baby-rompers'] || 0);
+    if (babySubTotal > 0) {
+      aggregatedCounts['baby-fashion'] = Math.max(
+        aggregatedCounts['baby-fashion'] || 0,
+        babySubTotal,
+      );
+      aggregatedCounts['kids'] = (aggregatedCounts['kids'] || 0) + babySubTotal;
+    }
+
     // All kids fashion gets kids total
     if (aggregatedCounts['kids']) {
       aggregatedCounts['all-kids-fashion'] = aggregatedCounts['kids'];

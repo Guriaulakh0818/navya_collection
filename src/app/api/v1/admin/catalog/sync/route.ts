@@ -296,9 +296,17 @@ export async function POST(request: NextRequest) {
           resolvedCategoryId = (catBySlug.get('men-track-pants') || catBySlug.get('gents-wear'))!;
         } else if (
           (p.categoryId === 'cat_baby_boys' || p.categoryId === 'baby-boys') &&
-          (catBySlug.get('baby-boys') || catBySlug.get('boys-wear') || catBySlug.get('kids-wear'))
+          (catBySlug.get('baby-boys') ||
+            catBySlug.get('baby-fashion') ||
+            catBySlug.get('boys-fashion') ||
+            catBySlug.get('kids') ||
+            catBySlug.get('boys-wear') ||
+            catBySlug.get('kids-wear'))
         ) {
           resolvedCategoryId = (catBySlug.get('baby-boys') ||
+            catBySlug.get('baby-fashion') ||
+            catBySlug.get('boys-fashion') ||
+            catBySlug.get('kids') ||
             catBySlug.get('boys-wear') ||
             catBySlug.get('kids-wear'))!;
         } else {

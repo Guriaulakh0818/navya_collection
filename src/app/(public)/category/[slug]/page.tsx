@@ -16,11 +16,32 @@ import {
   JsonLd,
 } from '@/frontend/features/seo';
 
-async function getDescendantCategoryIds(prisma: any, rootCategoryId: string): Promise<string[]> {
-  const matchingIds = new Set<string>([rootCategoryId]);
+async function getDescendantCategoryIds(
+  prisma: any,
+  rootCategoryIdOrSlug: string,
+): Promise<string[]> {
+  const matchingIds = new Set<string>([rootCategoryIdOrSlug]);
+
+  // Support resolving root by either id or slug
+  let rootId = rootCategoryIdOrSlug;
+  try {
+    const dbCat = await prisma.category.findFirst({
+      where: {
+        OR: [{ id: rootCategoryIdOrSlug }, { slug: rootCategoryIdOrSlug }],
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (dbCat?.id) {
+      rootId = dbCat.id;
+      matchingIds.add(rootId);
+    }
+  } catch {
+    // Fallback to original identifier
+  }
 
   const level2 = await prisma.category.findMany({
-    where: { parentId: rootCategoryId, deletedAt: null },
+    where: { parentId: rootId, deletedAt: null },
     select: { id: true },
   });
   const level2Ids = level2.map((c: any) => c.id);
@@ -86,21 +107,77 @@ async function buildCategoryConditions(
 
   // Cross-category intelligent mappings for seamless catalog browsing
   if (cleanSlug === 'all-kids-fashion' || cleanSlug === 'kids') {
-    const kidsDescendants = await getDescendantCategoryIds(prisma, 'group_kids');
+    const kidsDescendants = await getDescendantCategoryIds(prisma, 'kids');
     kidsDescendants.forEach((id) => matchingIds.add(id));
+    const kidsDescendantsStatic = await getDescendantCategoryIds(prisma, 'group_kids');
+    kidsDescendantsStatic.forEach((id) => matchingIds.add(id));
   }
-  if (cleanSlug === 'all-men-clothing' || cleanSlug === 'men-clothing') {
-    const menDescendants = await getDescendantCategoryIds(prisma, 'group_men');
-    menDescendants.forEach((id) => matchingIds.add(id));
+  if (cleanSlug === 'baby-fashion' || cleanSlug === 'baby-clothing' || cleanSlug === 'baby-wear') {
+    matchingIds.add('cat_kids_baby');
+    matchingIds.add('cat_baby_newborn');
+    matchingIds.add('cat_baby_boys');
+    matchingIds.add('cat_baby_girls');
+    matchingIds.add('cat_baby_sets');
+    matchingIds.add('cat_baby_rompers');
+    const babyDescendants = await getDescendantCategoryIds(prisma, 'baby-fashion');
+    babyDescendants.forEach((id) => matchingIds.add(id));
   }
-  if (cleanSlug === 'all-women-clothing' || cleanSlug === 'women-clothing') {
-    const womenDescendants = await getDescendantCategoryIds(prisma, 'group_women');
-    womenDescendants.forEach((id) => matchingIds.add(id));
+  if (cleanSlug === 'boys-fashion' || cleanSlug === 'boys-clothing') {
+    matchingIds.add('cat_kids_boys');
+    matchingIds.add('cat_boys_tshirts');
+    matchingIds.add('cat_boys_polos');
+    matchingIds.add('cat_boys_shirts');
+    matchingIds.add('cat_boys_jeans');
+    matchingIds.add('cat_boys_trousers');
+    matchingIds.add('cat_boys_shorts');
+    matchingIds.add('cat_boys_ethnic');
+    matchingIds.add('cat_boys_jackets');
+    matchingIds.add('cat_baby_boys');
+    const boysDescendants = await getDescendantCategoryIds(prisma, 'boys-fashion');
+    boysDescendants.forEach((id) => matchingIds.add(id));
+  }
+  if (cleanSlug === 'girls-fashion' || cleanSlug === 'girls-clothing') {
+    matchingIds.add('cat_kids_girls');
+    matchingIds.add('cat_girls_tops_tees');
+    matchingIds.add('cat_girls_dresses');
+    matchingIds.add('cat_girls_jumpsuits');
+    matchingIds.add('cat_girls_skirts');
+    matchingIds.add('cat_girls_jeans_trousers');
+    matchingIds.add('cat_girls_ethnic');
+    matchingIds.add('cat_girls_jackets');
+    matchingIds.add('cat_baby_girls');
+    const girlsDescendants = await getDescendantCategoryIds(prisma, 'girls-fashion');
+    girlsDescendants.forEach((id) => matchingIds.add(id));
+  }
+  if (cleanSlug === 'teens-fashion' || cleanSlug === 'teen-trends') {
+    matchingIds.add('cat_kids_teens');
+    matchingIds.add('cat_teens_boys');
+    matchingIds.add('cat_teens_girls');
+    const teensDescendants = await getDescendantCategoryIds(prisma, 'teens-fashion');
+    teensDescendants.forEach((id) => matchingIds.add(id));
   }
   if (cleanSlug === 'kids-ethnic-wear') {
     matchingIds.add('cat_boys_ethnic');
     matchingIds.add('cat_girls_ethnic');
     matchingIds.add('cat_kids_ethnic_wear');
+  }
+  if (cleanSlug === 'kids-essentials') {
+    matchingIds.add('cat_kids_essentials');
+    matchingIds.add('cat_kids_innerwear');
+    matchingIds.add('cat_kids_sleepwear');
+    matchingIds.add('cat_kids_socks');
+  }
+  if (cleanSlug === 'all-men-clothing' || cleanSlug === 'men-clothing') {
+    const menDescendants = await getDescendantCategoryIds(prisma, 'men');
+    menDescendants.forEach((id) => matchingIds.add(id));
+    const menDescendantsStatic = await getDescendantCategoryIds(prisma, 'group_men');
+    menDescendantsStatic.forEach((id) => matchingIds.add(id));
+  }
+  if (cleanSlug === 'all-women-clothing' || cleanSlug === 'women-clothing') {
+    const womenDescendants = await getDescendantCategoryIds(prisma, 'women');
+    womenDescendants.forEach((id) => matchingIds.add(id));
+    const womenDescendantsStatic = await getDescendantCategoryIds(prisma, 'group_women');
+    womenDescendantsStatic.forEach((id) => matchingIds.add(id));
   }
   if (cleanSlug === 'women-kurtas' || cleanSlug === 'kurtis' || cleanSlug === 'kurtis-tunics') {
     matchingIds.add('cat_women_kurtas');
@@ -127,6 +204,30 @@ async function buildCategoryConditions(
   }
   if (cleanSlug && cleanSlug !== category?.slug) {
     orConditions.push({ category: { slug: cleanSlug } });
+  }
+
+  // Cross-category and department fallback in orConditions
+  if (cleanSlug === 'all-kids-fashion' || cleanSlug === 'kids') {
+    orConditions.push({ gender: { equals: 'kids', mode: 'insensitive' as const } });
+    orConditions.push({ category: { slug: { startsWith: 'baby-' } } });
+    orConditions.push({ category: { slug: { startsWith: 'boys-' } } });
+    orConditions.push({ category: { slug: { startsWith: 'girls-' } } });
+    orConditions.push({ category: { slug: { startsWith: 'kids-' } } });
+  } else if (cleanSlug === 'baby-fashion') {
+    orConditions.push({ category: { slug: { startsWith: 'baby-' } } });
+    orConditions.push({ categoryId: 'cat_baby_boys' });
+    orConditions.push({ categoryId: 'cat_baby_girls' });
+    orConditions.push({ categoryId: 'cat_baby_newborn' });
+    orConditions.push({ categoryId: 'cat_baby_sets' });
+    orConditions.push({ categoryId: 'cat_baby_rompers' });
+  } else if (cleanSlug === 'boys-fashion') {
+    orConditions.push({ category: { slug: { startsWith: 'boys-' } } });
+    orConditions.push({ category: { slug: 'baby-boys' } });
+    orConditions.push({ categoryId: 'cat_baby_boys' });
+  } else if (cleanSlug === 'girls-fashion') {
+    orConditions.push({ category: { slug: { startsWith: 'girls-' } } });
+    orConditions.push({ category: { slug: 'baby-girls' } });
+    orConditions.push({ categoryId: 'cat_baby_girls' });
   }
 
   // Dynamic Price Deals & Curations Matching (Only for curated hubs)

@@ -184,6 +184,30 @@ export function MarketplaceCatalogContent() {
         pGender !== 'men' &&
         !catSlug.startsWith('men-') &&
         !pName.includes('men');
+    } else if (selectedCategory === 'baby-fashion') {
+      isCategoryMatch =
+        catSlug.startsWith('baby-') ||
+        prod.categoryId === 'cat_baby_boys' ||
+        prod.categoryId === 'cat_baby_girls' ||
+        prod.categoryId === 'cat_baby_newborn' ||
+        prod.categoryId === 'cat_baby_sets' ||
+        prod.categoryId === 'cat_baby_rompers' ||
+        parentCatSlug === 'baby-fashion' ||
+        pName.includes('baby');
+    } else if (selectedCategory === 'boys-fashion') {
+      isCategoryMatch =
+        catSlug.startsWith('boys-') ||
+        catSlug === 'baby-boys' ||
+        prod.categoryId === 'cat_baby_boys' ||
+        parentCatSlug === 'boys-fashion' ||
+        (pName.includes('boy') && (pGender === 'kids' || !pGender));
+    } else if (selectedCategory === 'girls-fashion') {
+      isCategoryMatch =
+        catSlug.startsWith('girls-') ||
+        catSlug === 'baby-girls' ||
+        prod.categoryId === 'cat_baby_girls' ||
+        parentCatSlug === 'girls-fashion' ||
+        (pName.includes('girl') && (pGender === 'kids' || !pGender));
     } else if (selectedCategory === 'activewear') {
       isCategoryMatch =
         catSlug.includes('active') || catSlug.includes('track') || pName.includes('track');
