@@ -62,17 +62,15 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
     >
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-6 py-12 text-center h-full space-y-4">
-          <div className="relative mx-auto w-28 h-28 flex items-center justify-center">
-            <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-lg pointer-events-none" />
-            <div className="relative z-10 w-24 h-24 rounded-2xl bg-white border border-orange-200 shadow-sm p-1.5 flex items-center justify-center overflow-hidden">
-              <Image
-                src="/brand/jiivaa/crops/journey/04-add-to-cart.png"
-                alt="Jiivaa - Empty Cart"
-                width={160}
-                height={165}
-                className="w-full h-full object-contain select-none"
-              />
-            </div>
+          <div className="relative mx-auto w-32 h-32 flex items-center justify-center">
+            <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-xl pointer-events-none scale-90" />
+            <Image
+              src="/brand/jiivaa/crops/journey/04-add-to-cart.png"
+              alt="Jiivaa - Empty Shopping Cart"
+              width={160}
+              height={165}
+              className="relative z-10 w-auto h-full max-h-[120px] object-contain drop-shadow-md select-none transition-transform duration-300 hover:scale-105"
+            />
           </div>
           <div>
             <h3 className="font-heading text-lg font-bold text-navy">Your cart is empty</h3>

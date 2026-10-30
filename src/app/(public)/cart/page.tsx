@@ -56,21 +56,17 @@ export default function MultiVendorCartPage() {
         />
         <div className="mx-auto max-w-lg px-4 py-12 sm:py-16 text-center space-y-5">
           {/* Jiivaa Mascot Empty Cart Delight */}
-          <div className="relative mx-auto w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
-            <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-xl pointer-events-none" />
-            <div className="relative z-10 w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-white border-2 border-orange-100 shadow-md p-2 flex items-center justify-center overflow-hidden">
-              <Image
-                src="/brand/jiivaa/crops/journey/04-add-to-cart.png"
-                alt="Jiivaa - Add to Cart"
-                width={160}
-                height={165}
-                className="w-full h-full object-contain select-none"
-                priority
-              />
-            </div>
-            <div className="absolute -bottom-1 -right-1 bg-navy text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1 border border-white">
-              <span>JiivaaKart</span>
-            </div>
+          <div className="relative mx-auto w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center">
+            {/* Subtle Character Ambient Glow */}
+            <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-2xl pointer-events-none scale-90" />
+            <Image
+              src="/brand/jiivaa/crops/journey/04-add-to-cart.png"
+              alt="Jiivaa - Empty Shopping Cart"
+              width={180}
+              height={190}
+              className="relative z-10 w-auto h-full max-h-[160px] sm:max-h-[190px] object-contain drop-shadow-md select-none transition-transform duration-300 hover:scale-105"
+              priority
+            />
           </div>
 
           <div className="space-y-1.5">

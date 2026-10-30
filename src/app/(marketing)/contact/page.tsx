@@ -55,8 +55,8 @@ export default function ContactPage() {
       {/* Breadcrumb Structured Data */}
       <JsonLd data={breadcrumbSchema} />
       <div className="mb-10 bg-gradient-to-br from-white via-orange/5 to-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
-        <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-6">
-          <div className="md:col-span-8 text-center md:text-left space-y-2">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
+          <div className="flex-1 min-w-0 text-center md:text-left space-y-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange/10 border border-orange/20 text-orange text-[10px] font-black uppercase tracking-wider">
               <Sparkles className="w-3 h-3 text-orange animate-pulse" />
               <span>Jiivaa Support Desk</span>
@@ -70,22 +70,18 @@ export default function ContactPage() {
             </p>
           </div>
 
-          <div className="md:col-span-4 flex items-center justify-center">
-            <div className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center">
-              <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-xl pointer-events-none" />
-              <div className="relative z-10 w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-white border border-orange-200 shadow-sm p-1.5 flex items-center justify-center overflow-hidden">
-                <Image
-                  src="/brand/jiivaa/crops/journey/07-customer-support.png"
-                  alt="Jiivaa - Customer Support"
-                  width={160}
-                  height={165}
-                  className="w-full h-full object-contain select-none"
-                  priority
-                />
-              </div>
-              <div className="absolute -bottom-1 -right-1 bg-navy text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-xs border border-white">
-                24/7 Help
-              </div>
+          <div className="shrink-0 flex items-center justify-center">
+            <div className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-48 md:h-48 flex items-center justify-center">
+              {/* Subtle Character Ambient Glow */}
+              <div className="absolute inset-0 bg-radial from-orange/20 via-orange/5 to-transparent rounded-full blur-2xl pointer-events-none scale-90" />
+              <Image
+                src="/brand/jiivaa/crops/journey/07-customer-support.png"
+                alt="Jiivaa - Customer Support"
+                width={180}
+                height={180}
+                className="relative z-10 w-auto h-full max-h-[145px] sm:max-h-[175px] md:max-h-[185px] object-contain drop-shadow-md select-none transition-transform duration-300 hover:scale-105"
+                priority
+              />
             </div>
           </div>
         </div>

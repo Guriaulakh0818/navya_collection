@@ -96,12 +96,13 @@
     }
     .img-box {
       width: 100%;
-      height: 190px;
+      height: 210px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #F1F5F9;
-      border-radius: 12px;
+      background: radial-gradient(circle at center, #FFFFFF 35%, #F1F5F9 100%);
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
       padding: 12px;
       margin-bottom: 14px;
       overflow: hidden;
@@ -110,6 +111,14 @@
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
+      filter: drop-shadow(0 6px 14px rgba(10, 35, 66, 0.08));
+      transition: transform 0.25s ease;
+    }
+    .card:hover .img-box img {
+      transform: scale(1.06);
+    }
+    .tall-box {
+      height: 270px;
     }
     .card-title {
       font-weight: 700;
@@ -409,42 +418,42 @@
     <div class="section-title">8 Outfits (Cultural &amp; Lifestyle Diversity)</div>
     <div class="grid">
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/outfits/outfit-1-signature-everyday.png" alt="Signature Everyday"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/outfits/outfit-1-signature-everyday.png" alt="Signature Everyday"></div>
         <div class="card-title">1. Signature Everyday</div>
         <div class="card-path">crops/outfits/outfit-1-signature-everyday.png</div>
       </div>
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/outfits/outfit-2-festive-lehenga.png" alt="Festive Lehenga"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/outfits/outfit-2-festive-lehenga.png" alt="Festive Lehenga"></div>
         <div class="card-title">2. Festive Lehenga</div>
         <div class="card-path">crops/outfits/outfit-2-festive-lehenga.png</div>
       </div>
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/outfits/outfit-3-casual-hoodie.png" alt="Casual Hoodie"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/outfits/outfit-3-casual-hoodie.png" alt="Casual Hoodie"></div>
         <div class="card-title">3. Casual White Hoodie</div>
         <div class="card-path">crops/outfits/outfit-3-casual-hoodie.png</div>
       </div>
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/outfits/outfit-4-shopping-suit.png" alt="Shopping Suit"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/outfits/outfit-4-shopping-suit.png" alt="Shopping Suit"></div>
         <div class="card-title">4. Shopping Tracksuit</div>
         <div class="card-path">crops/outfits/outfit-4-shopping-suit.png</div>
       </div>
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/outfits/outfit-5-seller-support.png" alt="Seller Support"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/outfits/outfit-5-seller-support.png" alt="Seller Support"></div>
         <div class="card-title">5. Seller Support (Laptop)</div>
         <div class="card-path">crops/outfits/outfit-5-seller-support.png</div>
       </div>
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/outfits/outfit-6-diwali-diya.png" alt="Diwali Diya"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/outfits/outfit-6-diwali-diya.png" alt="Diwali Diya"></div>
         <div class="card-title">6. Diwali Diya Look</div>
         <div class="card-path">crops/outfits/outfit-6-diwali-diya.png</div>
       </div>
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/outfits/outfit-7-travel-pan-india.png" alt="Travel Look"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/outfits/outfit-7-travel-pan-india.png" alt="Travel Look"></div>
         <div class="card-title">7. Pan-India Travel</div>
         <div class="card-path">crops/outfits/outfit-7-travel-pan-india.png</div>
       </div>
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/outfits/outfit-8-winter-cozy.png" alt="Winter Cozy"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/outfits/outfit-8-winter-cozy.png" alt="Winter Cozy"></div>
         <div class="card-title">8. Winter Cozy Look</div>
         <div class="card-path">crops/outfits/outfit-8-winter-cozy.png</div>
       </div>
@@ -454,22 +463,22 @@
     <div class="section-title">Character Turnaround 360°</div>
     <div class="grid">
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/turnaround/turnaround-1-front.png" alt="Front View"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/turnaround/turnaround-1-front.png" alt="Front View"></div>
         <div class="card-title">Front View</div>
         <div class="card-path">crops/turnaround/turnaround-1-front.png</div>
       </div>
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/turnaround/turnaround-2-left-side.png" alt="Left View"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/turnaround/turnaround-2-left-side.png" alt="Left View"></div>
         <div class="card-title">Left Side Profile</div>
         <div class="card-path">crops/turnaround/turnaround-2-left-side.png</div>
       </div>
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/turnaround/turnaround-3-back.png" alt="Back View"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/turnaround/turnaround-3-back.png" alt="Back View"></div>
         <div class="card-title">Back View (Printed Logo)</div>
         <div class="card-path">crops/turnaround/turnaround-3-back.png</div>
       </div>
       <div class="card">
-        <div class="img-box"><img src="/brand/jiivaa/crops/turnaround/turnaround-4-right-side.png" alt="Right View"></div>
+        <div class="img-box tall-box"><img src="/brand/jiivaa/crops/turnaround/turnaround-4-right-side.png" alt="Right View"></div>
         <div class="card-title">Right Side Profile</div>
         <div class="card-path">crops/turnaround/turnaround-4-right-side.png</div>
       </div>
