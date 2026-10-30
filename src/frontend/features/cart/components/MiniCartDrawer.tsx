@@ -4,6 +4,7 @@ import {
   AlertCircle,
   Building2,
   ChevronRight,
+  Coins,
   Minus,
   Plus,
   ShieldCheck,
@@ -271,7 +272,23 @@ export function MiniCartDrawer({ open, onClose }: MiniCartDrawerProps) {
           </div>
 
           {/* Drawer Footer Summary */}
-          <div className="pt-3 border-t border-slate-200 space-y-3 shrink-0">
+          <div className="pt-3 border-t border-slate-200 space-y-2.5 shrink-0">
+            {total > 0 && (
+              <div className="rounded-xl bg-amber-50/90 border border-amber-200/70 px-2.5 py-1.5 text-[11px] text-amber-900 flex items-center justify-between">
+                <span className="font-semibold flex items-center gap-1.5">
+                  <Coins className="w-3.5 h-3.5 text-amber-600" />
+                  Earn {Math.floor(total)} Jiivaa Coins
+                </span>
+                <Link
+                  href="/account/rewards"
+                  onClick={onClose}
+                  className="font-extrabold text-orange hover:underline text-[10px]"
+                >
+                  VIP Rewards &rarr;
+                </Link>
+              </div>
+            )}
+
             <div className="flex justify-between text-xs font-extrabold text-navy">
               <span>Grand Total</span>
               <span className="font-mono text-base text-orange">{formatPrice(total)}</span>

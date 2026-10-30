@@ -1,4 +1,5 @@
 import { CommissionService } from '@/backend/services/commission.service';
+import { ReferralService } from '@/backend/services/referral.service';
 
 import { CouponRepository } from '../repositories/coupon.repository';
 import {
@@ -324,7 +325,35 @@ export class CouponService {
       const cleanCode = code.trim().toUpperCase();
 
       // 1. Check Coupon Existence
-      const coupon = await CouponRepository.findByCode(cleanCode);
+      let coupon: any = await CouponRepository.findByCode(cleanCode);
+
+      // Support dynamic referral welcome coupons (JIIVAA-*)
+      if (!coupon && ReferralService.isValidReferralCode(cleanCode)) {
+        const resolved = ReferralService.resolveReferrer(cleanCode);
+        coupon = {
+          id: 'referral-' + cleanCode,
+          code: cleanCode,
+          title: 'Referral Welcome Gift (₹' + resolved.discountInr + ' OFF)',
+          description: 'Special invite discount from ' + resolved.referrerName + '!',
+          fundingType: 'NAVYA',
+          shopId: null,
+          discountType: 'FLAT',
+          discountValue: resolved.discountInr,
+          minOrderAmount: resolved.minOrderInr,
+          maxDiscount: resolved.discountInr,
+          usageLimit: null,
+          usagePerUser: 1,
+          usedCount: 0,
+          startDate: new Date(0),
+          validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          isActive: true,
+          applicableCategories: [],
+          applicableProducts: [],
+          excludedProducts: [],
+          createdAt: new Date(),
+          deletedAt: null,
+        };
+      }
       if (!coupon) {
         return {
           success: false,

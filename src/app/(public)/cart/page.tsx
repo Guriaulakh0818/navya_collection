@@ -1,6 +1,16 @@
 'use client';
 
-import { AlertCircle, Minus, Plus, ShoppingBag, Tag, Trash2 } from 'lucide-react';
+import {
+  AlertCircle,
+  Coins,
+  Gift,
+  Minus,
+  Plus,
+  ShoppingBag,
+  Sparkles,
+  Tag,
+  Trash2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -21,6 +31,33 @@ export default function MultiVendorCartPage() {
   const validateCart = useCartStore((s) => s.validateCart);
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const setAppliedCoupon = useCartStore((s) => s.setAppliedCoupon);
+
+  const [activeRefCode, setActiveRefCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const match = document.cookie.match(/jiivaa_referral_code=([^;]+)/);
+      if (match && match[1]) {
+        setActiveRefCode(decodeURIComponent(match[1]).trim().toUpperCase());
+      }
+    }
+  }, []);
+
+  const handleApplyReferralCoupon = async (refCode: string) => {
+    try {
+      const res = await fetch('/api/v1/coupons/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: refCode, cartAmount: grandSubtotal }),
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        setAppliedCoupon(json.data);
+      }
+    } catch {
+      // Graceful fallback
+    }
+  };
 
   useEffect(() => {
     validateCart();
@@ -301,6 +338,41 @@ export default function MultiVendorCartPage() {
                 </div>
               )}
 
+              {/* Active Referral Welcome Coupon Auto-Suggestion */}
+              {activeRefCode && !appliedCoupon && (
+                <div className="rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50/50 border border-emerald-300 p-3.5 space-y-2 shadow-xs">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-extrabold text-emerald-950 flex items-center gap-1.5">
+                      <Gift className="w-4 h-4 text-emerald-600" />
+                      Friend Referral Discount Ready!
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-200/80 text-emerald-900 font-extrabold text-[10px]">
+                      ₹150 OFF
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
+                    <div className="text-[11px] text-emerald-900 leading-tight">
+                      Code <strong className="font-mono font-black">{activeRefCode}</strong> is
+                      unlocked on orders ₹999+.
+                    </div>
+                    <button
+                      type="button"
+                      disabled={grandSubtotal < 999}
+                      onClick={() => handleApplyReferralCoupon(activeRefCode)}
+                      className={`px-3 py-1.5 rounded-xl font-extrabold text-xs transition-all shrink-0 cursor-pointer ${
+                        grandSubtotal >= 999
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs active:scale-95'
+                          : 'bg-emerald-100 text-emerald-400 cursor-not-allowed'
+                      }`}
+                    >
+                      {grandSubtotal >= 999
+                        ? 'Apply ₹150'
+                        : 'Add ₹' + Math.max(0, 999 - grandSubtotal) + ' more'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Coupon Section */}
               <CouponInputCard
                 cartAmount={grandSubtotal}
@@ -308,6 +380,29 @@ export default function MultiVendorCartPage() {
                 onApplySuccess={(coupon: AppliedCoupon) => setAppliedCoupon(coupon)}
                 onRemoveCoupon={() => setAppliedCoupon(null)}
               />
+
+              {/* Jiivaa Rewards Earn Info */}
+              <div className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange/5 border border-amber-200/80 p-3 flex items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-full bg-amber-500/20 text-amber-800 flex items-center justify-center shrink-0">
+                    <Coins className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <div className="min-w-0 text-[11px] leading-tight">
+                    <span className="font-extrabold text-navy block truncate">
+                      Earn {Math.floor(grandSubtotal)} Jiivaa Coins
+                    </span>
+                    <span className="text-slate-500 text-[10px]">
+                      Worth ₹{Math.floor(grandSubtotal * 0.1)} on your next boutique order
+                    </span>
+                  </div>
+                </div>
+                <Link
+                  href="/account/rewards"
+                  className="text-[10px] font-extrabold text-orange hover:text-orange-600 underline shrink-0 whitespace-nowrap"
+                >
+                  VIP Perks &rarr;
+                </Link>
+              </div>
 
               {/* Subtotal, Shipping, Discount & Grand Total */}
               <div className="space-y-2.5 pt-1 text-xs">
@@ -366,6 +461,23 @@ export default function MultiVendorCartPage() {
                   <span>No Available Items to Checkout</span>
                 )}
               </Button>
+
+              {/* Refer & Earn Banner */}
+              <div className="rounded-2xl bg-slate-50 border border-slate-200/90 p-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Gift className="w-4 h-4 text-orange shrink-0" />
+                  <p className="text-[11px] text-slate-700 leading-tight truncate">
+                    Invite friends: They get <strong className="text-navy">₹150 OFF</strong>, you
+                    get <strong className="text-navy">150 Coins</strong>!
+                  </p>
+                </div>
+                <Link
+                  href="/referral"
+                  className="text-[10px] font-extrabold text-navy hover:text-orange underline shrink-0"
+                >
+                  Refer Now
+                </Link>
+              </div>
             </div>
           </div>
         </div>
