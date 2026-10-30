@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronRight, Coins, Gift, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -153,6 +153,24 @@ export function HeaderNavigation() {
         className="text-xs xl:text-sm font-semibold text-orange hover:text-orange-600 transition-colors whitespace-nowrap"
       >
         Offers
+      </Link>
+
+      <Link
+        href="/referral"
+        className="inline-flex items-center gap-1 text-xs xl:text-sm font-extrabold text-emerald-700 hover:text-emerald-800 transition-colors whitespace-nowrap"
+      >
+        <Gift className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+        <span className="hidden xl:inline">Refer &amp; Earn (₹150)</span>
+        <span className="xl:hidden">Refer &amp; Earn</span>
+      </Link>
+
+      <Link
+        href="/account/rewards"
+        className="inline-flex items-center gap-1 text-xs xl:text-sm font-extrabold text-orange hover:text-orange-600 transition-colors whitespace-nowrap"
+      >
+        <Coins className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+        <span className="hidden xl:inline">VIP Rewards</span>
+        <span className="xl:hidden">VIP</span>
       </Link>
 
       <Link

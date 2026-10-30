@@ -3,6 +3,8 @@
 import {
   Baby,
   ChevronRight,
+  Coins,
+  Gift,
   Grid,
   Home,
   PhoneCall,
@@ -68,6 +70,22 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
   const menuItems = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop', href: '/shop', icon: ShoppingBag },
+    {
+      label: 'Refer & Earn (₹150)',
+      href: '/referral',
+      icon: Gift,
+      badge: 'Flat ₹150 OFF',
+      badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-300 font-black',
+      highlight: true,
+    },
+    {
+      label: 'Jiivaa VIP Rewards',
+      href: '/account/rewards',
+      icon: Coins,
+      badge: 'Coins & VIP',
+      badgeClass: 'bg-amber-50 text-amber-800 border-amber-300 font-black',
+      highlight: true,
+    },
     { label: 'Categories', href: '/category', icon: Grid },
     { label: '  • Spotlight', href: '/category/spotlight', icon: Sparkles },
     { label: '  • Men Wear', href: '/category/men', icon: Shirt },
@@ -106,7 +124,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
         </div>
 
         {/* 2. NAVIGATION OPTIONS */}
-        <div className="flex-1 py-3 space-y-1 overflow-y-auto min-h-0 scrollbar-thin">
+        <div className="flex-1 py-3 space-y-1.5 overflow-y-auto min-h-0 scrollbar-thin">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isSelected = selectedItem === item.label;
@@ -122,14 +140,34 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-navy/10 text-navy font-extrabold shadow-xs'
-                    : 'text-slate-700 hover:bg-slate-50 hover:text-navy'
+                    : item.highlight
+                      ? 'bg-gradient-to-r from-orange/10 via-amber-500/10 to-transparent text-navy hover:bg-orange/15 border border-orange/20 shadow-2xs'
+                      : 'text-slate-700 hover:bg-slate-50 hover:text-navy'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`h-4 w-4 ${isSelected ? 'text-navy' : 'text-slate-400'}`} />
-                  <span>{item.label}</span>
+                  <Icon
+                    className={`h-4 w-4 ${
+                      isSelected
+                        ? 'text-navy'
+                        : item.highlight
+                          ? 'text-orange animate-pulse'
+                          : 'text-slate-400'
+                    }`}
+                  />
+                  <span className={item.highlight ? 'font-extrabold text-navy' : ''}>
+                    {item.label}
+                  </span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-slate-400" />
+                {item.badge ? (
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase border shrink-0 ${item.badgeClass}`}
+                  >
+                    {item.badge}
+                  </span>
+                ) : (
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
+                )}
               </Link>
             );
           })}
