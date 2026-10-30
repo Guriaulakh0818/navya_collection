@@ -399,8 +399,17 @@ export default function AdminRewardsControlCenterPage() {
                 <tbody className="divide-y divide-slate-100">
                   {filteredLedger.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-slate-400 font-medium">
-                        No transactions or claims match your search.
+                      <td colSpan={7} className="py-16 text-center text-slate-400 font-medium">
+                        <div className="w-12 h-12 rounded-2xl bg-orange/10 text-orange flex items-center justify-center mx-auto mb-2 text-xl font-bold">
+                          🎁
+                        </div>
+                        <div className="text-sm font-extrabold text-navy">
+                          No Live Claims or Referral Transactions Yet
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                          When shoppers claim referral links, unlock VIP milestones, or redeem coins
+                          at checkout, their live activity will appear here in real time.
+                        </div>
                       </td>
                     </tr>
                   ) : (
