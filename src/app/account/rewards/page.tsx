@@ -379,39 +379,52 @@ export default function RewardsAccountPage() {
             <span>Coins Passbook &amp; History</span>
           </h2>
           <span className="text-xs font-bold text-slate-400">
-            {mounted ? activities.length : 2} Transactions
+            {mounted ? activities.length : 0} Transactions
           </span>
         </div>
 
-        <div className="divide-y divide-slate-100">
-          {(mounted ? activities : []).map((act) => (
-            <div key={act.id} className="py-3.5 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
+        {mounted && activities.length === 0 ? (
+          <div className="py-10 text-center space-y-2">
+            <Coins className="w-8 h-8 text-slate-300 mx-auto" />
+            <div className="text-xs font-bold text-slate-700">
+              Abhi tak koi coin transactions nahi hain
+            </div>
+            <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+              Verified boutiques se shopping karein ya apne dosto ko invite karein — har delivery
+              par coins automatically add honge!
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {(mounted ? activities : []).map((act) => (
+              <div key={act.id} className="py-3.5 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold ${
+                      act.amount > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+                    }`}
+                  >
+                    {act.amount > 0 ? '+' : '-'}
+                  </div>
+                  <div>
+                    <div className="text-xs sm:text-sm font-extrabold text-navy">
+                      {act.description}
+                    </div>
+                    <div className="text-[11px] text-slate-400 font-medium">{act.date}</div>
+                  </div>
+                </div>
+
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold ${
-                    act.amount > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+                  className={`text-sm sm:text-base font-black shrink-0 ${
+                    act.amount > 0 ? 'text-emerald-600' : 'text-slate-800'
                   }`}
                 >
-                  {act.amount > 0 ? '+' : '-'}
-                </div>
-                <div>
-                  <div className="text-xs sm:text-sm font-extrabold text-navy">
-                    {act.description}
-                  </div>
-                  <div className="text-[11px] text-slate-400 font-medium">{act.date}</div>
+                  {act.amount > 0 ? `+${act.amount}` : act.amount} Coins
                 </div>
               </div>
-
-              <div
-                className={`text-sm sm:text-base font-black shrink-0 ${
-                  act.amount > 0 ? 'text-emerald-600' : 'text-slate-800'
-                }`}
-              >
-                {act.amount > 0 ? `+${act.amount}` : act.amount} Coins
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Celebration Modal when Tier is claimed */}

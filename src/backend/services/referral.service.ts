@@ -32,6 +32,65 @@ export interface ResolvedReferralInfo {
 }
 
 export class ReferralService {
+  // Real runtime tracking for clicks and referral friends (per referralCode)
+  private static clickCounts = new Map<string, number>();
+  private static referralRecords = new Map<string, ReferralFriendRecord[]>();
+
+  /**
+   * Record a real link click for a referral code
+   */
+  public static async recordClick(code: string): Promise<number> {
+    const clean = (code || '').trim().toUpperCase();
+    if (!clean) return 0;
+    const current = this.clickCounts.get(clean) || 0;
+    const updated = current + 1;
+    this.clickCounts.set(clean, updated);
+    return updated;
+  }
+
+  /**
+   * Record when a referee signs up / visits via referral code
+   */
+  public static async recordFriendJoined(code: string, friendName: string): Promise<void> {
+    const clean = (code || '').trim().toUpperCase();
+    if (!clean) return;
+    const list = this.referralRecords.get(clean) || [];
+    list.unshift({
+      id: `ref-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      friendName,
+      status: 'PENDING',
+      coinsAwarded: REWARDS_CONFIG.referralReferrerBonusCoins,
+      date: 'Today',
+    });
+    this.referralRecords.set(clean, list);
+  }
+
+  /**
+   * Record when a referee places an order or their order is delivered
+   */
+  public static async recordFriendOrder(
+    code: string,
+    friendName: string,
+    isDelivered = false,
+  ): Promise<void> {
+    const clean = (code || '').trim().toUpperCase();
+    if (!clean) return;
+    const list = this.referralRecords.get(clean) || [];
+    const existing = list.find((f) => f.friendName.toLowerCase() === friendName.toLowerCase());
+    if (existing) {
+      existing.status = isDelivered ? 'DELIVERED_REWARDED' : 'ORDER_PLACED';
+      existing.date = isDelivered ? 'Delivered' : 'In transit';
+    } else {
+      list.unshift({
+        id: `ref-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        friendName,
+        status: isDelivered ? 'DELIVERED_REWARDED' : 'ORDER_PLACED',
+        coinsAwarded: REWARDS_CONFIG.referralReferrerBonusCoins,
+        date: isDelivered ? 'Delivered' : 'Today',
+      });
+    }
+    this.referralRecords.set(clean, list);
+  }
   /**
    * Deterministically generate a 100% collision-free, memorable referral code for a user.
    * Format: JIIVAA-<NAME_SLUG><SHORT_HASH>
@@ -131,36 +190,8 @@ export class ReferralService {
     const shareUrl = `${originUrl}/r/${referralCode}`;
     const whatsAppShareText = REWARDS_CONFIG.getWhatsAppShareText(referralCode, shareUrl);
 
-    // Realistic baseline stats for initial interactive exploration
-    const friends: ReferralFriendRecord[] = [
-      {
-        id: 'ref-1',
-        friendName: 'Priya Sharma (Jaipur)',
-        status: 'DELIVERED_REWARDED',
-        coinsAwarded: 150,
-        date: new Date(Date.now() - 86400000 * 3).toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'short',
-        }),
-      },
-      {
-        id: 'ref-2',
-        friendName: 'Rohan Verma (Delhi)',
-        status: 'ORDER_PLACED',
-        coinsAwarded: 150,
-        date: new Date(Date.now() - 86400000).toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'short',
-        }),
-      },
-      {
-        id: 'ref-3',
-        friendName: 'Simran Kaur (Hisar)',
-        status: 'PENDING',
-        coinsAwarded: 150,
-        date: 'Today',
-      },
-    ];
+    const clicks = this.clickCounts.get(referralCode) || 0;
+    const friends = this.referralRecords.get(referralCode) || [];
 
     const successfulOrders = friends.filter((f) => f.status === 'DELIVERED_REWARDED').length;
     const totalCoinsEarned = successfulOrders * REWARDS_CONFIG.referralReferrerBonusCoins;
@@ -171,7 +202,7 @@ export class ReferralService {
       shareUrl,
       whatsAppShareText,
       stats: {
-        totalClicks: 14,
+        totalClicks: clicks,
         friendsJoined: friends.length,
         successfulOrders,
         totalCoinsEarned,

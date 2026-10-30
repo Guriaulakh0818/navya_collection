@@ -45,31 +45,16 @@ interface RewardsStoreState {
 export const useRewardsStore = create<RewardsStoreState>()(
   persist(
     (set, get) => ({
-      coins: 450,
-      lifetimeCoins: 450,
+      coins: 0,
+      lifetimeCoins: 0,
       claimedCoupons: [],
-      referralCode: 'JIIVAA-STYLE',
-      totalReferralClicks: 14,
-      successfulReferrals: 2,
+      referralCode: '',
+      totalReferralClicks: 0,
+      successfulReferrals: 0,
       isWelcomeModalOpen: false,
       openWelcomeModal: () => set({ isWelcomeModalOpen: true }),
       closeWelcomeModal: () => set({ isWelcomeModalOpen: false }),
-      activities: [
-        {
-          id: 'act-1',
-          amount: 200,
-          type: 'SIGNUP_BONUS',
-          description: 'Welcome Bonus: Account registered at JiivaaKart',
-          date: '2 days ago',
-        },
-        {
-          id: 'act-2',
-          amount: 250,
-          type: 'ORDER_EARNED',
-          description: 'Boutique Haul: Hisar & Jaipur curated styles',
-          date: 'Yesterday',
-        },
-      ],
+      activities: [],
 
       addCoins: (amount, type, description) => {
         set((state) => ({

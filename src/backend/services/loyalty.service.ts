@@ -65,25 +65,20 @@ export class LoyaltyService {
    * Get Loyalty Account for a user
    */
   public static async getAccount(userId: string): Promise<LoyaltyAccountData> {
-    // Default baseline for new/guest users: 450 initial coins (signup + first browse)
-    let balance = 450;
-    let lifetimeEarned = 450;
-    let transactions: CoinTransactionRecord[] = [
-      {
-        id: 'tx-signup',
-        amount: REWARDS_CONFIG.signupBonusCoins,
-        type: 'SIGNUP_BONUS',
-        description: 'Welcome Bonus: Account registered at JiivaaKart',
-        createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-      },
-      {
-        id: 'tx-browse',
-        amount: 250,
-        type: 'ORDER_EARNED',
-        description: 'Delight Reward: Explored boutique fashion catalog',
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-      },
-    ];
+    const isRegistered = Boolean(userId && !userId.startsWith('guest'));
+    let balance = isRegistered ? REWARDS_CONFIG.signupBonusCoins : 0;
+    let lifetimeEarned = isRegistered ? REWARDS_CONFIG.signupBonusCoins : 0;
+    const transactions: CoinTransactionRecord[] = isRegistered
+      ? [
+          {
+            id: 'tx-signup',
+            amount: REWARDS_CONFIG.signupBonusCoins,
+            type: 'SIGNUP_BONUS',
+            description: 'Welcome Bonus: Account registered at JiivaaKart',
+            createdAt: new Date().toISOString(),
+          },
+        ]
+      : [];
 
     try {
       const orders = await (prisma as any).order.findMany({

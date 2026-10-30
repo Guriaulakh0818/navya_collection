@@ -1,9 +1,14 @@
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { ReferralService } from '@/backend/services/referral.service';
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const cookieStore = await cookies();
+
+  // Record real link click in ReferralService
+  await ReferralService.recordClick(code).catch(() => {});
 
   // Store referral code in cookie for 30 days
   cookieStore.set('jiivaa_referral_code', code, {

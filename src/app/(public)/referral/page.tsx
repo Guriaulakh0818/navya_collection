@@ -27,13 +27,37 @@ import { useAuthStore, useRewardsStore } from '@/stores';
 export default function ReferralPage() {
   const user = useAuthStore((s) => s.user);
   const referralCode = useRewardsStore((s) => s.referralCode);
-  const totalClicks = useRewardsStore((s) => s.totalReferralClicks);
-  const successfulReferrals = useRewardsStore((s) => s.successfulReferrals);
 
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [originUrl, setOriginUrl] = useState('http://localhost:3000');
   const [mounted, setMounted] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [profileData, setProfileData] = useState<{
+    stats: {
+      totalClicks: number;
+      friendsJoined: number;
+      successfulOrders: number;
+      totalCoinsEarned: number;
+      totalEarnedInr: number;
+    };
+    friends: Array<{
+      id: string;
+      friendName: string;
+      status: 'PENDING' | 'ORDER_PLACED' | 'DELIVERED_REWARDED';
+      coinsAwarded: number;
+      date: string;
+    }>;
+  }>({
+    stats: {
+      totalClicks: 0,
+      friendsJoined: 0,
+      successfulOrders: 0,
+      totalCoinsEarned: 0,
+      totalEarnedInr: 0,
+    },
+    friends: [],
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -41,6 +65,28 @@ export default function ReferralPage() {
       setOriginUrl(window.location.origin);
     }
   }, []);
+
+  useEffect(() => {
+    async function loadLiveReferralProfile() {
+      setIsLoadingProfile(true);
+      try {
+        const uId = user?.id || 'guest';
+        const uName = encodeURIComponent(user?.name || '');
+        const res = await fetch(`/api/v1/referral?userId=${uId}&name=${uName}`, {
+          cache: 'no-store',
+        });
+        const json = await res.json();
+        if (json?.success && json?.data) {
+          setProfileData(json.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch live referral profile:', err);
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    }
+    loadLiveReferralProfile();
+  }, [user]);
 
   const shareCode = user
     ? generateUniqueReferralCode(user.id, user.name || user.mobile)
@@ -254,14 +300,14 @@ export default function ReferralPage() {
               <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
                 <div className="text-xs text-slate-300 font-semibold">Total Clicks</div>
                 <div className="text-2xl font-black text-white mt-1">
-                  {mounted ? totalClicks : 14}
+                  {mounted ? profileData.stats.totalClicks : 0}
                 </div>
               </div>
 
               <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
                 <div className="text-xs text-slate-300 font-semibold">Successful Orders</div>
                 <div className="text-2xl font-black text-amber-300 mt-1">
-                  {mounted ? successfulReferrals : 2}
+                  {mounted ? profileData.stats.successfulOrders : 0}
                 </div>
               </div>
 
@@ -270,9 +316,9 @@ export default function ReferralPage() {
                   Total Earned Shopping Credit
                 </div>
                 <div className="text-3xl font-black text-orange mt-1">
-                  ₹{mounted ? successfulReferrals * 150 : 300}{' '}
+                  ₹{mounted ? profileData.stats.totalEarnedInr : 0}{' '}
                   <span className="text-xs text-white/80 font-normal">
-                    ({mounted ? successfulReferrals * 150 : 300} Coins)
+                    ({mounted ? profileData.stats.totalCoinsEarned : 0} Coins)
                   </span>
                 </div>
               </div>
@@ -298,49 +344,64 @@ export default function ReferralPage() {
               </p>
             </div>
 
-            <div className="divide-y divide-slate-100">
-              <div className="py-3 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-xs sm:text-sm font-extrabold text-navy">
-                    Priya Sharma (Jaipur Boutique Order)
-                  </div>
-                  <div className="text-[11px] text-slate-400 font-medium">3 days ago</div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase">
-                    +150 Coins Rewarded
-                  </span>
-                </div>
+            {isLoadingProfile ? (
+              <div className="py-12 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2 font-medium">
+                <div className="w-5 h-5 border-2 border-orange border-t-transparent rounded-full animate-spin" />
+                <span>Loading your referral activity...</span>
               </div>
-
-              <div className="py-3 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-xs sm:text-sm font-extrabold text-navy">
-                    Rohan Verma (Delhi Co-ord Set)
-                  </div>
-                  <div className="text-[11px] text-slate-400 font-medium">Yesterday</div>
+            ) : profileData.friends.length === 0 ? (
+              <div className="py-8 px-4 text-center rounded-2xl bg-slate-50/80 border border-dashed border-slate-200 space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-orange/10 text-orange flex items-center justify-center mx-auto text-xl font-bold">
+                  🎁
                 </div>
-                <div className="text-right">
-                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-black uppercase">
-                    Order In Transit
-                  </span>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-extrabold text-navy">
+                    Abhi tak koi dost invite nahi hua
+                  </h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium leading-relaxed">
+                    Apna exclusive style link dosto ke sath WhatsApp par share karein. Jaise hi unka
+                    pehla order deliver hoga, unka status aur ₹150 rewards yahan live update honge!
+                  </p>
                 </div>
+                <a
+                  href={whatsAppLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-extrabold text-xs shadow-xs transition-all cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4 fill-current" />
+                  <span>Invite on WhatsApp &rarr;</span>
+                </a>
               </div>
-
-              <div className="py-3 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-xs sm:text-sm font-extrabold text-navy">
-                    Simran Kaur (Hisar Store Visit)
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {profileData.friends.map((friend) => (
+                  <div key={friend.id} className="py-3 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-xs sm:text-sm font-extrabold text-navy">
+                        {friend.friendName}
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-medium">{friend.date}</div>
+                    </div>
+                    <div className="text-right">
+                      {friend.status === 'DELIVERED_REWARDED' ? (
+                        <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase">
+                          +{friend.coinsAwarded} Coins Rewarded
+                        </span>
+                      ) : friend.status === 'ORDER_PLACED' ? (
+                        <span className="inline-block px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-black uppercase">
+                          Order In Transit
+                        </span>
+                      ) : (
+                        <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">
+                          Joined via Link
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-[11px] text-slate-400 font-medium">Today</div>
-                </div>
-                <div className="text-right">
-                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">
-                    Joined via Link
-                  </span>
-                </div>
+                ))}
               </div>
-            </div>
+            )}
 
             <div className="p-3 rounded-xl bg-orange/10 text-orange text-[11px] font-semibold flex items-center gap-2">
               <Sparkles className="w-4 h-4 shrink-0" />
