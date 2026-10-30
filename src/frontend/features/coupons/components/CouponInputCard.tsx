@@ -42,6 +42,23 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
   const [showCouponsModal, setShowCouponsModal] = useState(false);
   const [activeCoupons, setActiveCoupons] = useState<ActiveCoupon[]>([]);
   const [activeOffers, setActiveOffers] = useState<StoreOffer[]>([]);
+  const [savedReferralCode, setSavedReferralCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const urlRef = searchParams.get('ref');
+      let cookieRef = '';
+      const match = document.cookie.match(/jiivaa_referral_code=([^;]+)/);
+      if (match && match[1]) {
+        cookieRef = decodeURIComponent(match[1]);
+      }
+      const found = (urlRef || cookieRef || '').trim().toUpperCase();
+      if (found.startsWith('JIIVAA-')) {
+        setSavedReferralCode(found);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchPromotionsAndCoupons() {
@@ -165,9 +182,36 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
       ) : (
         /* If No Coupon Applied: Input Form & Available Coupons trigger */
         <div className="space-y-2.5">
+          {/* Quick Apply 1-tap Pill for Saved Referral Code */}
+          {savedReferralCode && (
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-orange/10 border border-orange/20 text-xs text-navy font-medium animate-fade-in">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-orange text-white flex items-center justify-center font-bold text-xs shrink-0">
+                  🎁
+                </span>
+                <div>
+                  <span className="font-extrabold text-navy">Referral Code saved: </span>
+                  <span className="font-mono font-black text-orange">{savedReferralCode}</span>
+                  <span className="text-[10px] text-slate-500 block">
+                    Flat ₹150 OFF on orders ₹999+
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => executeApplyCode(savedReferralCode)}
+                disabled={isLoading}
+                className="px-3 py-1 bg-orange text-white text-[11px] font-black rounded-lg hover:bg-orange-600 active:scale-95 transition-all cursor-pointer shrink-0"
+              >
+                Apply ₹150
+              </button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-extrabold uppercase tracking-wider text-navy">
-              Have a Promo Code?
+            <label className="block text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5">
+              <Tag className="h-3.5 w-3.5 text-orange" />
+              <span>Have a Promo Code or Referral Code?</span>
             </label>
             {(activeCoupons.length > 0 || activeOffers.length > 0) && (
               <button
@@ -185,7 +229,7 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
           <form onSubmit={handleApplyForm} className="flex gap-2">
             <Input
               type="text"
-              placeholder="Enter Code (if you have one)"
+              placeholder="Enter coupon or referral code (e.g. JIIVAA-...)"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               className="uppercase tracking-wider font-extrabold text-xs rounded-xl bg-white border-2 border-slate-300 text-slate-900 focus:border-navy"

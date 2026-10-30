@@ -121,7 +121,7 @@ export class AdminRewardsService {
     }
 
     // 2. Realistic ledger of claims & referrals
-    const ledger: AdminClaimLedgerItem[] = [
+    let ledger: AdminClaimLedgerItem[] = [
       {
         id: 'clm-001',
         userName: 'Priya Sharma',
@@ -221,6 +221,39 @@ export class AdminRewardsService {
         timestamp: '2 days ago',
       },
     ];
+
+    try {
+      const realEvents: any = await (prisma as any)
+        .$queryRawUnsafe(
+          `SELECT id, referrer_code as "code", friend_name as "friendName", status, coins_awarded as "coins", created_at as "createdAt"
+           FROM referral_events
+           ORDER BY created_at DESC
+           LIMIT 20`,
+        )
+        .catch(() => []);
+
+      if (Array.isArray(realEvents) && realEvents.length > 0) {
+        const liveItems: AdminClaimLedgerItem[] = realEvents.map((ev: any) => ({
+          id: String(ev.id),
+          userName: String(ev.friendName),
+          userPhoneOrEmail: `Referred via ${ev.code}`,
+          type: 'REFERRAL_USED',
+          codeOrTier: String(ev.code),
+          coins: Number(ev.coins) || 150,
+          inrValue: 150,
+          status:
+            ev.status === 'DELIVERED_REWARDED'
+              ? 'COMPLETED'
+              : ev.status === 'ORDER_PLACED'
+                ? 'ORDER_PLACED'
+                : 'PENDING',
+          timestamp: 'Live Event',
+        }));
+        ledger = [...liveItems, ...ledger];
+      }
+    } catch {
+      // safe fallback
+    }
 
     const totalCoinsInCirculation = 142500;
     const totalCoinsRedeemed = 38200;

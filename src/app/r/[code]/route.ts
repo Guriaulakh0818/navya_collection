@@ -7,8 +7,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { code } = await params;
   const cookieStore = await cookies();
 
-  // Record real link click in ReferralService
+  // Record real link click and friend joined event in ReferralService
   await ReferralService.recordClick(code).catch(() => {});
+  await ReferralService.recordFriendJoined(code, 'Friend via Link').catch(() => {});
 
   // Store referral code in cookie for 30 days
   cookieStore.set('jiivaa_referral_code', code, {

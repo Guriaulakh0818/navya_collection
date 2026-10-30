@@ -42,6 +42,13 @@ export function RefereeWelcomeModal({ referralCode: propCode }: RefereeWelcomeMo
 
       // If user came via link or hasn't seen greeting in this session
       if (!alreadyGreeted || urlRef) {
+        // Record claim event immediately so referrer's dashboard updates in real-time
+        fetch('/api/v1/referral/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: activeCode, friendName: 'Friend via Link' }),
+        }).catch(() => {});
+
         // Fetch or resolve referrer name
         fetch(`/api/v1/referral/resolve?code=${encodeURIComponent(activeCode)}`)
           .then((r) => r.json())

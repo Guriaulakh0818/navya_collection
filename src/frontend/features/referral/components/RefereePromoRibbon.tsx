@@ -56,36 +56,58 @@ export function RefereePromoRibbon() {
   return (
     <aside
       aria-label="Welcome referral discount offer"
-      className="bg-gradient-to-r from-navy via-[#112d54] to-navy text-white text-[11px] sm:text-xs py-2 px-3 sm:px-4 border-b border-navy/40 relative z-40 transition-all"
+      className="bg-gradient-to-r from-navy via-[#112d54] to-navy text-white text-[11px] sm:text-xs py-1.5 sm:py-2 px-2 sm:px-4 border-b border-navy/40 relative z-40 overflow-hidden transition-all"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 truncate">
-          <span className="w-5 h-5 rounded-full bg-orange/20 text-orange flex items-center justify-center shrink-0">
-            <Gift className="w-3 h-3 text-orange" />
-          </span>
-          <span className="truncate">
-            <strong className="text-orange font-black">₹150 OFF Welcome Gift:</strong> Invited by{' '}
-            <span className="font-bold underline decoration-orange/60">{referrerName}</span> with
-            code{' '}
-            <strong className="font-mono bg-white/10 px-1.5 py-0.5 rounded text-amber-300 font-black">
-              {code}
-            </strong>{' '}
-            (Auto-applies on orders ₹999+)
-          </span>
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-1 sm:gap-2 relative">
+        {/* Continuous Scrolling Marquee Ticker */}
+        <div className="flex-1 overflow-hidden relative">
+          <div className="animate-marquee flex items-center whitespace-nowrap will-change-transform py-0.5">
+            <div className="flex items-center gap-2 pr-12">
+              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-orange/20 text-orange flex items-center justify-center shrink-0">
+                <Gift className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-orange" />
+              </span>
+              <span>
+                <strong className="text-orange font-black">₹150 OFF Welcome Gift:</strong> Invited
+                by <span className="font-bold underline decoration-orange/60">{referrerName}</span>{' '}
+                with code{' '}
+                <strong className="font-mono bg-white/10 px-1.5 py-0.5 rounded text-amber-300 font-black">
+                  {code}
+                </strong>{' '}
+                (Auto-applies in Bag on orders ₹999+) • Claim your boutique fashion perks today!
+              </span>
+            </div>
+
+            {/* Duplicate for seamless infinite loop */}
+            <div className="flex items-center gap-2 pr-12" aria-hidden="true">
+              <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-orange/20 text-orange flex items-center justify-center shrink-0">
+                <Gift className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-orange" />
+              </span>
+              <span>
+                <strong className="text-orange font-black">₹150 OFF Welcome Gift:</strong> Invited
+                by <span className="font-bold underline decoration-orange/60">{referrerName}</span>{' '}
+                with code{' '}
+                <strong className="font-mono bg-white/10 px-1.5 py-0.5 rounded text-amber-300 font-black">
+                  {code}
+                </strong>{' '}
+                (Auto-applies in Bag on orders ₹999+) • Claim your boutique fashion perks today!
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Fixed Right-Side Controls: CTA Button + Dismiss Button */}
+        <div className="shrink-0 flex items-center gap-1.5 sm:gap-2 pl-3 bg-gradient-to-l from-[#112d54] via-[#112d54] to-transparent z-10">
           <Link
             href="/cart"
-            className="hidden sm:inline-flex items-center gap-1 font-black text-orange hover:text-orange-300 hover:underline text-[11px]"
+            className="inline-flex items-center gap-1 font-black text-white bg-orange hover:bg-orange-600 active:scale-95 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs shadow-xs transition-all whitespace-nowrap cursor-pointer"
           >
-            <span>View in Bag</span>
+            <span>Use ₹150</span>
             <span>&rarr;</span>
           </Link>
           <button
             type="button"
             onClick={handleDismiss}
-            className="p-1 text-slate-300 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1 text-slate-300 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer shrink-0"
             aria-label="Dismiss banner"
           >
             <X className="w-3.5 h-3.5" />

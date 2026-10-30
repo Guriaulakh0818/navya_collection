@@ -66,15 +66,25 @@ export default function ReferralPage() {
     }
   }, []);
 
+  const shareCode = user
+    ? generateUniqueReferralCode(user.id, user.name || user.mobile)
+    : referralCode;
+  const shareUrl = `${originUrl}/r/${shareCode}`;
+  const whatsAppText = REWARDS_CONFIG.getWhatsAppShareText(shareCode, shareUrl);
+  const whatsAppLink = `https://api.whatsapp.com/send?text=${whatsAppText}`;
+
   useEffect(() => {
     async function loadLiveReferralProfile() {
       setIsLoadingProfile(true);
       try {
         const uId = user?.id || 'guest';
         const uName = encodeURIComponent(user?.name || '');
-        const res = await fetch(`/api/v1/referral?userId=${uId}&name=${uName}`, {
-          cache: 'no-store',
-        });
+        const res = await fetch(
+          `/api/v1/referral?userId=${uId}&name=${uName}&code=${encodeURIComponent(shareCode)}`,
+          {
+            cache: 'no-store',
+          },
+        );
         const json = await res.json();
         if (json?.success && json?.data) {
           setProfileData(json.data);
@@ -86,14 +96,7 @@ export default function ReferralPage() {
       }
     }
     loadLiveReferralProfile();
-  }, [user]);
-
-  const shareCode = user
-    ? generateUniqueReferralCode(user.id, user.name || user.mobile)
-    : referralCode;
-  const shareUrl = `${originUrl}/r/${shareCode}`;
-  const whatsAppText = REWARDS_CONFIG.getWhatsAppShareText(shareCode, shareUrl);
-  const whatsAppLink = `https://api.whatsapp.com/send?text=${whatsAppText}`;
+  }, [user, shareCode]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -393,8 +396,8 @@ export default function ReferralPage() {
                           Order In Transit
                         </span>
                       ) : (
-                        <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">
-                          Joined via Link
+                        <span className="inline-block px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold">
+                          Joined via Link • Order Pending
                         </span>
                       )}
                     </div>

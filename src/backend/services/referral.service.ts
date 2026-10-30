@@ -1,3 +1,4 @@
+import { prisma } from '@/lib/prisma';
 import { REWARDS_CONFIG } from '@/shared/config/rewards.config';
 
 export interface ReferralFriendRecord {
@@ -35,6 +36,41 @@ export class ReferralService {
   // Real runtime tracking for clicks and referral friends (per referralCode)
   private static clickCounts = new Map<string, number>();
   private static referralRecords = new Map<string, ReferralFriendRecord[]>();
+  private static tablesInitialized = false;
+
+  /**
+   * Lazily ensure PostgreSQL storage tables exist for persistent cross-lambda tracking
+   */
+  private static async ensureTables(): Promise<void> {
+    if (this.tablesInitialized) return;
+    try {
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS referral_clicks (
+          code VARCHAR(100) PRIMARY KEY,
+          clicks INTEGER NOT NULL DEFAULT 0,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS referral_events (
+          id VARCHAR(100) PRIMARY KEY,
+          referrer_code VARCHAR(100) NOT NULL,
+          friend_name VARCHAR(255) NOT NULL,
+          status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+          coins_awarded INTEGER NOT NULL DEFAULT 150,
+          date_label VARCHAR(100) NOT NULL DEFAULT 'Today',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS idx_referral_events_code ON referral_events(referrer_code);
+      `);
+      this.tablesInitialized = true;
+    } catch (err) {
+      console.warn('[ReferralService] DB table ensureTables fallback:', err);
+    }
+  }
 
   /**
    * Record a real link click for a referral code
@@ -45,6 +81,21 @@ export class ReferralService {
     const current = this.clickCounts.get(clean) || 0;
     const updated = current + 1;
     this.clickCounts.set(clean, updated);
+
+    try {
+      await this.ensureTables();
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO referral_clicks (code, clicks, updated_at)
+         VALUES ($1, 1, CURRENT_TIMESTAMP)
+         ON CONFLICT (code) DO UPDATE SET
+           clicks = referral_clicks.clicks + 1,
+           updated_at = CURRENT_TIMESTAMP`,
+        clean,
+      );
+    } catch (err) {
+      console.warn('[ReferralService] recordClick db fallback:', err);
+    }
+
     return updated;
   }
 
@@ -54,15 +105,35 @@ export class ReferralService {
   public static async recordFriendJoined(code: string, friendName: string): Promise<void> {
     const clean = (code || '').trim().toUpperCase();
     if (!clean) return;
+    const cleanName = (friendName || 'Friend via Link').trim();
+    const eventId = `ref-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
     const list = this.referralRecords.get(clean) || [];
-    list.unshift({
-      id: `ref-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      friendName,
-      status: 'PENDING',
-      coinsAwarded: REWARDS_CONFIG.referralReferrerBonusCoins,
-      date: 'Today',
-    });
-    this.referralRecords.set(clean, list);
+    const existing = list.find((f) => f.friendName.toLowerCase() === cleanName.toLowerCase());
+    if (!existing) {
+      list.unshift({
+        id: eventId,
+        friendName: cleanName,
+        status: 'PENDING',
+        coinsAwarded: REWARDS_CONFIG.referralReferrerBonusCoins,
+        date: 'Today',
+      });
+      this.referralRecords.set(clean, list);
+    }
+
+    try {
+      await this.ensureTables();
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO referral_events (id, referrer_code, friend_name, status, coins_awarded, date_label, created_at, updated_at)
+         VALUES ($1, $2, $3, 'PENDING', $4, 'Today', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+        eventId,
+        clean,
+        cleanName,
+        REWARDS_CONFIG.referralReferrerBonusCoins,
+      );
+    } catch (err) {
+      console.warn('[ReferralService] recordFriendJoined db fallback:', err);
+    }
   }
 
   /**
@@ -75,21 +146,39 @@ export class ReferralService {
   ): Promise<void> {
     const clean = (code || '').trim().toUpperCase();
     if (!clean) return;
+    const targetStatus = isDelivered ? 'DELIVERED_REWARDED' : 'ORDER_PLACED';
+    const targetDate = isDelivered ? 'Delivered' : 'In transit';
+
     const list = this.referralRecords.get(clean) || [];
     const existing = list.find((f) => f.friendName.toLowerCase() === friendName.toLowerCase());
     if (existing) {
-      existing.status = isDelivered ? 'DELIVERED_REWARDED' : 'ORDER_PLACED';
-      existing.date = isDelivered ? 'Delivered' : 'In transit';
+      existing.status = targetStatus;
+      existing.date = targetDate;
     } else {
       list.unshift({
         id: `ref-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         friendName,
-        status: isDelivered ? 'DELIVERED_REWARDED' : 'ORDER_PLACED',
+        status: targetStatus,
         coinsAwarded: REWARDS_CONFIG.referralReferrerBonusCoins,
-        date: isDelivered ? 'Delivered' : 'Today',
+        date: targetDate,
       });
     }
     this.referralRecords.set(clean, list);
+
+    try {
+      await this.ensureTables();
+      await prisma.$executeRawUnsafe(
+        `UPDATE referral_events
+         SET status = $1, date_label = $2, updated_at = CURRENT_TIMESTAMP
+         WHERE referrer_code = $3 AND LOWER(friend_name) = LOWER($4)`,
+        targetStatus,
+        targetDate,
+        clean,
+        friendName,
+      );
+    } catch (err) {
+      console.warn('[ReferralService] recordFriendOrder db fallback:', err);
+    }
   }
   /**
    * Deterministically generate a 100% collision-free, memorable referral code for a user.
@@ -185,13 +274,66 @@ export class ReferralService {
     userId: string,
     originUrl = 'http://localhost:3000',
     userName?: string,
+    codeOverride?: string,
   ): Promise<ReferralProfileData> {
-    const referralCode = this.generateCode(userId, userName);
+    const referralCode = codeOverride || this.generateCode(userId, userName);
     const shareUrl = `${originUrl}/r/${referralCode}`;
     const whatsAppShareText = REWARDS_CONFIG.getWhatsAppShareText(referralCode, shareUrl);
 
-    const clicks = this.clickCounts.get(referralCode) || 0;
-    const friends = this.referralRecords.get(referralCode) || [];
+    let clicks = this.clickCounts.get(referralCode) || 0;
+    let friends = [...(this.referralRecords.get(referralCode) || [])];
+
+    try {
+      await this.ensureTables();
+
+      // Query database clicks
+      const clicksRows: any = await prisma
+        .$queryRawUnsafe(`SELECT clicks FROM referral_clicks WHERE code = $1 LIMIT 1`, referralCode)
+        .catch(() => []);
+      if (
+        Array.isArray(clicksRows) &&
+        clicksRows.length > 0 &&
+        typeof clicksRows[0].clicks === 'number'
+      ) {
+        clicks = Math.max(clicks, Number(clicksRows[0].clicks));
+      }
+
+      // Query database friends events
+      const eventsRows: any = await prisma
+        .$queryRawUnsafe(
+          `SELECT id, friend_name as "friendName", status, coins_awarded as "coinsAwarded", date_label as "date"
+           FROM referral_events
+           WHERE referrer_code = $1
+           ORDER BY created_at DESC
+           LIMIT 50`,
+          referralCode,
+        )
+        .catch(() => []);
+
+      if (Array.isArray(eventsRows) && eventsRows.length > 0) {
+        const dbFriends: ReferralFriendRecord[] = eventsRows.map((r: any) => ({
+          id: String(r.id),
+          friendName: String(r.friendName),
+          status: (r.status || 'PENDING') as 'PENDING' | 'ORDER_PLACED' | 'DELIVERED_REWARDED',
+          coinsAwarded: Number(r.coinsAwarded) || REWARDS_CONFIG.referralReferrerBonusCoins,
+          date: String(r.date || 'Today'),
+        }));
+
+        // Merge DB records with any ephemeral memory records, deduplicated by id or friendName
+        const seen = new Set<string>();
+        const merged: ReferralFriendRecord[] = [];
+        for (const item of [...friends, ...dbFriends]) {
+          const key = (item.friendName || '').toLowerCase();
+          if (!seen.has(key)) {
+            seen.add(key);
+            merged.push(item);
+          }
+        }
+        friends = merged;
+      }
+    } catch (err) {
+      console.warn('[ReferralService] getProfile db query fallback:', err);
+    }
 
     const successfulOrders = friends.filter((f) => f.status === 'DELIVERED_REWARDED').length;
     const totalCoinsEarned = successfulOrders * REWARDS_CONFIG.referralReferrerBonusCoins;

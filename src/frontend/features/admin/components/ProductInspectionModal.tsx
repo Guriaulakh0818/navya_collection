@@ -66,6 +66,12 @@ interface ProductInspectionModalProps {
   onReject: (productId: string, reason: string) => Promise<void>;
 }
 
+const getImgSrc = (img: any): string => {
+  if (!img) return '';
+  if (typeof img === 'string') return img.trim();
+  return (img.imageUrl || img.url || img.secureUrl || img.src || '').trim();
+};
+
 export function ProductInspectionModal({
   product,
   isOpen,
@@ -83,14 +89,16 @@ export function ProductInspectionModal({
   const [isRejecting, setIsRejecting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeImage, setActiveImage] = useState<string>('');
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (product) {
       const primary = product.images?.find((i: any) => i.isPrimary) || product.images?.[0];
-      setActiveImage(primary?.imageUrl || '');
+      setActiveImage(getImgSrc(primary));
       setActiveTab('overview');
       setIsRejecting(false);
       setRejectReason('');
+      setFailedImages({});
     }
   }, [product]);
 
@@ -276,21 +284,31 @@ export function ProductInspectionModal({
 
               {/* Large Image Preview */}
               <div className="relative aspect-[3/4] bg-slate-100 border border-slate-200 rounded-2xl overflow-hidden shadow-2xs select-none group">
-                {activeImage ? (
+                {activeImage && !failedImages[activeImage] ? (
                   <img
                     src={activeImage}
                     alt={product.name}
                     loading="lazy"
                     decoding="async"
+                    onError={() => {
+                      if (activeImage) {
+                        setFailedImages((prev) => ({ ...prev, [activeImage]: true }));
+                      }
+                    }}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 font-bold gap-2">
-                    <ImageIcon className="w-8 h-8 opacity-40" />
-                    <span>No Image Uploaded</span>
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 font-bold gap-2 bg-gradient-to-br from-slate-50 via-slate-100 to-orange-50/20 p-6 text-center">
+                    <ImageIcon className="w-10 h-10 text-orange/50" />
+                    <span className="font-extrabold text-xs text-navy tracking-wide uppercase">
+                      Photo Preview Unavailable
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      Select another thumbnail below or verify upload
+                    </span>
                   </div>
                 )}
-                {product.images?.find((img: any) => img.imageUrl === activeImage)?.isPrimary && (
+                {product.images?.find((img: any) => getImgSrc(img) === activeImage)?.isPrimary && (
                   <span className="absolute top-2.5 left-2.5 bg-orange text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-md uppercase">
                     ★ Primary Photo
                   </span>
@@ -305,27 +323,43 @@ export function ProductInspectionModal({
                   </span>
                   <div className="flex gap-2 overflow-x-auto pb-1.5 select-none">
                     {product.images.map((img: any, idx: number) => {
-                      const isSelected = activeImage === img.imageUrl;
+                      const src = getImgSrc(img);
+                      const isSelected = activeImage === src;
+                      const isFailed = !src || Boolean(failedImages[src]);
+                      const isPrimary = Boolean(img.isPrimary);
+
                       return (
                         <button
                           key={img.id || idx}
                           type="button"
-                          onClick={() => setActiveImage(img.imageUrl)}
+                          onClick={() => setActiveImage(src)}
                           className={`relative w-14 h-14 bg-white border-2 rounded-xl overflow-hidden shrink-0 cursor-pointer transition-all ${
                             isSelected
                               ? 'border-orange ring-2 ring-orange/30 scale-105 shadow-xs'
                               : 'border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100'
                           }`}
-                          title={`Photo ${idx + 1}${img.isPrimary ? ' (Primary)' : ''}`}
+                          title={`Photo ${idx + 1}${isPrimary ? ' (Primary)' : ''}`}
                         >
-                          <img
-                            src={img.imageUrl}
-                            alt={`Photo ${idx + 1}`}
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full h-full object-cover"
-                          />
-                          {img.isPrimary && (
+                          {!isFailed ? (
+                            <img
+                              src={src}
+                              alt={`Photo ${idx + 1}`}
+                              loading="lazy"
+                              decoding="async"
+                              onError={() => {
+                                if (src) {
+                                  setFailedImages((prev) => ({ ...prev, [src]: true }));
+                                }
+                              }}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 text-[9px] font-bold">
+                              <ImageIcon className="w-4 h-4 opacity-40 text-orange" />
+                              <span>#{idx + 1}</span>
+                            </div>
+                          )}
+                          {isPrimary && (
                             <span className="absolute bottom-0 inset-x-0 bg-orange text-white font-black text-[8px] text-center leading-tight">
                               ★
                             </span>
@@ -345,12 +379,15 @@ export function ProductInspectionModal({
                   </span>
                   <div className="flex gap-2 overflow-x-auto pb-1.5 select-none">
                     {variantImages.map((vImg: any, idx: number) => {
-                      const isSelected = activeImage === vImg.imageUrl;
+                      const vSrc = getImgSrc(vImg);
+                      const isSelected = activeImage === vSrc;
+                      const isFailed = !vSrc || Boolean(failedImages[vSrc]);
+
                       return (
                         <button
                           key={idx}
                           type="button"
-                          onClick={() => setActiveImage(vImg.imageUrl)}
+                          onClick={() => setActiveImage(vSrc)}
                           className={`relative w-12 h-12 bg-white border-2 rounded-xl overflow-hidden shrink-0 cursor-pointer transition-all ${
                             isSelected
                               ? 'border-orange ring-2 ring-orange/30 scale-105 shadow-xs'
@@ -358,13 +395,24 @@ export function ProductInspectionModal({
                           }`}
                           title={vImg.label || 'Variant Photo'}
                         >
-                          <img
-                            src={vImg.imageUrl}
-                            alt={vImg.label || 'Variant'}
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full h-full object-cover"
-                          />
+                          {!isFailed ? (
+                            <img
+                              src={vSrc}
+                              alt={vImg.label || 'Variant'}
+                              loading="lazy"
+                              decoding="async"
+                              onError={() => {
+                                if (vSrc) {
+                                  setFailedImages((prev) => ({ ...prev, [vSrc]: true }));
+                                }
+                              }}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400">
+                              <ImageIcon className="w-3.5 h-3.5 opacity-40 text-orange" />
+                            </div>
+                          )}
                         </button>
                       );
                     })}

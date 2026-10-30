@@ -11,8 +11,9 @@ export async function GET(request: Request) {
     const originUrl = `${proto}://${host}`;
     const userId = searchParams.get('userId') || 'guest-user-default';
     const userName = searchParams.get('name') || undefined;
+    const codeOverride = searchParams.get('code') || undefined;
 
-    const profile = await ReferralService.getProfile(userId, originUrl, userName);
+    const profile = await ReferralService.getProfile(userId, originUrl, userName, codeOverride);
 
     return NextResponse.json({
       success: true,
