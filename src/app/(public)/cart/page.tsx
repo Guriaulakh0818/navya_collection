@@ -19,10 +19,12 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { CouponInputCard, type AppliedCoupon } from '@/features/coupons/components/CouponInputCard';
 import { groupCartItemsByShop } from '@/frontend/features/cart/utils/group-cart-by-shop';
+import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewardsSettings';
 import { useCartStore } from '@/stores';
 import { formatPrice } from '@/utils/format-price';
 
 export default function MultiVendorCartPage() {
+  const { settings } = useRewardsSettings();
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
@@ -347,27 +349,29 @@ export default function MultiVendorCartPage() {
                       Friend Referral Discount Ready!
                     </span>
                     <span className="px-2 py-0.5 rounded-full bg-emerald-200/80 text-emerald-900 font-extrabold text-[10px]">
-                      ₹150 OFF
+                      ₹{settings.referralRefereeDiscountInr} OFF
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-2 pt-0.5">
                     <div className="text-[11px] text-emerald-900 leading-tight">
                       Code <strong className="font-mono font-black">{activeRefCode}</strong> is
-                      unlocked on orders ₹999+.
+                      unlocked on orders ₹{settings.referralRefereeMinOrderInr}+.
                     </div>
                     <button
                       type="button"
-                      disabled={grandSubtotal < 999}
+                      disabled={grandSubtotal < settings.referralRefereeMinOrderInr}
                       onClick={() => handleApplyReferralCoupon(activeRefCode)}
                       className={`px-3 py-1.5 rounded-xl font-extrabold text-xs transition-all shrink-0 cursor-pointer ${
-                        grandSubtotal >= 999
+                        grandSubtotal >= settings.referralRefereeMinOrderInr
                           ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs active:scale-95'
                           : 'bg-emerald-100 text-emerald-400 cursor-not-allowed'
                       }`}
                     >
-                      {grandSubtotal >= 999
-                        ? 'Apply ₹150'
-                        : 'Add ₹' + Math.max(0, 999 - grandSubtotal) + ' more'}
+                      {grandSubtotal >= settings.referralRefereeMinOrderInr
+                        ? `Apply ₹${settings.referralRefereeDiscountInr}`
+                        : 'Add ₹' +
+                          Math.max(0, settings.referralRefereeMinOrderInr - grandSubtotal) +
+                          ' more'}
                     </button>
                   </div>
                 </div>
@@ -467,8 +471,15 @@ export default function MultiVendorCartPage() {
                 <div className="flex items-center gap-2 min-w-0">
                   <Gift className="w-4 h-4 text-orange shrink-0" />
                   <p className="text-[11px] text-slate-700 leading-tight truncate">
-                    Invite friends: They get <strong className="text-navy">₹150 OFF</strong>, you
-                    get <strong className="text-navy">150 Coins</strong>!
+                    Invite friends: They get{' '}
+                    <strong className="text-navy">
+                      ₹{settings.referralRefereeDiscountInr} OFF
+                    </strong>
+                    , you get{' '}
+                    <strong className="text-navy">
+                      {settings.referralReferrerBonusCoins} Coins
+                    </strong>
+                    !
                   </p>
                 </div>
                 <Link

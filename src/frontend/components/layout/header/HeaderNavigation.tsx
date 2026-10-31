@@ -5,6 +5,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewardsSettings';
+
 const megaCategoriesData = [
   {
     title: 'In The Spotlight',
@@ -74,6 +76,7 @@ const megaCategoriesData = [
 ];
 
 export function HeaderNavigation() {
+  const { settings } = useRewardsSettings();
   const pathname = usePathname();
   const [activeMenu, setActiveMenu] = useState<'categories' | null>(null);
 
@@ -160,7 +163,9 @@ export function HeaderNavigation() {
         className="inline-flex items-center gap-1 text-xs xl:text-sm font-extrabold text-emerald-700 hover:text-emerald-800 transition-colors whitespace-nowrap"
       >
         <Gift className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-        <span className="hidden xl:inline">Refer &amp; Earn (₹150)</span>
+        <span className="hidden xl:inline">
+          Refer &amp; Earn (₹{settings.referralRefereeDiscountInr})
+        </span>
         <span className="xl:hidden">Refer &amp; Earn</span>
       </Link>
 

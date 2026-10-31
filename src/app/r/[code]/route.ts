@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { AdminRewardsService } from '@/backend/services/admin-rewards.service';
 import { ReferralService } from '@/backend/services/referral.service';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
@@ -10,6 +11,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   // Record real link click and friend joined event in ReferralService
   await ReferralService.recordClick(code).catch(() => {});
   await ReferralService.recordFriendJoined(code, 'Friend via Link').catch(() => {});
+
+  // Fetch live settings from DB
+  const settings = await AdminRewardsService.getSettings().catch(() => null);
+  const discountInr = settings?.referralRefereeDiscountInr || 150;
 
   // Store referral code in cookie for 30 days
   cookieStore.set('jiivaa_referral_code', code, {
@@ -24,7 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     request.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
   const redirectUrl = new URL('/shop', `${proto}://${host}`);
   redirectUrl.searchParams.set('ref', code);
-  redirectUrl.searchParams.set('welcome_discount', '150');
+  redirectUrl.searchParams.set('welcome_discount', String(discountInr));
 
   return NextResponse.redirect(redirectUrl);
 }

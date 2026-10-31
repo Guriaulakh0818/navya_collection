@@ -12,7 +12,7 @@ const navigation = [
   { name: 'My Profile', href: '/account' },
   { name: 'My Orders', href: '/account/orders' },
   { name: 'Jiivaa VIP Rewards 🪙', href: '/account/rewards' },
-  { name: 'Refer & Earn (₹150) 🎁', href: '/referral' },
+  { name: 'Refer & Earn 🎁', href: '/referral' },
   { name: 'My Addresses', href: '/account/addresses' },
   { name: 'Settings', href: '/account/settings' },
 ];

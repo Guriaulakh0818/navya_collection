@@ -12,7 +12,7 @@ const footerLinks = {
   quickLinks: [
     { href: '/shop', label: 'Shop Catalog' },
     { href: '/account/rewards', label: 'Jiivaa VIP Rewards 🪙' },
-    { href: '/referral', label: 'Refer & Earn (₹150) 🎁' },
+    { href: '/referral', label: 'Refer & Earn 🎁' },
     { href: '/wishlist', label: 'Wishlist' },
     { href: '/cart', label: 'Cart' },
     { href: '/account', label: 'My Account' },

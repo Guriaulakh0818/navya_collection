@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewardsSettings';
 
 import type { ActiveCoupon, AppliedCoupon } from '../types';
 
@@ -35,6 +36,7 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
   onRemoveCoupon,
   className = '',
 }) => {
+  const { settings } = useRewardsSettings();
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -193,7 +195,8 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
                   <span className="font-extrabold text-navy">Referral Code saved: </span>
                   <span className="font-mono font-black text-orange">{savedReferralCode}</span>
                   <span className="text-[10px] text-slate-500 block">
-                    Flat ₹150 OFF on orders ₹999+
+                    Flat ₹{settings.referralRefereeDiscountInr} OFF on orders ₹
+                    {settings.referralRefereeMinOrderInr}+
                   </span>
                 </div>
               </div>
@@ -203,7 +206,7 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
                 disabled={isLoading}
                 className="px-3 py-1 bg-orange text-white text-[11px] font-black rounded-lg hover:bg-orange-600 active:scale-95 transition-all cursor-pointer shrink-0"
               >
-                Apply ₹150
+                Apply ₹{settings.referralRefereeDiscountInr}
               </button>
             </div>
           )}
