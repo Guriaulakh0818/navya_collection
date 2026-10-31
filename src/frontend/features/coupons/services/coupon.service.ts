@@ -1,6 +1,7 @@
 import { AdminRewardsService } from '@/backend/services/admin-rewards.service';
 import { CommissionService } from '@/backend/services/commission.service';
 import { ReferralService } from '@/backend/services/referral.service';
+import { LOYALTY_TIERS } from '@/shared/config/rewards.config';
 
 import { CouponRepository } from '../repositories/coupon.repository';
 import {
@@ -355,6 +356,37 @@ export class CouponService {
           createdAt: new Date(),
           deletedAt: null,
         };
+      }
+
+      // Support dynamic VIP milestone coupons (JIIVAA-SILVER-5, JIIVAA-GOLD-15, JIIVAA-PLATINUM-20)
+      if (!coupon && cleanCode.startsWith('JIIVAA-')) {
+        const milestoneTier = LOYALTY_TIERS.find((t) => t.couponCode === cleanCode);
+        if (milestoneTier && milestoneTier.discountPct > 0) {
+          coupon = {
+            id: 'tier-' + milestoneTier.id.toLowerCase(),
+            code: milestoneTier.couponCode,
+            title: `VIP ${milestoneTier.name} Milestone (${milestoneTier.discountPct}% OFF)`,
+            description: `Exclusive loyalty discount for ${milestoneTier.name} members`,
+            fundingType: 'NAVYA',
+            shopId: null,
+            discountType: 'PERCENTAGE',
+            discountValue: milestoneTier.discountPct,
+            minOrderAmount: 499,
+            maxDiscount:
+              milestoneTier.discountPct === 5 ? 250 : milestoneTier.discountPct === 15 ? 750 : 1500,
+            usageLimit: null,
+            usagePerUser: 1,
+            usedCount: 0,
+            startDate: new Date(0),
+            validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+            isActive: true,
+            applicableCategories: [],
+            applicableProducts: [],
+            excludedProducts: [],
+            createdAt: new Date(),
+            deletedAt: null,
+          };
+        }
       }
       if (!coupon) {
         return {
