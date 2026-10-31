@@ -212,7 +212,7 @@ export const CouponInputCard: React.FC<CouponInputCardProps> = ({
           )}
 
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5">
+            <label className="text-xs font-extrabold uppercase tracking-wider text-navy flex items-center gap-1.5">
               <Tag className="h-3.5 w-3.5 text-orange" />
               <span>Have a Promo Code or Referral Code?</span>
             </label>
