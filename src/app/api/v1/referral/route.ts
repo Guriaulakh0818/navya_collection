@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { AdminRewardsService } from '@/backend/services/admin-rewards.service';
 import { ReferralService } from '@/backend/services/referral.service';
 
 export async function GET(request: Request) {
@@ -13,6 +14,8 @@ export async function GET(request: Request) {
     const userName = searchParams.get('name') || undefined;
     const codeOverride = searchParams.get('code') || undefined;
 
+    // Guarantee latest live rewards settings from PostgreSQL
+    await AdminRewardsService.getSettings().catch(() => {});
     const profile = await ReferralService.getProfile(userId, originUrl, userName, codeOverride);
 
     return NextResponse.json({

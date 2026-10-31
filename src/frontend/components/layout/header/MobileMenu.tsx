@@ -19,6 +19,7 @@ import { createPortal } from 'react-dom';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+import { REWARDS_CONFIG } from '@/shared/config/rewards.config';
 import { useAuthStore } from '@/stores';
 
 import { HeaderLogo } from './HeaderLogo';
@@ -71,10 +72,10 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop', href: '/shop', icon: ShoppingBag },
     {
-      label: 'Refer & Earn (₹150)',
+      label: `Refer & Earn (₹${REWARDS_CONFIG.referralRefereeDiscountInr})`,
       href: '/referral',
       icon: Gift,
-      badge: 'Flat ₹150 OFF',
+      badge: `Flat ₹${REWARDS_CONFIG.referralRefereeDiscountInr} OFF`,
       badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-300 font-black',
       highlight: true,
     },

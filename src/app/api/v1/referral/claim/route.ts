@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { AdminRewardsService } from '@/backend/services/admin-rewards.service';
 import { ReferralService } from '@/backend/services/referral.service';
 
 export async function POST(request: NextRequest) {
@@ -15,6 +16,9 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+
+    // Guarantee latest live rewards settings from PostgreSQL
+    await AdminRewardsService.getSettings().catch(() => {});
 
     const cookieStore = await cookies();
 

@@ -7,6 +7,8 @@ import Link from 'next/link';
 export function RefereePromoRibbon() {
   const [code, setCode] = useState<string | null>(null);
   const [referrerName, setReferrerName] = useState('Friend');
+  const [discountInr, setDiscountInr] = useState(150);
+  const [minOrderInr, setMinOrderInr] = useState(999);
   const [isDismissed, setIsDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -38,6 +40,8 @@ export function RefereePromoRibbon() {
         .then((res) => {
           if (res.success && res.data) {
             setReferrerName(res.data.referrerName || 'Friend');
+            if (res.data.discountInr) setDiscountInr(Number(res.data.discountInr));
+            if (res.data.minOrderInr) setMinOrderInr(Number(res.data.minOrderInr));
           }
         })
         .catch(() => {});
@@ -67,13 +71,15 @@ export function RefereePromoRibbon() {
                 <Gift className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-orange" />
               </span>
               <span>
-                <strong className="text-orange font-black">₹150 OFF Welcome Gift:</strong> Invited
-                by <span className="font-bold underline decoration-orange/60">{referrerName}</span>{' '}
+                <strong className="text-orange font-black">₹{discountInr} OFF Welcome Gift:</strong>{' '}
+                Invited by{' '}
+                <span className="font-bold underline decoration-orange/60">{referrerName}</span>{' '}
                 with code{' '}
                 <strong className="font-mono bg-white/10 px-1.5 py-0.5 rounded text-amber-300 font-black">
                   {code}
                 </strong>{' '}
-                (Auto-applies in Bag on orders ₹999+) • Claim your boutique fashion perks today!
+                (Auto-applies in Bag on orders ₹{minOrderInr}+) • Claim your boutique fashion perks
+                today!
               </span>
             </div>
 
@@ -83,13 +89,15 @@ export function RefereePromoRibbon() {
                 <Gift className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-orange" />
               </span>
               <span>
-                <strong className="text-orange font-black">₹150 OFF Welcome Gift:</strong> Invited
-                by <span className="font-bold underline decoration-orange/60">{referrerName}</span>{' '}
+                <strong className="text-orange font-black">₹{discountInr} OFF Welcome Gift:</strong>{' '}
+                Invited by{' '}
+                <span className="font-bold underline decoration-orange/60">{referrerName}</span>{' '}
                 with code{' '}
                 <strong className="font-mono bg-white/10 px-1.5 py-0.5 rounded text-amber-300 font-black">
                   {code}
                 </strong>{' '}
-                (Auto-applies in Bag on orders ₹999+) • Claim your boutique fashion perks today!
+                (Auto-applies in Bag on orders ₹{minOrderInr}+) • Claim your boutique fashion perks
+                today!
               </span>
             </div>
           </div>
@@ -101,7 +109,7 @@ export function RefereePromoRibbon() {
             href="/cart"
             className="inline-flex items-center gap-1 font-black text-white bg-orange hover:bg-orange-600 active:scale-95 px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs shadow-xs transition-all whitespace-nowrap cursor-pointer"
           >
-            <span>Use ₹150</span>
+            <span>Use ₹{discountInr}</span>
             <span>&rarr;</span>
           </Link>
           <button

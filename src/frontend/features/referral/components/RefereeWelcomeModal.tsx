@@ -15,6 +15,8 @@ export function RefereeWelcomeModal({ referralCode: propCode }: RefereeWelcomeMo
   const [isOpen, setIsOpen] = useState(false);
   const [code, setCode] = useState('');
   const [referrerName, setReferrerName] = useState('A Boutique Friend');
+  const [discountInr, setDiscountInr] = useState(150);
+  const [minOrderInr, setMinOrderInr] = useState(999);
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -49,12 +51,14 @@ export function RefereeWelcomeModal({ referralCode: propCode }: RefereeWelcomeMo
           body: JSON.stringify({ code: activeCode, friendName: 'Friend via Link' }),
         }).catch(() => {});
 
-        // Fetch or resolve referrer name
+        // Fetch or resolve referrer name and live discount parameters
         fetch(`/api/v1/referral/resolve?code=${encodeURIComponent(activeCode)}`)
           .then((r) => r.json())
           .then((res) => {
             if (res.success && res.data) {
               setReferrerName(res.data.referrerName || 'A Boutique Friend');
+              if (res.data.discountInr) setDiscountInr(Number(res.data.discountInr));
+              if (res.data.minOrderInr) setMinOrderInr(Number(res.data.minOrderInr));
             }
           })
           .catch(() => {
@@ -143,10 +147,7 @@ export function RefereeWelcomeModal({ referralCode: propCode }: RefereeWelcomeMo
 
             <h2 className="font-heading text-xl sm:text-2xl font-black text-navy tracking-tight leading-tight">
               {referrerName} Ne Aapko <br />
-              <span className="text-orange">
-                ₹{REWARDS_CONFIG.referralRefereeDiscountInr} OFF
-              </span>{' '}
-              Gift Kiya Hai! 🎉
+              <span className="text-orange">₹{discountInr} OFF</span> Gift Kiya Hai! 🎉
             </h2>
 
             <p className="text-xs text-slate-600 max-w-xs mx-auto leading-relaxed">
@@ -173,7 +174,7 @@ export function RefereeWelcomeModal({ referralCode: propCode }: RefereeWelcomeMo
                   {code}
                 </span>
                 <span className="text-[10px] text-slate-500 block">
-                  Flat ₹150 OFF on orders above ₹{REWARDS_CONFIG.referralRefereeMinOrderInr}
+                  Flat ₹{discountInr} OFF on orders above ₹{minOrderInr}
                 </span>
               </div>
 
@@ -221,7 +222,7 @@ export function RefereeWelcomeModal({ referralCode: propCode }: RefereeWelcomeMo
             className="w-full py-3.5 px-4 rounded-xl sm:rounded-2xl bg-orange hover:bg-orange-600 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-orange/25 transition-all hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
           >
             <ShoppingBag className="w-4 h-4" />
-            <span>Claim ₹150 & Explore Boutique Stores &rarr;</span>
+            <span>Claim ₹{discountInr} & Explore Boutique Stores &rarr;</span>
           </button>
         </div>
       </div>

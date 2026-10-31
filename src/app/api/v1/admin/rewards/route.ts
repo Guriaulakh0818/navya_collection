@@ -21,7 +21,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const updated = AdminRewardsService.updateSettings(body);
+    const updated = await AdminRewardsService.updateSettings(body);
     return NextResponse.json({
       success: true,
       message: 'Rewards & Referral economics configuration updated successfully.',

@@ -1,3 +1,4 @@
+import { AdminRewardsService } from '@/backend/services/admin-rewards.service';
 import { CommissionService } from '@/backend/services/commission.service';
 import { ReferralService } from '@/backend/services/referral.service';
 
@@ -329,6 +330,7 @@ export class CouponService {
 
       // Support dynamic referral welcome coupons (JIIVAA-*)
       if (!coupon && ReferralService.isValidReferralCode(cleanCode)) {
+        await AdminRewardsService.getSettings().catch(() => {});
         const resolved = ReferralService.resolveReferrer(cleanCode);
         coupon = {
           id: 'referral-' + cleanCode,
