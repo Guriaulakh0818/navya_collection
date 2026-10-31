@@ -23,10 +23,12 @@ import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
+import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewardsSettings';
 import { LOYALTY_TIERS, LoyaltyTier, REWARDS_CONFIG } from '@/shared/config/rewards.config';
 import { useAuthStore, useRewardsStore } from '@/stores';
 
 export default function RewardsAccountPage() {
+  const { settings } = useRewardsSettings();
   const user = useAuthStore((s) => s.user);
   const coins = useRewardsStore((s) => s.coins);
   const lifetimeCoins = useRewardsStore((s) => s.lifetimeCoins);
@@ -107,7 +109,7 @@ export default function RewardsAccountPage() {
                 <div className="text-left">
                   <div className="text-xs text-slate-300 font-semibold">Available Coins</div>
                   <div className="text-xl sm:text-2xl font-black text-amber-300 tracking-tight">
-                    {mounted ? coins.toLocaleString('en-IN') : '450'}
+                    {mounted ? coins.toLocaleString('en-IN') : '0'}
                     <span className="text-xs text-white/80 font-normal ml-1">Coins</span>
                   </div>
                 </div>
@@ -119,7 +121,7 @@ export default function RewardsAccountPage() {
                 <div>
                   <div className="text-xs text-slate-300 font-semibold">Discount Worth</div>
                   <div className="text-base sm:text-lg font-bold text-white">
-                    ≈ ₹{mounted ? Math.round(coins * REWARDS_CONFIG.coinToInrRatio) : 45}
+                    ≈ ₹{mounted ? Math.round(coins * settings.coinToInrRatio) : 0}
                   </div>
                 </div>
               </div>
@@ -148,7 +150,9 @@ export default function RewardsAccountPage() {
                 variant="outline"
                 className="rounded-full border-white/30 text-white hover:bg-white/10 text-xs font-bold"
               >
-                <Link href="/referral">Refer a Friend (Get ₹150)</Link>
+                <Link href="/referral">
+                  Refer a Friend (Get ₹{settings.referralReferrerBonusInr})
+                </Link>
               </Button>
             </div>
           </div>
@@ -339,7 +343,9 @@ export default function RewardsAccountPage() {
             </div>
             <h3 className="font-extrabold text-sm text-navy">Refer a Friend</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Friend ko ₹150 OFF milega, aur unke order deliver hote hi aapko 150 Coins milenge.
+              Friend ko Flat ₹{settings.referralRefereeDiscountInr} OFF milega, aur unke order
+              deliver hote hi aapko {settings.referralReferrerBonusCoins} Coins (₹
+              {settings.referralReferrerBonusInr}) milenge.
             </p>
             <Link
               href="/referral"
@@ -355,7 +361,8 @@ export default function RewardsAccountPage() {
             </div>
             <h3 className="font-extrabold text-sm text-navy">Verified Photo Review</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Apne outfit ki styling photo aur review post karein aur paayein +50 Coins bonus.
+              Apne outfit ki styling photo aur review post karein aur paayein +
+              {settings.reviewBonusCoins} Coins bonus.
             </p>
           </div>
 

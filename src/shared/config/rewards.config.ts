@@ -110,10 +110,11 @@ export const REWARDS_CONFIG = {
   },
 
   // WhatsApp Pre-filled Copy
-  getWhatsAppShareText: (referralCode: string, shareUrl: string) => {
+  getWhatsAppShareText: (referralCode: string, shareUrl: string, discountInr?: number) => {
+    const finalDiscount = typeof discountInr === 'number' ? discountInr : 150;
     return encodeURIComponent(
       `👗✨ Namaste! Maine JiivaaKart par verified local boutiques ka amazing Indian fashion discover kiya!\n\n` +
-        `🎁 Mere referral link se sign up karo aur pehle order par FLAT ₹150 OFF pao:\n` +
+        `🎁 Mere referral link se sign up karo aur pehle order par FLAT ₹${finalDiscount} OFF pao:\n` +
         `${shareUrl}\n\n` +
         `Use Code: ${referralCode} at checkout. Happy Shopping! 🛍️`,
     );

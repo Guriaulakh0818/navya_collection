@@ -21,10 +21,12 @@ import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
+import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewardsSettings';
 import { generateUniqueReferralCode, REWARDS_CONFIG } from '@/shared/config/rewards.config';
 import { useAuthStore, useRewardsStore } from '@/stores';
 
 export default function ReferralPage() {
+  const { settings } = useRewardsSettings();
   const user = useAuthStore((s) => s.user);
   const referralCode = useRewardsStore((s) => s.referralCode);
 
@@ -70,7 +72,11 @@ export default function ReferralPage() {
     ? generateUniqueReferralCode(user.id, user.name || user.mobile)
     : referralCode;
   const shareUrl = `${originUrl}/r/${shareCode}`;
-  const whatsAppText = REWARDS_CONFIG.getWhatsAppShareText(shareCode, shareUrl);
+  const whatsAppText = REWARDS_CONFIG.getWhatsAppShareText(
+    shareCode,
+    shareUrl,
+    settings.referralRefereeDiscountInr,
+  );
   const whatsAppLink = `https://api.whatsapp.com/send?text=${whatsAppText}`;
 
   useEffect(() => {
@@ -133,13 +139,19 @@ export default function ReferralPage() {
 
               <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-navy tracking-tight leading-tight">
                 Jiivaa Ke Saath Style Share Karein, <br className="hidden sm:inline" />
-                <span className="text-orange">Dono ₹150 Kamayein!</span>
+                <span className="text-orange">Dono Faayda Paayein!</span>
               </h1>
 
               <p className="text-xs sm:text-sm text-slate-600 max-w-xl font-medium leading-relaxed">
                 Apne dosto ko India ke verified local boutiques ka authentic fashion gift karein.
-                Unhe pehle order par <strong>Flat ₹150 OFF</strong> milega, aur aapko milenge{' '}
-                <strong>150 Jiivaa Coins (₹150 Shopping Credit)</strong>!
+                Unhe pehle order par{' '}
+                <strong>Flat ₹{settings.referralRefereeDiscountInr} OFF</strong> milega, aur aapko
+                milenge{' '}
+                <strong>
+                  {settings.referralReferrerBonusCoins} Jiivaa Coins (₹
+                  {settings.referralReferrerBonusInr} Shopping Credit)
+                </strong>
+                !
               </p>
 
               {/* Dual Value Prop Pills */}
@@ -149,9 +161,11 @@ export default function ReferralPage() {
                     🎁
                   </div>
                   <div className="text-left">
-                    <div className="text-xs font-black text-navy">Friend Gets: ₹150 OFF</div>
+                    <div className="text-xs font-black text-navy">
+                      Friend Gets: ₹{settings.referralRefereeDiscountInr} OFF
+                    </div>
                     <div className="text-[11px] text-slate-500 font-medium">
-                      On first boutique order &ge; ₹999
+                      On first boutique order &ge; ₹{settings.referralRefereeMinOrderInr}
                     </div>
                   </div>
                 </div>
@@ -161,9 +175,11 @@ export default function ReferralPage() {
                     🪙
                   </div>
                   <div className="text-left">
-                    <div className="text-xs font-black text-navy">You Get: 150 Coins</div>
+                    <div className="text-xs font-black text-navy">
+                      You Get: {settings.referralReferrerBonusCoins} Coins
+                    </div>
                     <div className="text-[11px] text-slate-500 font-medium">
-                      ₹150 shopping credit per friend
+                      ₹{settings.referralReferrerBonusInr} shopping credit per friend
                     </div>
                   </div>
                 </div>
@@ -246,8 +262,8 @@ export default function ReferralPage() {
               Kaise Kaam Karta Hai? (3 Easy Steps)
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Simple 3 steps me apne boutique fashion circle ko invite karein aur har friend par
-              ₹150 paayein.
+              Simple 3 steps me apne boutique fashion circle ko invite karein aur har friend par ₹
+              {settings.referralReferrerBonusInr} paayein.
             </p>
           </div>
 
@@ -270,7 +286,8 @@ export default function ReferralPage() {
               <h3 className="font-extrabold text-base text-navy">Friend Places First Order</h3>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">
                 Aapka friend sign up karke verified local boutiques se pehla order karega aur
-                paayega <strong>Flat ₹150 Instant Discount</strong>.
+                paayega{' '}
+                <strong>Flat ₹{settings.referralRefereeDiscountInr} Instant Discount</strong>.
               </p>
             </div>
 
@@ -278,10 +295,13 @@ export default function ReferralPage() {
               <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-extrabold text-lg">
                 3
               </div>
-              <h3 className="font-extrabold text-base text-navy">You Get 150 Coins</h3>
+              <h3 className="font-extrabold text-base text-navy">
+                You Get {settings.referralReferrerBonusCoins} Coins
+              </h3>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                Order deliver hote hi aapke wallet me 150 Jiivaa Coins (₹150 shopping credit)
-                automatically add ho jayenge!
+                Order deliver hote hi aapke wallet me {settings.referralReferrerBonusCoins} Jiivaa
+                Coins (₹{settings.referralReferrerBonusInr} shopping credit) automatically add ho
+                jayenge!
               </p>
             </div>
           </div>
@@ -363,7 +383,8 @@ export default function ReferralPage() {
                   </h4>
                   <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium leading-relaxed">
                     Apna exclusive style link dosto ke sath WhatsApp par share karein. Jaise hi unka
-                    pehla order deliver hoga, unka status aur ₹150 rewards yahan live update honge!
+                    pehla order deliver hoga, unka status aur ₹{settings.referralReferrerBonusInr}{' '}
+                    rewards yahan live update honge!
                   </p>
                 </div>
                 <a
@@ -426,21 +447,24 @@ export default function ReferralPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600 font-medium leading-relaxed">
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
               <div className="font-extrabold text-navy text-xs sm:text-sm">
-                Kya friend ka ₹150 discount sabhi products par valid hai?
+                Kya friend ka ₹{settings.referralRefereeDiscountInr} discount sabhi products par
+                valid hai?
               </div>
               <p>
-                Ji haan! JiivaaKart ke kisi bhi verified local boutique ke order par minimum ₹999
-                cart value hone par flat ₹150 OFF automatic apply ho jata hai.
+                Ji haan! JiivaaKart ke kisi bhi verified local boutique ke order par minimum ₹
+                {settings.referralRefereeMinOrderInr} cart value hone par flat ₹
+                {settings.referralRefereeDiscountInr} OFF automatic apply ho jata hai.
               </p>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-1">
               <div className="font-extrabold text-navy text-xs sm:text-sm">
-                Mujhe 150 Coins kab milenge?
+                Mujhe {settings.referralReferrerBonusCoins} Coins kab milenge?
               </div>
               <p>
-                Jaise hi aapke friend ka courier order successfully deliver ho jayega, 150 Jiivaa
-                Coins aapke account passbook me instantly credit ho jayenge.
+                Jaise hi aapke friend ka courier order successfully deliver ho jayega,{' '}
+                {settings.referralReferrerBonusCoins} Jiivaa Coins aapke account passbook me
+                instantly credit ho jayenge.
               </p>
             </div>
 
@@ -460,7 +484,8 @@ export default function ReferralPage() {
               </div>
               <p>
                 Koi limit nahi hai! Aap unlimited dosto aur family members ko WhatsApp par link
-                share karke har successful friend par ₹150 earn kar sakte hain.
+                share karke har successful friend par ₹{settings.referralReferrerBonusInr} earn kar
+                sakte hain.
               </p>
             </div>
           </div>

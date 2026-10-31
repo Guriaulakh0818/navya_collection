@@ -19,6 +19,7 @@ import { createPortal } from 'react-dom';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewardsSettings';
 import { REWARDS_CONFIG } from '@/shared/config/rewards.config';
 import { useAuthStore } from '@/stores';
 
@@ -30,6 +31,7 @@ type MobileMenuProps = {
 };
 
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
+  const { settings } = useRewardsSettings();
   const user = useAuthStore((s) => s.user);
   const [selectedItem, setSelectedItem] = useState<string>('Home');
   const [mounted, setMounted] = useState(() => typeof window !== 'undefined');
@@ -72,10 +74,10 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shop', href: '/shop', icon: ShoppingBag },
     {
-      label: `Refer & Earn (₹${REWARDS_CONFIG.referralRefereeDiscountInr})`,
+      label: `Refer & Earn (₹${settings.referralRefereeDiscountInr})`,
       href: '/referral',
       icon: Gift,
-      badge: `Flat ₹${REWARDS_CONFIG.referralRefereeDiscountInr} OFF`,
+      badge: `Flat ₹${settings.referralRefereeDiscountInr} OFF`,
       badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-300 font-black',
       highlight: true,
     },

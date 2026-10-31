@@ -18,6 +18,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewardsSettings';
 import { generateUniqueReferralCode, REWARDS_CONFIG } from '@/shared/config/rewards.config';
 import { useAuthStore, useRewardsStore } from '@/stores';
 
@@ -52,6 +53,7 @@ export function ReferralWelcomeModal({
   onClose: propOnClose,
   autoShowDelayMs = 1800,
 }: ReferralWelcomeModalProps) {
+  const { settings } = useRewardsSettings();
   const user = useAuthStore((s) => s.user);
   const referralCode = useRewardsStore((s) => s.referralCode);
   const isStoreModalOpen = useRewardsStore((s) => s.isWelcomeModalOpen);
@@ -121,7 +123,11 @@ export function ReferralWelcomeModal({
     ? generateUniqueReferralCode(user.id, user.name || user.mobile)
     : referralCode || 'JIIVAA-STYLE';
   const shareUrl = `${originUrl}/r/${shareCode}`;
-  const whatsAppText = REWARDS_CONFIG.getWhatsAppShareText(shareCode, shareUrl);
+  const whatsAppText = REWARDS_CONFIG.getWhatsAppShareText(
+    shareCode,
+    shareUrl,
+    settings.referralRefereeDiscountInr,
+  );
   const whatsAppLink = `https://api.whatsapp.com/send?text=${whatsAppText}`;
 
   const handleCopyLink = () => {
@@ -133,7 +139,7 @@ export function ReferralWelcomeModal({
   };
 
   const handleInstagramShare = () => {
-    const instaMessage = `👗✨ Style that speaks! Shop verified local Indian boutiques on JiivaaKart.\nUse my code ${shareCode} for FLAT ₹150 OFF on your first order: ${shareUrl}`;
+    const instaMessage = `👗✨ Style that speaks! Shop verified local Indian boutiques on JiivaaKart.\nUse my code ${shareCode} for FLAT ₹${settings.referralRefereeDiscountInr} OFF on your first order: ${shareUrl}`;
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(instaMessage);
       setCopiedInstagram(true);
@@ -170,7 +176,7 @@ export function ReferralWelcomeModal({
         aria-label="Open Refer and Earn rewards popup"
       >
         <Gift className="w-3.5 h-3.5 text-orange animate-pulse" />
-        <span>Refer & Earn (₹150)</span>
+        <span>Refer & Earn (₹{settings.referralRefereeDiscountInr})</span>
       </button>
     );
   }
@@ -233,7 +239,7 @@ export function ReferralWelcomeModal({
                   Your Friend Gets
                 </div>
                 <div className="text-lg sm:text-xl font-black text-orange leading-tight font-mono">
-                  ₹{REWARDS_CONFIG.referralRefereeDiscountInr} OFF
+                  ₹{settings.referralRefereeDiscountInr} OFF
                 </div>
                 <div className="text-[10px] text-slate-500 font-medium">on their first order</div>
               </div>
@@ -247,7 +253,7 @@ export function ReferralWelcomeModal({
                   You Earn
                 </div>
                 <div className="text-lg sm:text-xl font-black text-navy leading-tight font-mono">
-                  {REWARDS_CONFIG.referralReferrerBonusCoins} Coins
+                  {settings.referralReferrerBonusCoins} Coins
                 </div>
                 <div className="text-[10px] text-slate-500 font-medium">after their delivery</div>
               </div>
