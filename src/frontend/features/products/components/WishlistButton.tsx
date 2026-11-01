@@ -4,7 +4,7 @@ import { Heart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import type { Product } from '@/features/products/types/product.types';
-import { useWishlistStore } from '@/stores';
+import { useAuthStore, useWishlistStore } from '@/stores';
 
 export type WishlistButtonProps = {
   product: Product | any;
@@ -53,6 +53,61 @@ export function WishlistButton({
     if (activeInWishlist) {
       await removeItem(pid, vid);
     } else {
+      const authUser = useAuthStore.getState().user;
+      if (!authUser?.id) {
+        if (typeof window !== 'undefined') {
+          const selectedSize =
+            variant?.size ||
+            variant?.sizeName ||
+            (typeof variant?.attributes === 'object' ? variant?.attributes?.size : null) ||
+            null;
+
+          const selectedColor =
+            variant?.color ||
+            variant?.colorName ||
+            (typeof variant?.attributes === 'object' ? variant?.attributes?.color : null) ||
+            null;
+
+          const variantName = variant?.name || null;
+          const itemPrice = Number(variant?.price ?? product?.price ?? 0);
+          const comparePrice = variant?.compareAtPrice
+            ? Number(variant.compareAtPrice)
+            : product?.compareAtPrice
+              ? Number(product.compareAtPrice)
+              : null;
+
+          const image =
+            variant?.imageUrl ||
+            variant?.image ||
+            product?.images?.[0]?.imageUrl ||
+            product?.images?.[0]?.url ||
+            product?.image ||
+            '';
+
+          const pendingItem = {
+            productId: pid,
+            variantId: vid,
+            name: product?.name || 'Navya Couture',
+            slug: product?.slug || '',
+            price: itemPrice,
+            compareAtPrice: comparePrice,
+            image,
+            inStock: (variant?.stock ?? product?.stock ?? 1) > 0,
+            categoryName: product?.category?.name || product?.categoryName || null,
+            shopId: product?.shop?.id || product?.shopId,
+            shopName: product?.shop?.name || product?.shopName,
+            shopSlug: product?.shop?.slug || product?.shopSlug,
+            shopLogo: product?.shop?.logo || product?.shopLogo,
+            selectedSize,
+            selectedColor,
+            variantName,
+          };
+          sessionStorage.setItem('jiivaa_pending_wishlist_item', JSON.stringify(pendingItem));
+          const returnPath = window.location.pathname + window.location.search;
+          window.location.href = `/login?redirect=${encodeURIComponent(returnPath)}&reason=wishlist`;
+        }
+        return;
+      }
       const selectedSize =
         variant?.size ||
         variant?.sizeName ||

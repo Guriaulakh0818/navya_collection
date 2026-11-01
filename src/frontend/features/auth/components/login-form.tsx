@@ -1,6 +1,14 @@
 'use client';
 
-import { AlertCircle, ArrowLeft, CheckCircle2, Mail, RotateCw, ShoppingBag } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  CheckCircle2,
+  Heart,
+  Mail,
+  RotateCw,
+  ShoppingBag,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -56,6 +64,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
   const [otpError, setOtpError] = useState(false);
   const [otpErrorMessage, setOtpErrorMessage] = useState<string | null>(null);
   const [cartReason, setCartReason] = useState(false);
+  const [wishlistReason, setWishlistReason] = useState(false);
 
   const router = useRouter();
   const { toast } = useToast();
@@ -81,6 +90,8 @@ export function LoginForm({ initialUser }: LoginFormProps) {
       setRedirectUrl(target);
       if (params.get('reason') === 'cart') {
         setCartReason(true);
+      } else if (params.get('reason') === 'wishlist') {
+        setWishlistReason(true);
       }
 
       if (activeUser) {
@@ -306,6 +317,23 @@ export function LoginForm({ initialUser }: LoginFormProps) {
             >
               Sign in as another user (Logout)
             </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Login First Notice if redirected from Wishlist */}
+      {wishlistReason && (
+        <div className="mb-6 rounded-2xl bg-gradient-to-r from-rose-50 to-pink-50/50 border border-rose-300/80 p-4 flex items-center gap-3.5 text-rose-950 shadow-xs animate-in fade-in duration-300">
+          <div className="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+            <Heart className="w-5 h-5 fill-white" />
+          </div>
+          <div className="text-left">
+            <h4 className="text-xs sm:text-sm font-extrabold text-navy leading-tight">
+              Login First to Wishlist
+            </h4>
+            <p className="text-[11px] font-medium text-slate-600 mt-0.5 leading-snug">
+              Please sign in to save your favorite boutique styles to your wishlist.
+            </p>
           </div>
         </div>
       )}

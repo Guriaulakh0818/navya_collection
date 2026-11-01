@@ -749,6 +749,34 @@ export function ProductDetailClient({
     if (currentlyWishlisted) {
       await removeWishlistItem(pid, vid);
     } else {
+      if (!authUser?.id) {
+        if (typeof window !== 'undefined') {
+          const pendingItem = {
+            productId: pid,
+            variantId: vid,
+            name: product.name,
+            slug: product.slug,
+            price: price,
+            compareAtPrice: compareAtPrice,
+            image:
+              activeVariantImageUrl || displayImages?.[0]?.url || product.images?.[0]?.url || '',
+            inStock: (activeVariant?.stock ?? product.stock ?? 1) > 0,
+            categoryName: product.category?.name || null,
+            shopId: product.shop?.id || product.shopId,
+            shopName: product.shop?.name || product.shopName,
+            shopSlug: product.shop?.slug || product.shopSlug,
+            shopLogo: product.shop?.logo || product.shopLogo,
+            selectedSize: activeSize || activeVariant?.size || null,
+            selectedColor: activeColor || activeVariant?.color || null,
+            variantName: activeVariant?.name || null,
+          };
+          sessionStorage.setItem('jiivaa_pending_wishlist_item', JSON.stringify(pendingItem));
+          const returnPath = window.location.pathname + window.location.search;
+          router.push(`/login?redirect=${encodeURIComponent(returnPath)}&reason=wishlist`);
+        }
+        return;
+      }
+
       await addWishlistItem({
         productId: pid,
         variantId: vid,

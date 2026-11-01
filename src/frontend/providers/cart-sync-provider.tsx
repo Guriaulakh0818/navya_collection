@@ -81,6 +81,43 @@ export function CartSyncProvider({ children }: { children: React.ReactNode }) {
             }
           }
         }
+
+        // Restore pending wishlist item if user tried to add to wishlist while unauthenticated
+        if (typeof window !== 'undefined') {
+          const rawPendingWishlist = sessionStorage.getItem('jiivaa_pending_wishlist_item');
+          if (rawPendingWishlist) {
+            try {
+              const pendingW = JSON.parse(rawPendingWishlist);
+              sessionStorage.removeItem('jiivaa_pending_wishlist_item');
+              if (pendingW && pendingW.productId) {
+                setTimeout(async () => {
+                  await useWishlistStore.getState().addItem({
+                    productId: pendingW.productId,
+                    variantId: pendingW.variantId || null,
+                    name: pendingW.name || 'Boutique Product',
+                    slug: pendingW.slug || '',
+                    price: Number(pendingW.price || 0),
+                    compareAtPrice: pendingW.compareAtPrice
+                      ? Number(pendingW.compareAtPrice)
+                      : null,
+                    image: pendingW.image || '',
+                    inStock: pendingW.inStock !== false,
+                    categoryName: pendingW.categoryName || null,
+                    shopId: pendingW.shopId,
+                    shopName: pendingW.shopName,
+                    shopSlug: pendingW.shopSlug,
+                    shopLogo: pendingW.shopLogo,
+                    selectedSize: pendingW.selectedSize || null,
+                    selectedColor: pendingW.selectedColor || null,
+                    variantName: pendingW.variantName || null,
+                  });
+                }, 350);
+              }
+            } catch (err) {
+              console.warn('Failed to restore pending wishlist item:', err);
+            }
+          }
+        }
       }
     } else {
       hasMergedRef.current = false;
