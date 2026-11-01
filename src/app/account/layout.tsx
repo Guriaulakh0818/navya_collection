@@ -21,9 +21,18 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
 
+  // When on a sub-page (e.g. /account/rewards, /account/orders), hide the account navigation sidebar
+  // and header on mobile screens so the user lands directly on the selected sub-page without clutter above it.
+  const isSubPage = pathname !== '/account';
+
   return (
     <div className="min-h-screen">
-      <div className="mx-auto max-w-[1440px] px-4 md:px-6 py-4">
+      <div
+        className={cn(
+          'mx-auto max-w-[1440px] px-4 md:px-6 py-4',
+          isSubPage ? 'hidden md:block' : 'block',
+        )}
+      >
         <div className="flex items-center justify-between">
           <h1 className="font-heading text-3xl text-navy">My Account</h1>
           <p className="text-sm text-slate-600">Welcome, {user?.name || 'Guest'}</p>
@@ -32,7 +41,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
 
       <div className="mx-auto max-w-6xl px-4 md:px-6">
         <div className="flex flex-col gap-6 md:flex-row">
-          <aside className="md:w-56">
+          <aside className={cn('md:w-56', isSubPage ? 'hidden md:block' : 'block')}>
             <nav className="flex flex-col gap-1">
               {navigation.map((item) => {
                 const isActive =
