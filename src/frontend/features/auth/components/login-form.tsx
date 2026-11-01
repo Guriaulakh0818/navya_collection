@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, ArrowLeft, CheckCircle2, Mail, RotateCw } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, Mail, RotateCw, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -55,6 +55,7 @@ export function LoginForm({ initialUser }: LoginFormProps) {
   const [resendCooldown, setResendCooldown] = useState(60);
   const [otpError, setOtpError] = useState(false);
   const [otpErrorMessage, setOtpErrorMessage] = useState<string | null>(null);
+  const [cartReason, setCartReason] = useState(false);
 
   const router = useRouter();
   const { toast } = useToast();
@@ -78,6 +79,9 @@ export function LoginForm({ initialUser }: LoginFormProps) {
       const params = new URLSearchParams(window.location.search);
       const target = params.get('redirect') || params.get('from') || '/';
       setRedirectUrl(target);
+      if (params.get('reason') === 'cart') {
+        setCartReason(true);
+      }
 
       if (activeUser) {
         sessionStorage.removeItem('navya_login_step');
@@ -302,6 +306,23 @@ export function LoginForm({ initialUser }: LoginFormProps) {
             >
               Sign in as another user (Logout)
             </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Login First Notice if redirected from Cart */}
+      {cartReason && (
+        <div className="mb-6 rounded-2xl bg-gradient-to-r from-amber-50 to-orange/5 border border-amber-300/80 p-4 flex items-center gap-3.5 text-amber-950 shadow-xs animate-in fade-in duration-300">
+          <div className="w-10 h-10 rounded-2xl bg-orange text-white flex items-center justify-center shrink-0 shadow-sm">
+            <ShoppingBag className="w-5 h-5" />
+          </div>
+          <div className="text-left">
+            <h4 className="text-xs sm:text-sm font-extrabold text-navy leading-tight">
+              Login First to Continue
+            </h4>
+            <p className="text-[11px] font-medium text-slate-600 mt-0.5 leading-snug">
+              Please sign in to add this item to your cart and continue your shopping.
+            </p>
           </div>
         </div>
       )}

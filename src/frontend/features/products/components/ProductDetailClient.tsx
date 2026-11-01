@@ -415,6 +415,40 @@ export function ProductDetailClient({
         ? `${product.name} - ${variantLabel}`
         : product.name;
 
+    if (!authUser?.id) {
+      if (typeof window !== 'undefined') {
+        const pendingItem = {
+          productId: product.id,
+          variantId: activeVariant?.id || null,
+          name: variantTitle,
+          productName: product.name,
+          productSlug: product.slug,
+          variantName: hasAttributes ? variantLabel || `${activeColor} ${activeSize}`.trim() : null,
+          size: activeSize || null,
+          color: activeColor || null,
+          sku: activeVariant?.sku || product.sku,
+          price: price,
+          compareAtPrice: compareAtPrice,
+          quantity: 1,
+          availableStock: maxAvailableStock,
+          image:
+            activeVariantImageUrl ||
+            product.images?.[0]?.url ||
+            product.images?.[0]?.imageUrl ||
+            '',
+          shopId: product.shop?.id || product.shopId || 'independent-shop',
+          shopName: product.shop?.name || 'Independent Boutique',
+          shopSlug: product.shop?.slug || 'shop',
+          shopLogo: product.shop?.logo,
+          buyNow: false,
+        };
+        sessionStorage.setItem('jiivaa_pending_cart_item', JSON.stringify(pendingItem));
+        const returnPath = window.location.pathname + window.location.search;
+        router.push(`/login?redirect=${encodeURIComponent(returnPath)}&reason=cart`);
+      }
+      return;
+    }
+
     await addItem({
       productId: product.id,
       variantId: activeVariant?.id || null,
@@ -441,6 +475,13 @@ export function ProductDetailClient({
   const handleIncreaseVariantQty = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!authUser?.id) {
+      if (typeof window !== 'undefined') {
+        const returnPath = window.location.pathname + window.location.search;
+        router.push(`/login?redirect=${encodeURIComponent(returnPath)}&reason=cart`);
+      }
+      return;
+    }
     if (!currentCartItem) return;
     if (currentVariantQuantity >= maxAvailableStock) return;
     await updateQuantity(currentCartItem.id, currentVariantQuantity + 1);
@@ -463,6 +504,50 @@ export function ProductDetailClient({
 
   const handleBuyNow = async (e: React.MouseEvent) => {
     e.preventDefault();
+    if (!authUser?.id) {
+      if (typeof window !== 'undefined') {
+        const { main: variantLabel } = getCleanVariantLabel(activeVariant, product.name);
+        const hasAttributes = Boolean(
+          activeColor ||
+          activeSize ||
+          (variantLabel && variantLabel !== 'Standard' && variantLabel !== 'Option'),
+        );
+        const variantTitle =
+          hasAttributes && variantLabel && variantLabel !== 'Standard' && variantLabel !== 'Option'
+            ? `${product.name} - ${variantLabel}`
+            : product.name;
+
+        const pendingItem = {
+          productId: product.id,
+          variantId: activeVariant?.id || null,
+          name: variantTitle,
+          productName: product.name,
+          productSlug: product.slug,
+          variantName: hasAttributes ? variantLabel || `${activeColor} ${activeSize}`.trim() : null,
+          size: activeSize || null,
+          color: activeColor || null,
+          sku: activeVariant?.sku || product.sku,
+          price: price,
+          compareAtPrice: compareAtPrice,
+          quantity: 1,
+          availableStock: maxAvailableStock,
+          image:
+            activeVariantImageUrl ||
+            product.images?.[0]?.url ||
+            product.images?.[0]?.imageUrl ||
+            '',
+          shopId: product.shop?.id || product.shopId || 'independent-shop',
+          shopName: product.shop?.name || 'Independent Boutique',
+          shopSlug: product.shop?.slug || 'shop',
+          shopLogo: product.shop?.logo,
+          buyNow: true,
+        };
+        sessionStorage.setItem('jiivaa_pending_cart_item', JSON.stringify(pendingItem));
+        const returnPath = window.location.pathname + window.location.search;
+        router.push(`/login?redirect=${encodeURIComponent(returnPath)}&reason=cart`);
+      }
+      return;
+    }
     if (!currentCartItem) {
       await handleAddToCart();
     }

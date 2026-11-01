@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { Product } from '@/features/products/types/product.types';
 import { useToast } from '@/providers';
-import { useCartStore } from '@/stores';
+import { useAuthStore, useCartStore } from '@/stores';
 
 type AddToCartButtonProps = {
   product: Product;
@@ -79,6 +79,60 @@ export function AddToCartButton({ product, className, disabled, compact }: AddTo
       return;
     }
 
+    const authUser = useAuthStore.getState().user;
+    if (!authUser?.id) {
+      if (typeof window !== 'undefined') {
+        const imgUrl =
+          defaultVariant?.imageUrl ||
+          defaultVariant?.image ||
+          (product as any).image ||
+          product.images?.find((i: any) => i.isPrimary)?.imageUrl ||
+          product.images?.find((i: any) => i.isPrimary)?.url ||
+          product.images?.[0]?.imageUrl ||
+          product.images?.[0]?.url;
+
+        const shopInfo = (product as any).shop || {};
+        const price = Number(defaultVariant?.price ?? product.price ?? 0);
+        const compareAtPrice = defaultVariant?.compareAtPrice
+          ? Number(defaultVariant.compareAtPrice)
+          : product.compareAtPrice
+            ? Number(product.compareAtPrice)
+            : null;
+
+        const variantName = defaultVariant
+          ? defaultVariant.name ||
+            `${defaultVariant.color || ''} ${defaultVariant.size || ''}`.trim() ||
+            null
+          : null;
+
+        const pendingItem = {
+          productId: product.id,
+          variantId: defaultVariant?.id || null,
+          name: variantName ? `${product.name} - ${variantName}` : product.name,
+          productName: product.name,
+          productSlug: product.slug,
+          variantName: variantName,
+          size: defaultVariant?.size || null,
+          color: defaultVariant?.color || null,
+          sku: defaultVariant?.sku || product.sku,
+          price: price,
+          compareAtPrice: compareAtPrice,
+          quantity: 1,
+          availableStock: maxStock,
+          image: imgUrl,
+          shopId: shopInfo.id || 'navya-boutique',
+          shopName: shopInfo.name || 'Navya Collection Boutique',
+          shopSlug: shopInfo.slug || 'navya-collection',
+          shopLogo: shopInfo.logo,
+          buyNow: false,
+        };
+        sessionStorage.setItem('jiivaa_pending_cart_item', JSON.stringify(pendingItem));
+        const returnPath = window.location.pathname + window.location.search;
+        window.location.href = `/login?redirect=${encodeURIComponent(returnPath)}&reason=cart`;
+      }
+      return;
+    }
+
     const imgUrl =
       defaultVariant?.imageUrl ||
       defaultVariant?.image ||
@@ -143,6 +197,15 @@ export function AddToCartButton({ product, className, disabled, compact }: AddTo
     e.preventDefault();
     e.stopPropagation();
     if (!cartItem) return;
+
+    const authUser = useAuthStore.getState().user;
+    if (!authUser?.id) {
+      if (typeof window !== 'undefined') {
+        const returnPath = window.location.pathname + window.location.search;
+        window.location.href = `/login?redirect=${encodeURIComponent(returnPath)}&reason=cart`;
+      }
+      return;
+    }
 
     if (isMaxReached) {
       toast?.(`Maximum purchase limit of ${maxStock} items reached for this product.`, 'info');

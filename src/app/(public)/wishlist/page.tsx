@@ -25,6 +25,41 @@ export default function MultiVendorWishlistPage() {
   }, []);
 
   const handleMoveToCart = async (item: any) => {
+    if (!user?.id) {
+      if (typeof window !== 'undefined') {
+        const selectedSize = item.selectedSize || item.size || null;
+        const selectedColor = item.selectedColor || item.color || null;
+        const variantName = item.variantName || null;
+        const variantLabel = [selectedColor, selectedSize].filter(Boolean).join(', ');
+        const displayName =
+          variantLabel && !item.name.includes(variantLabel)
+            ? `${item.name} (${variantLabel})`
+            : item.name;
+
+        const pendingItem = {
+          productId: item.productId,
+          variantId: item.variantId || undefined,
+          size: selectedSize || undefined,
+          color: selectedColor || undefined,
+          variantName: variantName || undefined,
+          name: displayName,
+          productName: item.name,
+          productSlug: item.slug,
+          price: item.price,
+          quantity: 1,
+          image: item.image,
+          shopId: item.shopId || 'default-boutique',
+          shopName: item.shopName || 'JiivaaKart Boutique',
+          shopSlug: item.shopSlug || 'default-boutique',
+          shopLogo: item.shopLogo,
+          buyNow: false,
+        };
+        sessionStorage.setItem('jiivaa_pending_cart_item', JSON.stringify(pendingItem));
+        window.location.href = '/login?redirect=/wishlist&reason=cart';
+      }
+      return;
+    }
+
     const selectedSize = item.selectedSize || item.size || null;
     const selectedColor = item.selectedColor || item.color || null;
     const variantName = item.variantName || null;
