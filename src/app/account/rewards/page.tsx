@@ -108,105 +108,158 @@ export default function RewardsAccountPage() {
       />
 
       {/* Hero Presentation Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy via-[#112d54] to-navy text-white p-6 sm:p-8 shadow-xl border border-navy/40">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy via-[#112d54] to-navy text-white p-5 sm:p-8 shadow-xl border border-navy/40">
         {/* Subtle Decorative Elements */}
         <div className="absolute -right-16 -top-16 w-64 h-64 bg-orange/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -left-16 -bottom-16 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Left Text & Stats Column */}
-          <div className="flex-1 space-y-4 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-orange text-xs font-bold tracking-wider uppercase">
-              <Sparkles className="w-3.5 h-3.5 text-orange animate-pulse" />
-              <span>Jiivaa VIP Rewards Club</span>
+          {/* Main Content Column */}
+          <div className="w-full flex-1 space-y-4">
+            {/* Mobile Top Header: Greeting + Mascot Avatar */}
+            <div className="flex items-center justify-between gap-3 md:hidden">
+              <div className="space-y-1.5 min-w-0">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-orange text-[10px] font-black tracking-wider uppercase">
+                  <Sparkles className="w-3 h-3 text-orange animate-pulse" />
+                  <span>Jiivaa VIP Club</span>
+                </div>
+                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight truncate">
+                  Namaste, {user?.name?.split(' ')[0] || 'Fashion Insider'}!
+                </h1>
+                <p className="text-slate-300 text-xs font-medium leading-relaxed">
+                  Har purchase par coins earn karein &amp; tiers unlock karein.
+                </p>
+              </div>
+
+              {/* Mobile Mascot Badge with Warm Halo */}
+              <div className="relative shrink-0 w-20 h-20 sm:w-24 sm:h-24 flex items-end justify-center">
+                <div className="absolute inset-0 bg-radial from-orange/35 via-orange/15 to-transparent rounded-full blur-lg pointer-events-none" />
+                <Image
+                  src={REWARDS_CONFIG.assets.vipRewardsMascot}
+                  alt="Jiivaa Celebration Mascot"
+                  width={96}
+                  height={96}
+                  priority
+                  className="relative z-10 w-auto h-full max-h-[85px] sm:max-h-[96px] object-contain drop-shadow-md select-none"
+                />
+              </div>
             </div>
 
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight">
+            {/* Desktop Header */}
+            <div className="hidden md:block space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-orange text-xs font-bold tracking-wider uppercase">
+                <Sparkles className="w-3.5 h-3.5 text-orange animate-pulse" />
+                <span>Jiivaa VIP Rewards Club</span>
+              </div>
+              <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight">
                 Namaste, {user?.name?.split(' ')[0] || 'Fashion Insider'}!
               </h1>
-              <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-md font-medium">
+              <p className="text-slate-300 text-sm max-w-lg font-medium leading-relaxed">
                 Har purchase par Jiivaa Coins earn karein aur exclusive boutique tiers unlock
                 karein.
               </p>
             </div>
 
-            {/* Live Coin Balance Card */}
-            <div className="inline-flex flex-wrap items-center justify-center md:justify-start gap-4 p-3.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-orange flex items-center justify-center shadow-md shadow-orange/30">
-                  <Coins className="w-5 h-5 text-white" />
+            {/* Live Coin Balance Card: 2x2 on Mobile, 4-col on Desktop */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 p-3 sm:p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15">
+              {/* Tile 1: Available Coins */}
+              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange flex items-center justify-center shrink-0 shadow-md shadow-orange/30">
+                  <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
-                <div className="text-left">
-                  <div className="text-xs text-slate-300 font-semibold">Available Coins</div>
-                  <div className="text-xl sm:text-2xl font-black text-amber-300 tracking-tight">
+                <div className="min-w-0">
+                  <div className="text-[10px] sm:text-xs text-slate-300 font-semibold truncate">
+                    Available Coins
+                  </div>
+                  <div className="text-base sm:text-xl font-black text-amber-300 tracking-tight leading-tight">
                     {mounted ? coins.toLocaleString('en-IN') : '0'}
-                    <span className="text-xs text-white/80 font-normal ml-1">Coins</span>
+                    <span className="text-[10px] text-white/70 font-normal ml-1">Coins</span>
                   </div>
                 </div>
               </div>
 
-              <div className="hidden sm:block h-8 w-px bg-white/20" />
-
-              <div className="flex items-center gap-2 text-left">
-                <div>
-                  <div className="text-xs text-slate-300 font-semibold">Discount Worth</div>
-                  <div className="text-base sm:text-lg font-bold text-white">
+              {/* Tile 2: Discount Worth */}
+              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 text-emerald-300 font-black text-xs sm:text-sm">
+                  ₹
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] sm:text-xs text-slate-300 font-semibold truncate">
+                    Discount Worth
+                  </div>
+                  <div className="text-base sm:text-xl font-black text-emerald-300 tracking-tight leading-tight">
                     ≈ ₹{mounted ? Math.round(coins * settings.coinToInrRatio) : 0}
                   </div>
                 </div>
               </div>
 
-              <div className="hidden sm:block h-8 w-px bg-white/20" />
-
-              <div className="flex items-center gap-2 text-left">
-                <div>
-                  <div className="text-xs text-slate-300 font-semibold">Current Tier</div>
-                  <div className="text-sm sm:text-base font-extrabold text-orange">
-                    {currentTier.badge}
+              {/* Tile 3: Current Tier */}
+              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center shrink-0 text-base">
+                  {currentTier.badge.split(' ')[0]}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] sm:text-xs text-slate-300 font-semibold truncate">
+                    Current Tier
+                  </div>
+                  <div className="text-xs sm:text-sm font-extrabold text-orange truncate">
+                    {currentTier.name}
                   </div>
                 </div>
               </div>
 
-              <div className="hidden sm:block h-8 w-px bg-white/20" />
-
-              <div className="flex items-center gap-2 text-left">
-                <div>
-                  <div className="text-xs text-slate-300 font-semibold">3-Yr Shopping Spend</div>
-                  <div className="text-sm sm:text-base font-extrabold text-amber-300 font-mono">
+              {/* Tile 4: 3-Yr Shopping Spend */}
+              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center shrink-0 text-blue-300">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] sm:text-xs text-slate-300 font-semibold truncate">
+                    3-Yr Spend
+                  </div>
+                  <div className="text-sm sm:text-base font-black text-white font-mono leading-tight">
                     ₹{mounted ? cumulativeSpendInCycle.toLocaleString('en-IN') : 0}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-1">
+            {/* Quick Actions Bar */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-3 pt-1">
               <Button
                 asChild
-                className="rounded-full bg-orange hover:bg-orange-600 text-white font-extrabold text-xs px-6 shadow-md shadow-orange/25"
+                className="w-full sm:w-auto rounded-xl sm:rounded-full bg-orange hover:bg-orange-600 text-white font-extrabold text-xs py-2.5 sm:px-6 shadow-md shadow-orange/25"
               >
-                <Link href="/shop">Shop &amp; Earn Coins &rarr;</Link>
+                <Link href="/shop" className="flex items-center justify-center gap-1.5">
+                  <span>Shop &amp; Earn</span>
+                  <span>&rarr;</span>
+                </Link>
               </Button>
+
               <Button
                 asChild
                 variant="outline"
-                className="rounded-full border-white/30 text-white hover:bg-white/10 text-xs font-bold"
+                className="w-full sm:w-auto rounded-xl sm:rounded-full bg-white/10 hover:bg-white/15 border-white/25 text-white text-xs font-bold py-2.5 sm:px-5"
               >
-                <Link href="/referral">
-                  Refer a Friend (Get ₹{settings.referralRefereeDiscountInr})
+                <Link href="/referral" className="flex items-center justify-center gap-1.5">
+                  <Gift className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Refer (Get ₹{settings.referralRefereeDiscountInr})</span>
                 </Link>
               </Button>
+
               {cycleExpiryStr && (
-                <span className="text-[11px] text-slate-300 font-medium px-3 py-1.5 rounded-full bg-white/10 border border-white/15">
-                  🔄 3-Yr Cycle Active (Till {cycleExpiryStr})
-                </span>
+                <div className="col-span-2 sm:col-span-1 text-center sm:text-left">
+                  <span className="inline-flex items-center gap-1 text-[11px] text-slate-300 font-medium px-3 py-1.5 rounded-full bg-white/10 border border-white/15">
+                    🔄 3-Yr Cycle Active (Till {cycleExpiryStr})
+                  </span>
+                </div>
               )}
             </div>
           </div>
 
-          {/* Right Mascot Column */}
-          <div className="shrink-0 flex items-center justify-center">
-            <div className="relative w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center">
+          {/* Desktop Mascot Column */}
+          <div className="hidden md:flex shrink-0 items-center justify-center">
+            <div className="relative w-44 h-44 lg:w-52 lg:h-52 flex items-center justify-center">
               {/* Backlight Ambient Glow */}
               <div className="absolute inset-0 bg-radial from-orange/30 via-orange/10 to-transparent rounded-full blur-2xl pointer-events-none scale-90" />
               <Image
@@ -215,7 +268,7 @@ export default function RewardsAccountPage() {
                 width={200}
                 height={210}
                 priority
-                className="relative z-10 w-auto h-full max-h-[175px] sm:max-h-[200px] object-contain drop-shadow-xl select-none transition-transform duration-300 hover:scale-105"
+                className="relative z-10 w-auto h-full max-h-[175px] lg:max-h-[200px] object-contain drop-shadow-xl select-none transition-transform duration-300 hover:scale-105"
               />
             </div>
           </div>

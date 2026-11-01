@@ -229,7 +229,7 @@ export const REWARDS_CONFIG = {
 
   // WhatsApp Pre-filled Copy
   getWhatsAppShareText: (referralCode: string, shareUrl: string, discountInr?: number) => {
-    const finalDiscount = typeof discountInr === 'number' ? discountInr : 150;
+    const finalDiscount = typeof discountInr === 'number' ? discountInr : 50;
     return encodeURIComponent(
       `👗✨ Namaste! Maine JiivaaKart par verified local boutiques ka amazing Indian fashion discover kiya!\n\n` +
         `🎁 Mere referral link se sign up karo aur pehle order par FLAT ₹${finalDiscount} OFF pao:\n` +

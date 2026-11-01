@@ -760,7 +760,7 @@ export default function AdminRewardsControlCenterPage() {
                   />
                 </div>
                 <p className="text-[10px] text-slate-400">
-                  Minimum order total required for ₹150 coupon to apply.
+                  Minimum order total required for referral coupon to apply.
                 </p>
               </div>
 
