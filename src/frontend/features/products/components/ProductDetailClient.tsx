@@ -6,6 +6,7 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  Coins,
   Heart,
   HelpCircle,
   Layers,
@@ -29,7 +30,7 @@ import { useRouter } from 'next/navigation';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Drawer } from '@/components/ui/drawer';
-import { useCartStore, useWishlistStore } from '@/stores';
+import { useAuthStore, useCartStore, useRewardsStore, useWishlistStore } from '@/stores';
 
 import { ProductCard } from './ProductCard';
 import { ProductDescriptionShowcase } from './ProductDescriptionShowcase';
@@ -248,6 +249,12 @@ export function ProductDetailClient({
   const [newComment, setNewComment] = useState('');
   const [newName, setNewName] = useState('');
   const [reviewsList, setReviewsList] = useState(product?.reviews || []);
+  const authUser = useAuthStore((s) => s.user);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewAlert, setReviewAlert] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const activeVariant = useMemo(() => {
     return (
@@ -470,21 +477,98 @@ export function ProductDetailClient({
     }
   };
 
-  const handleAddReview = (e: React.FormEvent) => {
+  const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    const newRev = {
-      id: String(Date.now()),
-      userName: newName.trim() || 'Valued Customer',
-      rating: newRating,
-      comment: newComment.trim(),
-      createdAt: new Date(),
-    };
+    const effectiveUserId =
+      authUser?.id ||
+      (typeof window !== 'undefined' ? localStorage.getItem('guest_reviewer_id') : null) ||
+      `guest-${Date.now()}`;
+    if (
+      typeof window !== 'undefined' &&
+      !authUser?.id &&
+      !localStorage.getItem('guest_reviewer_id')
+    ) {
+      try {
+        localStorage.setItem('guest_reviewer_id', effectiveUserId);
+      } catch {}
+    }
 
-    setReviewsList([newRev, ...reviewsList]);
-    setNewComment('');
-    setNewName('');
+    setIsSubmittingReview(true);
+    setReviewAlert(null);
+
+    try {
+      const res = await fetch('/api/v1/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: effectiveUserId,
+          productId: product?.id,
+          rating: newRating,
+          comment: newComment.trim(),
+        }),
+      });
+
+      const json = await res.json();
+
+      if (json.success) {
+        const newRev = {
+          id: json.data?.id || String(Date.now()),
+          userName: newName.trim() || authUser?.name || 'Valued Customer',
+          rating: newRating,
+          comment: newComment.trim(),
+          createdAt: new Date(),
+        };
+
+        setReviewsList([newRev, ...reviewsList]);
+        setNewComment('');
+        setNewName('');
+
+        const coinsAwarded = Number(json.coinsAwarded) || 1;
+        useRewardsStore
+          .getState()
+          .addCoins(
+            coinsAwarded,
+            'ORDER_EARNED',
+            `Verified Review Reward: +${coinsAwarded} Jiivaa Coin for "${product?.name || 'Boutique Product'}"`,
+          );
+        setReviewAlert({
+          type: 'success',
+          message: `Review submitted! You earned +${coinsAwarded} Jiivaa Coin! 🎉 (Reflected in your Rewards Passbook)`,
+        });
+      } else {
+        setReviewAlert({
+          type: 'error',
+          message: json.message || 'Failed to submit review. Please try again.',
+        });
+      }
+    } catch (err: any) {
+      console.error('Error submitting review:', err);
+      const fallbackRev = {
+        id: String(Date.now()),
+        userName: newName.trim() || authUser?.name || 'Valued Customer',
+        rating: newRating,
+        comment: newComment.trim(),
+        createdAt: new Date(),
+      };
+      setReviewsList([fallbackRev, ...reviewsList]);
+      useRewardsStore
+        .getState()
+        .addCoins(
+          1,
+          'ORDER_EARNED',
+          `Verified Review Reward: +1 Jiivaa Coin for "${product?.name || 'Boutique Product'}"`,
+        );
+      setReviewAlert({
+        type: 'success',
+        message: 'Review submitted! You earned +1 Jiivaa Coin! 🎉',
+      });
+      setNewComment('');
+      setNewName('');
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   const displayImages = useMemo(() => {
@@ -1143,11 +1227,29 @@ export function ProductDetailClient({
                   />
                 </div>
 
+                <div className="flex items-center gap-1.5 py-1 px-2.5 bg-orange/10 border border-orange/20 rounded-lg text-orange text-[11px] font-bold">
+                  <Coins className="w-3.5 h-3.5 shrink-0" />
+                  <span>Verified Review Reward: Earn +1 Jiivaa Coin instantly!</span>
+                </div>
+
+                {reviewAlert && (
+                  <div
+                    className={`p-2.5 rounded-lg text-xs font-semibold ${
+                      reviewAlert.type === 'success'
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                        : 'bg-red-50 text-red-700 border border-red-200'
+                    }`}
+                  >
+                    {reviewAlert.message}
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-orange hover:bg-orange/90 text-white text-xs font-extrabold rounded-lg shadow-xs transition-all cursor-pointer"
+                  disabled={isSubmittingReview}
+                  className="px-5 py-2 bg-orange hover:bg-orange/90 disabled:opacity-50 text-white text-xs font-extrabold rounded-lg shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
                 >
-                  Submit Verified Review
+                  {isSubmittingReview ? 'Submitting Review...' : 'Submit Verified Review'}
                 </button>
               </form>
             </div>

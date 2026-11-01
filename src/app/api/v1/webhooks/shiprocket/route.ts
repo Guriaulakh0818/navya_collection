@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { LoyaltyService } from '@/backend/services/loyalty.service';
 import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { ShiprocketLogger } from '@/backend/services/shipping/logger';
 import { StatusAggregatorService } from '@/backend/services/shipping/status-aggregator.service';
@@ -298,6 +299,12 @@ export async function POST(req: NextRequest) {
     ).catch((emailErr) => {
       ShiprocketLogger.warn('[SHIPROCKET_WEBHOOK_EMAIL_NOTIFY_ERROR]', undefined, emailErr);
     });
+
+    if (normalizedStatus === 'DELIVERED') {
+      LoyaltyService.processOrderDelivered(shipment.masterOrderId).catch((loyaltyErr) => {
+        ShiprocketLogger.warn('[SHIPROCKET_LOYALTY_DELIVERY_ERROR]', undefined, loyaltyErr);
+      });
+    }
 
     ShiprocketLogger.info(
       `[SHIPROCKET_WEBHOOK_PROCESSED_SUCCESS] Shipment: ${shipment.shipmentNumber} -> ${normalizedStatus}`,

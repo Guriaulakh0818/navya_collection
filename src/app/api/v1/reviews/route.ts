@@ -107,10 +107,16 @@ export async function POST(request: NextRequest) {
       comment,
     });
 
+    const coinsAwarded = (review as any)?.coinsAwarded || 0;
+
     return NextResponse.json({
       success: true,
-      message: 'Review submitted successfully.',
+      message:
+        coinsAwarded > 0
+          ? `Review submitted successfully! You earned +${coinsAwarded} Jiivaa Coin! 🎉`
+          : 'Review submitted successfully.',
       data: review,
+      coinsAwarded,
     });
   } catch (error: any) {
     console.error('❌ POST Review Error:', error);

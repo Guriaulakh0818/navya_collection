@@ -8,7 +8,14 @@ import { LOYALTY_TIERS, LoyaltyTier, REWARDS_CONFIG } from '@/shared/config/rewa
 export interface CoinActivity {
   id: string;
   amount: number;
-  type: 'SIGNUP_BONUS' | 'ORDER_EARNED' | 'REDEEMED' | 'REFERRAL_BONUS' | 'TIER_BONUS';
+  type:
+    | 'SIGNUP_BONUS'
+    | 'ORDER_EARNED'
+    | 'REDEEMED'
+    | 'REFERRAL_BONUS'
+    | 'TIER_BONUS'
+    | 'ORDER_BONUS'
+    | 'REVIEW_BONUS';
   description: string;
   date: string;
 }

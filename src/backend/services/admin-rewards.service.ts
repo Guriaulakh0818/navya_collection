@@ -27,7 +27,8 @@ export interface AdminClaimLedgerItem {
     | 'REDEEMED_CHECKOUT'
     | 'ORDER_EARNED'
     | 'ORDER_BONUS'
-    | 'TIER_BONUS';
+    | 'TIER_BONUS'
+    | 'REVIEW_BONUS';
   codeOrTier: string;
   coins: number;
   inrValue: number;

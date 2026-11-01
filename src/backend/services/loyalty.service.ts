@@ -16,7 +16,13 @@ export interface CoinTransactionRecord {
   id: string;
   amount: number;
   type:
-    'SIGNUP_BONUS' | 'ORDER_EARNED' | 'REDEEMED' | 'REFERRAL_BONUS' | 'TIER_BONUS' | 'ORDER_BONUS';
+    | 'SIGNUP_BONUS'
+    | 'ORDER_EARNED'
+    | 'REDEEMED'
+    | 'REFERRAL_BONUS'
+    | 'TIER_BONUS'
+    | 'ORDER_BONUS'
+    | 'REVIEW_BONUS';
   description: string;
   reference?: string;
   createdAt: string;
@@ -227,6 +233,101 @@ export class LoyaltyService {
         userId,
       )
       .catch(() => {});
+
+    // 3.5. Retroactive Review Bonus Sync: Check for any submitted product or shop reviews lacking coin credit
+    try {
+      const isRegistered = Boolean(userId && !userId.startsWith('guest'));
+      if (isRegistered) {
+        const [productReviews, shopReviews] = await Promise.all([
+          prisma.review
+            .findMany({
+              where: { userId },
+              select: { id: true, productId: true },
+            })
+            .catch(() => []),
+          prisma.shopReview
+            .findMany({
+              where: { userId },
+              select: { id: true, shopId: true },
+            })
+            .catch(() => []),
+        ]);
+
+        const reviewBonusCoins = settings.reviewBonusCoins || 1;
+
+        for (const pr of productReviews) {
+          const existingLedger: any = await prisma
+            .$queryRawUnsafe(
+              `SELECT id FROM user_coins_ledger WHERE user_id = $1 AND reference = $2 AND type = 'REVIEW_BONUS' LIMIT 1`,
+              userId,
+              pr.productId,
+            )
+            .catch(() => []);
+
+          if (!Array.isArray(existingLedger) || existingLedger.length === 0) {
+            const p = await prisma.product
+              .findUnique({
+                where: { id: pr.productId },
+                select: { name: true },
+              })
+              .catch(() => null);
+            const userRec = await prisma.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, mobile: true },
+              })
+              .catch(() => null);
+
+            await AdminRewardsService.recordCoinTransaction({
+              userId,
+              userName: userRec?.name || 'Verified Reviewer',
+              userEmailOrPhone: userRec?.mobile || userRec?.email || '',
+              amount: reviewBonusCoins,
+              type: 'REVIEW_BONUS',
+              reference: pr.productId,
+              description: `Verified Review Reward: +${reviewBonusCoins} Jiivaa Coin for reviewing "${p?.name || 'Boutique Product'}"`,
+            });
+          }
+        }
+
+        for (const sr of shopReviews) {
+          const existingLedger: any = await prisma
+            .$queryRawUnsafe(
+              `SELECT id FROM user_coins_ledger WHERE user_id = $1 AND reference = $2 AND type = 'REVIEW_BONUS' LIMIT 1`,
+              userId,
+              sr.shopId,
+            )
+            .catch(() => []);
+
+          if (!Array.isArray(existingLedger) || existingLedger.length === 0) {
+            const s = await prisma.shop
+              .findUnique({
+                where: { id: sr.shopId },
+                select: { name: true },
+              })
+              .catch(() => null);
+            const userRec = await prisma.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, mobile: true },
+              })
+              .catch(() => null);
+
+            await AdminRewardsService.recordCoinTransaction({
+              userId,
+              userName: userRec?.name || 'Verified Reviewer',
+              userEmailOrPhone: userRec?.mobile || userRec?.email || '',
+              amount: reviewBonusCoins,
+              type: 'REVIEW_BONUS',
+              reference: sr.shopId,
+              description: `Verified Review Reward: +${reviewBonusCoins} Jiivaa Coin for reviewing boutique "${s?.name || 'Boutique'}"`,
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[LoyaltyService] Retroactive review sync error:', err);
+    }
 
     // 4. Calculate live coin balance and fetch transactions
     let balance = 0;

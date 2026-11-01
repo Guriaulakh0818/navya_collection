@@ -3,6 +3,8 @@
 import { Building2, MessageSquare, ShieldCheck, Sparkles, Star, User, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useRewardsStore } from '@/stores';
+
 import { RatingSummaryCard } from './RatingSummaryCard';
 
 interface ProductReviewsSectionProps {
@@ -79,6 +81,13 @@ export function ProductReviewsSection({
         setShowReviewModal(false);
         setComment('');
         fetchReviews();
+        const coins = Number(json.coinsAwarded) || 1;
+        useRewardsStore
+          .getState()
+          .addCoins(coins, 'ORDER_EARNED', `Verified Review Reward: +${coins} Jiivaa Coin`);
+        alert(
+          json.message || `Review submitted successfully! You earned +${coins} Jiivaa Coin! 🎉`,
+        );
       } else {
         alert(json.message || 'Failed to submit review.');
       }

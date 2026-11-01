@@ -1,3 +1,4 @@
+import { AdminRewardsService } from '@/backend/services/admin-rewards.service';
 import { prisma } from '@/lib/prisma';
 
 export interface CreateReviewOptions {
@@ -132,7 +133,54 @@ export class ReviewService {
         },
       });
 
-      return review;
+      // Award loyalty review bonus coins (1 coin per verified review)
+      let coinsAwarded = 0;
+      const isRegistered = Boolean(userId && !userId.startsWith('guest'));
+
+      if (isRegistered) {
+        try {
+          const settings = await AdminRewardsService.getSettings();
+          const bonusCoins = settings.reviewBonusCoins || 1;
+
+          const existingTx: any = await prisma
+            .$queryRawUnsafe(
+              `SELECT id FROM user_coins_ledger WHERE user_id = $1 AND reference = $2 AND type = 'REVIEW_BONUS' LIMIT 1`,
+              userId,
+              productId,
+            )
+            .catch(() => []);
+
+          if (!Array.isArray(existingTx) || existingTx.length === 0) {
+            const p = await prisma.product
+              .findUnique({ where: { id: productId }, select: { name: true } })
+              .catch(() => null);
+            const user = await prisma.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, mobile: true },
+              })
+              .catch(() => null);
+
+            await AdminRewardsService.recordCoinTransaction({
+              userId,
+              userName: user?.name || 'Verified Reviewer',
+              userEmailOrPhone: user?.mobile || user?.email || '',
+              amount: bonusCoins,
+              type: 'REVIEW_BONUS',
+              reference: productId,
+              description: `Verified Review Reward: +${bonusCoins} Jiivaa Coin for reviewing "${p?.name || 'Boutique Product'}"`,
+            });
+            coinsAwarded = bonusCoins;
+          }
+        } catch (err) {
+          console.warn('[ReviewService] Loyalty review bonus credit error:', err);
+        }
+      }
+
+      return {
+        ...review,
+        coinsAwarded,
+      };
     }
 
     if (shopId) {
@@ -164,7 +212,54 @@ export class ReviewService {
         },
       });
 
-      return shopReview;
+      // Award loyalty review bonus coins (1 coin per verified review)
+      let coinsAwarded = 0;
+      const isRegistered = Boolean(userId && !userId.startsWith('guest'));
+
+      if (isRegistered) {
+        try {
+          const settings = await AdminRewardsService.getSettings();
+          const bonusCoins = settings.reviewBonusCoins || 1;
+
+          const existingTx: any = await prisma
+            .$queryRawUnsafe(
+              `SELECT id FROM user_coins_ledger WHERE user_id = $1 AND reference = $2 AND type = 'REVIEW_BONUS' LIMIT 1`,
+              userId,
+              shopId,
+            )
+            .catch(() => []);
+
+          if (!Array.isArray(existingTx) || existingTx.length === 0) {
+            const s = await prisma.shop
+              .findUnique({ where: { id: shopId }, select: { name: true } })
+              .catch(() => null);
+            const user = await prisma.user
+              .findUnique({
+                where: { id: userId },
+                select: { name: true, email: true, mobile: true },
+              })
+              .catch(() => null);
+
+            await AdminRewardsService.recordCoinTransaction({
+              userId,
+              userName: user?.name || 'Verified Reviewer',
+              userEmailOrPhone: user?.mobile || user?.email || '',
+              amount: bonusCoins,
+              type: 'REVIEW_BONUS',
+              reference: shopId,
+              description: `Verified Review Reward: +${bonusCoins} Jiivaa Coin for reviewing boutique "${s?.name || 'Boutique'}"`,
+            });
+            coinsAwarded = bonusCoins;
+          }
+        } catch (err) {
+          console.warn('[ReviewService] Loyalty shop review bonus credit error:', err);
+        }
+      }
+
+      return {
+        ...shopReview,
+        coinsAwarded,
+      };
     }
 
     throw new Error('Product ID or Shop ID is required to post a review.');
