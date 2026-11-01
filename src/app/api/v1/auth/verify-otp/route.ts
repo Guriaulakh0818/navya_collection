@@ -45,6 +45,7 @@ export async function POST(request: Request) {
           success: true,
           message: result.message,
           user: result.user,
+          isNewUser: Boolean(result.isNewUser),
         },
         { status: 200 },
       );

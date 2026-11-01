@@ -230,6 +230,10 @@ export function LoginForm({ initialUser }: LoginFormProps) {
         if (typeof window !== 'undefined') {
           sessionStorage.removeItem('navya_login_step');
           sessionStorage.removeItem('navya_login_email');
+          if (json.isNewUser) {
+            sessionStorage.setItem('jiivaa_just_signed_up', 'true');
+            localStorage.setItem('jiivaa_show_referral_prompt', 'true');
+          }
         }
         try {
           toast('Verification successful! Welcome to JiivaaKart.', 'success');

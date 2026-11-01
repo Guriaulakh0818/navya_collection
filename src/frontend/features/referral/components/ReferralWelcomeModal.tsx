@@ -68,6 +68,10 @@ export function ReferralWelcomeModal({
   useEffect(() => {
     setMounted(true);
     if (typeof window !== 'undefined') {
+      const p = new window.Image();
+      p.src = '/brand/jiivaa/crops/journey/11-share.png';
+    }
+    if (typeof window !== 'undefined') {
       setOriginUrl(window.location.origin);
 
       // Check URL query param ?ref_popup=1 or ?referral_modal=1
@@ -398,8 +402,10 @@ export function ReferralWelcomeModal({
                 alt="Jiivaa - Refer & Earn"
                 width={260}
                 height={290}
-                className="relative z-10 w-auto h-56 lg:h-64 object-contain drop-shadow-xl select-none transition-transform duration-300 hover:scale-105"
+                unoptimized
                 priority
+                loading="eager"
+                className="relative z-10 w-auto h-56 lg:h-64 object-contain drop-shadow-xl select-none transition-transform duration-300 hover:scale-105"
               />
             </div>
 
@@ -416,6 +422,9 @@ export function ReferralWelcomeModal({
               <Image
                 src="/brand/jiivaa/crops/journey/11-share.png"
                 alt="Jiivaa Mascot"
+                unoptimized
+                priority
+                loading="eager"
                 width={65}
                 height={75}
                 className="w-14 h-auto object-contain drop-shadow-sm select-none"

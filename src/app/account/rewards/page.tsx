@@ -169,7 +169,9 @@ export default function RewardsAccountPage() {
                   alt="Jiivaa Celebration Mascot"
                   width={96}
                   height={96}
+                  unoptimized
                   priority
+                  loading="eager"
                   className="relative z-10 w-auto h-full max-h-[85px] sm:max-h-[96px] object-contain drop-shadow-md select-none"
                 />
               </div>
@@ -190,64 +192,64 @@ export default function RewardsAccountPage() {
               </p>
             </div>
 
-            {/* Live Coin Balance Card: 2x2 on Mobile, 4-col on Desktop */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 p-3 sm:p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15">
+            {/* Live Coin Balance Card: 2x2 Grid with full text visibility */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 sm:p-4 bg-white/10 backdrop-blur-md rounded-2xl border border-white/15">
               {/* Tile 1: Available Coins */}
-              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange flex items-center justify-center shrink-0 shadow-md shadow-orange/30">
-                  <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-orange flex items-center justify-center shrink-0 shadow-md shadow-orange/30">
+                  <Coins className="w-5 h-5 text-white" />
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] sm:text-xs text-slate-300 font-semibold truncate">
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] sm:text-xs text-slate-300 font-medium whitespace-nowrap">
                     Available Coins
                   </div>
-                  <div className="text-base sm:text-xl font-black text-amber-300 tracking-tight leading-tight">
+                  <div className="text-lg sm:text-xl font-black text-amber-300 tracking-tight leading-tight flex items-baseline gap-1 mt-0.5">
                     {mounted ? coins.toLocaleString('en-IN') : '0'}
-                    <span className="text-[10px] text-white/70 font-normal ml-1">Coins</span>
+                    <span className="text-[11px] text-white/70 font-normal">Coins</span>
                   </div>
                 </div>
               </div>
 
               {/* Tile 2: Discount Worth */}
-              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 text-emerald-300 font-black text-xs sm:text-sm">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 text-emerald-300 font-black text-sm">
                   ₹
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] sm:text-xs text-slate-300 font-semibold truncate">
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] sm:text-xs text-slate-300 font-medium whitespace-nowrap">
                     Discount Worth
                   </div>
-                  <div className="text-base sm:text-xl font-black text-emerald-300 tracking-tight leading-tight">
+                  <div className="text-lg sm:text-xl font-black text-emerald-300 tracking-tight leading-tight mt-0.5">
                     ≈ ₹{mounted ? Math.round(coins * settings.coinToInrRatio) : 0}
                   </div>
                 </div>
               </div>
 
               {/* Tile 3: Current Tier */}
-              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center shrink-0 text-base">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center shrink-0 text-lg">
                   {currentTier.badge.split(' ')[0]}
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] sm:text-xs text-slate-300 font-semibold truncate">
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] sm:text-xs text-slate-300 font-medium whitespace-nowrap">
                     Current Tier
                   </div>
-                  <div className="text-xs sm:text-sm font-extrabold text-orange truncate">
+                  <div className="text-xs sm:text-sm font-extrabold text-orange tracking-tight leading-tight whitespace-nowrap mt-0.5">
                     {currentTier.name}
                   </div>
                 </div>
               </div>
 
               {/* Tile 4: 3-Yr Shopping Spend */}
-              <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center shrink-0 text-blue-300">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center shrink-0 text-blue-300">
+                  <TrendingUp className="w-5 h-5" />
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] sm:text-xs text-slate-300 font-semibold truncate">
-                    3-Yr Spend
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] sm:text-xs text-slate-300 font-medium whitespace-nowrap">
+                    3-Yr Shopping Spend
                   </div>
-                  <div className="text-sm sm:text-base font-black text-white font-mono leading-tight">
+                  <div className="text-base sm:text-lg font-black text-white font-mono tracking-tight leading-tight mt-0.5">
                     ₹{mounted ? cumulativeSpendInCycle.toLocaleString('en-IN') : 0}
                   </div>
                 </div>
@@ -297,7 +299,9 @@ export default function RewardsAccountPage() {
                 alt="Jiivaa Celebration Mascot"
                 width={200}
                 height={210}
+                unoptimized
                 priority
+                loading="eager"
                 className="relative z-10 w-auto h-full max-h-[175px] lg:max-h-[200px] object-contain drop-shadow-xl select-none transition-transform duration-300 hover:scale-105"
               />
             </div>
@@ -374,94 +378,110 @@ export default function RewardsAccountPage() {
         </div>
 
         {/* 5 Tier Milestone Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 pt-2">
           {LOYALTY_TIERS.map((tier) => {
             const isUnlocked = (mounted ? cumulativeSpendInCycle : 0) >= tier.minSpendInr;
             const isCurrent = currentTier.id === tier.id;
             const isClaimed = claimedCoupons.some((c) => c.tierId === tier.id);
 
+            const spendBadge =
+              tier.minSpendInr === 0
+                ? '₹0 – ₹2.5k'
+                : tier.maxSpendInr
+                  ? `₹${Math.round(tier.minSpendInr / 1000)}k – ₹${Math.round((tier.maxSpendInr + 1) / 1000)}k`
+                  : '₹50k+';
+
             return (
               <div
                 key={tier.id}
-                className={`relative rounded-2xl p-5 border transition-all flex flex-col justify-between ${
+                className={`relative rounded-2xl p-3.5 sm:p-4 border transition-all flex flex-col justify-between ${
                   isCurrent
-                    ? 'border-orange shadow-md bg-orange/5 ring-2 ring-orange/20'
+                    ? 'border-orange shadow-md bg-orange/[0.04] ring-2 ring-orange/20'
                     : isUnlocked
-                      ? 'border-slate-200 bg-white shadow-xs'
-                      : 'border-slate-200/60 bg-slate-50/50 opacity-75'
+                      ? 'border-slate-200 bg-white shadow-2xs'
+                      : 'border-slate-200/70 bg-slate-50/60 opacity-80'
                 }`}
               >
                 {/* Current Badge */}
                 {isCurrent && (
-                  <span className="absolute -top-2.5 right-4 bg-orange text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
+                  <span className="absolute -top-2.5 right-3 bg-orange text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs">
                     Active Tier
                   </span>
                 )}
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl">{tier.badge.split(' ')[0]}</span>
-                    <span className="text-xs font-extrabold text-slate-500 font-mono">
-                      ₹{tier.minSpendInr.toLocaleString('en-IN')}
-                      {tier.maxSpendInr ? ` – ₹${tier.maxSpendInr.toLocaleString('en-IN')}` : '+'}
+                <div className="space-y-2">
+                  {/* Top: Icon + Spend range */}
+                  <div className="flex items-center justify-between gap-1.5">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-base shrink-0 shadow-2xs">
+                      {tier.badge.split(' ')[0]}
+                    </div>
+                    <span
+                      className="text-xs font-black text-slate-500 font-mono text-right whitespace-nowrap shrink-0"
+                      title={`₹${tier.minSpendInr.toLocaleString('en-IN')}${tier.maxSpendInr ? ' – ₹' + tier.maxSpendInr.toLocaleString('en-IN') : '+'}`}
+                    >
+                      {spendBadge}
                     </span>
                   </div>
 
+                  {/* Title & Tag with aligned fixed container */}
                   <div>
-                    <h3 className="font-extrabold text-sm sm:text-base text-navy">{tier.name}</h3>
-                    <div className="text-[11px] font-extrabold text-amber-700 mt-0.5 font-mono">
-                      {tier.welcomeCoins > 0
-                        ? `🎁 +${tier.welcomeCoins.toLocaleString('en-IN')} Welcome Coins`
-                        : 'Starter Member'}
+                    <div className="min-h-[36px] flex flex-col justify-center">
+                      <h3 className="font-extrabold text-xs sm:text-[13px] text-navy leading-tight line-clamp-2">
+                        {tier.name}
+                      </h3>
+                    </div>
+                    <div className="h-6 flex items-center mt-0.5">
+                      {tier.welcomeCoins > 0 ? (
+                        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-800 text-[10px] font-extrabold px-1.5 py-0.5 rounded border border-amber-200/80 whitespace-nowrap">
+                          🎁 +{tier.welcomeCoins.toLocaleString('en-IN')} Coins
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-[10px] text-slate-500 font-bold px-1.5 py-0.5 rounded bg-slate-100 whitespace-nowrap">
+                          Starter Tier
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   {/* Perks list */}
-                  <ul className="space-y-1.5 text-[11px] text-slate-600 font-medium">
+                  <ul className="space-y-1.5 text-[11px] text-slate-600 font-medium pt-2 border-t border-slate-100">
                     {tier.perks.map((perk, idx) => (
                       <li key={idx} className="flex items-start gap-1.5 leading-snug">
                         <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                        <span>{perk}</span>
+                        <span className="leading-tight">{perk}</span>
                       </li>
                     ))}
                   </ul>
-
-                  {/* Single order perks */}
-                  {tier.singleOrderPerks && tier.singleOrderPerks.length > 0 && (
-                    <div className="pt-2 border-t border-slate-100 space-y-1">
-                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
-                        Order Perks:
-                      </span>
-                      {tier.singleOrderPerks.map((sop, idx) => (
-                        <div
-                          key={idx}
-                          className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium"
-                        >
-                          {sop.label}
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Milestone Coupon Action */}
-                <div className="pt-4 border-t border-slate-100 mt-4">
+                <div className="pt-2.5 border-t border-slate-100 mt-2.5">
                   {tier.discountPct === 0 ? (
-                    <div className="text-center text-[11px] font-bold text-slate-400 py-1.5">
-                      {isUnlocked
-                        ? 'Unlocked'
-                        : `Spend ₹${tier.minSpendInr.toLocaleString('en-IN')}`}
+                    <div
+                      className={`text-center text-[11px] font-bold py-1 ${
+                        isCurrent
+                          ? 'text-orange font-black'
+                          : isUnlocked
+                            ? 'text-emerald-600 font-extrabold'
+                            : 'text-slate-400'
+                      }`}
+                    >
+                      {isCurrent
+                        ? 'Current Tier'
+                        : isUnlocked
+                          ? '✓ Unlocked'
+                          : `Spend ₹${tier.minSpendInr.toLocaleString('en-IN')}`}
                     </div>
                   ) : isUnlocked ? (
                     isClaimed ? (
-                      <div className="flex items-center justify-between bg-slate-100 rounded-xl px-2.5 py-1.5 border border-slate-200">
-                        <span className="font-mono text-xs font-extrabold text-navy">
+                      <div className="flex items-center justify-between bg-slate-100 rounded-xl px-2 py-1 border border-slate-200">
+                        <span className="font-mono text-xs font-extrabold text-navy truncate">
                           {tier.couponCode}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleCopyCode(tier.couponCode)}
-                          className="text-xs text-orange hover:text-orange-600 font-bold flex items-center gap-1 cursor-pointer"
+                          className="text-xs text-orange hover:text-orange-600 font-bold flex items-center gap-1 cursor-pointer shrink-0 ml-1"
                         >
                           {copiedCode === tier.couponCode ? (
                             <span className="text-emerald-600 text-[10px]">Copied!</span>
@@ -474,13 +494,13 @@ export default function RewardsAccountPage() {
                       <Button
                         size="sm"
                         onClick={() => handleClaim(tier)}
-                        className="w-full rounded-xl bg-orange hover:bg-orange-600 text-white text-xs font-extrabold shadow-sm cursor-pointer"
+                        className="w-full rounded-xl bg-orange hover:bg-orange-600 text-white text-xs font-extrabold shadow-sm cursor-pointer py-1.5 h-auto"
                       >
                         Claim {tier.discountPct}% Coupon 🎉
                       </Button>
                     )
                   ) : (
-                    <div className="text-center text-[11px] font-bold text-slate-400 py-1.5 flex items-center justify-center gap-1">
+                    <div className="text-center text-[11px] font-bold text-slate-400 py-1 flex items-center justify-center gap-1">
                       <span>Unlock at ₹{tier.minSpendInr.toLocaleString('en-IN')}</span>
                     </div>
                   )}
@@ -489,6 +509,77 @@ export default function RewardsAccountPage() {
             );
           })}
         </div>
+
+        {/* Expandable Full Perks & Next-Order Slabs Comparison */}
+        <details className="group border border-slate-200/80 rounded-2xl bg-slate-50/50 overflow-hidden text-xs">
+          <summary className="flex items-center justify-between px-4 py-2.5 cursor-pointer font-extrabold text-navy hover:bg-slate-100/70 transition-colors select-none">
+            <span className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-orange" />
+              <span>View Detailed Order Bonus &amp; Discount Slabs</span>
+            </span>
+            <span className="text-[11px] font-bold text-orange group-open:rotate-90 transition-transform">
+              &rarr;
+            </span>
+          </summary>
+          <div className="p-4 pt-2 border-t border-slate-200/60 overflow-x-auto">
+            <table className="w-full text-left text-[11px] text-slate-600">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-400 font-extrabold uppercase text-[10px]">
+                  <th className="py-2 pr-4">Tier</th>
+                  <th className="py-2 pr-4">3-Yr Spend</th>
+                  <th className="py-2 pr-4">Welcome Bonus</th>
+                  <th className="py-2 pr-4">Milestone Code</th>
+                  <th className="py-2">Single-Order Perk Slabs</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                <tr>
+                  <td className="py-2 pr-4 font-bold text-navy">🛍️ Normal</td>
+                  <td className="py-2 pr-4 font-mono">₹0 – ₹2,499</td>
+                  <td className="py-2 pr-4 text-slate-400">—</td>
+                  <td className="py-2 pr-4 text-slate-400">—</td>
+                  <td className="py-2">Base 1 Coin per ₹10 spent</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-bold text-navy">🥉 Bronze</td>
+                  <td className="py-2 pr-4 font-mono">₹2,500 – ₹9,999</td>
+                  <td className="py-2 pr-4 font-bold text-amber-700">1,000 Coins</td>
+                  <td className="py-2 pr-4 text-slate-400">—</td>
+                  <td className="py-2">Order &gt; ₹3,000 gives +200 bonus coins</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-bold text-navy">🥈 Silver</td>
+                  <td className="py-2 pr-4 font-mono">₹10,000 – ₹24,999</td>
+                  <td className="py-2 pr-4 font-bold text-amber-700">2,500 Coins</td>
+                  <td className="py-2 pr-4 font-mono font-bold text-navy">
+                    5% OFF (JIIVAA-SILVER-5)
+                  </td>
+                  <td className="py-2">Order &gt; ₹3,000 gives +500 bonus coins</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-bold text-navy">🥇 Gold VIP</td>
+                  <td className="py-2 pr-4 font-mono">₹25,000 – ₹49,999</td>
+                  <td className="py-2 pr-4 font-bold text-amber-700">10,000 Coins</td>
+                  <td className="py-2 pr-4 font-mono font-bold text-navy">5% OFF (JIIVAA-GOLD)</td>
+                  <td className="py-2">
+                    &gt;₹3,000: 2.5% OFF | &gt;₹6,000: 5% OFF | &gt;₹12,000: 7.5% OFF next order
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-bold text-navy">💎 Platinum</td>
+                  <td className="py-2 pr-4 font-mono">₹50,000+</td>
+                  <td className="py-2 pr-4 font-bold text-amber-700">20,000 Coins</td>
+                  <td className="py-2 pr-4 font-mono font-bold text-navy">
+                    20% OFF (JIIVAA-PLATINUM-20)
+                  </td>
+                  <td className="py-2">
+                    &gt;₹5,000: 5% OFF | &gt;₹10,000: 10% OFF | &gt;₹20,000: 20% OFF next order
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
       </div>
 
       {/* Unlocked Next-Order Perks Coupons (if any) */}

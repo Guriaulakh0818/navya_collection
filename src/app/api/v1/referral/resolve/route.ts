@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     // Guarantee latest live rewards settings from PostgreSQL
     await AdminRewardsService.getSettings().catch(() => {});
-    const resolved = ReferralService.resolveReferrer(code);
+    const resolved = await ReferralService.resolveReferrerAsync(code);
 
     return NextResponse.json({
       success: true,

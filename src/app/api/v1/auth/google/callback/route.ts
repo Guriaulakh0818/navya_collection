@@ -147,7 +147,9 @@ export async function GET(request: NextRequest) {
       where: { email },
     });
 
+    let isNewGoogleUser = false;
     if (!user) {
+      isNewGoogleUser = true;
       try {
         user = await prisma.user.create({
           data: {
@@ -241,6 +243,13 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ [GOOGLE_OAUTH] Successfully logged in ${email}, redirecting to ${destination}`);
     const successRedirect = NextResponse.redirect(new URL(destination, baseUrl));
+    if (isNewGoogleUser) {
+      successRedirect.cookies.set('jiivaa_just_signed_up', 'true', {
+        maxAge: 300,
+        path: '/',
+        httpOnly: false,
+      });
+    }
     successRedirect.cookies.set('oauth_state_nonce', '', { maxAge: 0, path: '/' });
     return successRedirect;
   } catch (err: any) {

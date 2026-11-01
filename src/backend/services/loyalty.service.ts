@@ -605,10 +605,12 @@ export class LoyaltyService {
         userId,
       );
 
-      // 6. Complete Referral if this order used a referral coupon
-      if (order.couponCode && order.couponCode.toUpperCase().startsWith('JIIVAA-')) {
-        await ReferralService.recordFriendOrder(order.couponCode, userName, true).catch(() => {});
-      }
+      // 6. Complete Referral rewards for delivered order
+      await ReferralService.recordFriendDeliveredOrder(userId, order.id, orderNumber).catch(
+        (err) => {
+          console.warn('[LoyaltyService] recordFriendDeliveredOrder error:', err);
+        },
+      );
     } catch (error) {
       console.error('[LoyaltyService] processOrderDelivered error:', error);
     }

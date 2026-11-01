@@ -44,9 +44,9 @@ export const LOYALTY_TIERS: LoyaltyTier[] = [
     discountPct: 0,
     couponCode: 'JIIVAA-NORMAL',
     perks: [
-      'Earn 1 Coin on every ₹10 spent (applied from next order)',
-      '1 Coin for every verified product review',
-      'Friend Referral: ₹50 discount for friend & ₹50 for you',
+      '1 Coin on every ₹10 spent',
+      '1 Coin for every verified review',
+      '₹50 Friend Referral bonus',
     ],
     themeColor: '#64748B',
     textColor: 'text-slate-700',
@@ -64,11 +64,7 @@ export const LOYALTY_TIERS: LoyaltyTier[] = [
     welcomeCoins: 1000,
     discountPct: 0,
     couponCode: 'JIIVAA-BRONZE',
-    perks: [
-      'Welcome Bonus: 1,000 Coins credited to wallet upon upgrade',
-      'All Normal perks included',
-      'Single order > ₹3,000 gives extra 200 coins (applied from next order)',
-    ],
+    perks: ['1,000 Welcome Coins', 'All Normal tier perks', '+200 Coins on ₹3k+ orders'],
     themeColor: '#CD7F32',
     textColor: 'text-amber-800',
     accentBg: 'bg-amber-50 border-amber-200',
@@ -93,12 +89,7 @@ export const LOYALTY_TIERS: LoyaltyTier[] = [
     welcomeCoins: 2500,
     discountPct: 5,
     couponCode: 'JIIVAA-SILVER-5',
-    perks: [
-      'Welcome Bonus: 2,500 Coins credited to wallet upon upgrade',
-      'All Normal perks included',
-      'Single order > ₹3,000 gives extra 500 coins (applied from next order)',
-      'Flat 5% Milestone Coupon Code (JIIVAA-SILVER-5)',
-    ],
+    perks: ['2,500 Welcome Coins', 'Flat 5% Milestone Coupon', '+500 Coins on ₹3k+ orders'],
     themeColor: '#94A3B8',
     textColor: 'text-slate-700',
     accentBg: 'bg-slate-100 border-slate-300',
@@ -123,12 +114,7 @@ export const LOYALTY_TIERS: LoyaltyTier[] = [
     welcomeCoins: 10000,
     discountPct: 5,
     couponCode: 'JIIVAA-GOLD',
-    perks: [
-      'Welcome Bonus: 10,000 Coins credited to wallet upon upgrade',
-      'Order > ₹3,000: 2.5% extra off next order',
-      'Order > ₹6,000: 5% extra off next order',
-      'Order > ₹12,000: 7.5% extra off next order',
-    ],
+    perks: ['10,000 Welcome Coins', 'Flat 5% Milestone Coupon', 'Up to 7.5% off next orders'],
     themeColor: '#F28C28',
     textColor: 'text-orange',
     accentBg: 'bg-orange/10 border-orange/30',
@@ -168,12 +154,7 @@ export const LOYALTY_TIERS: LoyaltyTier[] = [
     welcomeCoins: 20000,
     discountPct: 20,
     couponCode: 'JIIVAA-PLATINUM-20',
-    perks: [
-      'Welcome Bonus: 20,000 Coins credited to wallet upon upgrade',
-      'Order > ₹5,000: 5% extra off next order',
-      'Order > ₹10,000: 10% extra off next order',
-      'Order > ₹20,000: 20% extra off next order',
-    ],
+    perks: ['20,000 Welcome Coins', 'Flat 20% Milestone Coupon', 'Up to 20% off next orders'],
     themeColor: '#0A2342',
     textColor: 'text-navy',
     accentBg: 'bg-navy/5 border-navy/20',
@@ -214,9 +195,13 @@ export const REWARDS_CONFIG = {
   tierValidityYears: 3, // 3-year reset cycle
 
   // Referral Economics
-  referralRefereeDiscountInr: 50, // Friend refer in every tier - 50 rs
-  referralRefereeMinOrderInr: 499, // Min order ₹499 for friend
-  referralReferrerBonusCoins: 500, // Referrer gets 500 Coins (= ₹50 value at 0.1 ratio)
+  referralRefereeDiscountInr: 50, // Friend refer in every tier - ₹50
+  referralRefereeMinOrderInr: 499, // Min order ₹499 for friend discount
+  referralReferrerBonusCoins: 500, // Referrer gets 500 Coins (= ₹50) on 1st delivered order
+  referralFriendSignupCoins: 500, // Friend gets 500 Coins (= ₹50 discount value)
+  referralReferrerSignupCoins: 100, // Referrer gets 100 Coins initially when friend joins
+  referralReferrerFirstOrderCoins: 500, // Referrer gets 500 Coins (= ₹50) on friend's 1st delivered order
+  referralReferrerRepeatOrderCoins: 10, // Referrer gets 10 Coins on every subsequent delivered order
   referralCouponPrefix: 'JIIVAA-FRIEND',
 
   // Mascot Assets
@@ -241,8 +226,9 @@ export const REWARDS_CONFIG = {
 
 /**
  * Deterministically generate a 100% collision-free, unique referral code.
- * Format: JIIVAA-<NAME_SLUG><SHORT_HASH>
+ * Format: <NAME_SLUG><SHORT_HASH> (e.g. GURVI3FA, PRIYA4K9, M98763F)
  *
+ * Backward-compatible: Both raw code and JIIVAA- prefixed codes resolve seamlessly.
  * Guaranteed collision-free because userHash is derived from unique userId (CUID/UUID).
  */
 export function generateUniqueReferralCode(
@@ -267,26 +253,29 @@ export function generateUniqueReferralCode(
       .toUpperCase()
       .slice(0, 5);
     if (cleanName.length >= 3) {
-      return `JIIVAA-${cleanName}${userHash}`;
+      return `${cleanName}${userHash}`;
     }
 
     // If mobile number
     const cleanDigits = nameOrMobile.replace(/[^0-9]/g, '');
     if (cleanDigits.length >= 4) {
-      return `JIIVAA-M${cleanDigits.slice(-4)}${userHash.slice(0, 2)}`;
+      return `M${cleanDigits.slice(-4)}${userHash.slice(0, 2)}`;
     }
   }
 
   // 3. Fallback to clean deterministic hash
-  return `JIIVAA-${userHash}9X`;
+  return `JIIVAA${userHash}`;
 }
 
 /**
  * Resolve referral code to extract inviter's display name and perks
+ * Supports both <NAME_SLUG><SHORT_HASH> and legacy JIIVAA-<NAME_SLUG><SHORT_HASH>
  */
 export function resolveReferralCode(code?: string | null) {
-  const cleanCode = (code || '').trim().toUpperCase();
-  if (!cleanCode.startsWith('JIIVAA-') || cleanCode.length < 7) {
+  const rawCode = (code || '').trim().toUpperCase();
+  const cleanCode = rawCode.replace(/^JIIVAA-/, '');
+
+  if (cleanCode.length < 5 || !/^[A-Z0-9]+$/.test(cleanCode)) {
     return {
       valid: false,
       code: cleanCode,
@@ -296,15 +285,14 @@ export function resolveReferralCode(code?: string | null) {
     };
   }
 
-  // Extract human readable name part from code (e.g. JIIVAA-PRIYA4K => Priya)
-  const suffix = cleanCode.replace(/^JIIVAA-/, '');
-  const namePart = suffix.replace(/[0-9].*$/, ''); // Strip numbers and hashes
+  // Extract human readable name part from code (e.g. GURVI3FA => Gurvi)
+  const namePart = cleanCode.replace(/[0-9].*$/, ''); // Strip numbers and hashes
   let display = 'A Boutique Friend';
 
   if (namePart.length >= 3) {
-    // Capitalize first letter: PRIYA => Priya
+    // Capitalize first letter: GURVI => Gurvi
     display = namePart.charAt(0) + namePart.slice(1).toLowerCase();
-  } else if (suffix.startsWith('M') && suffix.length >= 5) {
+  } else if (cleanCode.startsWith('M') && cleanCode.length >= 5) {
     display = 'A Shopping Buddy';
   }
 

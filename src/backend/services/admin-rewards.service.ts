@@ -19,6 +19,7 @@ export interface AdminClaimLedgerItem {
   userName: string;
   userPhoneOrEmail: string;
   type:
+    | 'REFERRAL_BONUS'
     | 'REFERRAL_EARNED'
     | 'REFERRAL_USED'
     | 'MILESTONE_CLAIMED'

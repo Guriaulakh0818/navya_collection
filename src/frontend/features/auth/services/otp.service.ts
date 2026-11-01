@@ -38,6 +38,7 @@ export interface VerifyOtpResult {
   status: 'SUCCESS' | 'EXPIRED' | 'MAX_ATTEMPTS' | 'INVALID_OTP' | 'NOT_FOUND' | 'ERROR';
   message: string;
   statusCode: number;
+  isNewUser?: boolean;
   user?: {
     id: string;
     email: string;
@@ -503,6 +504,7 @@ export class OtpService {
     }
 
     // 6. User Account Lookup / Provisioning via Prisma
+    let isNewUser = false;
     let user: { id: string; email: string; name?: string; role: string } = {
       id: `usr_${email.replace(/[^a-z0-9]/gi, '_')}`,
       email,
@@ -524,6 +526,7 @@ export class OtpService {
           role: dbUser.role || 'USER',
         };
       } else {
+        isNewUser = true;
         const defaultName = email.split('@')[0] || 'Jiivaa Customer';
         const newUser = await prisma.user.create({
           data: {
@@ -580,6 +583,7 @@ export class OtpService {
       message: 'Authentication successful.',
       statusCode: 200,
       user,
+      isNewUser,
     };
   }
 }
