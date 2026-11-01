@@ -5,3 +5,4 @@ export { useWishlistStore } from './wishlist.store';
 export { useCheckoutStore } from './checkout.store';
 export { useUiStore } from './ui.store';
 export { useRewardsStore } from './rewards.store';
+export type { CoinActivity } from './rewards.store';

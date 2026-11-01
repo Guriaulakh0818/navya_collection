@@ -161,6 +161,31 @@ export const useRewardsStore = create<RewardsStoreState>()(
     }),
     {
       name: 'jiivaakart-rewards-storage',
+      version: 2,
+      migrate: (persistedState: any) => {
+        if (!persistedState) return persistedState;
+        return {
+          ...persistedState,
+          activities: (persistedState.activities || []).filter(
+            (act: any) =>
+              act.id !== 'act-1' &&
+              act.id !== 'act-2' &&
+              !act.description?.includes('Boutique Haul') &&
+              !act.description?.includes('registered at JiivaaKart'),
+          ),
+        };
+      },
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.activities = (state.activities || []).filter(
+            (act: any) =>
+              act.id !== 'act-1' &&
+              act.id !== 'act-2' &&
+              !act.description?.includes('Boutique Haul') &&
+              !act.description?.includes('registered at JiivaaKart'),
+          );
+        }
+      },
       partialize: (state) => ({
         coins: state.coins,
         lifetimeCoins: state.lifetimeCoins,

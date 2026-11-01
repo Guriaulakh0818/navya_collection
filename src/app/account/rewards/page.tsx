@@ -25,7 +25,7 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewardsSettings';
 import { LOYALTY_TIERS, LoyaltyTier, REWARDS_CONFIG } from '@/shared/config/rewards.config';
-import { useAuthStore, useRewardsStore } from '@/stores';
+import { useAuthStore, useRewardsStore, type CoinActivity } from '@/stores';
 
 export default function RewardsAccountPage() {
   const { settings } = useRewardsSettings();
@@ -44,6 +44,7 @@ export default function RewardsAccountPage() {
   const [selectedMilestone, setSelectedMilestone] = useState<LoyaltyTier | null>(null);
   const [nextOrderPerks, setNextOrderPerks] = useState<any[]>([]);
   const [cycleExpiryStr, setCycleExpiryStr] = useState<string>('');
+  const [liveActivities, setLiveActivities] = useState<CoinActivity[] | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -53,11 +54,30 @@ export default function RewardsAccountPage() {
       .then((res) => {
         if (res.success && res.data) {
           const d = res.data;
+
+          const liveTxs: CoinActivity[] = Array.isArray(d.transactions)
+            ? d.transactions.map((tx: any) => ({
+                id: String(tx.id),
+                amount: Number(tx.amount) || 0,
+                type: tx.type,
+                description: tx.description || 'Jiivaa Coin Activity',
+                date: tx.createdAt
+                  ? new Date(tx.createdAt).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  : 'Recently',
+              }))
+            : [];
+
+          setLiveActivities(liveTxs);
           setLoyaltyData({
             coins: d.balance,
             lifetimeCoins: d.lifetimeEarned,
             cumulativeSpendInCycle: d.cumulativeSpendInCycle,
             cycleStartedAt: d.cycleStartedAt,
+            activities: liveTxs,
           });
           if (Array.isArray(d.nextOrderPerks)) {
             setNextOrderPerks(d.nextOrderPerks);
@@ -83,6 +103,16 @@ export default function RewardsAccountPage() {
     spendNeeded,
     progressPct,
   } = mounted ? getNextTier() : { tier: LOYALTY_TIERS[1], spendNeeded: 2500, progressPct: 0 };
+
+  // Source activities from live API, falling back to store, with any legacy dummy items purged
+  const rawActivities = liveActivities !== null ? liveActivities : activities;
+  const cleanActivities = (mounted ? rawActivities : []).filter(
+    (act) =>
+      act.id !== 'act-1' &&
+      act.id !== 'act-2' &&
+      !act.description?.includes('Boutique Haul') &&
+      !act.description?.includes('registered at JiivaaKart'),
+  );
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -563,42 +593,50 @@ export default function RewardsAccountPage() {
       </div>
 
       {/* Activity Log / Passbook */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-4">
+      <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-7 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h2 className="text-lg font-extrabold text-navy tracking-tight flex items-center gap-2">
-            <History className="w-5 h-5 text-slate-600" />
-            <span>Coins Passbook &amp; History</span>
-          </h2>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0">
+              <History className="w-4 h-4 text-slate-700" />
+            </div>
+            <h2 className="text-base sm:text-lg font-extrabold text-navy tracking-tight">
+              Coins Passbook &amp; History
+            </h2>
+          </div>
           <span className="text-xs font-bold text-slate-400">
-            {mounted ? activities.length : 0} Transactions
+            {cleanActivities.length} Transactions
           </span>
         </div>
 
-        {mounted && activities.length === 0 ? (
+        {cleanActivities.length === 0 ? (
           <div className="py-10 text-center space-y-2">
-            <Coins className="w-8 h-8 text-slate-300 mx-auto" />
-            <div className="text-xs font-bold text-slate-700">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center mx-auto text-xl">
+              🪙
+            </div>
+            <div className="text-sm font-bold text-slate-700">
               Abhi tak koi coin transactions nahi hain
             </div>
-            <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
-              Verified boutiques se shopping karein ya apne dosto ko invite karein — har delivery
-              par coins automatically add honge!
+            <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+              Boutique styles shopping karein, review submit karein ya dosto ko invite karein — har
+              coin earn aur spend hone par yahan live ledger record hoga!
             </p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
-            {(mounted ? activities : []).map((act) => (
-              <div key={act.id} className="py-3.5 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
+            {cleanActivities.map((act) => (
+              <div key={act.id} className="py-3 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold ${
-                      act.amount > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black shrink-0 ${
+                      act.amount > 0
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-rose-50 text-rose-700 border border-rose-200'
                     }`}
                   >
-                    {act.amount > 0 ? '+' : '-'}
+                    {act.amount > 0 ? '+' : '–'}
                   </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-extrabold text-navy">
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-extrabold text-navy truncate">
                       {act.description}
                     </div>
                     <div className="text-[11px] text-slate-400 font-medium">{act.date}</div>
@@ -606,8 +644,8 @@ export default function RewardsAccountPage() {
                 </div>
 
                 <div
-                  className={`text-sm sm:text-base font-black shrink-0 ${
-                    act.amount > 0 ? 'text-emerald-600' : 'text-slate-800'
+                  className={`text-xs sm:text-sm font-black shrink-0 font-mono ${
+                    act.amount > 0 ? 'text-emerald-600' : 'text-rose-600'
                   }`}
                 >
                   {act.amount > 0 ? `+${act.amount}` : act.amount} Coins
