@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAdminUser } from '@/backend/lib/session';
+import { LoyaltyService } from '@/backend/services/loyalty.service';
 import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { prisma } from '@/lib/prisma';
 
@@ -250,6 +251,11 @@ export async function PATCH(request: NextRequest) {
         OrderEmailNotificationService.notifyOrderStatusChanged(orderId, orderStatus).catch(
           () => {},
         );
+      }
+      if (orderStatus === 'DELIVERED') {
+        LoyaltyService.processOrderDelivered(orderId).catch((err) => {
+          console.warn('[AdminOrders] Loyalty cashback delivery error:', err);
+        });
       }
     } catch {
       // Non-blocking notification failure

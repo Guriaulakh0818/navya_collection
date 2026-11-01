@@ -50,12 +50,15 @@ export default function AdminRewardsControlCenterPage() {
   // Editable settings form state
   const [settingsForm, setSettingsForm] = useState<AdminRewardsSettings>({
     coinToInrRatio: 0.1,
-    signupBonusCoins: 200,
-    reviewBonusCoins: 50,
-    firstOrderBonusCoins: 300,
-    referralRefereeDiscountInr: 150,
-    referralRefereeMinOrderInr: 999,
-    referralReferrerBonusCoins: 150,
+    spendToCoinRatio: 10,
+    maxOrderCoinRedemptionPct: 25,
+    signupBonusCoins: 0,
+    reviewBonusCoins: 1,
+    firstOrderBonusCoins: 0,
+    referralRefereeDiscountInr: 50,
+    referralRefereeMinOrderInr: 499,
+    referralReferrerBonusCoins: 500,
+    tierValidityYears: 3,
   });
 
   const [isSavingSettings, setIsSavingSettings] = useState(false);
@@ -249,17 +252,35 @@ export default function AdminRewardsControlCenterPage() {
               <Award className="w-4 h-4" />
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-bold pt-1">
-            <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-mono">
+          <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold pt-1">
+            <span
+              title="Normal Shopper (<₹2,500)"
+              className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 font-mono text-[11px]"
+            >
+              🛍️ {data?.stats.tierDistribution.normal || 0}
+            </span>
+            <span
+              title="Bronze Shopper (₹2,500+)"
+              className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-mono text-[11px]"
+            >
               🥉 {data?.stats.tierDistribution.bronze || 0}
             </span>
-            <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-300 font-mono">
+            <span
+              title="Silver Trendsetter (₹10,000+)"
+              className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-300 font-mono text-[11px]"
+            >
               🥈 {data?.stats.tierDistribution.silver || 0}
             </span>
-            <span className="px-2 py-0.5 rounded-md bg-orange/10 text-orange border border-orange/30 font-mono">
+            <span
+              title="Gold VIP (₹25,000+)"
+              className="px-2 py-0.5 rounded-md bg-orange/10 text-orange border border-orange/30 font-mono text-[11px]"
+            >
               🥇 {data?.stats.tierDistribution.gold || 0}
             </span>
-            <span className="px-2 py-0.5 rounded-md bg-navy/10 text-navy border border-navy/30 font-mono">
+            <span
+              title="Platinum (₹50,000+)"
+              className="px-2 py-0.5 rounded-md bg-navy/10 text-navy border border-navy/30 font-mono text-[11px]"
+            >
               💎 {data?.stats.tierDistribution.platinum || 0}
             </span>
           </div>
@@ -545,7 +566,7 @@ export default function AdminRewardsControlCenterPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
               {/* Coin to INR Ratio */}
               <div className="space-y-1.5">
                 <label className="font-extrabold text-slate-700 flex items-center justify-between">
@@ -573,52 +594,84 @@ export default function AdminRewardsControlCenterPage() {
                 </p>
               </div>
 
-              {/* Signup Bonus Coins */}
+              {/* Shopping Spend to Coin Earn Rate */}
               <div className="space-y-1.5">
                 <label className="font-extrabold text-slate-700 flex items-center justify-between">
-                  <span>Welcome Signup Coins</span>
+                  <span>Shopping Earn Rate</span>
                   <span className="text-slate-400 font-mono text-[11px]">
-                    Worth ₹{Math.round(settingsForm.signupBonusCoins * settingsForm.coinToInrRatio)}
+                    ₹{settingsForm.spendToCoinRatio || 10} = 1 Coin
                   </span>
                 </label>
                 <input
                   type="number"
-                  min="0"
-                  max="5000"
-                  value={settingsForm.signupBonusCoins}
+                  min="1"
+                  max="1000"
+                  value={settingsForm.spendToCoinRatio || 10}
                   onChange={(e) =>
                     setSettingsForm({
                       ...settingsForm,
-                      signupBonusCoins: parseInt(e.target.value) || 0,
+                      spendToCoinRatio: parseInt(e.target.value) || 10,
                     })
                   }
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono font-bold bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange"
                 />
                 <p className="text-[10px] text-slate-400">
-                  Credited to user wallet immediately upon new account registration.
+                  Customer earns 1 Coin for every ₹{settingsForm.spendToCoinRatio || 10} spent
+                  (applied from next order).
                 </p>
               </div>
 
-              {/* First Order Bonus */}
+              {/* Max Coin Spend Cap Per Order */}
               <div className="space-y-1.5">
-                <label className="font-extrabold text-slate-700">
-                  First Order Haul Bonus Coins
+                <label className="font-extrabold text-slate-700 flex items-center justify-between">
+                  <span>Max Coin Spend Limit</span>
+                  <span className="text-slate-400 font-mono text-[11px]">
+                    Max {settingsForm.maxOrderCoinRedemptionPct || 25}% of Order
+                  </span>
                 </label>
                 <input
                   type="number"
-                  min="0"
-                  max="5000"
-                  value={settingsForm.firstOrderBonusCoins}
+                  min="5"
+                  max="100"
+                  value={settingsForm.maxOrderCoinRedemptionPct || 25}
                   onChange={(e) =>
                     setSettingsForm({
                       ...settingsForm,
-                      firstOrderBonusCoins: parseInt(e.target.value) || 0,
+                      maxOrderCoinRedemptionPct: parseInt(e.target.value) || 25,
                     })
                   }
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono font-bold bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange"
                 />
                 <p className="text-[10px] text-slate-400">
-                  Bonus coins awarded when customer completes their 1st delivered boutique purchase.
+                  Customer can spend wallet coins to cover at most{' '}
+                  {settingsForm.maxOrderCoinRedemptionPct || 25}% of single order total.
+                </p>
+              </div>
+
+              {/* VIP Tier Cycle Validity */}
+              <div className="space-y-1.5">
+                <label className="font-extrabold text-slate-700 flex items-center justify-between">
+                  <span>Tier Cycle Reset Period</span>
+                  <span className="text-slate-400 font-mono text-[11px]">
+                    {settingsForm.tierValidityYears || 3} Years
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={settingsForm.tierValidityYears || 3}
+                  onChange={(e) =>
+                    setSettingsForm({
+                      ...settingsForm,
+                      tierValidityYears: parseInt(e.target.value) || 3,
+                    })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono font-bold bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange"
+                />
+                <p className="text-[10px] text-slate-400">
+                  Tier privileges active for {settingsForm.tierValidityYears || 3} years before
+                  resetting to Normal Shopper.
                 </p>
               </div>
 
@@ -635,13 +688,13 @@ export default function AdminRewardsControlCenterPage() {
                   onChange={(e) =>
                     setSettingsForm({
                       ...settingsForm,
-                      reviewBonusCoins: parseInt(e.target.value) || 0,
+                      reviewBonusCoins: parseInt(e.target.value) || 1,
                     })
                   }
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 font-mono font-bold bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange/30 focus:border-orange"
                 />
                 <p className="text-[10px] text-slate-400">
-                  Awarded for every verified boutique review with photo/feedback.
+                  Credited for each verified product review (Default: 1 coin).
                 </p>
               </div>
             </div>
@@ -752,43 +805,112 @@ export default function AdminRewardsControlCenterPage() {
 
       {/* TAB 3: VIP TIERS SPECIFICATION */}
       {activeTab === 'TIERS' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {LOYALTY_TIERS.map((tier) => (
-            <div
-              key={tier.id}
-              className={`rounded-3xl p-5 border bg-white shadow-xs space-y-4 ${
-                tier.id === 'GOLD' ? 'border-orange/40 ring-2 ring-orange/15' : 'border-slate-200'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-2xl">{tier.badge.split(' ')[0]}</span>
-                <span className="font-mono text-xs font-black text-navy px-2 py-0.5 rounded-full bg-slate-100">
-                  {tier.minCoins.toLocaleString('en-IN')}+ Coins
-                </span>
+        <div className="space-y-6">
+          {/* 3-Year Tier Reset Cycle Policy Banner */}
+          <div className="bg-gradient-to-r from-navy via-slate-900 to-navy text-white rounded-3xl p-6 border border-slate-700 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange/20 border border-orange/40 text-orange text-[10px] font-black uppercase tracking-widest">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>3-Year Reset Cycle System</span>
               </div>
-
-              <div>
-                <h3 className="font-extrabold text-navy text-base">{tier.name}</h3>
-                <span className="text-xs text-orange font-bold font-mono">
-                  Coupon: {tier.couponCode} ({tier.discountPct}% OFF)
-                </span>
-              </div>
-
-              <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                  Perks &amp; Privileges
-                </span>
-                <ul className="space-y-1 text-slate-600 text-xs">
-                  {tier.perks.map((p, idx) => (
-                    <li key={idx} className="flex items-start gap-1.5 text-[11px]">
-                      <span className="text-orange font-bold">•</span>
-                      <span>{p}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                Customer VIP Tier Journey (Valid for 3 Years)
+              </h2>
+              <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                Customer ki har delivered purchase ka total cumulative shopping spend me count hota
+                hai. Yeh tier status <strong>3 Years (36 Months)</strong> tak active rehta hai. 3
+                saal complete hone par cycle wapas Normal Shopper se repeat hota hai, jisse
+                customers dobara tier upgrade bonuses earn kar sakte hain! Wallet me stored coins
+                kabhi lapse nahi hote.
+              </p>
             </div>
-          ))}
+            <div className="bg-white/10 px-5 py-3.5 rounded-2xl border border-white/15 text-center shrink-0">
+              <span className="text-[10px] uppercase font-bold text-slate-300 block">
+                Cycle Period
+              </span>
+              <span className="text-xl font-black text-orange font-mono">3 Years (36M)</span>
+            </div>
+          </div>
+
+          {/* 5 Spend-Based Tier Specification Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {LOYALTY_TIERS.map((tier) => (
+              <div
+                key={tier.id}
+                className={`rounded-3xl p-5 border bg-white shadow-xs space-y-4 flex flex-col justify-between ${
+                  tier.id === 'GOLD'
+                    ? 'border-orange/50 ring-2 ring-orange/15 shadow-sm'
+                    : tier.id === 'PLATINUM'
+                      ? 'border-navy/40 ring-2 ring-navy/10'
+                      : 'border-slate-200'
+                }`}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl">{tier.badge.split(' ')[0]}</span>
+                    <span className="font-mono text-[11px] font-black text-navy px-2 py-0.5 rounded-full bg-slate-100">
+                      Tier {tier.tierLevel}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="font-extrabold text-navy text-sm sm:text-base">{tier.name}</h3>
+                    <div className="text-xs font-bold text-slate-500 mt-0.5">
+                      Spend:{' '}
+                      <strong className="text-navy font-mono">
+                        ₹{tier.minSpendInr.toLocaleString('en-IN')}
+                        {tier.maxSpendInr ? ` – ₹${tier.maxSpendInr.toLocaleString('en-IN')}` : '+'}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* Welcome Bonus Coins */}
+                  <div className="bg-amber-50 rounded-xl p-2.5 border border-amber-200 text-xs">
+                    <span className="text-[10px] uppercase font-extrabold text-amber-800 block">
+                      Welcome Bonus
+                    </span>
+                    <span className="font-black text-amber-900 font-mono">
+                      {tier.welcomeCoins > 0
+                        ? `🎁 +${tier.welcomeCoins.toLocaleString('en-IN')} Coins`
+                        : 'Starter Member (0 Coins)'}
+                    </span>
+                  </div>
+
+                  {/* Perks list */}
+                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                      Perks &amp; Privileges
+                    </span>
+                    <ul className="space-y-1.5 text-slate-600 text-xs">
+                      {tier.perks.map((p, idx) => (
+                        <li key={idx} className="flex items-start gap-1.5 text-[11px] leading-snug">
+                          <span className="text-orange font-bold shrink-0">•</span>
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Single Order Bonuses if any */}
+                {tier.singleOrderPerks && tier.singleOrderPerks.length > 0 && (
+                  <div className="pt-3 border-t border-slate-100 mt-2 space-y-1">
+                    <span className="text-[9px] uppercase font-extrabold text-slate-400 block tracking-wider">
+                      Single Order Rewards:
+                    </span>
+                    {tier.singleOrderPerks.map((sop, sIdx) => (
+                      <div
+                        key={sIdx}
+                        className="text-[10px] bg-slate-50 text-slate-700 font-medium px-2 py-1 rounded-lg border border-slate-200/80"
+                      >
+                        {sop.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

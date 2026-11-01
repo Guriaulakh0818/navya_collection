@@ -32,26 +32,57 @@ export default function RewardsAccountPage() {
   const user = useAuthStore((s) => s.user);
   const coins = useRewardsStore((s) => s.coins);
   const lifetimeCoins = useRewardsStore((s) => s.lifetimeCoins);
+  const cumulativeSpendInCycle = useRewardsStore((s) => s.cumulativeSpendInCycle);
   const activities = useRewardsStore((s) => s.activities);
   const claimedCoupons = useRewardsStore((s) => s.claimedCoupons);
   const claimTierCoupon = useRewardsStore((s) => s.claimTierCoupon);
   const getCurrentTier = useRewardsStore((s) => s.getCurrentTier);
   const getNextTier = useRewardsStore((s) => s.getNextTier);
+  const setLoyaltyData = useRewardsStore((s) => s.setLoyaltyData);
 
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [selectedMilestone, setSelectedMilestone] = useState<LoyaltyTier | null>(null);
+  const [nextOrderPerks, setNextOrderPerks] = useState<any[]>([]);
+  const [cycleExpiryStr, setCycleExpiryStr] = useState<string>('');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    fetch('/api/v1/rewards/loyalty')
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          const d = res.data;
+          setLoyaltyData({
+            coins: d.balance,
+            lifetimeCoins: d.lifetimeEarned,
+            cumulativeSpendInCycle: d.cumulativeSpendInCycle,
+            cycleStartedAt: d.cycleStartedAt,
+          });
+          if (Array.isArray(d.nextOrderPerks)) {
+            setNextOrderPerks(d.nextOrderPerks);
+          }
+          if (d.cycleExpiresAt) {
+            const exp = new Date(d.cycleExpiresAt);
+            setCycleExpiryStr(
+              exp.toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              }),
+            );
+          }
+        }
+      })
+      .catch(() => {});
+  }, [setLoyaltyData]);
 
   const currentTier = mounted ? getCurrentTier() : LOYALTY_TIERS[0];
   const {
     tier: nextTier,
-    coinsNeeded,
+    spendNeeded,
     progressPct,
-  } = mounted ? getNextTier() : { tier: LOYALTY_TIERS[1], coinsNeeded: 550, progressPct: 45 };
+  } = mounted ? getNextTier() : { tier: LOYALTY_TIERS[1], spendNeeded: 2500, progressPct: 0 };
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -136,6 +167,17 @@ export default function RewardsAccountPage() {
                   </div>
                 </div>
               </div>
+
+              <div className="hidden sm:block h-8 w-px bg-white/20" />
+
+              <div className="flex items-center gap-2 text-left">
+                <div>
+                  <div className="text-xs text-slate-300 font-semibold">3-Yr Shopping Spend</div>
+                  <div className="text-sm sm:text-base font-extrabold text-amber-300 font-mono">
+                    ₹{mounted ? cumulativeSpendInCycle.toLocaleString('en-IN') : 0}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-1">
@@ -151,9 +193,14 @@ export default function RewardsAccountPage() {
                 className="rounded-full border-white/30 text-white hover:bg-white/10 text-xs font-bold"
               >
                 <Link href="/referral">
-                  Refer a Friend (Get ₹{settings.referralReferrerBonusInr})
+                  Refer a Friend (Get ₹{settings.referralRefereeDiscountInr})
                 </Link>
               </Button>
+              {cycleExpiryStr && (
+                <span className="text-[11px] text-slate-300 font-medium px-3 py-1.5 rounded-full bg-white/10 border border-white/15">
+                  🔄 3-Yr Cycle Active (Till {cycleExpiryStr})
+                </span>
+              )}
             </div>
           </div>
 
@@ -184,28 +231,34 @@ export default function RewardsAccountPage() {
               <span>Jiivaa VIP Tier Journey</span>
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Unlock higher discount codes, free shipping &amp; exclusive boutique perks as your
-              lifetime coins grow.
+              Accumulate boutique purchases over 3 years to unlock welcome bonuses &amp; next-order
+              discount perks.
             </p>
           </div>
 
-          {nextTier && (
-            <div className="px-3.5 py-1.5 rounded-full bg-orange/10 border border-orange/20 text-orange text-xs font-extrabold">
-              {coinsNeeded} Coins to {nextTier.badge}
+          <div className="flex flex-wrap items-center gap-2">
+            {nextTier && (
+              <div className="px-3.5 py-1.5 rounded-full bg-orange/10 border border-orange/20 text-orange text-xs font-extrabold">
+                Spend ₹{spendNeeded.toLocaleString('en-IN')} to {nextTier.badge}
+              </div>
+            )}
+            <div className="px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[11px] font-bold">
+              3-Year Cycle
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Animated Progress Bar */}
+        {/* Animated Spend Progress Bar */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs font-bold text-slate-600">
             <span>
-              Current: {currentTier.name} ({mounted ? lifetimeCoins : 450} Lifetime Coins)
+              Current: {currentTier.name} (₹
+              {mounted ? cumulativeSpendInCycle.toLocaleString('en-IN') : 0} Shopping Spend)
             </span>
             <span>
               {nextTier
-                ? `Next: ${nextTier.name} (${nextTier.minCoins} Coins)`
-                : 'Highest Tier Reached 🎉'}
+                ? `Next: ${nextTier.name} (Spend ₹${nextTier.minSpendInr.toLocaleString('en-IN')})`
+                : 'Platinum Style Icon 🎉 (Highest Tier Reached)'}
             </span>
           </div>
           <div className="relative h-3 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/60">
@@ -216,10 +269,10 @@ export default function RewardsAccountPage() {
           </div>
         </div>
 
-        {/* 4 Tier Milestone Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+        {/* 5 Tier Milestone Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pt-2">
           {LOYALTY_TIERS.map((tier) => {
-            const isUnlocked = (mounted ? lifetimeCoins : 450) >= tier.minCoins;
+            const isUnlocked = (mounted ? cumulativeSpendInCycle : 0) >= tier.minSpendInr;
             const isCurrent = currentTier.id === tier.id;
             const isClaimed = claimedCoupons.some((c) => c.tierId === tier.id);
 
@@ -244,36 +297,56 @@ export default function RewardsAccountPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-2xl">{tier.badge.split(' ')[0]}</span>
-                    <span className="text-xs font-extrabold text-slate-500">
-                      {tier.minCoins}+ Coins
+                    <span className="text-xs font-extrabold text-slate-500 font-mono">
+                      ₹{tier.minSpendInr.toLocaleString('en-IN')}
+                      {tier.maxSpendInr ? ` – ₹${tier.maxSpendInr.toLocaleString('en-IN')}` : '+'}
                     </span>
                   </div>
 
                   <div>
                     <h3 className="font-extrabold text-sm sm:text-base text-navy">{tier.name}</h3>
-                    {tier.discountPct > 0 && (
-                      <div className="text-xs font-black text-orange mt-0.5">
-                        Flat {tier.discountPct}% Milestone Coupon
-                      </div>
-                    )}
+                    <div className="text-[11px] font-extrabold text-amber-700 mt-0.5 font-mono">
+                      {tier.welcomeCoins > 0
+                        ? `🎁 +${tier.welcomeCoins.toLocaleString('en-IN')} Welcome Coins`
+                        : 'Starter Member'}
+                    </div>
                   </div>
 
                   {/* Perks list */}
                   <ul className="space-y-1.5 text-[11px] text-slate-600 font-medium">
                     {tier.perks.map((perk, idx) => (
-                      <li key={idx} className="flex items-start gap-1.5">
+                      <li key={idx} className="flex items-start gap-1.5 leading-snug">
                         <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                         <span>{perk}</span>
                       </li>
                     ))}
                   </ul>
+
+                  {/* Single order perks */}
+                  {tier.singleOrderPerks && tier.singleOrderPerks.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 space-y-1">
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">
+                        Order Perks:
+                      </span>
+                      {tier.singleOrderPerks.map((sop, idx) => (
+                        <div
+                          key={idx}
+                          className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium"
+                        >
+                          {sop.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Milestone Coupon Action */}
                 <div className="pt-4 border-t border-slate-100 mt-4">
                   {tier.discountPct === 0 ? (
                     <div className="text-center text-[11px] font-bold text-slate-400 py-1.5">
-                      Starter Member
+                      {isUnlocked
+                        ? 'Unlocked'
+                        : `Spend ₹${tier.minSpendInr.toLocaleString('en-IN')}`}
                     </div>
                   ) : isUnlocked ? (
                     isClaimed ? (
@@ -304,7 +377,7 @@ export default function RewardsAccountPage() {
                     )
                   ) : (
                     <div className="text-center text-[11px] font-bold text-slate-400 py-1.5 flex items-center justify-center gap-1">
-                      <span>Unlock at {tier.minCoins} Coins</span>
+                      <span>Unlock at ₹{tier.minSpendInr.toLocaleString('en-IN')}</span>
                     </div>
                   )}
                 </div>
@@ -314,12 +387,46 @@ export default function RewardsAccountPage() {
         </div>
       </div>
 
+      {/* Unlocked Next-Order Perks Coupons (if any) */}
+      {nextOrderPerks.length > 0 && (
+        <div className="bg-amber-50/70 border border-amber-200 rounded-3xl p-6 sm:p-7 space-y-4 shadow-xs">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-amber-600" />
+            <h3 className="font-extrabold text-navy text-base">
+              Your Unlocked Next-Order Perks ({nextOrderPerks.length})
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {nextOrderPerks.map((perk) => (
+              <div
+                key={perk.id}
+                className="bg-white p-3.5 rounded-2xl border border-amber-200/90 shadow-2xs flex items-center justify-between gap-3"
+              >
+                <div>
+                  <span className="font-mono font-black text-navy text-sm block">{perk.code}</span>
+                  <span className="text-[11px] text-emerald-700 font-extrabold">
+                    {perk.discountPct}% Extra OFF on Next Order
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyCode(perk.code)}
+                  className="px-3 py-1.5 rounded-xl bg-orange text-white text-xs font-bold shadow-xs hover:bg-orange-600 cursor-pointer shrink-0"
+                >
+                  {copiedCode === perk.code ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Ways to Earn Coins Grid */}
       <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 sm:p-8 space-y-5">
         <div>
           <h2 className="text-xl font-extrabold text-navy tracking-tight flex items-center gap-2">
             <Coins className="w-5 h-5 text-amber-500" />
-            <span>How to Earn More Jiivaa Coins</span>
+            <span>How to Earn &amp; Spend Jiivaa Coins</span>
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
             Collect coins effortlessly as you shop, review, and invite friends to JiivaaKart.
@@ -333,7 +440,8 @@ export default function RewardsAccountPage() {
             </div>
             <h3 className="font-extrabold text-sm text-navy">Shop Boutique Styles</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Har ₹1 spent par automatic 1 Coin aapke wallet me add hoga delivery ke baad.
+              Har ₹{settings.spendToCoinRatio || 10} spent par automatic 1 Coin aapke wallet me add
+              hoga delivery ke baad (next order par apply karein).
             </p>
           </div>
 
@@ -344,8 +452,8 @@ export default function RewardsAccountPage() {
             <h3 className="font-extrabold text-sm text-navy">Refer a Friend</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
               Friend ko Flat ₹{settings.referralRefereeDiscountInr} OFF milega, aur unke order
-              deliver hote hi aapko {settings.referralReferrerBonusCoins} Coins (₹
-              {settings.referralReferrerBonusInr}) milenge.
+              deliver hote hi aapko ₹{settings.referralRefereeDiscountInr} (
+              {settings.referralReferrerBonusCoins} Coins) milenge.
             </p>
             <Link
               href="/referral"
@@ -362,17 +470,19 @@ export default function RewardsAccountPage() {
             <h3 className="font-extrabold text-sm text-navy">Verified Photo Review</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
               Apne outfit ki styling photo aur review post karein aur paayein +
-              {settings.reviewBonusCoins} Coins bonus.
+              {settings.reviewBonusCoins || 1} Coin bonus.
             </p>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-2">
             <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
-              🎂
+              🪙
             </div>
-            <h3 className="font-extrabold text-sm text-navy">Birthday Treat</h3>
+            <h3 className="font-extrabold text-sm text-navy">Spend Coins Rule</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Apne birthday month me direct 500 Coins aur special 20% discount coupon paayein.
+              Customer apne wallet me stored coins se 1 order par{' '}
+              <strong>maximum {settings.maxOrderCoinRedemptionPct || 25}%</strong> order value hi
+              spend kar sakta hai.
             </p>
           </div>
         </div>

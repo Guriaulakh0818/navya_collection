@@ -23,6 +23,8 @@ export interface ClaimedCoupon {
 interface RewardsStoreState {
   coins: number;
   lifetimeCoins: number;
+  cumulativeSpendInCycle: number;
+  cycleStartedAt: string;
   claimedCoupons: ClaimedCoupon[];
   referralCode: string;
   totalReferralClicks: number;
@@ -34,12 +36,18 @@ interface RewardsStoreState {
   openWelcomeModal: () => void;
   closeWelcomeModal: () => void;
   addCoins: (amount: number, type: CoinActivity['type'], description: string) => void;
-  redeemCoins: (amount: number) => boolean;
+  redeemCoins: (amount: number, orderTotal?: number) => boolean;
   claimTierCoupon: (tierId: string, code: string, discountPct: number) => void;
   setReferralCode: (code: string) => void;
   incrementReferralClick: () => void;
+  setLoyaltyData: (data: Partial<RewardsStoreState>) => void;
   getCurrentTier: () => LoyaltyTier;
-  getNextTier: () => { tier: LoyaltyTier | null; coinsNeeded: number; progressPct: number };
+  getNextTier: () => {
+    tier: LoyaltyTier | null;
+    coinsNeeded: number;
+    spendNeeded: number;
+    progressPct: number;
+  };
 }
 
 export const useRewardsStore = create<RewardsStoreState>()(
@@ -47,6 +55,8 @@ export const useRewardsStore = create<RewardsStoreState>()(
     (set, get) => ({
       coins: 0,
       lifetimeCoins: 0,
+      cumulativeSpendInCycle: 0,
+      cycleStartedAt: new Date().toISOString(),
       claimedCoupons: [],
       referralCode: '',
       totalReferralClicks: 0,
@@ -55,6 +65,8 @@ export const useRewardsStore = create<RewardsStoreState>()(
       openWelcomeModal: () => set({ isWelcomeModalOpen: true }),
       closeWelcomeModal: () => set({ isWelcomeModalOpen: false }),
       activities: [],
+
+      setLoyaltyData: (data) => set((state) => ({ ...state, ...data })),
 
       addCoins: (amount, type, description) => {
         set((state) => ({
@@ -73,9 +85,19 @@ export const useRewardsStore = create<RewardsStoreState>()(
         }));
       },
 
-      redeemCoins: (amount) => {
+      redeemCoins: (amount, orderTotal?: number) => {
         const current = get().coins;
         if (current < amount) return false;
+
+        // If order total provided, enforce 25% max coin burn rule
+        if (typeof orderTotal === 'number' && orderTotal > 0) {
+          const maxDiscountInr = (orderTotal * REWARDS_CONFIG.maxOrderCoinRedemptionPct) / 100;
+          const maxCoins = Math.floor(maxDiscountInr / REWARDS_CONFIG.coinToInrRatio);
+          if (amount > maxCoins) {
+            return false;
+          }
+        }
+
         set((state) => ({
           coins: state.coins - amount,
           activities: [
@@ -109,31 +131,32 @@ export const useRewardsStore = create<RewardsStoreState>()(
         set((state) => ({ totalReferralClicks: state.totalReferralClicks + 1 })),
 
       getCurrentTier: () => {
-        const lifetime = get().lifetimeCoins;
-        let active = LOYALTY_TIERS[0];
+        const spend = get().cumulativeSpendInCycle;
+        let active = LOYALTY_TIERS[0]; // Normal Shopper
         for (const t of LOYALTY_TIERS) {
-          if (lifetime >= t.minCoins) active = t;
+          if (spend >= t.minSpendInr) active = t;
         }
         return active;
       },
 
       getNextTier: () => {
-        const lifetime = get().lifetimeCoins;
+        const spend = get().cumulativeSpendInCycle;
         const current = get().getCurrentTier();
         const currentIndex = LOYALTY_TIERS.findIndex((t) => t.id === current.id);
         const next =
           currentIndex < LOYALTY_TIERS.length - 1 ? LOYALTY_TIERS[currentIndex + 1] : null;
 
         if (!next) {
-          return { tier: null, coinsNeeded: 0, progressPct: 100 };
+          return { tier: null, coinsNeeded: 0, spendNeeded: 0, progressPct: 100 };
         }
 
-        const tierSpan = next.minCoins - current.minCoins;
-        const progressInTier = Math.max(0, lifetime - current.minCoins);
+        const tierSpan = next.minSpendInr - current.minSpendInr;
+        const progressInTier = Math.max(0, spend - current.minSpendInr);
         const progressPct = Math.min(100, Math.round((progressInTier / tierSpan) * 100));
-        const coinsNeeded = Math.max(0, next.minCoins - lifetime);
+        const spendNeeded = Math.max(0, next.minSpendInr - spend);
+        const coinsNeeded = Math.max(0, next.minCoins - get().coins);
 
-        return { tier: next, coinsNeeded, progressPct };
+        return { tier: next, coinsNeeded, spendNeeded, progressPct };
       },
     }),
     {
@@ -141,6 +164,8 @@ export const useRewardsStore = create<RewardsStoreState>()(
       partialize: (state) => ({
         coins: state.coins,
         lifetimeCoins: state.lifetimeCoins,
+        cumulativeSpendInCycle: state.cumulativeSpendInCycle,
+        cycleStartedAt: state.cycleStartedAt,
         claimedCoupons: state.claimedCoupons,
         referralCode: state.referralCode,
         totalReferralClicks: state.totalReferralClicks,

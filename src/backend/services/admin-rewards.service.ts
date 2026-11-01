@@ -3,12 +3,15 @@ import { LOYALTY_TIERS, REWARDS_CONFIG } from '@/shared/config/rewards.config';
 
 export interface AdminRewardsSettings {
   coinToInrRatio: number;
+  spendToCoinRatio: number;
+  maxOrderCoinRedemptionPct: number;
   signupBonusCoins: number;
   reviewBonusCoins: number;
   firstOrderBonusCoins: number;
   referralRefereeDiscountInr: number;
   referralRefereeMinOrderInr: number;
   referralReferrerBonusCoins: number;
+  tierValidityYears: number;
 }
 
 export interface AdminClaimLedgerItem {
@@ -21,7 +24,10 @@ export interface AdminClaimLedgerItem {
     | 'MILESTONE_CLAIMED'
     | 'ORDER_CASHBACK'
     | 'SIGNUP_BONUS'
-    | 'REDEEMED_CHECKOUT';
+    | 'REDEEMED_CHECKOUT'
+    | 'ORDER_EARNED'
+    | 'ORDER_BONUS'
+    | 'TIER_BONUS';
   codeOrTier: string;
   coins: number;
   inrValue: number;
@@ -42,6 +48,7 @@ export interface AdminRewardsOverviewData {
     totalReferralOrders: number;
     totalReferralGmvInr: number;
     tierDistribution: {
+      normal: number;
       bronze: number;
       silver: number;
       gold: number;
@@ -55,12 +62,15 @@ export interface AdminRewardsOverviewData {
 // In-memory runtime settings cache (with defaults from config)
 let runtimeSettings: AdminRewardsSettings = {
   coinToInrRatio: REWARDS_CONFIG.coinToInrRatio,
+  spendToCoinRatio: REWARDS_CONFIG.spendToCoinRatio,
+  maxOrderCoinRedemptionPct: REWARDS_CONFIG.maxOrderCoinRedemptionPct,
   signupBonusCoins: REWARDS_CONFIG.signupBonusCoins,
   reviewBonusCoins: REWARDS_CONFIG.reviewBonusCoins,
   firstOrderBonusCoins: REWARDS_CONFIG.firstOrderBonusCoins,
   referralRefereeDiscountInr: REWARDS_CONFIG.referralRefereeDiscountInr,
   referralRefereeMinOrderInr: REWARDS_CONFIG.referralRefereeMinOrderInr,
   referralReferrerBonusCoins: REWARDS_CONFIG.referralReferrerBonusCoins,
+  tierValidityYears: REWARDS_CONFIG.tierValidityYears,
 };
 
 export class AdminRewardsService {
@@ -68,12 +78,15 @@ export class AdminRewardsService {
 
   private static applySettingsToConfig(s: AdminRewardsSettings) {
     REWARDS_CONFIG.coinToInrRatio = s.coinToInrRatio;
+    REWARDS_CONFIG.spendToCoinRatio = s.spendToCoinRatio;
+    REWARDS_CONFIG.maxOrderCoinRedemptionPct = s.maxOrderCoinRedemptionPct;
     REWARDS_CONFIG.signupBonusCoins = s.signupBonusCoins;
     REWARDS_CONFIG.reviewBonusCoins = s.reviewBonusCoins;
     REWARDS_CONFIG.firstOrderBonusCoins = s.firstOrderBonusCoins;
     REWARDS_CONFIG.referralRefereeDiscountInr = s.referralRefereeDiscountInr;
     REWARDS_CONFIG.referralRefereeMinOrderInr = s.referralRefereeMinOrderInr;
     REWARDS_CONFIG.referralReferrerBonusCoins = s.referralReferrerBonusCoins;
+    REWARDS_CONFIG.tierValidityYears = s.tierValidityYears;
   }
 
   /**
@@ -86,15 +99,60 @@ export class AdminRewardsService {
         CREATE TABLE IF NOT EXISTS rewards_settings (
           id VARCHAR(50) PRIMARY KEY DEFAULT 'current',
           coin_to_inr_ratio DOUBLE PRECISION NOT NULL DEFAULT 0.1,
-          signup_bonus_coins INTEGER NOT NULL DEFAULT 200,
-          review_bonus_coins INTEGER NOT NULL DEFAULT 50,
-          first_order_bonus_coins INTEGER NOT NULL DEFAULT 300,
-          referral_referee_discount_inr INTEGER NOT NULL DEFAULT 150,
-          referral_referee_min_order_inr INTEGER NOT NULL DEFAULT 999,
-          referral_referrer_bonus_coins INTEGER NOT NULL DEFAULT 150,
+          spend_to_coin_ratio INTEGER NOT NULL DEFAULT 10,
+          max_order_coin_redemption_pct INTEGER NOT NULL DEFAULT 25,
+          signup_bonus_coins INTEGER NOT NULL DEFAULT 0,
+          review_bonus_coins INTEGER NOT NULL DEFAULT 1,
+          first_order_bonus_coins INTEGER NOT NULL DEFAULT 0,
+          referral_referee_discount_inr INTEGER NOT NULL DEFAULT 50,
+          referral_referee_min_order_inr INTEGER NOT NULL DEFAULT 499,
+          referral_referrer_bonus_coins INTEGER NOT NULL DEFAULT 500,
+          tier_validity_years INTEGER NOT NULL DEFAULT 3,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
       `);
+
+      // Ensure new columns exist on older tables
+      await prisma
+        .$executeRawUnsafe(
+          `
+        ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS spend_to_coin_ratio INTEGER NOT NULL DEFAULT 10;
+        ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS max_order_coin_redemption_pct INTEGER NOT NULL DEFAULT 25;
+        ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS tier_validity_years INTEGER NOT NULL DEFAULT 3;
+      `,
+        )
+        .catch(() => {});
+
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS user_loyalty_cycle (
+          user_id VARCHAR(100) PRIMARY KEY,
+          cycle_started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          current_tier VARCHAR(50) DEFAULT 'NORMAL',
+          unlocked_milestones TEXT DEFAULT '',
+          cumulative_spend DOUBLE PRECISION DEFAULT 0,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      await prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS user_next_order_perks (
+          id VARCHAR(100) PRIMARY KEY,
+          user_id VARCHAR(100) NOT NULL,
+          coupon_code VARCHAR(100) NOT NULL,
+          discount_pct DOUBLE PRECISION NOT NULL,
+          source_order_id VARCHAR(100),
+          status VARCHAR(50) DEFAULT 'AVAILABLE',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          used_at TIMESTAMP WITH TIME ZONE
+        );
+      `);
+      await prisma
+        .$executeRawUnsafe(
+          `
+        CREATE INDEX IF NOT EXISTS idx_user_next_order_perks_user ON user_next_order_perks(user_id);
+      `,
+        )
+        .catch(() => {});
 
       await prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS user_coins_ledger (
@@ -141,10 +199,11 @@ export class AdminRewardsService {
       // Seed initial default row if missing
       await prisma.$executeRawUnsafe(`
         INSERT INTO rewards_settings (
-          id, coin_to_inr_ratio, signup_bonus_coins, review_bonus_coins,
-          first_order_bonus_coins, referral_referee_discount_inr,
-          referral_referee_min_order_inr, referral_referrer_bonus_coins
-        ) VALUES ('current', 0.1, 200, 50, 300, 150, 999, 150)
+          id, coin_to_inr_ratio, spend_to_coin_ratio, max_order_coin_redemption_pct,
+          signup_bonus_coins, review_bonus_coins, first_order_bonus_coins,
+          referral_referee_discount_inr, referral_referee_min_order_inr,
+          referral_referrer_bonus_coins, tier_validity_years
+        ) VALUES ('current', 0.1, 10, 25, 0, 1, 0, 50, 499, 500, 3)
         ON CONFLICT (id) DO NOTHING;
       `);
 
@@ -163,12 +222,15 @@ export class AdminRewardsService {
       const rows: any = await prisma
         .$queryRawUnsafe(
           `SELECT coin_to_inr_ratio as "coinToInrRatio",
+                  COALESCE(spend_to_coin_ratio, 10) as "spendToCoinRatio",
+                  COALESCE(max_order_coin_redemption_pct, 25) as "maxOrderCoinRedemptionPct",
                   signup_bonus_coins as "signupBonusCoins",
                   review_bonus_coins as "reviewBonusCoins",
                   first_order_bonus_coins as "firstOrderBonusCoins",
                   referral_referee_discount_inr as "referralRefereeDiscountInr",
                   referral_referee_min_order_inr as "referralRefereeMinOrderInr",
-                  referral_referrer_bonus_coins as "referralReferrerBonusCoins"
+                  referral_referrer_bonus_coins as "referralReferrerBonusCoins",
+                  COALESCE(tier_validity_years, 3) as "tierValidityYears"
            FROM rewards_settings
            WHERE id = 'current'
            LIMIT 1`,
@@ -179,12 +241,15 @@ export class AdminRewardsService {
         const db = rows[0];
         runtimeSettings = {
           coinToInrRatio: Number(db.coinToInrRatio) || 0.1,
-          signupBonusCoins: Number(db.signupBonusCoins) || 200,
-          reviewBonusCoins: Number(db.reviewBonusCoins) || 50,
-          firstOrderBonusCoins: Number(db.firstOrderBonusCoins) || 300,
-          referralRefereeDiscountInr: Number(db.referralRefereeDiscountInr) || 150,
-          referralRefereeMinOrderInr: Number(db.referralRefereeMinOrderInr) || 999,
-          referralReferrerBonusCoins: Number(db.referralReferrerBonusCoins) || 150,
+          spendToCoinRatio: Number(db.spendToCoinRatio) || 10,
+          maxOrderCoinRedemptionPct: Number(db.maxOrderCoinRedemptionPct) || 25,
+          signupBonusCoins: Number(db.signupBonusCoins) || 0,
+          reviewBonusCoins: Number(db.reviewBonusCoins) || 1,
+          firstOrderBonusCoins: Number(db.firstOrderBonusCoins) || 0,
+          referralRefereeDiscountInr: Number(db.referralRefereeDiscountInr) || 50,
+          referralRefereeMinOrderInr: Number(db.referralRefereeMinOrderInr) || 499,
+          referralReferrerBonusCoins: Number(db.referralReferrerBonusCoins) || 500,
+          tierValidityYears: Number(db.tierValidityYears) || 3,
         };
         this.applySettingsToConfig(runtimeSettings);
       }
@@ -219,31 +284,40 @@ export class AdminRewardsService {
         `INSERT INTO rewards_settings (
            id,
            coin_to_inr_ratio,
+           spend_to_coin_ratio,
+           max_order_coin_redemption_pct,
            signup_bonus_coins,
            review_bonus_coins,
            first_order_bonus_coins,
            referral_referee_discount_inr,
            referral_referee_min_order_inr,
            referral_referrer_bonus_coins,
+           tier_validity_years,
            updated_at
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)
          ON CONFLICT (id) DO UPDATE SET
            coin_to_inr_ratio = EXCLUDED.coin_to_inr_ratio,
+           spend_to_coin_ratio = EXCLUDED.spend_to_coin_ratio,
+           max_order_coin_redemption_pct = EXCLUDED.max_order_coin_redemption_pct,
            signup_bonus_coins = EXCLUDED.signup_bonus_coins,
            review_bonus_coins = EXCLUDED.review_bonus_coins,
            first_order_bonus_coins = EXCLUDED.first_order_bonus_coins,
            referral_referee_discount_inr = EXCLUDED.referral_referee_discount_inr,
            referral_referee_min_order_inr = EXCLUDED.referral_referee_min_order_inr,
            referral_referrer_bonus_coins = EXCLUDED.referral_referrer_bonus_coins,
+           tier_validity_years = EXCLUDED.tier_validity_years,
            updated_at = CURRENT_TIMESTAMP`,
         'current',
         runtimeSettings.coinToInrRatio,
+        runtimeSettings.spendToCoinRatio,
+        runtimeSettings.maxOrderCoinRedemptionPct,
         runtimeSettings.signupBonusCoins,
         runtimeSettings.reviewBonusCoins,
         runtimeSettings.firstOrderBonusCoins,
         runtimeSettings.referralRefereeDiscountInr,
         runtimeSettings.referralRefereeMinOrderInr,
         runtimeSettings.referralReferrerBonusCoins,
+        runtimeSettings.tierValidityYears,
       );
     } catch (err) {
       console.error('[AdminRewardsService] updateSettings DB write error:', err);
@@ -292,34 +366,43 @@ export class AdminRewardsService {
   public static async getOverview(): Promise<AdminRewardsOverviewData> {
     const settings = await this.getSettings();
 
-    // 1. Fetch real active shoppers (customers who have actually placed orders)
+    // 1. Fetch real active shoppers classified into 5 tiers by 3-year cumulative spend
+    let normalCount = 0;
     let bronzeCount = 0;
     let silverCount = 0;
     let goldCount = 0;
     let platinumCount = 0;
 
+    const cycleWindowStart = new Date();
+    cycleWindowStart.setFullYear(
+      cycleWindowStart.getFullYear() - (settings.tierValidityYears || 3),
+    );
+
     try {
       const shopperOrders: any = await prisma.order
         .groupBy({
           by: ['userId'],
-          _count: { id: true },
+          _sum: { totalAmount: true },
           where: {
             orderStatus: { in: ['DELIVERED', 'SHIPPED', 'CONFIRMED', 'PROCESSING'] },
+            createdAt: { gte: cycleWindowStart },
           },
         })
         .catch(() => []);
 
       if (Array.isArray(shopperOrders) && shopperOrders.length > 0) {
         for (const s of shopperOrders) {
-          const count = Number(s._count?.id || 0);
-          if (count >= 30) {
+          const spend = Number(s._sum?.totalAmount || 0);
+          if (spend >= 50000) {
             platinumCount++;
-          } else if (count >= 15) {
+          } else if (spend >= 25000) {
             goldCount++;
-          } else if (count >= 5) {
+          } else if (spend >= 10000) {
             silverCount++;
-          } else if (count >= 1) {
+          } else if (spend >= 2500) {
             bronzeCount++;
+          } else {
+            normalCount++;
           }
         }
       }
@@ -328,6 +411,7 @@ export class AdminRewardsService {
     }
 
     const tierDistribution = {
+      normal: normalCount,
       bronze: bronzeCount,
       silver: silverCount,
       gold: goldCount,

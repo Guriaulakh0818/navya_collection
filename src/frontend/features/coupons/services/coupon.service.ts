@@ -358,22 +358,63 @@ export class CouponService {
         };
       }
 
-      // Support dynamic VIP milestone coupons (JIIVAA-SILVER-5, JIIVAA-GOLD-15, JIIVAA-PLATINUM-20)
+      // Support dynamic VIP milestone & single-order perk coupons
       if (!coupon && cleanCode.startsWith('JIIVAA-')) {
+        let discountPct = 0;
+        let title = '';
+        let description = '';
+        let maxDiscount = 1000;
+
         const milestoneTier = LOYALTY_TIERS.find((t) => t.couponCode === cleanCode);
         if (milestoneTier && milestoneTier.discountPct > 0) {
+          discountPct = milestoneTier.discountPct;
+          title = `VIP ${milestoneTier.name} Milestone (${discountPct}% OFF)`;
+          description = `Exclusive loyalty discount for ${milestoneTier.name} members`;
+          maxDiscount = discountPct === 5 ? 250 : discountPct === 15 ? 750 : 2000;
+        } else if (cleanCode === 'JIIVAA-GOLD-2.5') {
+          discountPct = 2.5;
+          title = 'Gold VIP Next Order Perk (2.5% OFF)';
+          description = 'Reward for placing an order > ₹3,000 as a Gold VIP member';
+          maxDiscount = 500;
+        } else if (cleanCode === 'JIIVAA-GOLD-5') {
+          discountPct = 5;
+          title = 'Gold VIP Next Order Perk (5% OFF)';
+          description = 'Reward for placing an order > ₹6,000 as a Gold VIP member';
+          maxDiscount = 1000;
+        } else if (cleanCode === 'JIIVAA-GOLD-7.5') {
+          discountPct = 7.5;
+          title = 'Gold VIP Next Order Perk (7.5% OFF)';
+          description = 'Reward for placing an order > ₹12,000 as a Gold VIP member';
+          maxDiscount = 1500;
+        } else if (cleanCode === 'JIIVAA-PLATINUM-5' || cleanCode === 'JIIVAA-PLAT-5') {
+          discountPct = 5;
+          title = 'Platinum Style Icon Next Order Perk (5% OFF)';
+          description = 'Reward for placing an order > ₹5,000 as a Platinum member';
+          maxDiscount = 1000;
+        } else if (cleanCode === 'JIIVAA-PLATINUM-10' || cleanCode === 'JIIVAA-PLAT-10') {
+          discountPct = 10;
+          title = 'Platinum Style Icon Next Order Perk (10% OFF)';
+          description = 'Reward for placing an order > ₹10,000 as a Platinum member';
+          maxDiscount = 2000;
+        } else if (cleanCode === 'JIIVAA-PLATINUM-20' || cleanCode === 'JIIVAA-PLAT-20') {
+          discountPct = 20;
+          title = 'Platinum Style Icon Next Order Perk (20% OFF)';
+          description = 'Reward for placing an order > ₹20,000 as a Platinum member';
+          maxDiscount = 4000;
+        }
+
+        if (discountPct > 0) {
           coupon = {
-            id: 'tier-' + milestoneTier.id.toLowerCase(),
-            code: milestoneTier.couponCode,
-            title: `VIP ${milestoneTier.name} Milestone (${milestoneTier.discountPct}% OFF)`,
-            description: `Exclusive loyalty discount for ${milestoneTier.name} members`,
+            id: 'tier-' + cleanCode.toLowerCase(),
+            code: cleanCode,
+            title,
+            description,
             fundingType: 'NAVYA',
             shopId: null,
             discountType: 'PERCENTAGE',
-            discountValue: milestoneTier.discountPct,
-            minOrderAmount: 499,
-            maxDiscount:
-              milestoneTier.discountPct === 5 ? 250 : milestoneTier.discountPct === 15 ? 750 : 1500,
+            discountValue: discountPct,
+            minOrderAmount: 299,
+            maxDiscount,
             usageLimit: null,
             usagePerUser: 1,
             usedCount: 0,

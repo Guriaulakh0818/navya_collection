@@ -20,7 +20,8 @@ import { Button } from '@/components/ui/button';
 import { CouponInputCard, type AppliedCoupon } from '@/features/coupons/components/CouponInputCard';
 import { groupCartItemsByShop } from '@/frontend/features/cart/utils/group-cart-by-shop';
 import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewardsSettings';
-import { useCartStore } from '@/stores';
+import { calculateMaxSpendableCoins } from '@/shared/config/rewards.config';
+import { useCartStore, useRewardsStore } from '@/stores';
 import { formatPrice } from '@/utils/format-price';
 
 export default function MultiVendorCartPage() {
@@ -34,6 +35,8 @@ export default function MultiVendorCartPage() {
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const setAppliedCoupon = useCartStore((s) => s.setAppliedCoupon);
 
+  const [useCoins, setUseCoins] = useState(false);
+  const walletCoins = useRewardsStore((s) => s.coins);
   const [activeRefCode, setActiveRefCode] = useState<string | null>(null);
 
   useEffect(() => {
@@ -84,7 +87,17 @@ export default function MultiVendorCartPage() {
           return total + (group.subtotal >= 999 ? 0 : 49);
         }, 0);
 
-  const grandTotal = Math.max(0, grandSubtotal - discountAmount + shippingTotal);
+  const {
+    maxDiscountInr,
+    spendableCoins,
+    discountInr: coinDiscountInr,
+  } = calculateMaxSpendableCoins(grandSubtotal, walletCoins, settings.coinToInrRatio);
+  const actualCoinDiscount = useCoins ? coinDiscountInr : 0;
+
+  const grandTotal = Math.max(
+    0,
+    grandSubtotal - discountAmount - actualCoinDiscount + shippingTotal,
+  );
 
   if (items.length === 0) {
     return (
@@ -385,6 +398,47 @@ export default function MultiVendorCartPage() {
                 onRemoveCoupon={() => setAppliedCoupon(null)}
               />
 
+              {/* Coin Burn / Redemption Card (Max 25% Rule) */}
+              {walletCoins > 0 && spendableCoins > 0 && (
+                <div className="rounded-2xl bg-amber-50/80 border border-amber-200 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="use-coins-toggle"
+                      className="flex items-center gap-2 cursor-pointer select-none"
+                    >
+                      <input
+                        id="use-coins-toggle"
+                        type="checkbox"
+                        checked={useCoins}
+                        onChange={(e) => setUseCoins(e.target.checked)}
+                        className="w-4 h-4 rounded text-orange focus:ring-orange/30 border-slate-300 cursor-pointer"
+                      />
+                      <span className="text-xs font-black text-navy flex items-center gap-1.5">
+                        <Coins className="w-4 h-4 text-amber-600" />
+                        <span>Pay with Jiivaa Coins</span>
+                      </span>
+                    </label>
+                    <span className="text-xs font-black font-mono text-amber-900">
+                      - {formatPrice(coinDiscountInr)}
+                    </span>
+                  </div>
+
+                  <div className="text-[11px] text-slate-600 pl-6 space-y-0.5">
+                    <p>
+                      Apply{' '}
+                      <strong className="text-navy">
+                        {spendableCoins.toLocaleString('en-IN')} Coins
+                      </strong>{' '}
+                      ({walletCoins.toLocaleString('en-IN')} available in wallet).
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      Rule: Max {settings.maxOrderCoinRedemptionPct || 25}% of order (₹
+                      {Math.round(maxDiscountInr)}) can be covered by coins.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Jiivaa Rewards Earn Info */}
               <div className="rounded-2xl bg-gradient-to-r from-amber-50 to-orange/5 border border-amber-200/80 p-3 flex items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2 min-w-0">
@@ -393,10 +447,12 @@ export default function MultiVendorCartPage() {
                   </div>
                   <div className="min-w-0 text-[11px] leading-tight">
                     <span className="font-extrabold text-navy block truncate">
-                      Earn {Math.floor(grandSubtotal)} Jiivaa Coins
+                      Earn {Math.floor(grandSubtotal / (settings.spendToCoinRatio || 10))} Jiivaa
+                      Coins
                     </span>
                     <span className="text-slate-500 text-[10px]">
-                      Worth ₹{Math.floor(grandSubtotal * 0.1)} on your next boutique order
+                      1 Coin per ₹{settings.spendToCoinRatio || 10} spent (applied on your next
+                      order)
                     </span>
                   </div>
                 </div>
@@ -421,6 +477,13 @@ export default function MultiVendorCartPage() {
                   <div className="flex justify-between text-emerald-700 font-bold">
                     <span>Coupon Discount ({appliedCoupon?.code})</span>
                     <span className="font-mono">- {formatPrice(discountAmount)}</span>
+                  </div>
+                )}
+
+                {actualCoinDiscount > 0 && (
+                  <div className="flex justify-between text-amber-800 font-bold">
+                    <span>Jiivaa Coins Redeemed ({spendableCoins} Coins)</span>
+                    <span className="font-mono">- {formatPrice(actualCoinDiscount)}</span>
                   </div>
                 )}
 

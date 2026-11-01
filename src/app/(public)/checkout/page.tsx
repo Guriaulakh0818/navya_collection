@@ -1,7 +1,7 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
-import { useEffect } from 'react';
+import { ArrowRight, Coins } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 import { Breadcrumb } from '@/components/ui/breadcrumb';
@@ -15,7 +15,9 @@ import { ReviewStep } from '@/features/checkout/components/review-step';
 import { CheckoutProvider, useCheckout } from '@/features/checkout/context/checkout-context';
 import { CouponInputCard } from '@/features/coupons/components/CouponInputCard';
 import { ShippingSummaryCard } from '@/features/shipping/components/ShippingSummaryCard';
-import { useCartStore } from '@/stores';
+import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewardsSettings';
+import { calculateMaxSpendableCoins } from '@/shared/config/rewards.config';
+import { useCartStore, useRewardsStore } from '@/stores';
 
 const STEP_LABELS = [
   { key: 'cart', label: 'Cart' },
@@ -186,10 +188,22 @@ function OrderSummary() {
   const unavailableItems = items.filter((item) => item.isAvailable === false);
   const hasUnavailable = unavailableItems.length > 0;
 
+  const walletCoins = useRewardsStore((s) => s.coins);
+  const { settings } = useRewardsSettings();
+  const [useCoins, setUseCoins] = useState(false);
+
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const netSubtotal = Math.max(0, subtotal - discountAmount);
+
+  const {
+    maxDiscountInr,
+    spendableCoins,
+    discountInr: coinDiscountInr,
+  } = calculateMaxSpendableCoins(subtotal, walletCoins, settings.coinToInrRatio);
+  const actualCoinDiscount = useCoins ? coinDiscountInr : 0;
+
+  const netSubtotal = Math.max(0, subtotal - discountAmount - actualCoinDiscount);
 
   // Dynamic Shipping & Tax Calculations
   const shippingCharge =
@@ -235,6 +249,42 @@ function OrderSummary() {
             </span>
             <span className="font-mono text-emerald-700">
               - ₹{discountAmount.toLocaleString('en-IN')}
+            </span>
+          </div>
+        )}
+
+        {walletCoins > 0 && spendableCoins > 0 && (
+          <div className="bg-amber-50/80 border border-amber-200/90 rounded-xl p-2.5 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="checkout-use-coins-toggle"
+                className="flex items-center gap-1.5 cursor-pointer select-none text-xs font-bold text-navy"
+              >
+                <input
+                  id="checkout-use-coins-toggle"
+                  type="checkbox"
+                  checked={useCoins}
+                  onChange={(e) => setUseCoins(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded text-orange focus:ring-orange/30 border-slate-300 cursor-pointer"
+                />
+                <Coins className="w-3.5 h-3.5 text-amber-600" />
+                <span>Pay with Jiivaa Coins</span>
+              </label>
+              <span className="font-mono text-xs font-black text-amber-900">
+                - ₹{coinDiscountInr}
+              </span>
+            </div>
+            <div className="text-[10px] text-slate-500 pl-5 leading-tight">
+              Apply {spendableCoins} Coins (Max 25% of order: ₹{Math.round(maxDiscountInr)}).
+            </div>
+          </div>
+        )}
+
+        {actualCoinDiscount > 0 && (
+          <div className="flex justify-between items-center text-amber-800 font-bold bg-amber-50/60 px-2.5 py-1.5 rounded-xl border border-amber-200">
+            <span>Jiivaa Coins Redeemed ({spendableCoins} Coins)</span>
+            <span className="font-mono text-amber-800">
+              - ₹{actualCoinDiscount.toLocaleString('en-IN')}
             </span>
           </div>
         )}

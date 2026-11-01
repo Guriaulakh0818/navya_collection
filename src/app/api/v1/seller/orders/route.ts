@@ -9,6 +9,7 @@ import {
   SESSION_COOKIE_NAME,
 } from '@/backend/lib/session';
 import { CommissionService } from '@/backend/services/commission.service';
+import { LoyaltyService } from '@/backend/services/loyalty.service';
 import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { AwbService } from '@/backend/services/shipping/awb.service';
 import { LabelService } from '@/backend/services/shipping/label.service';
@@ -699,6 +700,12 @@ export async function PATCH(request: NextRequest) {
             courierName,
           },
         ).catch((err) => console.warn('[SELLER_STATUS_EMAIL_ERR]', err));
+
+        if (calculatedMasterStatus === 'DELIVERED') {
+          LoyaltyService.processOrderDelivered(vendorOrder.masterOrderId).catch((err) => {
+            console.warn('[SELLER_STATUS_LOYALTY_ERR]', err);
+          });
+        }
       }
 
       return NextResponse.json({
