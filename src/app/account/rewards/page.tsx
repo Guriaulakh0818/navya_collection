@@ -276,88 +276,66 @@ export default function RewardsAccountPage() {
       </div>
 
       {/* Tier Progress Milestone Journey */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-8 shadow-xs space-y-6">
+      <div className="bg-white rounded-3xl border border-slate-200/80 p-4 sm:p-6 shadow-xs space-y-4">
         {/* Header Row */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-orange/10 flex items-center justify-center text-orange shrink-0">
-                <Award className="w-4 h-4 text-orange" />
-              </div>
-              <h2 className="text-lg sm:text-2xl font-extrabold text-navy tracking-tight">
-                Jiivaa VIP Tier Journey
-              </h2>
+        <div className="space-y-1 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-orange/10 flex items-center justify-center text-orange shrink-0">
+              <Award className="w-4 h-4 text-orange" />
             </div>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-xl font-medium leading-relaxed">
-              Accumulate boutique purchases over 3 years to unlock welcome bonuses &amp; next-order
-              discount perks.
-            </p>
+            <h2 className="text-base sm:text-xl font-extrabold text-navy tracking-tight">
+              Jiivaa VIP Tier Journey
+            </h2>
           </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold flex items-center gap-1.5">
-              <span>🔄</span>
-              <span>3-Year Reset Cycle</span>
-            </div>
-          </div>
+          <p className="text-xs text-slate-500 max-w-xl font-medium leading-relaxed">
+            Accumulate boutique purchases over 3 years to unlock welcome bonuses &amp; next-order
+            discount perks.
+          </p>
         </div>
 
-        {/* Animated Spend Progress Showcase Card */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-50 via-white to-orange/5 border border-slate-200/90 shadow-2xs space-y-3.5">
+        {/* Compact Spend Progress Showcase Card */}
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-orange/5 border border-slate-200/80 space-y-2.5">
           {/* Top Row: Current Tier & Target Breakdown */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            {/* Current Tier Pill */}
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center text-lg shadow-2xs shrink-0">
-                {currentTier.badge.split(' ')[0]}
-              </div>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xl shrink-0">{currentTier.badge.split(' ')[0]}</span>
               <div className="min-w-0">
-                <div className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">
-                  Current Status
-                </div>
                 <div className="text-xs sm:text-sm font-extrabold text-navy truncate">
                   {currentTier.name}{' '}
-                  <span className="text-slate-500 font-medium font-mono text-[11px] sm:text-xs">
+                  <span className="text-slate-400 font-medium font-mono text-[11px]">
                     (₹{mounted ? cumulativeSpendInCycle.toLocaleString('en-IN') : 0} spend)
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Target Next Tier Pill */}
             {nextTier ? (
-              <div className="flex items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/60">
-                <div className="px-3 py-1.5 rounded-xl bg-orange/10 border border-orange/20 text-orange text-xs font-extrabold flex items-center gap-1.5">
-                  <span>Spend ₹{spendNeeded.toLocaleString('en-IN')} more to unlock</span>
-                  <span className="font-black underline decoration-orange/40">{nextTier.name}</span>
+              <div className="text-right shrink-0">
+                <div className="text-[10px] font-extrabold text-orange uppercase tracking-wider">
+                  Target: {nextTier.name}
+                </div>
+                <div className="text-xs font-black text-orange font-mono">
+                  ₹{spendNeeded.toLocaleString('en-IN')} needed
                 </div>
               </div>
             ) : (
-              <div className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-black flex items-center gap-1.5">
-                <span>🎉</span>
-                <span>Platinum Style Icon (Highest Tier Unlocked)</span>
-              </div>
+              <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 shrink-0">
+                🎉 Highest Tier
+              </span>
             )}
           </div>
 
           {/* Progress Bar with Percentage and Target Milestones */}
-          <div className="space-y-1.5 pt-1">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-500">
-              <span>Spend Progress to {nextTier ? nextTier.name : 'Maximum Tier'}</span>
-              <span className="text-orange font-mono font-black text-xs sm:text-sm">
-                {Math.round(progressPct)}%
-              </span>
-            </div>
-
-            <div className="relative h-2.5 sm:h-3 w-full bg-slate-200/80 rounded-full overflow-hidden">
+          <div className="space-y-1">
+            <div className="relative h-2 w-full bg-slate-200/70 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-orange via-amber-400 to-orange rounded-full transition-all duration-700 ease-out shadow-xs"
+                className="h-full bg-gradient-to-r from-orange to-amber-400 rounded-full transition-all duration-700 ease-out"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
 
             <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 font-medium font-mono">
-              <span>₹{mounted ? cumulativeSpendInCycle.toLocaleString('en-IN') : 0} achieved</span>
+              <span>{Math.round(progressPct)}% achieved</span>
               <span>
                 Target: ₹{nextTier ? nextTier.minSpendInr.toLocaleString('en-IN') : '50,000+'}
               </span>
