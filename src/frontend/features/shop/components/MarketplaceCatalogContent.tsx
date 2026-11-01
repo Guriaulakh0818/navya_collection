@@ -3,6 +3,7 @@
 import {
   Building2,
   Filter,
+  Heart,
   MapPin,
   Package,
   Search,
@@ -38,6 +39,7 @@ export function MarketplaceCatalogContent() {
   const [sortBy, setSortBy] = useState<string>('newest');
 
   const [shops, setShops] = useState<any[]>([]);
+  const [followedShopIds, setFollowedShopIds] = useState<string[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -98,6 +100,16 @@ export function MarketplaceCatalogContent() {
       .finally(() => {
         setIsLoading(false);
       });
+
+    // Fetch user followed shops for prioritized listing
+    fetch('/api/v1/user/followed-shops')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success && resData.data?.followedShopIds) {
+          setFollowedShopIds(resData.data.followedShopIds);
+        }
+      })
+      .catch(() => {});
   }, [isMounted]);
 
   if (!isMounted) {
@@ -384,6 +396,17 @@ export function MarketplaceCatalogContent() {
 
     const matchesCity = selectedCity === 'all' || s.city === selectedCity;
     return matchesSearch && matchesCity;
+  });
+
+  // Sort Shops: Followed shops appear first!
+  const sortedShops = [...filteredShops].sort((a, b) => {
+    const aFollowed =
+      followedShopIds.includes(a.id) || (a.slug && followedShopIds.includes(a.slug));
+    const bFollowed =
+      followedShopIds.includes(b.id) || (b.slug && followedShopIds.includes(b.slug));
+    if (aFollowed && !bFollowed) return -1;
+    if (!aFollowed && bFollowed) return 1;
+    return 0;
   });
 
   const availableCities = Array.from(new Set(shops.map((s) => s.city).filter(Boolean)));
@@ -717,13 +740,17 @@ export function MarketplaceCatalogContent() {
                   />
                 ))}
               </div>
-            ) : filteredShops.length > 0 ? (
+            ) : sortedShops.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredShops.map((shop, index) => {
+                {sortedShops.map((shop, index) => {
                   const productCount =
                     shop._count?.products ||
                     products.filter((p) => p.shopId === shop.id).length ||
                     0;
+
+                  const isFollowed =
+                    followedShopIds.includes(shop.id) ||
+                    (shop.slug && followedShopIds.includes(shop.slug));
 
                   const isNavya =
                     shop.slug === 'navya-collection' ||
@@ -755,7 +782,7 @@ export function MarketplaceCatalogContent() {
 
                       {/* Profile Overlay & Info */}
                       <div className="p-6 -mt-10 relative z-10 space-y-4">
-                        <div className="flex items-end justify-between gap-3">
+                        <div className="flex items-end justify-between gap-2 flex-wrap">
                           <ShopAvatar
                             logo={shop.logo}
                             shopName={shop.name}
@@ -764,10 +791,18 @@ export function MarketplaceCatalogContent() {
                             className="w-16 h-16 rounded-2xl shadow-lg border-2 border-slate-200/90"
                           />
 
-                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                            <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                            VERIFIED SHOP
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {isFollowed && (
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1 shadow-2xs">
+                                <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
+                                FOLLOWING
+                              </span>
+                            )}
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                              VERIFIED SHOP
+                            </span>
+                          </div>
                         </div>
 
                         <div>

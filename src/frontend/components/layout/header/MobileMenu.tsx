@@ -182,22 +182,46 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
             <Link
               href="/seller/dashboard"
               onClick={onClose}
-              className="w-full flex items-center justify-center gap-2 bg-orange hover:bg-orange-600 text-white font-extrabold text-xs tracking-wider uppercase py-3 rounded-2xl text-center shadow-md transition-all active:scale-[0.98]"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-orange hover:bg-orange-600 text-white shadow-md transition-all active:scale-[0.98]"
             >
-              <Store className="w-4 h-4 text-white shrink-0" />
-              <span className="truncate">SELLER DASHBOARD ({shopName})</span>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                  <Store className="w-4 h-4 text-white" />
+                </div>
+                <div className="text-left min-w-0">
+                  <div className="text-[11px] font-black uppercase tracking-wider leading-tight">
+                    Seller Dashboard
+                  </div>
+                  <div className="text-xs font-semibold text-white/95 truncate leading-tight mt-0.5">
+                    {shopName}
+                  </div>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/70 shrink-0 ml-1.5" />
             </Link>
           )}
 
           <Link
             href={user ? '/account' : '/login'}
             onClick={onClose}
-            className="w-full flex items-center justify-center gap-2 bg-navy hover:bg-navy-700 text-white font-extrabold text-xs tracking-wider uppercase py-3 rounded-2xl text-center shadow-md transition-all active:scale-[0.98]"
+            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-navy hover:bg-navy-800 text-white shadow-md transition-all active:scale-[0.98]"
           >
-            <User className="w-4 h-4 text-white shrink-0" />
-            <span className="truncate">
-              {user ? `MY ACCOUNT (${user.name || 'PROFILE'})` : 'SIGN IN WITH EMAIL OTP'}
-            </span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                <User className="w-4 h-4 text-white" />
+              </div>
+              <div className="text-left min-w-0">
+                <div className="text-[11px] font-black uppercase tracking-wider leading-tight">
+                  {user ? 'My Account' : 'Sign In'}
+                </div>
+                <div className="text-xs font-semibold text-white/95 truncate leading-tight mt-0.5">
+                  {user
+                    ? user.name || user.mobile || user.email || 'Customer Profile'
+                    : 'Login / Register with OTP'}
+                </div>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-white/70 shrink-0 ml-1.5" />
           </Link>
         </div>
       </div>

@@ -4,13 +4,14 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
+  Heart,
   MapPin,
   ShieldCheck,
   Sparkles,
   Star,
   Store,
 } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -43,6 +44,18 @@ interface FeaturedBoutiquesSectionProps {
 
 export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [followedShopIds, setFollowedShopIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch('/api/v1/user/followed-shops')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success && resData.data?.followedShopIds) {
+          setFollowedShopIds(resData.data.followedShopIds);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
@@ -54,6 +67,17 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
   };
 
   if (!shops || shops.length === 0) return null;
+
+  // Prioritize followed boutiques first in the carousel
+  const sortedShops = [...shops].sort((a, b) => {
+    const aFollowed =
+      followedShopIds.includes(a.id) || (a.slug && followedShopIds.includes(a.slug));
+    const bFollowed =
+      followedShopIds.includes(b.id) || (b.slug && followedShopIds.includes(b.slug));
+    if (aFollowed && !bFollowed) return -1;
+    if (!aFollowed && bFollowed) return 1;
+    return 0;
+  });
 
   return (
     <section className="space-y-4 sm:space-y-5 my-8 sm:my-10">
@@ -109,8 +133,11 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
           ref={scrollRef}
           className="lg:col-span-8 xl:col-span-9 flex items-stretch gap-4 overflow-x-auto scrollbar-none pb-2 pt-1 -mx-3 px-3 sm:mx-0 sm:px-0 snap-x snap-mandatory"
         >
-          {shops.map((shop, index) => {
+          {sortedShops.map((shop, index) => {
             const productCount = shop._count?.products || (shop.products?.length ?? 0);
+            const isFollowed =
+              followedShopIds.includes(shop.id) ||
+              (shop.slug && followedShopIds.includes(shop.slug));
             // Permanent luxury brand banner for all current and future boutique cards
             const bannerUrl = '/images/default-shop-banner.png';
             const cityDisplay = shop.city || 'India';
@@ -147,7 +174,7 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                 {/* Profile & Badges */}
                 <div className="p-4 sm:p-5 -mt-8 relative z-10 space-y-3 flex-1 flex flex-col justify-between">
                   <div>
-                    <div className="flex items-end justify-between gap-2 mb-2.5">
+                    <div className="flex items-end justify-between gap-1.5 mb-2.5 flex-wrap">
                       <ShopAvatar
                         logo={shop.logo}
                         shopName={shop.name}
@@ -156,10 +183,18 @@ export function FeaturedBoutiquesSection({ shops }: FeaturedBoutiquesSectionProp
                         className="w-13 h-13 rounded-2xl shadow-md border-2 border-slate-200/90"
                       />
 
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-2xs">
-                        <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                        <span>{shop.verificationBadge || 'Verified'}</span>
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {isFollowed && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1 shadow-2xs">
+                            <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
+                            <span>Following</span>
+                          </span>
+                        )}
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1 shadow-2xs">
+                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                          <span>{shop.verificationBadge || 'Verified'}</span>
+                        </span>
+                      </div>
                     </div>
 
                     {/* Shop Name & City */}

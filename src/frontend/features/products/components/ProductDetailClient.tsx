@@ -879,12 +879,20 @@ export function ProductDetailClient({
                 {/* Rating & Boutique Pills in 1 compact line */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                   {product.shop && (
-                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-orange/5 border border-orange/20 rounded-md text-[11px] sm:text-xs text-navy font-bold shadow-2xs">
-                      <Building2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange shrink-0" />
+                    <Link
+                      href={`/shop/${product.shop.slug || product.shop.id}`}
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-orange/5 hover:bg-orange/10 border border-orange/20 hover:border-orange/30 rounded-md text-[11px] sm:text-xs text-navy font-bold shadow-2xs transition-colors cursor-pointer group"
+                      title={`Visit ${product.shop.name} Storefront`}
+                    >
+                      <Building2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange shrink-0 group-hover:scale-110 transition-transform" />
                       <span>
-                        Boutique: <strong className="text-orange">{product.shop.name}</strong>
+                        Boutique:{' '}
+                        <strong className="text-orange group-hover:underline">
+                          {product.shop.name}
+                        </strong>
                       </span>
-                    </div>
+                      <ChevronRight className="w-3 h-3 text-orange/60 group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
                   )}
 
                   {reviewsList.length > 0 && product.rating ? (
@@ -1522,7 +1530,7 @@ export function ProductDetailClient({
             </div>
             {product.shop.slug && (
               <Link
-                href={`/shops/${product.shop.slug}`}
+                href={`/shop/${product.shop.slug || product.shop.id}`}
                 className="inline-flex items-center gap-1 text-xs sm:text-sm font-extrabold text-navy hover:text-orange transition-colors self-start sm:self-auto group"
               >
                 <span>Explore Boutique Store</span>

@@ -2,10 +2,12 @@
 
 import {
   Building2,
+  Check,
   ChevronDown,
   ChevronRight,
   ChevronUp,
   FileText,
+  Heart,
   Home,
   Mail,
   MapPin,
@@ -18,12 +20,15 @@ import {
   Store,
   Tag,
   Truck,
+  UserMinus,
+  Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { ShopAvatar } from '@/frontend/components/ui/default-profile-avatar';
+import { useShopFollow } from '@/frontend/features/shop/hooks/useShopFollow';
 
 export function ShopProfileStorefront({
   shop,
@@ -43,6 +48,13 @@ export function ShopProfileStorefront({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoadingCatalog, setIsLoadingCatalog] = useState<boolean>(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
+
+  const {
+    isFollowing,
+    followerCount,
+    isLoading: isFollowLoading,
+    toggleFollow,
+  } = useShopFollow(shop);
 
   // Filter Catalog Fetcher (Strict Shop Isolation)
   const filterCatalog = async (q: string, cat: string, sort: string) => {
@@ -195,12 +207,45 @@ export function ShopProfileStorefront({
                     <ShoppingBag className="w-3.5 h-3.5 text-orange" />
                     {products.length} Products Available
                   </span>
+                  <span className="flex items-center gap-1 text-slate-600 font-bold">
+                    <Users className="w-3.5 h-3.5 text-orange" />
+                    <span>
+                      {followerCount.toLocaleString('en-IN')}{' '}
+                      {followerCount === 1 ? 'Follower' : 'Followers'}
+                    </span>
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Marketplace Buyer Protection Badge (Replacing Direct Call/Email) */}
-            <div className="flex items-center gap-2">
+            {/* Header Action Buttons: Follow Boutique + Buyer Protection */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => toggleFollow()}
+                disabled={isFollowLoading}
+                className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full font-black text-xs shadow-xs transition-all cursor-pointer active:scale-95 ${
+                  isFollowing
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 group'
+                    : 'bg-orange hover:bg-orange-600 text-white shadow-orange/20'
+                }`}
+                title={isFollowing ? 'Click to unfollow' : 'Follow to see this boutique first'}
+              >
+                {isFollowing ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-600 group-hover:hidden" />
+                    <UserMinus className="w-3.5 h-3.5 text-rose-600 hidden group-hover:inline" />
+                    <span className="group-hover:hidden">Following</span>
+                    <span className="hidden group-hover:inline">Unfollow</span>
+                  </>
+                ) : (
+                  <>
+                    <Heart className="w-3.5 h-3.5 fill-current" />
+                    <span>Follow Boutique</span>
+                  </>
+                )}
+              </button>
+
               <span className="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1.5 shadow-2xs">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" /> 100% Protected Boutique
               </span>

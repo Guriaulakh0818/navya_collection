@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
         try {
           const existingShop = await prisma.shop.findFirst({
             where: { OR: [{ id: s.id }, { slug: s.slug }] },
-            select: { id: true, slug: true, ownerId: true },
+            select: { id: true, slug: true, ownerId: true, description: true },
           });
 
           // Strictly preserve real existing shop ownerId in the database
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
             shopCode: s.shopCode,
             logo: s.logo,
             banner: s.banner,
-            description: s.description,
+            description: existingShop?.description || s.description,
             phone: s.phone,
             email: s.email,
             gstin: s.gstin,
