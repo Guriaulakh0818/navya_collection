@@ -1,17 +1,24 @@
 'use client';
 
 import {
+  AlertCircle,
   Award,
   CheckCircle2,
+  ChevronDown,
   Clock,
   ExternalLink,
   Flame,
   Percent,
+  Plus,
   RefreshCw,
   Search,
   ShieldCheck,
+  Sparkles,
   Store,
-  Users,
+  Trash2,
+  UserCheck,
+  UserMinus,
+  X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -32,11 +39,22 @@ interface FoundingMember {
   ownerContact: string | null;
 }
 
+interface EligibleShop {
+  id: string;
+  name: string;
+  slug: string;
+  city: string | null;
+  state: string | null;
+  phone: string | null;
+  ownerName: string;
+}
+
 interface AdminOverviewData {
   totalSlots: number;
   slotsAllocated: number;
   slotsRemaining: number;
   isProgramOpen: boolean;
+  eligibleShops?: EligibleShop[];
   members: FoundingMember[];
 }
 
@@ -48,6 +66,15 @@ export default function AdminFounding50Page() {
     'ALL',
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Modal & Action states
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedShopId, setSelectedShopId] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(
+    null,
+  );
+  const [openStatusMenuId, setOpenStatusMenuId] = useState<string | null>(null);
 
   const fetchOverview = async () => {
     try {
@@ -69,6 +96,106 @@ export default function AdminFounding50Page() {
     fetchOverview();
   }, []);
 
+  const handleEnrollShop = async () => {
+    if (!selectedShopId) return;
+    try {
+      setActionLoading(true);
+      const res = await fetch('/api/v1/admin/founding-50', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ENROLL_SHOP', shopId: selectedShopId }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setFeedback({ type: 'success', message: json.message });
+        setIsAddModalOpen(false);
+        setSelectedShopId('');
+        fetchOverview();
+      } else {
+        setFeedback({ type: 'error', message: json.message || 'Failed to enroll shop.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Error executing enrollment.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleAutoEnrollAll = async () => {
+    try {
+      setActionLoading(true);
+      const res = await fetch('/api/v1/admin/founding-50', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'AUTO_ENROLL_ALL' }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setFeedback({ type: 'success', message: json.message });
+        fetchOverview();
+      } else {
+        setFeedback({ type: 'error', message: json.message || 'Failed to auto-enroll shops.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Error during auto-enrollment.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRemoveShop = async (shop: FoundingMember) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to remove "${shop.name}" from Founding 50?\n\nThis will vacate Slot #${shop.slotNumber} and reset their commission to the standard 10%.`,
+    );
+    if (!confirmed) return;
+
+    try {
+      setActionLoading(true);
+      const res = await fetch('/api/v1/admin/founding-50', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'REMOVE_SHOP', shopId: shop.id }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setFeedback({ type: 'success', message: json.message });
+        fetchOverview();
+      } else {
+        setFeedback({ type: 'error', message: json.message || 'Failed to remove shop.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Error removing shop.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async (
+    shopId: string,
+    status: 'ACTIVE' | 'SUSPENDED' | 'COMPLETED',
+  ) => {
+    try {
+      setOpenStatusMenuId(null);
+      setActionLoading(true);
+      const res = await fetch('/api/v1/admin/founding-50', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'TOGGLE_STATUS', shopId, status }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setFeedback({ type: 'success', message: json.message });
+        fetchOverview();
+      } else {
+        setFeedback({ type: 'error', message: json.message || 'Failed to update status.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: err.message || 'Error updating status.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const filteredMembers = (data?.members || []).filter((member) => {
     const matchesStatus =
       statusFilter === 'ALL' ? true : member.status.toUpperCase() === statusFilter;
@@ -83,6 +210,8 @@ export default function AdminFounding50Page() {
 
     return matchesStatus && matchesSearch;
   });
+
+  const eligibleCount = data?.eligibleShops?.length || 0;
 
   return (
     <div className="space-y-8">
@@ -106,14 +235,37 @@ export default function AdminFounding50Page() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Add Boutique Button */}
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            disabled={actionLoading || (data?.slotsRemaining ?? 0) <= 0}
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-600/20 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4" />
+            Add Boutique
+          </button>
+
+          {/* Auto Enroll Button (shown if eligible shops exist) */}
+          {eligibleCount > 0 && (
+            <button
+              onClick={handleAutoEnrollAll}
+              disabled={actionLoading}
+              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+              title="Automatically enroll all approved boutiques"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Auto-Enroll All ({eligibleCount})
+            </button>
+          )}
+
           <button
             onClick={fetchOverview}
             disabled={isRefreshing}
             className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shadow-2xs flex items-center gap-2 transition-all cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh Records
+            Refresh
           </button>
           <Link
             href="/admin/sellers"
@@ -124,6 +276,32 @@ export default function AdminFounding50Page() {
           </Link>
         </div>
       </div>
+
+      {/* Feedback Banner */}
+      {feedback && (
+        <div
+          className={`p-4 rounded-xl border flex items-center justify-between text-xs font-bold ${
+            feedback.type === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-rose-50 border-rose-200 text-rose-800'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {feedback.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            )}
+            <span>{feedback.message}</span>
+          </div>
+          <button
+            onClick={() => setFeedback(null)}
+            className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Program Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -291,20 +469,21 @@ export default function AdminFounding50Page() {
                 <th className="py-3.5 px-4">Delivered Milestone</th>
                 <th className="py-3.5 px-4">Active Rate</th>
                 <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-right pr-6">Storefront</th>
+                <th className="py-3.5 px-4 text-center">Storefront</th>
+                <th className="py-3.5 px-4 text-right pr-6">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
                     <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-slate-400" />
                     Loading Founding 50 records...
                   </td>
                 </tr>
               ) : filteredMembers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
                     No Founding 50 seller records match your search criteria.
                   </td>
                 </tr>
@@ -388,7 +567,7 @@ export default function AdminFounding50Page() {
                     </td>
 
                     {/* Storefront Link */}
-                    <td className="py-4 px-4 text-right pr-6">
+                    <td className="py-4 px-4 text-center">
                       <Link
                         href={`/shop/${member.slug}`}
                         target="_blank"
@@ -398,6 +577,65 @@ export default function AdminFounding50Page() {
                         <ExternalLink className="w-3.5 h-3.5" />
                       </Link>
                     </td>
+
+                    {/* Actions Column */}
+                    <td className="py-4 px-4 text-right pr-6 relative">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {/* Status Toggle Menu */}
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpenStatusMenuId(openStatusMenuId === member.id ? null : member.id)
+                            }
+                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                            title="Update Status"
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </button>
+
+                          {openStatusMenuId === member.id && (
+                            <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-20 text-left">
+                              <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                Set Status
+                              </div>
+                              <button
+                                onClick={() => handleToggleStatus(member.id, 'ACTIVE')}
+                                className="w-full px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 cursor-pointer"
+                              >
+                                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                Active
+                              </button>
+                              <button
+                                onClick={() => handleToggleStatus(member.id, 'SUSPENDED')}
+                                className="w-full px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer"
+                              >
+                                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                                Suspend
+                              </button>
+                              <button
+                                onClick={() => handleToggleStatus(member.id, 'COMPLETED')}
+                                className="w-full px-3 py-1.5 text-xs text-blue-600 hover:bg-blue-50 flex items-center gap-2 cursor-pointer"
+                              >
+                                <span className="w-2 h-2 rounded-full bg-blue-500" />
+                                Completed
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Remove from Founding 50 */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveShop(member)}
+                          disabled={actionLoading}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Remove from Founding 50 (Free Slot)"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -405,6 +643,126 @@ export default function AdminFounding50Page() {
           </table>
         </div>
       </div>
+
+      {/* Manual Add Boutique Modal */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="inline-flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full text-xs font-bold border border-amber-200 mb-1">
+                  <Award className="w-3.5 h-3.5" />
+                  Manual Enrollment
+                </div>
+                <h3 className="text-lg font-extrabold text-slate-900">
+                  Add Boutique to Founding 50
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Enroll an approved seller into the Founding 50 program to grant them 5% Tier 1
+                  promotional commission.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setSelectedShopId('');
+                }}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            {eligibleCount === 0 ? (
+              <div className="p-6 text-center bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
+                <Store className="w-8 h-8 text-slate-400 mx-auto" />
+                <h4 className="text-sm font-bold text-slate-800">
+                  All Approved Boutiques Are Already Enrolled!
+                </h4>
+                <p className="text-xs text-slate-500">
+                  There are currently no unenrolled approved boutiques. When you approve new seller
+                  applications in the Sellers panel, they will automatically be eligible or enrolled
+                  here.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                    Select Boutique ({eligibleCount} available)
+                  </label>
+                  <select
+                    value={selectedShopId}
+                    onChange={(e) => setSelectedShopId(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-hidden focus:border-navy focus:bg-white transition-all cursor-pointer"
+                  >
+                    <option value="">-- Choose an approved boutique --</option>
+                    {(data?.eligibleShops || []).map((shop) => (
+                      <option key={shop.id} value={shop.id}>
+                        {shop.name} {shop.city ? `(${shop.city})` : ''} — Owner: {shop.ownerName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Offer Preview Card */}
+                <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-3.5 space-y-2 text-xs">
+                  <div className="font-extrabold text-amber-950 flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    Promotional Tier Allocation
+                  </div>
+                  <ul className="text-amber-900 space-y-1 text-[11px] list-disc list-inside">
+                    <li>
+                      Will receive next available open slot number (
+                      <strong>Slot #{(data?.slotsAllocated ?? 0) + 1}</strong>).
+                    </li>
+                    <li>
+                      <strong>Orders 1–10:</strong> 5.0% commission (50% promotional discount).
+                    </li>
+                    <li>
+                      <strong>Orders 11–20:</strong> 7.5% commission transition tier.
+                    </li>
+                    <li>
+                      Standard 10% commission applies on order 21+ and non-promotional categories.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setSelectedShopId('');
+                }}
+                className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              {eligibleCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleEnrollShop}
+                  disabled={!selectedShopId || actionLoading}
+                  className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-600/20 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                >
+                  {actionLoading ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <UserCheck className="w-3.5 h-3.5" />
+                  )}
+                  Enroll in Founding 50
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

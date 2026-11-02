@@ -126,7 +126,7 @@ export class Founding50Service {
   }
 
   /**
-   * Evaluates and allocates a Founding 50 slot during boutique verification approval.
+   * Evaluates and allocates a Founding 50 slot during boutique verification approval or manual admin enrollment.
    */
   public static async allocateSlot(
     shopId: string,
@@ -136,6 +136,7 @@ export class Founding50Service {
     slotNumber: number | null;
     status: string;
     initialRate: number;
+    message?: string;
   }> {
     await this.ensureSchema();
     const db = txClient || prisma;
@@ -143,30 +144,54 @@ export class Founding50Service {
     // Check if shop is already allocated
     const existing = await db.shop.findUnique({
       where: { id: shopId },
-      select: { isFoundingSeller: true, foundingSlotNumber: true, foundingStatus: true },
+      select: {
+        name: true,
+        isFoundingSeller: true,
+        foundingSlotNumber: true,
+        foundingStatus: true,
+      },
     });
 
-    if (existing?.isFoundingSeller && existing.foundingSlotNumber) {
+    if (!existing) {
+      return {
+        allocated: false,
+        slotNumber: null,
+        status: 'NOT_FOUND',
+        initialRate: this.RATE_STANDARD,
+        message: 'Shop not found.',
+      };
+    }
+
+    if (existing.isFoundingSeller && existing.foundingSlotNumber) {
       return {
         allocated: true,
         slotNumber: existing.foundingSlotNumber,
         status: existing.foundingStatus || 'ACTIVE',
         initialRate: this.RATE_TIER_1,
+        message: `Boutique "${existing.name}" is already enrolled in Founding 50 as Slot #${existing.foundingSlotNumber}.`,
       };
     }
 
-    // Count how many founding slots have been granted
-    const activeFoundingCount = await db.shop.count({
-      where: { isFoundingSeller: true },
+    // Find the next available gap-free slot between 1 and MAX_SLOTS
+    const existingSlots = await db.shop.findMany({
+      where: { foundingSlotNumber: { not: null }, isFoundingSeller: true },
+      select: { foundingSlotNumber: true },
     });
+    const occupiedSlots = new Set<number>(
+      existingSlots.map((s: any) => s.foundingSlotNumber).filter((n: any) => typeof n === 'number'),
+    );
 
-    if (activeFoundingCount < this.MAX_SLOTS) {
-      const newSlot = activeFoundingCount + 1;
+    let nextSlot = 1;
+    while (occupiedSlots.has(nextSlot) && nextSlot <= this.MAX_SLOTS) {
+      nextSlot++;
+    }
+
+    if (nextSlot <= this.MAX_SLOTS) {
       await db.shop.update({
         where: { id: shopId },
         data: {
           isFoundingSeller: true,
-          foundingSlotNumber: newSlot,
+          foundingSlotNumber: nextSlot,
           foundingJoinedAt: new Date(),
           foundingStatus: 'ACTIVE',
           commissionRate: this.RATE_TIER_1,
@@ -175,9 +200,10 @@ export class Founding50Service {
 
       return {
         allocated: true,
-        slotNumber: newSlot,
+        slotNumber: nextSlot,
         status: 'ACTIVE',
         initialRate: this.RATE_TIER_1,
+        message: `Boutique "${existing.name}" successfully enrolled as Founding Seller #${nextSlot}!`,
       };
     }
 
@@ -197,6 +223,139 @@ export class Founding50Service {
       slotNumber: null,
       status: 'INELIGIBLE',
       initialRate: this.RATE_STANDARD,
+      message: 'Founding 50 program is at maximum capacity (50/50 slots filled).',
+    };
+  }
+
+  /**
+   * Revokes or removes a boutique from the Founding 50 program (Policy Section 9).
+   */
+  public static async removeSlot(
+    shopId: string,
+    txClient?: any,
+  ): Promise<{ success: boolean; message: string; vacatedSlot: number | null }> {
+    await this.ensureSchema();
+    const db = txClient || prisma;
+
+    const shop = await db.shop.findUnique({
+      where: { id: shopId },
+      select: { name: true, foundingSlotNumber: true },
+    });
+
+    if (!shop) {
+      return { success: false, message: 'Shop not found.', vacatedSlot: null };
+    }
+
+    const vacatedSlot = shop.foundingSlotNumber;
+
+    await db.shop.update({
+      where: { id: shopId },
+      data: {
+        isFoundingSeller: false,
+        foundingSlotNumber: null,
+        foundingStatus: 'INELIGIBLE',
+        commissionRate: this.RATE_STANDARD,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Boutique "${shop.name}" removed from Founding 50. Slot #${vacatedSlot || ''} is now open for other sellers.`,
+      vacatedSlot,
+    };
+  }
+
+  /**
+   * Updates the founding status of an enrolled boutique (ACTIVE, SUSPENDED, COMPLETED).
+   */
+  public static async updateStatus(
+    shopId: string,
+    status: 'ACTIVE' | 'SUSPENDED' | 'COMPLETED',
+  ): Promise<{ success: boolean; message: string }> {
+    await this.ensureSchema();
+    const shop = await prisma.shop.findUnique({
+      where: { id: shopId },
+      select: { name: true, isFoundingSeller: true },
+    });
+
+    if (!shop || !shop.isFoundingSeller) {
+      return { success: false, message: 'Shop is not enrolled in Founding 50.' };
+    }
+
+    await prisma.shop.update({
+      where: { id: shopId },
+      data: {
+        foundingStatus: status,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Boutique "${shop.name}" status updated to ${status}.`,
+    };
+  }
+
+  /**
+   * Automatically enrolls all existing approved boutiques that do not yet have a Founding 50 slot,
+   * up to the maximum capacity of 50.
+   */
+  public static async autoEnrollApprovedShops(): Promise<{
+    enrolledCount: number;
+    enrolledShops: Array<{ id: string; name: string; slot: number }>;
+  }> {
+    await this.ensureSchema();
+
+    // 1. Get all currently occupied slots
+    const occupied = await prisma.shop.findMany({
+      where: { foundingSlotNumber: { not: null }, isFoundingSeller: true },
+      select: { foundingSlotNumber: true },
+    });
+    const occupiedSet = new Set<number>(
+      occupied.map((s: any) => s.foundingSlotNumber).filter((n: any) => typeof n === 'number'),
+    );
+
+    // 2. Find all approved, non-deleted shops that do NOT have a founding slot
+    const unenrolledApproved = await prisma.shop.findMany({
+      where: {
+        status: 'APPROVED',
+        deletedAt: null,
+        OR: [{ isFoundingSeller: false }, { foundingSlotNumber: null }],
+      },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true, name: true, createdAt: true },
+    });
+
+    const enrolledShops: Array<{ id: string; name: string; slot: number }> = [];
+
+    let currentSlot = 1;
+    for (const shop of unenrolledApproved) {
+      while (occupiedSet.has(currentSlot) && currentSlot <= this.MAX_SLOTS) {
+        currentSlot++;
+      }
+
+      if (currentSlot > this.MAX_SLOTS) {
+        break; // Max cap reached
+      }
+
+      await prisma.shop.update({
+        where: { id: shop.id },
+        data: {
+          isFoundingSeller: true,
+          foundingSlotNumber: currentSlot,
+          foundingJoinedAt: shop.createdAt || new Date(),
+          foundingStatus: 'ACTIVE',
+          commissionRate: this.RATE_TIER_1,
+        },
+      });
+
+      occupiedSet.add(currentSlot);
+      enrolledShops.push({ id: shop.id, name: shop.name, slot: currentSlot });
+      currentSlot++;
+    }
+
+    return {
+      enrolledCount: enrolledShops.length,
+      enrolledShops,
     };
   }
 
@@ -260,7 +419,6 @@ export class Founding50Service {
         estimatedCommissionSaved += saved;
       });
     } catch {
-      // Fallback
       estimatedCommissionSaved = 0;
     }
 
@@ -277,9 +435,6 @@ export class Founding50Service {
     };
   }
 
-  /**
-   * Increments delivered order counter when a Founding order reaches DELIVERED status.
-   */
   /**
    * Processes all founding vendor orders when a master order is marked DELIVERED.
    */
@@ -318,7 +473,6 @@ export class Founding50Service {
     const newCount = (vo.shop.foundingOrderCount || 0) + 1;
     const newStatus = newCount >= this.TIER_2_MAX ? 'COMPLETED' : 'ACTIVE';
 
-    // Update shop rate dynamically to next tier if reached milestone
     const nextTier = this.resolveCommissionRate(true, newCount);
 
     await db.shop.update({
@@ -363,10 +517,15 @@ export class Founding50Service {
 
   /**
    * Returns complete overview of Founding 50 acquisition and member list for Admin.
+   * Also returns eligible approved shops that can be manually enrolled.
    */
   public static async getAdminOverview() {
     await this.ensureSchema();
-    const [totalAllocated, members] = await Promise.all([
+
+    // Auto-enroll any approved shops up to 50 slots
+    await this.autoEnrollApprovedShops().catch(() => {});
+
+    const [totalAllocated, members, eligibleShops] = await Promise.all([
       prisma.shop.count({
         where: { isFoundingSeller: true },
       }),
@@ -392,6 +551,26 @@ export class Founding50Service {
         },
         orderBy: { foundingSlotNumber: 'asc' },
       }),
+      prisma.shop.findMany({
+        where: {
+          status: 'APPROVED',
+          deletedAt: null,
+          isFoundingSeller: false,
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          city: true,
+          state: true,
+          phone: true,
+          email: true,
+          owner: {
+            select: { id: true, name: true, mobile: true },
+          },
+        },
+        orderBy: { name: 'asc' },
+      }),
     ]);
 
     const remainingSlots = Math.max(0, this.MAX_SLOTS - totalAllocated);
@@ -401,6 +580,15 @@ export class Founding50Service {
       slotsAllocated: totalAllocated,
       slotsRemaining: remainingSlots,
       isProgramOpen: remainingSlots > 0,
+      eligibleShops: eligibleShops.map((s) => ({
+        id: s.id,
+        name: s.name,
+        slug: s.slug,
+        city: s.city,
+        state: s.state,
+        phone: s.phone || s.owner?.mobile,
+        ownerName: s.owner?.name || 'Owner',
+      })),
       members: members.map((m) => {
         const delivered = m.foundingOrderCount || 0;
         const tier = this.resolveCommissionRate(true, delivered);
