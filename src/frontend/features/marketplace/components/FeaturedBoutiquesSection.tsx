@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Award,
   Building2,
   ChevronLeft,
   ChevronRight,
@@ -26,6 +27,8 @@ interface ShopWithProducts {
   rating?: number | null;
   reviewCount?: number | null;
   verificationBadge?: string | null;
+  isFoundingSeller?: boolean;
+  foundingSlotNumber?: number | null;
   city?: string | null;
   state?: string | null;
   _count?: {

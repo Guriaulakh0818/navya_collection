@@ -12,6 +12,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: 'dashboard' },
   { name: 'Registered Users', href: '/admin/users', icon: 'users' },
   { name: 'Registered Shops', href: '/admin/shops', icon: 'shops' },
+  { name: 'Founding 50 Sellers 👑', href: '/admin/founding-50', icon: 'rewards' },
   { name: 'User & Shop Analytics', href: '/admin/analytics', icon: 'analytics' },
   { name: 'Seller Approvals', href: '/admin/sellers', icon: 'sellers' },
   { name: 'Product Approvals', href: '/admin/products/approvals', icon: 'products' },

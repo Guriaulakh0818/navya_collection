@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { Founding50Service } from '@/backend/services/founding-50.service';
 import { LoyaltyService } from '@/backend/services/loyalty.service';
 import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { ShiprocketLogger } from '@/backend/services/shipping/logger';
@@ -303,6 +304,9 @@ export async function POST(req: NextRequest) {
     if (normalizedStatus === 'DELIVERED') {
       LoyaltyService.processOrderDelivered(shipment.masterOrderId).catch((loyaltyErr) => {
         ShiprocketLogger.warn('[SHIPROCKET_LOYALTY_DELIVERY_ERROR]', undefined, loyaltyErr);
+      });
+      Founding50Service.processMasterOrderDelivered(shipment.masterOrderId).catch((err) => {
+        ShiprocketLogger.warn('[SHIPROCKET_FOUNDING_50_DELIVERY_ERROR]', undefined, err);
       });
     }
 

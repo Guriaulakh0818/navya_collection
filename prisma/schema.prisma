@@ -1131,6 +1131,13 @@ model Shop {
   sellerFundedThreshold Decimal? @db.Decimal(10, 2)
   sellerfundingshipping Boolean? @default(false)
 
+  // JiivaaKart Founding 50 Program (Version 1.0)
+  isFoundingSeller    Boolean   @default(false)
+  foundingSlotNumber  Int?      @unique
+  foundingJoinedAt    DateTime?
+  foundingOrderCount  Int       @default(0)
+  foundingStatus      String    @default("INELIGIBLE") // ACTIVE, COMPLETED, SUSPENDED, INELIGIBLE
+
   ownerId         String
   owner           User           @relation("UserShops", fields: [ownerId], references: [id], onDelete: Cascade)
   sellerProfileId String?
@@ -1158,6 +1165,8 @@ model Shop {
   contributions       OrderContribution[]
 
   @@index([shopCode])
+  @@index([isFoundingSeller])
+  @@index([foundingSlotNumber])
   @@index([slug])
   @@index([ownerId])
   @@index([sellerProfileId])
@@ -1229,6 +1238,10 @@ model VendorOrder {
   courierName          String?
   labelUrl             String?
   manifestUrl          String?
+  // JiivaaKart Founding 50 Promotional Commission Tracking
+  appliedCommissionRate Decimal?       @default(10.00) @db.Decimal(5, 2)
+  isFoundingOrder       Boolean        @default(false)
+  foundingOrderIndex    Int?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAdminUser } from '@/backend/lib/session';
+import { Founding50Service } from '@/backend/services/founding-50.service';
 import { LoyaltyService } from '@/backend/services/loyalty.service';
 import { OrderEmailNotificationService } from '@/backend/services/order-email.service';
 import { prisma } from '@/lib/prisma';
@@ -255,6 +256,9 @@ export async function PATCH(request: NextRequest) {
       if (orderStatus === 'DELIVERED') {
         LoyaltyService.processOrderDelivered(orderId).catch((err) => {
           console.warn('[AdminOrders] Loyalty cashback delivery error:', err);
+        });
+        Founding50Service.processMasterOrderDelivered(orderId).catch((err) => {
+          console.warn('[AdminOrders] Founding 50 delivery milestone error:', err);
         });
       }
     } catch {

@@ -10,6 +10,7 @@ import { CouponService } from '@/features/coupons/services/coupon.service';
 import { prisma } from '@/lib/prisma';
 
 import { CommissionService } from './commission.service';
+import { Founding50Service } from './founding-50.service';
 import { OrderEmailNotificationService } from './order-email.service';
 
 export interface CreateSplitOrderPayload {
@@ -176,13 +177,27 @@ export class OrderSplitService {
         for (const [shopId, sItems] of Array.from(shopItemsMap.entries())) {
           const validShop = await tx.shop.findUnique({
             where: { id: shopId },
-            select: { id: true, ownerId: true, gstin: true, commissionRate: true },
+            select: {
+              id: true,
+              ownerId: true,
+              gstin: true,
+              commissionRate: true,
+              isFoundingSeller: true,
+              foundingOrderCount: true,
+              foundingStatus: true,
+            },
           });
           const targetShopId = validShop ? validShop.id : null;
           const sellerId = validShop?.ownerId || userId;
-          const shopCommissionRate = validShop?.commissionRate
-            ? Number(validShop.commissionRate)
-            : CommissionService.COMMISSION_RATE_PERCENT;
+
+          // JiivaaKart Founding 50 Promotional Commission Resolver
+          const foundingTier = Founding50Service.resolveCommissionRate(
+            Boolean(validShop?.isFoundingSeller && validShop?.foundingStatus === 'ACTIVE'),
+            validShop?.foundingOrderCount || 0,
+          );
+          const shopCommissionRate = foundingTier.rate;
+          const isFoundingOrder = foundingTier.isPromotional;
+          const foundingOrderIndex = foundingTier.isPromotional ? foundingTier.orderIndex : null;
 
           const preparedItems: Array<{
             item: (typeof sItems)[0];
@@ -322,6 +337,9 @@ export class OrderSplitService {
                 sellerGstStatus,
                 status: initialOrderStatus,
                 shippingStatus: 'PENDING',
+                appliedCommissionRate: shopCommissionRate,
+                isFoundingOrder,
+                foundingOrderIndex,
               },
             });
           } catch (voErr: any) {

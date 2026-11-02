@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  Award,
   Building2,
   CheckCircle2,
   Clock,
@@ -186,6 +187,80 @@ export default function SellerDashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* JiivaaKart Founding 50 Privilege Card */}
+      {data?.founding50?.isFoundingSeller && (
+        <div className="rounded-3xl border border-amber-300/80 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-500/10 p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center shadow-md shrink-0">
+                <Award className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-black uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2.5 py-0.5 rounded-full border border-amber-300">
+                    Official Founding 50 Member
+                  </span>
+                  {data.founding50.slotNumber && (
+                    <span className="text-xs font-black text-slate-800 bg-white/90 px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs">
+                      Slot #{data.founding50.slotNumber} of 50
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-base sm:text-lg font-black text-slate-900 mt-1">
+                  Active Commission Rate:{' '}
+                  <span className="text-orange">{data.founding50.currentRate}%</span>
+                </h3>
+              </div>
+            </div>
+
+            <div className="text-left sm:text-right bg-white/90 backdrop-blur-xs p-3 rounded-2xl border border-amber-200 shadow-2xs">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Platform Fees Saved
+              </div>
+              <div className="text-lg sm:text-xl font-black text-emerald-600 font-mono">
+                ₹{Number(data.founding50.estimatedCommissionSaved || 0).toLocaleString('en-IN')}
+              </div>
+            </div>
+          </div>
+
+          {/* Progress Bar (20 Delivered Orders Promo) */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+              <span>
+                Delivered Orders Milestone:{' '}
+                <strong className="text-slate-900">
+                  {data.founding50.deliveredOrdersCount} / 20 Orders
+                </strong>
+              </span>
+              <span className="text-amber-800 font-medium">
+                {data.founding50.promoOrdersRemaining > 0
+                  ? `${data.founding50.promoOrdersRemaining} orders left in promotional offer`
+                  : 'All 20 promo orders completed! Standard 10% rate active.'}
+              </span>
+            </div>
+            <div className="w-full bg-amber-100 rounded-full h-3 overflow-hidden border border-amber-200/80">
+              <div
+                className="bg-gradient-to-r from-amber-500 to-orange-500 h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min(100, (data.founding50.deliveredOrdersCount / 20) * 100)}%`,
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+              <span>
+                1–10 Orders: <strong>5.0%</strong>
+              </span>
+              <span>
+                11–20 Orders: <strong>7.5%</strong>
+              </span>
+              <span>
+                21+ Orders: <strong>10.0% Standard</strong>
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 4 Summary Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

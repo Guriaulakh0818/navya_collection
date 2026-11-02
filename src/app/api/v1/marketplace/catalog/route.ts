@@ -28,6 +28,8 @@ export async function GET() {
             rating: true,
             reviewCount: true,
             verificationBadge: true,
+            isFoundingSeller: true,
+            foundingSlotNumber: true,
             city: true,
             state: true,
             status: true,
@@ -56,7 +58,15 @@ export async function GET() {
               orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
             },
             shop: {
-              select: { id: true, name: true, slug: true, city: true, verificationBadge: true },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                city: true,
+                verificationBadge: true,
+                isFoundingSeller: true,
+                foundingSlotNumber: true,
+              },
             },
             category: {
               select: {

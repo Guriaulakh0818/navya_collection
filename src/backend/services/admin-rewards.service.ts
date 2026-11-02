@@ -211,10 +211,16 @@ export class AdminRewardsService {
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
       `);
-      await prisma.$executeRawUnsafe(`
-        CREATE INDEX IF NOT EXISTS idx_user_coins_ledger_user ON user_coins_ledger(user_id);
-        CREATE INDEX IF NOT EXISTS idx_user_coins_ledger_type ON user_coins_ledger(type);
-      `);
+      await prisma
+        .$executeRawUnsafe(
+          `CREATE INDEX IF NOT EXISTS idx_user_coins_ledger_user ON user_coins_ledger(user_id);`,
+        )
+        .catch(() => {});
+      await prisma
+        .$executeRawUnsafe(
+          `CREATE INDEX IF NOT EXISTS idx_user_coins_ledger_type ON user_coins_ledger(type);`,
+        )
+        .catch(() => {});
 
       await prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS referral_clicks (

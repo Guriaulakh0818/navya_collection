@@ -2,6 +2,7 @@ import { Role, ShopStatus, VerificationBadge } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/backend/lib/session';
+import { Founding50Service } from '@/backend/services/founding-50.service';
 import { NotificationService } from '@/backend/services/notification.service';
 import { prisma } from '@/lib/prisma';
 
@@ -40,13 +41,18 @@ export async function POST(request: NextRequest) {
 
     // Atomic approval transaction
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Update Shop
+      // 1. Evaluate & Allocate Founding 50 Slot (First 50 approved boutiques)
+      const foundingAllocation = await Founding50Service.allocateSlot(shopId, tx);
+      const effectiveCommissionRate = foundingAllocation.allocated
+        ? foundingAllocation.initialRate
+        : parseFloat(String(commissionRate || 10.0));
+
       const updatedShop = await tx.shop.update({
         where: { id: shopId },
         data: {
           status: ShopStatus.APPROVED,
           verificationBadge: verificationBadge as VerificationBadge,
-          commissionRate: parseFloat(String(commissionRate)),
+          commissionRate: effectiveCommissionRate,
         },
       });
 

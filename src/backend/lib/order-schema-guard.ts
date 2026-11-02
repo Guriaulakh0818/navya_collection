@@ -493,6 +493,31 @@ export async function ensureOrderSchemaSynced(force = false): Promise<void> {
         ),
         runSafeSql(
           `
+          DO $$ BEGIN
+            -- JiivaaKart Founding 50 Program Schema Guards
+            IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'shops') THEN
+              ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "isFoundingSeller" BOOLEAN DEFAULT false;
+              ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "foundingSlotNumber" INTEGER;
+              ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "foundingJoinedAt" TIMESTAMP(3);
+              ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "foundingOrderCount" INTEGER DEFAULT 0;
+              ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "foundingStatus" TEXT DEFAULT 'INELIGIBLE';
+              CREATE UNIQUE INDEX IF NOT EXISTS "shops_foundingSlotNumber_key" ON "shops"("foundingSlotNumber");
+              CREATE INDEX IF NOT EXISTS "shops_isFoundingSeller_idx" ON "shops"("isFoundingSeller");
+            END IF;
+
+            IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'vendor_orders') THEN
+              ALTER TABLE "vendor_orders" ADD COLUMN IF NOT EXISTS "appliedCommissionRate" DECIMAL(5, 2) DEFAULT 10.00;
+              ALTER TABLE "vendor_orders" ADD COLUMN IF NOT EXISTS "isFoundingOrder" BOOLEAN DEFAULT false;
+              ALTER TABLE "vendor_orders" ADD COLUMN IF NOT EXISTS "foundingOrderIndex" INTEGER;
+            END IF;
+          EXCEPTION WHEN OTHERS THEN
+            null;
+          END $$;
+        `,
+          'FOUNDING_50_COLUMNS_GUARD',
+        ),
+        runSafeSql(
+          `
           CREATE TABLE IF NOT EXISTS "order_contributions" (
             "id" TEXT NOT NULL PRIMARY KEY,
             "masterOrderId" TEXT NOT NULL,

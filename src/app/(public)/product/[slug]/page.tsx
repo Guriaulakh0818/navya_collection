@@ -178,6 +178,8 @@ const getFormattedProduct = cache(async (slug: string) => {
               id: dbProd.shop.id,
               name: dbProd.shop.name,
               slug: dbProd.shop.slug,
+              isFoundingSeller: Boolean(dbProd.shop.isFoundingSeller),
+              foundingSlotNumber: dbProd.shop.foundingSlotNumber || null,
             }
           : null,
       };

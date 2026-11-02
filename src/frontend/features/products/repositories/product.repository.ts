@@ -58,6 +58,8 @@ export class ProductRepository {
               id: true,
               name: true,
               slug: true,
+              isFoundingSeller: true,
+              foundingSlotNumber: true,
               city: true,
               logo: true,
               banner: true,

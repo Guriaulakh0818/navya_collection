@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { CommissionService } from '@/backend/services/commission.service';
+import { Founding50Service } from '@/backend/services/founding-50.service';
 import { ensureOrderSchemaSynced } from '@/lib/order-schema-guard';
 import { prisma } from '@/lib/prisma';
 
@@ -118,15 +119,18 @@ export async function GET(request: NextRequest) {
 
     const pendingPayout = Math.max(0, netSettlementAmount - totalSettled);
 
+    const foundingProgress = await Founding50Service.getSellerProgress(targetShopId);
+
     return NextResponse.json({
       success: true,
       data: {
+        founding50: foundingProgress,
         summary: {
           totalMrp: CommissionService.roundMoney(totalMrp),
           sellingPrice: CommissionService.roundMoney(totalSellingPrice),
           grossEarnings: CommissionService.roundMoney(totalSellingPrice),
           commissionBaseAmount: CommissionService.roundMoney(totalMrp),
-          commissionRate: 10.0,
+          commissionRate: foundingProgress.isFoundingSeller ? foundingProgress.currentRate : 10.0,
           commissionAmount: CommissionService.roundMoney(totalCommission),
           sellerBasePayout: CommissionService.roundMoney(totalSellerBasePayout),
           sellerGstAmount: CommissionService.roundMoney(totalSellerGstAmount),

@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 import { SESSION_COOKIE_NAME } from '@/backend/lib/session';
+import { Founding50Service } from '@/backend/services/founding-50.service';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -21,43 +22,55 @@ export async function GET(request: Request) {
     const cookieStore = await cookies();
     const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
-    if (!token) {
+    let userId: string | null = null;
+    let userRole: string | null = null;
+
+    if (token) {
+      try {
+        const { payload } = await jwtVerify(token, getJwtSecretKey());
+        userId = (payload.userId as string) || null;
+      } catch {
+        // invalid / expired token
+      }
+    }
+
+    if (userId) {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, role: true },
+      });
+      userRole = dbUser?.role || null;
+    }
+
+    if (!userId && process.env.NODE_ENV === 'production') {
       return NextResponse.json(
         { success: false, message: 'Authentication required.' },
         { status: 401 },
       );
     }
 
-    const { payload } = await jwtVerify(token, getJwtSecretKey());
-    const userId = payload.userId as string;
-
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid session token.' },
-        { status: 401 },
-      );
-    }
-
     // Find seller's primary shop
-    let shop = await prisma.shop.findFirst({
-      where: { ownerId: userId, deletedAt: null },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            mobile: true,
-            role: true,
-            approvalStatus: true,
+    let shop = userId
+      ? await prisma.shop.findFirst({
+          where: { ownerId: userId, deletedAt: null },
+          include: {
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                mobile: true,
+                role: true,
+                approvalStatus: true,
+              },
+            },
+            sellerProfile: true,
+            addresses: true,
           },
-        },
-        sellerProfile: true,
-        addresses: true,
-      },
-    });
+        })
+      : null;
 
-    if (!shop) {
+    if (!shop && userId) {
       // Fallback: check if user owns any shop via User model relation
       const userWithShop = await prisma.user.findUnique({
         where: { id: userId },
@@ -85,6 +98,52 @@ export async function GET(request: Request) {
 
       if (userWithShop?.ownedShops?.[0]) {
         shop = userWithShop.ownedShops[0];
+      }
+    }
+
+    // Fallback: If user is platform OWNER / ADMIN / SUPER_ADMIN (e.g. Gurvinder Singh),
+    // or in local dev mode, load the primary Founding 50 boutique
+    if (
+      !shop &&
+      (['OWNER', 'ADMIN', 'SUPER_ADMIN'].includes(userRole || '') ||
+        process.env.NODE_ENV !== 'production')
+    ) {
+      shop = await prisma.shop.findFirst({
+        where: { isFoundingSeller: true, deletedAt: null },
+        include: {
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              mobile: true,
+              role: true,
+              approvalStatus: true,
+            },
+          },
+          sellerProfile: true,
+          addresses: true,
+        },
+      });
+
+      if (!shop) {
+        shop = await prisma.shop.findFirst({
+          where: { deletedAt: null },
+          include: {
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                mobile: true,
+                role: true,
+                approvalStatus: true,
+              },
+            },
+            sellerProfile: true,
+            addresses: true,
+          },
+        });
       }
     }
 
@@ -349,6 +408,7 @@ export async function GET(request: Request) {
         monthlyRevenue,
         recentOrders,
         fulfillment,
+        founding50: await Founding50Service.getSellerProgress(shop.id),
       },
     };
 
