@@ -1,0 +1,94 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+import { getCurrentUser } from '@/backend/lib/session';
+import { PushNotificationService } from '@/backend/services/push-notification.service';
+
+export const dynamic = 'force-dynamic';
+
+function isAuthorizedAdmin(user: any) {
+  return user && ['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(user.role?.toUpperCase());
+}
+
+// GET /api/v1/admin/marketing/notifications/queue
+export async function GET() {
+  try {
+    const admin = await getCurrentUser();
+    if (!isAuthorizedAdmin(admin)) {
+      return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+    }
+
+    const [settings, queue, subscribersStats] = await Promise.all([
+      PushNotificationService.getSettings(),
+      PushNotificationService.getQueueItems(20),
+      PushNotificationService.getSubscribersCadenceStats(4),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        settings,
+        queue,
+        stats: subscribersStats,
+      },
+    });
+  } catch (error: any) {
+    console.error('[API_NOTIFICATIONS_QUEUE_GET_ERROR]', error);
+    return NextResponse.json(
+      { success: false, message: error.message || 'Failed to fetch notification queue' },
+      { status: 500 },
+    );
+  }
+}
+
+// POST /api/v1/admin/marketing/notifications/queue
+export async function POST(request: NextRequest) {
+  try {
+    const admin = await getCurrentUser();
+    if (!isAuthorizedAdmin(admin)) {
+      return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const { action } = body;
+
+    if (action === 'update_settings') {
+      const updated = await PushNotificationService.updateSettings(body.settings || {});
+      return NextResponse.json({
+        success: true,
+        message: 'Notification cadence settings updated successfully.',
+        data: updated,
+      });
+    }
+
+    if (action === 'process_cadence') {
+      const result = await PushNotificationService.dispatchCadence({ force: true });
+      return NextResponse.json({
+        success: true,
+        message: result.message,
+        data: result,
+      });
+    }
+
+    if (action === 'cancel_queue_item') {
+      if (!body.queueItemId) {
+        return NextResponse.json(
+          { success: false, message: 'queueItemId is required' },
+          { status: 400 },
+        );
+      }
+      const cancelled = await PushNotificationService.cancelQueueItem(body.queueItemId);
+      return NextResponse.json({
+        success: cancelled,
+        message: cancelled ? 'Queue item cancelled.' : 'Could not cancel item.',
+      });
+    }
+
+    return NextResponse.json({ success: false, message: 'Invalid action' }, { status: 400 });
+  } catch (error: any) {
+    console.error('[API_NOTIFICATIONS_QUEUE_POST_ERROR]', error);
+    return NextResponse.json(
+      { success: false, message: error.message || 'Failed to perform queue action' },
+      { status: 500 },
+    );
+  }
+}

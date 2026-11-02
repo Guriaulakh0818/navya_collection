@@ -7,6 +7,7 @@ import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { ADMIN_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME } from '@/backend/lib/session';
 import { generateParentSku, generateVariantSku } from '@/backend/lib/sku-generator';
 import { NotificationService } from '@/backend/services/notification.service';
+import { PushNotificationService } from '@/backend/services/push-notification.service';
 import { prisma } from '@/lib/prisma';
 import {
   enforceReturnPolicy,
@@ -462,6 +463,14 @@ export async function POST(request: NextRequest) {
       } catch (notifErr) {
         console.warn('⚠️ Non-critical Admin Product Submission Email Alert Error:', notifErr);
       }
+    }
+
+    if (result.status === 'active') {
+      PushNotificationService.autoEnqueueProductAdded({
+        ...result,
+        images: data.images,
+        shop,
+      } as any).catch(() => {});
     }
 
     return NextResponse.json(

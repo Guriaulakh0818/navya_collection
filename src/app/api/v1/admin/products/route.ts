@@ -4,6 +4,7 @@ import { handleApiError } from '@/backend/lib/api-error-handler';
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { getAdminUser } from '@/backend/lib/session';
 import { generateParentSku } from '@/backend/lib/sku-generator';
+import { PushNotificationService } from '@/backend/services/push-notification.service';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -280,6 +281,11 @@ export async function POST(request: NextRequest) {
         category: true,
         shop: true,
       },
+    });
+
+    // Auto-enqueue New Product Push Notification into Smart Drip Queue
+    PushNotificationService.autoEnqueueProductAdded(newProduct as any).catch((err) => {
+      console.warn('⚠️ Non-critical product push auto-enqueue error:', err);
     });
 
     return NextResponse.json({

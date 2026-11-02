@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getAdminUser } from '@/backend/lib/session';
 import { Founding50Service } from '@/backend/services/founding-50.service';
+import { PushNotificationService } from '@/backend/services/push-notification.service';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
 
     // Auto-heal Founding 50 database schema
     await Founding50Service.ensureSchema();
+    await PushNotificationService.ensureTable();
 
     const [shops, users] = await Promise.all([
       prisma.shop.findMany({
@@ -91,6 +93,7 @@ export async function POST(request: NextRequest) {
 
     // Auto-heal Founding 50 database schema
     await Founding50Service.ensureSchema();
+    await PushNotificationService.ensureTable();
 
     // 1. Reconcile Ramniwas Verma (Navya Collection Flagship in Hisar)
     let ramniwasUser = await prisma.user.findFirst({

@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/backend/lib/session';
 import { Founding50Service } from '@/backend/services/founding-50.service';
 import { MarketingBroadcastService } from '@/backend/services/marketing-broadcast.service';
 import { NotificationService } from '@/backend/services/notification.service';
+import { PushNotificationService } from '@/backend/services/push-notification.service';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
@@ -145,6 +146,11 @@ export async function POST(request: NextRequest) {
         // Auto-dispatch Founding 50 Welcome & Offer Email
         MarketingBroadcastService.autoSendFoundingOfferOnSellerApproval(shopId).catch((err) => {
           console.warn('⚠️ Non-critical Founding 50 email error:', err);
+        });
+
+        // Auto-enqueue New Boutique Push Notification into Smart Drip Queue
+        PushNotificationService.autoEnqueueSellerApproved(targetShop).catch((err) => {
+          console.warn('⚠️ Non-critical push auto-enqueue error:', err);
         });
       }
     } catch (notifErr) {
