@@ -27,7 +27,7 @@ const BUDGET_CARDS = [
   },
   {
     title: 'Premium Picks',
-    href: '/shop?minPrice=1500',
+    href: '/shop?sort=price_desc&minPrice=750',
     badge: 'BOUTIQUE LUXURY',
     accent: 'from-navy-900/10 via-navy/5 to-white border-navy-900/30',
     badgeBg: 'bg-navy-900 text-white border-navy-900',

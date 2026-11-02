@@ -149,6 +149,12 @@ export function ShopProfileStorefront({
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                     {shop.verificationBadge || 'VERIFIED MERCHANT'}
                   </span>
+                  {shop.isFoundingSeller && (
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-50 text-amber-900 border border-amber-300 flex items-center gap-1 shadow-xs">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                      Founding Seller {shop.foundingSlotNumber ? `#${shop.foundingSlotNumber}` : ''}
+                    </span>
+                  )}
                 </div>
 
                 {(() => {
