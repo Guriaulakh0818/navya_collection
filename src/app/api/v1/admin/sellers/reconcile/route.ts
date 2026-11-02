@@ -240,23 +240,103 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Link unassigned products and active products to Navya Collection
+    // 4. Safely Link ONLY Truly Unassigned Products (NEVER alter status/deletedAt of existing products)
     let productUpdateCount = 0;
     if (updatedNavyaShop) {
       const linked = await prisma.product.updateMany({
         where: {
-          OR: [{ shopId: null }, { shopId: '' }, { shopId: updatedNavyaShop.id }],
+          OR: [{ shopId: null }, { shopId: '' }],
+          status: 'active',
+          deletedAt: null,
         },
         data: {
           shopId: updatedNavyaShop.id,
-          status: 'active',
-          deletedAt: null,
         },
       });
       productUpdateCount = linked.count;
     }
 
-    // 4. Reconcile Sk collection Shop
+    // 5. CLEANUP: Re-archive and soft-delete all products that were previously rejected or deleted
+    const auditLogs = await prisma.auditLog.findMany({
+      where: {
+        action: { in: ['PRODUCT_REJECTED', 'BULK_PRODUCTS_DELETED', 'PRODUCT_DELETED'] },
+      },
+      select: { action: true, entityId: true, metadata: true },
+    });
+
+    const archivedIds = new Set<string>();
+
+    // Known rejected test products from admin rejections and user reports:
+    const knownRejectedIds = [
+      'cmvqygp9o000gelbcezknz34u', // Men Beige Printed Hooded (mistakenly in Sarees)
+      'cmvqyg2u90002elbc1pyxaldc', // Men Beige Printed Hooded (mistakenly in Sarees)
+      'cmvqyi1dj000uelbcniah5e00', // Men Beige Printed Hoodie (Louis Vuitton print)
+      'cmvqy1zdb0002ghgcylxne38j', // Men Brown Printed Hoodie (Louis Vuitton print)
+      'cmvqxuluo0002y6hane4099d7', // Men Black Printed Hoodie (Louis Vuitton print)
+      'cmv3vetkh0002unih3h7wz2w7', // t shirt (Royal Store logo test banner)
+      'cmv9pyhvw0009ose67938cdds', // black t shirt (Adidas test print)
+    ];
+    knownRejectedIds.forEach((id) => archivedIds.add(id));
+
+    for (const log of auditLogs) {
+      if (log.entityId) {
+        archivedIds.add(log.entityId);
+      }
+      if (log.metadata && typeof log.metadata === 'object') {
+        const meta = log.metadata as any;
+        if (Array.isArray(meta.productIds)) {
+          meta.productIds.forEach((pid: string) => {
+            if (typeof pid === 'string') archivedIds.add(pid);
+          });
+        }
+        if (typeof meta.productId === 'string') {
+          archivedIds.add(meta.productId);
+        }
+      }
+    }
+
+    // Auto-detect any hoodies, sweatshirts, or track wear mistakenly tagged under sarees
+    const misplacedSareeProducts = await prisma.product.findMany({
+      where: {
+        category: {
+          slug: { in: ['sarees', 'women-sarees', 'silk-sarees'] },
+        },
+        OR: [
+          { name: { contains: 'hood', mode: 'insensitive' } },
+          { name: { contains: 'sweatshirt', mode: 'insensitive' } },
+          { name: { contains: 'jacket', mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true },
+    });
+    misplacedSareeProducts.forEach((p) => archivedIds.add(p.id));
+
+    // Auto-detect test products named simply 't shirt' or 'black t shirt' or containing 'royal store'
+    const testTShirts = await prisma.product.findMany({
+      where: {
+        OR: [
+          { name: { equals: 't shirt', mode: 'insensitive' } },
+          { name: { equals: 'black t shirt', mode: 'insensitive' } },
+          { description: { contains: 'royal store', mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true },
+    });
+    testTShirts.forEach((p) => archivedIds.add(p.id));
+
+    let archivedCount = 0;
+    if (archivedIds.size > 0) {
+      const archiveRes = await prisma.product.updateMany({
+        where: { id: { in: Array.from(archivedIds) } },
+        data: {
+          status: 'archived',
+          deletedAt: new Date(),
+        },
+      });
+      archivedCount = archiveRes.count;
+    }
+
+    // 6. Reconcile Sk collection Shop
     const skShop = await prisma.shop.findFirst({
       where: {
         OR: [
@@ -301,11 +381,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Seller and shop ownership reconciled successfully.',
+      message: 'Seller and shop ownership reconciled, rejected/deleted products safely archived.',
       data: {
         navyaCollection: updatedNavyaShop,
         skCollection: updatedSkShop,
-        linkedProductsCount: productUpdateCount,
+        linkedUnassignedProductsCount: productUpdateCount,
+        archivedRejectedProductsCount: archivedCount,
+        archivedProductIds: Array.from(archivedIds),
       },
     });
   } catch (error: any) {

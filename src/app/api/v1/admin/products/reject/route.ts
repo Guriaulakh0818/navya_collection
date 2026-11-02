@@ -51,11 +51,12 @@ export async function POST(request: NextRequest) {
     const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
 
     await prisma.$transaction(async (tx) => {
-      // 1. Update product status to archived / rejected
+      // 1. Update product status to archived / rejected with soft delete timestamp
       await tx.product.update({
         where: { id: productId },
         data: {
           status: 'archived',
+          deletedAt: new Date(),
         },
       });
 
