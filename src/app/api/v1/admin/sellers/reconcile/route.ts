@@ -349,6 +349,24 @@ export async function POST(request: NextRequest) {
     // 7. Auto-compact Founding 50 slots so approved boutiques get clean sequential slots
     const enrollment = await Founding50Service.autoEnrollApprovedShops();
 
+    // 8. Reconcile Referral & Rewards Ledger: Purge duplicate ghost credits from unauthenticated guest attempts
+    let ghostLedgerPurgedCount = 0;
+    let ghostEventsPurgedCount = 0;
+    try {
+      ghostLedgerPurgedCount = await prisma.$executeRawUnsafe(`
+        DELETE FROM user_coins_ledger
+        WHERE id IN ('coin-1793642598080-taas', 'coin-1793642743390-rfs8')
+           OR (description LIKE '%Friend New Friend%' AND type = 'REFERRAL_BONUS')
+      `);
+      ghostEventsPurgedCount = await prisma.$executeRawUnsafe(`
+        DELETE FROM referral_events
+        WHERE id IN ('ref-1793642586298-lk1t', 'ref-1793642731838-oxv8')
+           OR (friend_user_id IS NULL AND (friend_name = 'New Friend' OR friend_name IS NULL))
+      `);
+    } catch (e: any) {
+      console.warn('[RECONCILE_REFERRAL_PURGE_WARN]', e.message);
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Seller and shop ownership reconciled, rejected/deleted products safely archived.',
@@ -358,6 +376,8 @@ export async function POST(request: NextRequest) {
         archivedRejectedProductsCount: archivedCount,
         archivedProductIds: Array.from(archivedIds),
         foundingEnrollment: enrollment,
+        ghostLedgerPurgedCount,
+        ghostEventsPurgedCount,
       },
     });
   } catch (error: any) {

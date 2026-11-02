@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+import { ReferralService } from '@/backend/services/referral.service';
 import { verifyOtpSchema } from '@/features/auth/schemas/auth.schemas';
 import { OtpService } from '@/features/auth/services/otp.service';
 import { createUserSession, SESSION_COOKIE_NAME, SESSION_EXPIRY_SECONDS } from '@/lib/session';
@@ -36,6 +37,18 @@ export async function POST(request: Request) {
     const result = await OtpService.verifyOtp(email, otp, otpTicket);
 
     if (result.status === 'SUCCESS' && result.user) {
+      // Auto-claim referral welcome bonus if friend arrived with a referral code cookie
+      if (result.isNewUser) {
+        const referralCode = cookieStore.get('jiivaa_referral_code')?.value;
+        if (referralCode && ReferralService.isValidReferralCode(referralCode)) {
+          await ReferralService.recordFriendJoined({
+            code: referralCode,
+            friendName: result.user.name || result.user.email || 'Friend',
+            friendUserId: result.user.id,
+          }).catch((err) => console.warn('[AUTO_REFERRAL_CLAIM_ERROR]', err));
+        }
+      }
+
       // 1. Generate session token for authenticated user
       const sessionResult = await createUserSession(result.user);
 

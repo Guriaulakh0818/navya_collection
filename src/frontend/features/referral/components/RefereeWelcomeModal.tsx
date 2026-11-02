@@ -127,12 +127,49 @@ export function RefereeWelcomeModal({ referralCode: propCode }: RefereeWelcomeMo
       const json = await res.json().catch(() => ({}));
 
       if (res.ok && json.success) {
-        // Credit 500 coins to local client store immediately
-        addCoins(
-          json.data?.coinsCredited || 500,
-          'REFERRAL_BONUS',
-          `Referral Welcome Gift (Used code ${clean})`,
-        );
+        // If guest user applied code, celebrate code applied and prompt login
+        if (json.isGuest || !user?.id) {
+          setIsSuccessClaim(true);
+          if (json.data?.referrerName) setReferrerName(json.data.referrerName);
+          if (json.data?.discountInr) setDiscountInr(json.data.discountInr);
+          return;
+        }
+
+        // Authenticated user: synchronize authoritative loyalty balance from server
+        // NEVER blindly add +500 locally to prevent 500 + 500 = 1,000 double counting
+        try {
+          const loyaltyRes = await fetch('/api/v1/rewards/loyalty');
+          const loyaltyJson = await loyaltyRes.json();
+          if (loyaltyJson?.success && loyaltyJson?.data) {
+            useRewardsStore.getState().setLoyaltyData({
+              coins: loyaltyJson.data.balance,
+              lifetimeCoins: loyaltyJson.data.lifetimeEarned,
+              activities: Array.isArray(loyaltyJson.data.transactions)
+                ? loyaltyJson.data.transactions.map((tx: any) => ({
+                    id: String(tx.id),
+                    amount: Number(tx.amount) || 0,
+                    type: tx.type,
+                    description: tx.description || 'Jiivaa Coin Activity',
+                    date: tx.createdAt
+                      ? new Date(tx.createdAt).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })
+                      : 'Recently',
+                  }))
+                : [],
+            });
+          } else {
+            useRewardsStore.getState().setLoyaltyData({
+              coins: json.data?.coinsCredited || 500,
+            });
+          }
+        } catch {
+          useRewardsStore.getState().setLoyaltyData({
+            coins: json.data?.coinsCredited || 500,
+          });
+        }
 
         if (json.data?.referrerName) {
           setReferrerName(json.data.referrerName);

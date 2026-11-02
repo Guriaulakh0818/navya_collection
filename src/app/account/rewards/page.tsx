@@ -45,6 +45,7 @@ export default function RewardsAccountPage() {
   const [nextOrderPerks, setNextOrderPerks] = useState<any[]>([]);
   const [cycleExpiryStr, setCycleExpiryStr] = useState<string>('');
   const [liveActivities, setLiveActivities] = useState<CoinActivity[] | null>(null);
+  const [liveCoins, setLiveCoins] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -72,6 +73,7 @@ export default function RewardsAccountPage() {
             : [];
 
           setLiveActivities(liveTxs);
+          setLiveCoins(typeof d.balance === 'number' ? d.balance : 0);
           setLoyaltyData({
             coins: d.balance,
             lifetimeCoins: d.lifetimeEarned,
@@ -204,7 +206,9 @@ export default function RewardsAccountPage() {
                     Available Coins
                   </div>
                   <div className="text-lg sm:text-xl font-black text-amber-300 tracking-tight leading-tight flex items-baseline gap-1 mt-0.5">
-                    {mounted ? coins.toLocaleString('en-IN') : '0'}
+                    {mounted
+                      ? (liveCoins !== null ? liveCoins : coins).toLocaleString('en-IN')
+                      : '0'}
                     <span className="text-[11px] text-white/70 font-normal">Coins</span>
                   </div>
                 </div>
@@ -220,7 +224,12 @@ export default function RewardsAccountPage() {
                     Discount Worth
                   </div>
                   <div className="text-lg sm:text-xl font-black text-emerald-300 tracking-tight leading-tight mt-0.5">
-                    ≈ ₹{mounted ? Math.round(coins * settings.coinToInrRatio) : 0}
+                    ≈ ₹
+                    {mounted
+                      ? Math.round(
+                          (liveCoins !== null ? liveCoins : coins) * settings.coinToInrRatio,
+                        )
+                      : 0}
                   </div>
                 </div>
               </div>

@@ -351,6 +351,14 @@ export class ReferralService {
       return { success: false, message: 'Please provide a valid referral code.' };
     }
 
+    // Require authenticated user ID: coins can NEVER be credited to guest/unauthenticated calls
+    if (!friendUserId) {
+      return {
+        success: false,
+        message: 'Please sign up or log in to claim your referral welcome gift.',
+      };
+    }
+
     await this.ensureTables();
 
     // 1. Resolve Referrer
@@ -359,68 +367,88 @@ export class ReferralService {
     const referrerName = referrer?.userName || this.resolveReferrer(clean).referrerName;
 
     // Self-referral prevention
-    if (friendUserId && referrerUserId && friendUserId === referrerUserId) {
+    if (referrerUserId && friendUserId === referrerUserId) {
       return {
         success: false,
         message: 'Aap apna khud ka referral code use nahi kar sakte.',
       };
     }
 
-    // Check if referee has already claimed a referral bonus
-    if (friendUserId) {
-      const existingClaims: any = await prisma
+    // Check if referee has already claimed a referral bonus in events or coins ledger
+    const [existingClaims, existingLedger]: any = await Promise.all([
+      prisma
         .$queryRawUnsafe(
           `SELECT id FROM referral_events WHERE friend_user_id = $1 LIMIT 1`,
           friendUserId,
         )
+        .catch(() => []),
+      prisma
+        .$queryRawUnsafe(
+          `SELECT id FROM user_coins_ledger WHERE user_id = $1 AND reference = $2 LIMIT 1`,
+          friendUserId,
+          `ref_welcome_${friendUserId}`,
+        )
+        .catch(() => []),
+    ]);
+
+    if (
+      (Array.isArray(existingClaims) && existingClaims.length > 0) ||
+      (Array.isArray(existingLedger) && existingLedger.length > 0)
+    ) {
+      return {
+        success: false,
+        message: 'Aapne pehle hi referral welcome gift claim kar liya hai.',
+      };
+    }
+
+    const cleanFriendName = (friendName || 'New Friend').trim();
+
+    // 2. Award Referee: 500 Coins (= ₹50 value) with deterministic idempotent reference
+    await AdminRewardsService.recordCoinTransaction({
+      userId: friendUserId,
+      userName: cleanFriendName,
+      amount: REWARDS_CONFIG.referralFriendSignupCoins, // 500
+      type: 'REFERRAL_BONUS',
+      reference: `ref_welcome_${friendUserId}`,
+      description: `Referral Welcome Gift (Used friend code: ${clean})`,
+    });
+
+    // 3. Award Referrer: 100 Coins with deterministic idempotent reference ref_join_<friendUserId>
+    // Guarantees referrer can NEVER receive multiple bonuses for the same friend
+    if (referrerUserId) {
+      const referrerJoinRef = `ref_join_${friendUserId}`;
+      const alreadyCredited: any = await prisma
+        .$queryRawUnsafe(
+          `SELECT id FROM user_coins_ledger WHERE user_id = $1 AND reference = $2 LIMIT 1`,
+          referrerUserId,
+          referrerJoinRef,
+        )
         .catch(() => []);
 
-      if (Array.isArray(existingClaims) && existingClaims.length > 0) {
-        return {
-          success: false,
-          message: 'Aapne pehle hi referral welcome gift claim kar liya hai.',
-        };
+      if (!Array.isArray(alreadyCredited) || alreadyCredited.length === 0) {
+        await AdminRewardsService.recordCoinTransaction({
+          userId: referrerUserId,
+          userName: referrerName,
+          amount: REWARDS_CONFIG.referralReferrerSignupCoins, // 100
+          type: 'REFERRAL_BONUS',
+          reference: referrerJoinRef,
+          description: `Referral Bonus: Friend ${cleanFriendName} joined via your code`,
+        });
       }
     }
 
-    const eventId = `ref-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-    const cleanFriendName = (friendName || 'New Friend').trim();
-
-    // 2. Award Referee: 500 Coins (= ₹50 value)
-    if (friendUserId) {
-      await AdminRewardsService.recordCoinTransaction({
-        userId: friendUserId,
-        userName: cleanFriendName,
-        amount: REWARDS_CONFIG.referralFriendSignupCoins, // 500
-        type: 'REFERRAL_BONUS',
-        reference: `ref_welcome_${friendUserId}`,
-        description: `Referral Welcome Gift (Used friend code: ${clean})`,
-      });
-    }
-
-    // 3. Award Referrer: 100 Coins initially
-    if (referrerUserId) {
-      await AdminRewardsService.recordCoinTransaction({
-        userId: referrerUserId,
-        userName: referrerName,
-        amount: REWARDS_CONFIG.referralReferrerSignupCoins, // 100
-        type: 'REFERRAL_BONUS',
-        reference: `ref_join_${eventId}`,
-        description: `Referral Bonus: Friend ${cleanFriendName} joined via your code`,
-      });
-    }
-
-    // 4. Save into referral_events
+    // 4. Save into referral_events with idempotent primary key
     try {
       await prisma.$executeRawUnsafe(
         `INSERT INTO referral_events (
            id, referrer_code, referrer_user_id, friend_user_id, friend_name,
            status, coins_awarded, orders_count, date_label, created_at, updated_at
-         ) VALUES ($1, $2, $3, $4, $5, 'JOINED', $6, 0, 'Today', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-        eventId,
+         ) VALUES ($1, $2, $3, $4, $5, 'JOINED', $6, 0, 'Today', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         ON CONFLICT (id) DO NOTHING`,
+        `ref_event_${friendUserId}`,
         clean,
         referrerUserId,
-        friendUserId || null,
+        friendUserId,
         cleanFriendName,
         REWARDS_CONFIG.referralReferrerSignupCoins, // 100
       );

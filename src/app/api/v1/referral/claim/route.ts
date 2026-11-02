@@ -32,7 +32,36 @@ export async function POST(request: NextRequest) {
     // Record click
     await ReferralService.recordClick(cleanCode);
 
-    // Record friend joined and award 500 coins to referee + 100 coins to referrer
+    const cookieStore = await cookies();
+    // Store in cookie for 30 days so subsequent registration/checkout honors attribution
+    cookieStore.set('jiivaa_referral_code', cleanCode, {
+      maxAge: 30 * 24 * 60 * 60,
+      path: '/',
+      httpOnly: false,
+      sameSite: 'lax',
+    });
+
+    const resolved = await ReferralService.resolveReferrerAsync(cleanCode);
+
+    // If user is a guest (not authenticated yet), store referral in cookie and prompt login/signup.
+    // NEVER award referrer bonus or referee coins on unauthenticated guest attempts!
+    if (!activeUserId) {
+      return NextResponse.json({
+        success: true,
+        isGuest: true,
+        message: `Referral code "${cleanCode}" applied! Sign up or log in to claim your 500 Jiivaa Coins (Flat ₹50 OFF on ₹499+).`,
+        data: {
+          code: cleanCode,
+          referrerName: resolved.referrerName,
+          discountInr: resolved.discountInr,
+          minOrderInr: resolved.minOrderInr,
+          coinsCredited: 0,
+          requiresAuth: true,
+        },
+      });
+    }
+
+    // Authenticated user: Record friend joined and atomically award 500 coins to referee + 100 coins to referrer
     const result = await ReferralService.recordFriendJoined({
       code: cleanCode,
       friendName: displayName,
@@ -42,17 +71,6 @@ export async function POST(request: NextRequest) {
     if (!result.success) {
       return NextResponse.json({ success: false, message: result.message }, { status: 400 });
     }
-
-    const cookieStore = await cookies();
-    // Store in cookie for 30 days
-    cookieStore.set('jiivaa_referral_code', cleanCode, {
-      maxAge: 30 * 24 * 60 * 60,
-      path: '/',
-      httpOnly: false,
-      sameSite: 'lax',
-    });
-
-    const resolved = await ReferralService.resolveReferrerAsync(cleanCode);
 
     return NextResponse.json({
       success: true,
