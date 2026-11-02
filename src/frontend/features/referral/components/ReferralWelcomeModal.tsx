@@ -175,7 +175,7 @@ export function ReferralWelcomeModal({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-5 left-5 z-40 hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/95 backdrop-blur-md border border-orange/25 shadow-lg shadow-orange/15 hover:shadow-orange/25 text-xs font-black text-navy hover:text-orange transition-all hover:scale-105 active:scale-95 cursor-pointer"
+        className="fixed bottom-4 left-3 sm:bottom-5 sm:left-5 z-40 inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-white/95 backdrop-blur-md border border-orange/30 shadow-lg shadow-orange/15 hover:shadow-orange/25 text-[11px] sm:text-xs font-black text-navy hover:text-orange transition-all hover:scale-105 active:scale-95 cursor-pointer"
         title="Open Refer & Earn"
         aria-label="Open Refer and Earn rewards popup"
       >

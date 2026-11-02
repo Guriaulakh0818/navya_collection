@@ -8,6 +8,9 @@ import { Header } from '@/components/layout/header/Header';
 import { RefereePromoRibbon } from '@/features/referral/components/RefereePromoRibbon';
 import { RefereeWelcomeModal } from '@/features/referral/components/RefereeWelcomeModal';
 import { ReferralWelcomeModal } from '@/features/referral/components/ReferralWelcomeModal';
+import { FloatingSocialProofToast } from '@/frontend/components/notifications/FloatingSocialProofToast';
+import { OnScreenNotificationBanner } from '@/frontend/components/notifications/OnScreenNotificationBanner';
+import { WebPushSubscriber } from '@/frontend/components/notifications/WebPushSubscriber';
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -20,6 +23,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <OnScreenNotificationBanner />
       <Suspense fallback={null}>
         <RefereePromoRibbon />
       </Suspense>
@@ -30,6 +34,8 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
         <ReferralWelcomeModal />
         <RefereeWelcomeModal />
       </Suspense>
+      <FloatingSocialProofToast />
+      <WebPushSubscriber />
     </>
   );
 }

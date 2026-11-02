@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/backend/lib/session';
 import { Founding50Service } from '@/backend/services/founding-50.service';
+import { MarketingBroadcastService } from '@/backend/services/marketing-broadcast.service';
 import { NotificationService } from '@/backend/services/notification.service';
 import { prisma } from '@/lib/prisma';
 
@@ -140,6 +141,11 @@ export async function POST(request: NextRequest) {
           targetShop.name,
           'APPROVED',
         );
+
+        // Auto-dispatch Founding 50 Welcome & Offer Email
+        MarketingBroadcastService.autoSendFoundingOfferOnSellerApproval(shopId).catch((err) => {
+          console.warn('⚠️ Non-critical Founding 50 email error:', err);
+        });
       }
     } catch (notifErr) {
       console.warn('⚠️ Failed to dispatch approval notification email:', notifErr);
