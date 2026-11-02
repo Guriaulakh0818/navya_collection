@@ -61,10 +61,10 @@ export function MarketplaceCatalogContent() {
     const sort = searchParams.get('sort') || '';
     const filter = (searchParams.get('filter') || '').toLowerCase();
 
-    if (q) setSearchQuery(q);
-    if (cat !== 'all') setSelectedCategory(cat);
-    if (maxP) setMaxPrice(maxP);
-    if (minP) setMinPrice(minP);
+    setSearchQuery(q);
+    setSelectedCategory(cat);
+    setMaxPrice(maxP);
+    setMinPrice(minP);
     if (sort) {
       setSortBy(sort === 'rating' ? 'popular' : sort);
     } else if (filter === 'offers' || filter === 'sale' || filter === 'discount') {
@@ -452,6 +452,33 @@ export function MarketplaceCatalogContent() {
         badgeLabel: 'Best Sellers Active',
       };
     }
+    if (maxPrice && !minPrice) {
+      return {
+        title: `Pocket Friendly (Under ₹${Number(maxPrice).toLocaleString('en-IN')})`,
+        icon: Sparkles,
+        subtitle: `Curated fashion tailored under ₹${Number(maxPrice).toLocaleString('en-IN')}`,
+        breadcrumbLabel: `Under ₹${maxPrice}`,
+        badgeLabel: `Under ₹${maxPrice}`,
+      };
+    }
+    if (minPrice && !maxPrice) {
+      return {
+        title: `Premium Boutique Luxury (Above ₹${Number(minPrice).toLocaleString('en-IN')})`,
+        icon: Sparkles,
+        subtitle: `Exclusive luxury ethnic & designer couture above ₹${Number(minPrice).toLocaleString('en-IN')}`,
+        breadcrumbLabel: `Above ₹${minPrice}`,
+        badgeLabel: `Above ₹${minPrice}`,
+      };
+    }
+    if (minPrice && maxPrice) {
+      return {
+        title: `Budget Tier: ₹${minPrice} – ₹${maxPrice}`,
+        icon: Sparkles,
+        subtitle: `Curated boutique collections between ₹${minPrice} and ₹${maxPrice}`,
+        breadcrumbLabel: `₹${minPrice}–₹${maxPrice}`,
+        badgeLabel: `₹${minPrice}–₹${maxPrice}`,
+      };
+    }
     return {
       title: 'Boutique Marketplace',
       icon: null,
@@ -472,7 +499,7 @@ export function MarketplaceCatalogContent() {
           <Breadcrumb
             items={[
               { label: 'Home', href: '/' },
-              ...(activeFilter
+              ...(activeFilter || maxPrice || minPrice
                 ? [{ label: 'Shop', href: '/shop' }, { label: headerInfo.breadcrumbLabel }]
                 : [{ label: 'Marketplace Shops' }]),
             ]}
@@ -574,6 +601,49 @@ export function MarketplaceCatalogContent() {
                 </option>
               ))}
             </select>
+
+            {/* Price / Budget Filter */}
+            {activeView === 'products' && (
+              <select
+                value={
+                  maxPrice === '499' && !minPrice
+                    ? 'under_499'
+                    : maxPrice === '999' && !minPrice
+                      ? 'under_999'
+                      : maxPrice === '1499' && !minPrice
+                        ? 'under_1499'
+                        : minPrice === '1500' && !maxPrice
+                          ? 'above_1500'
+                          : 'all'
+                }
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === 'under_499') {
+                    setMinPrice('');
+                    setMaxPrice('499');
+                  } else if (val === 'under_999') {
+                    setMinPrice('');
+                    setMaxPrice('999');
+                  } else if (val === 'under_1499') {
+                    setMinPrice('');
+                    setMaxPrice('1499');
+                  } else if (val === 'above_1500') {
+                    setMinPrice('1500');
+                    setMaxPrice('');
+                  } else {
+                    setMinPrice('');
+                    setMaxPrice('');
+                  }
+                }}
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 font-bold focus:border-navy focus:outline-none cursor-pointer"
+              >
+                <option value="all">All Budgets</option>
+                <option value="under_499">Under ₹499 (Pocket Friendly)</option>
+                <option value="under_999">Under ₹999 (Most Popular)</option>
+                <option value="under_1499">Under ₹1,499 (Festive Picks)</option>
+                <option value="above_1500">Above ₹1,500 (Boutique Luxury)</option>
+              </select>
+            )}
 
             {/* City Filter */}
             {availableCities.length > 0 && (
