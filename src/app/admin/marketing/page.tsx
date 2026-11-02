@@ -537,7 +537,7 @@ export default function AdminMarketingPage() {
                     </div>
                   </div>
                   <div className="bg-white border-2 border-dashed border-navy rounded-xl p-3 text-sm font-black text-navy font-mono tracking-widest">
-                    YOUR CODE: JIIVAA-GURV-0218
+                    YOUR CODE: GURVI3FA
                   </div>
                   <div className="flex flex-wrap items-center justify-center gap-2">
                     <span className="bg-[#25D366] text-white text-xs font-bold px-4 py-2 rounded-full">

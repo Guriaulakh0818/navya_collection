@@ -9,6 +9,7 @@ import {
 import { prisma } from '@/lib/prisma';
 
 import { PushNotificationService } from './push-notification.service';
+import { ReferralService } from './referral.service';
 
 export interface BroadcastResult {
   success: boolean;
@@ -238,12 +239,30 @@ export class MarketingBroadcastService {
 
     // Test Mode
     if (options.testOnly) {
+      const adminUser = await prisma.user
+        .findFirst({
+          where: {
+            OR: [{ email: testRecipient }, { email: 'gurvindersingh0218@gmail.com' }],
+          },
+          select: { id: true, name: true, mobile: true },
+        })
+        .catch(() => null);
+
+      const testCode = adminUser
+        ? ReferralService.generateCode(
+            adminUser.id,
+            adminUser.name || adminUser.mobile || undefined,
+          )
+        : ReferralService.generateCode('test-admin-gurv', 'Gurvinder');
+
+      const testLink = `https://jiivaakart.com/register?ref=${testCode}`;
       const emailData = renderReferAndEarnEmail({
-        customerName: 'Gurvinder Singh',
-        referralCode: 'JIIVAA-TEST-0218',
-        referralLink: 'https://jiivaakart.com/register?ref=JIIVAA-TEST-0218',
-        whatsAppShareUrl:
-          'https://api.whatsapp.com/send?text=Hey!%20Check%20out%20JiivaaKart%20and%20get%20Flat%20Rs.50%20OFF!',
+        customerName: adminUser?.name || 'Gurvinder Singh',
+        referralCode: testCode,
+        referralLink: testLink,
+        whatsAppShareUrl: `https://api.whatsapp.com/send?text=${encodeURIComponent(
+          `Hey! I'm shopping verified boutique fashion on JiivaaKart. Use my invite code *${testCode}* or click ${testLink} to get Flat ₹50 OFF on your first order! 🛍️✨`,
+        )}`,
         welcomeDiscount: 50,
         referrerReward: 50,
       });
@@ -285,17 +304,20 @@ export class MarketingBroadcastService {
     let failedCount = 0;
 
     for (const user of validUsers) {
-      const code = `JK-${(user.name || 'USER')
-        .replace(/[^a-zA-Z]/g, '')
-        .toUpperCase()
-        .slice(0, 4)}-${(user.mobile || user.id).slice(-4)}`;
+      // Generate clean unique code matching website (/referral & /account/rewards)
+      const code = ReferralService.generateCode(user.id, user.name || user.mobile || undefined);
+      // Pre-register code in referral index for instant zero-latency lookup
+      ReferralService.registerUserCode(user.id, code, user.name || 'Jiivaa Shopper').catch(
+        () => {},
+      );
 
+      const refLink = `https://jiivaakart.com/register?ref=${code}`;
       const emailData = renderReferAndEarnEmail({
         customerName: user.name || 'Fashion Shopper',
         referralCode: code,
-        referralLink: `https://jiivaakart.com/register?ref=${code}`,
+        referralLink: refLink,
         whatsAppShareUrl: `https://api.whatsapp.com/send?text=${encodeURIComponent(
-          `Hey! I'm shopping verified boutique fashion on JiivaaKart. Use my invite code *${code}* or click https://jiivaakart.com/register?ref=${code} to get Flat ₹50 OFF on your first order! 🛍️✨`,
+          `Hey! I'm shopping verified boutique fashion on JiivaaKart. Use my invite code *${code}* or click ${refLink} to get Flat ₹50 OFF on your first order! 🛍️✨`,
         )}`,
         welcomeDiscount: 50,
         referrerReward: 50,

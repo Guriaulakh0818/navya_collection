@@ -139,7 +139,11 @@ export function renderReferAndEarnEmail(props: ReferAndEarnEmailProps): {
   html: string;
 } {
   const name = props.customerName || 'Jiivaa Shopper';
-  const code = props.referralCode || 'JIIVAA-REFER';
+  const rawCode = props.referralCode || 'FRIEND50';
+  const code = rawCode
+    .trim()
+    .toUpperCase()
+    .replace(/^JIIVAA-/, '');
   const link = props.referralLink || `https://jiivaakart.com/register?ref=${code}`;
   const welcomeDiscount = props.welcomeDiscount || 50;
   const referrerReward = props.referrerReward || 50;

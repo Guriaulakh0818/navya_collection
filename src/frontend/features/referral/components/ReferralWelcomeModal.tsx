@@ -123,9 +123,11 @@ export function ReferralWelcomeModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleClose]);
 
-  const shareCode = user
-    ? generateUniqueReferralCode(user.id, user.name || user.mobile)
-    : referralCode || 'JIIVAA-STYLE';
+  const shareCode = (
+    user
+      ? generateUniqueReferralCode(user.id, user.name || user.mobile)
+      : referralCode || 'FRIEND50'
+  ).replace(/^JIIVAA-/, '');
   const shareUrl = `${originUrl}/r/${shareCode}`;
   const whatsAppText = REWARDS_CONFIG.getWhatsAppShareText(
     shareCode,
