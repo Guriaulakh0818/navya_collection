@@ -305,13 +305,43 @@ export class Founding50Service {
   }> {
     await this.ensureSchema();
 
-    // 1. Get all currently occupied slots
-    const occupied = await prisma.shop.findMany({
-      where: { foundingSlotNumber: { not: null }, isFoundingSeller: true },
-      select: { foundingSlotNumber: true },
+    // 0. Revoke slots from any unapproved, rejected, or soft-deleted shops
+    await prisma.shop.updateMany({
+      where: {
+        isFoundingSeller: true,
+        OR: [{ status: { not: 'APPROVED' } }, { deletedAt: { not: null } }],
+      },
+      data: {
+        isFoundingSeller: false,
+        foundingSlotNumber: null,
+        foundingStatus: 'INELIGIBLE',
+        commissionRate: this.RATE_STANDARD,
+      },
     });
+
+    // 1. Re-compact active founding shops to guarantee clean consecutive slots
+    const activeFounding = await prisma.shop.findMany({
+      where: {
+        isFoundingSeller: true,
+        status: 'APPROVED',
+        deletedAt: null,
+      },
+      orderBy: [{ foundingSlotNumber: 'asc' }, { foundingJoinedAt: 'asc' }, { createdAt: 'asc' }],
+      select: { id: true, foundingSlotNumber: true },
+    });
+
+    for (let i = 0; i < activeFounding.length; i++) {
+      const properSlot = i + 1;
+      if (activeFounding[i].foundingSlotNumber !== properSlot) {
+        await prisma.shop.update({
+          where: { id: activeFounding[i].id },
+          data: { foundingSlotNumber: properSlot },
+        });
+      }
+    }
+
     const occupiedSet = new Set<number>(
-      occupied.map((s: any) => s.foundingSlotNumber).filter((n: any) => typeof n === 'number'),
+      activeFounding.map((_, i) => i + 1).filter((n) => n <= this.MAX_SLOTS),
     );
 
     // 2. Find all approved, non-deleted shops that do NOT have a founding slot
@@ -527,10 +557,10 @@ export class Founding50Service {
 
     const [totalAllocated, members, eligibleShops] = await Promise.all([
       prisma.shop.count({
-        where: { isFoundingSeller: true },
+        where: { isFoundingSeller: true, status: 'APPROVED', deletedAt: null },
       }),
       prisma.shop.findMany({
-        where: { isFoundingSeller: true },
+        where: { isFoundingSeller: true, status: 'APPROVED', deletedAt: null },
         select: {
           id: true,
           name: true,

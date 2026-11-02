@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     const [shops, users] = await Promise.all([
       prisma.shop.findMany({
-        where: { slug: { in: ['navya-collection', 'sk-collection'] } },
+        where: { slug: 'navya-collection' },
         include: {
           owner: {
             select: {
@@ -62,7 +62,6 @@ export async function GET(request: NextRequest) {
               },
             },
             { name: { contains: 'Ramniwas', mode: 'insensitive' } },
-            { name: { contains: 'Jarnail', mode: 'insensitive' } },
           ],
         },
         select: {
@@ -127,38 +126,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 2. Reconcile Jarnail Singh (Sk collection in Fatehabad)
-    let jarnailUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { name: { contains: 'Jarnail', mode: 'insensitive' } },
-          { email: { contains: 'jarnail', mode: 'insensitive' } },
-        ],
-      },
-    });
-
-    if (jarnailUser) {
-      jarnailUser = await prisma.user.update({
-        where: { id: jarnailUser.id },
-        data: {
-          name: 'Jarnail Singh',
-          role: 'SELLER',
-          approvalStatus: 'APPROVED',
-        },
-      });
-    } else {
-      jarnailUser = await prisma.user.create({
-        data: {
-          name: 'Jarnail Singh',
-          email: 'jarnail.skcollection@gmail.com',
-          mobile: '+919053883125',
-          role: 'SELLER',
-          approvalStatus: 'APPROVED',
-        },
-      });
-    }
-
-    // 3. Reconcile Navya Collection Shop
+    // 2. Reconcile Navya Collection Shop
     const navyaShop = await prisma.shop.findFirst({
       where: {
         OR: [
@@ -336,8 +304,8 @@ export async function POST(request: NextRequest) {
       archivedCount = archiveRes.count;
     }
 
-    // 6. Reconcile Sk collection Shop
-    const skShop = await prisma.shop.findFirst({
+    // 6. Explicitly enforce REJECTED & archived status for Sk collection (Jarnail Singh)
+    const rejectedSkShop = await prisma.shop.findFirst({
       where: {
         OR: [
           { slug: 'sk-collection' },
@@ -346,48 +314,50 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    let updatedSkShop = null;
-    if (skShop) {
-      updatedSkShop = await prisma.shop.update({
-        where: { id: skShop.id },
+    if (rejectedSkShop) {
+      await prisma.shop.update({
+        where: { id: rejectedSkShop.id },
         data: {
-          name: 'Sk collection',
-          slug: 'sk-collection',
-          ownerId: jarnailUser.id,
-          email: jarnailUser.email || 'jarnail.skcollection@gmail.com',
-          phone: jarnailUser.mobile || '+919053883125',
-          city: 'Fatehabad',
-          state: 'Haryana',
-          pincode: '125050',
-          fullAddress: 'Fatehabad, Haryana, India',
-          status: 'APPROVED',
-          verificationBadge: 'VERIFIED_SELLER',
-          deletedAt: null,
-        },
-        include: {
-          owner: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              mobile: true,
-              role: true,
-              approvalStatus: true,
-            },
-          },
+          status: 'REJECTED',
+          isFoundingSeller: false,
+          foundingSlotNumber: null,
+          foundingStatus: 'INELIGIBLE',
+          deletedAt: new Date(),
         },
       });
+
+      if (rejectedSkShop.ownerId) {
+        await prisma.user
+          .update({
+            where: { id: rejectedSkShop.ownerId },
+            data: { approvalStatus: 'REJECTED' },
+          })
+          .catch(() => {});
+      }
+
+      await prisma.product
+        .updateMany({
+          where: { shopId: rejectedSkShop.id },
+          data: {
+            status: 'archived',
+            deletedAt: new Date(),
+          },
+        })
+        .catch(() => {});
     }
+
+    // 7. Auto-compact Founding 50 slots so approved boutiques get clean sequential slots
+    const enrollment = await Founding50Service.autoEnrollApprovedShops();
 
     return NextResponse.json({
       success: true,
       message: 'Seller and shop ownership reconciled, rejected/deleted products safely archived.',
       data: {
         navyaCollection: updatedNavyaShop,
-        skCollection: updatedSkShop,
         linkedUnassignedProductsCount: productUpdateCount,
         archivedRejectedProductsCount: archivedCount,
         archivedProductIds: Array.from(archivedIds),
+        foundingEnrollment: enrollment,
       },
     });
   } catch (error: any) {

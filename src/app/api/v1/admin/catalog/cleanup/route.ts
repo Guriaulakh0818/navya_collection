@@ -24,14 +24,13 @@ const REAL_NAVYA_PRODUCT_IDS = [
   'cmuczol4n0002hrfqyphrxpel', // Baby Boys Printed T-Shirt & Shorts Set
 ];
 
-const ALLOWED_LIVE_SHOP_SLUGS = ['navya-collection', 'sk-collection'];
+const ALLOWED_LIVE_SHOP_SLUGS = ['navya-collection'];
 
 // POST /api/v1/admin/catalog/cleanup
 // Cleans up dummy products and inactivates closed shops so only the 2 live shops and real Navya products remain.
 export async function POST(request: NextRequest) {
   try {
-    const authHeader =
-      request.headers.get('authorization') || request.headers.get('x-sync-secret');
+    const authHeader = request.headers.get('authorization') || request.headers.get('x-sync-secret');
     const isSecretAuthorized =
       authHeader &&
       (authHeader === INTERNAL_SYNC_SECRET || authHeader === `Bearer ${INTERNAL_SYNC_SECRET}`);
@@ -61,34 +60,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Activate ONLY the 2 authorized shops (NAVYA COLLECTION & Sk collection)
-    // and ensure permanent 'Style That Speaks' banner for all shops
-    const activatedShops = await prisma.shop.updateMany({
-      where: {
-        slug: { in: ALLOWED_LIVE_SHOP_SLUGS },
-      },
-      data: {
-        status: 'APPROVED',
-        banner: '/images/default-shop-banner.png',
-        deletedAt: null,
-      },
-    });
-
-    // Ensure NAVYA COLLECTION profile logo is set to '/images/navya-logo.png'
+    // 2. Ensure NAVYA COLLECTION profile logo and branding banner
     await prisma.shop.updateMany({
       where: {
         slug: 'navya-collection',
       },
       data: {
+        status: 'APPROVED',
         logo: '/images/navya-logo.png',
         banner: '/images/default-shop-banner.png',
+        deletedAt: null,
       },
     });
 
-    // 3. Deactivate and close ALL other shops (Style Zone, Saniya Fashions, Barkat Fashion, Jaspreet Fashions, etc.)
+    // 3. Deactivate and close unapproved/closed shops, preserving Navya Collection and all approved boutiques
+    const approvedShops = await prisma.shop.findMany({
+      where: { status: 'APPROVED', deletedAt: null },
+      select: { slug: true },
+    });
+    const preservedSlugs = Array.from(
+      new Set(['navya-collection', ...approvedShops.map((s) => s.slug)]),
+    );
+
     const deactivatedShops = await prisma.shop.updateMany({
       where: {
-        slug: { notIn: ALLOWED_LIVE_SHOP_SLUGS },
+        slug: { notIn: preservedSlugs },
       },
       data: {
         status: 'INACTIVE',
@@ -112,27 +108,37 @@ export async function POST(request: NextRequest) {
 
     if (dummyIds.length > 0) {
       // Clean dependent relations
-      await prisma.cartItem.deleteMany({
-        where: { productId: { in: dummyIds } },
-      }).catch(() => {});
+      await prisma.cartItem
+        .deleteMany({
+          where: { productId: { in: dummyIds } },
+        })
+        .catch(() => {});
 
-      await prisma.wishlist.deleteMany({
-        where: { productId: { in: dummyIds } },
-      }).catch(() => {});
+      await prisma.wishlist
+        .deleteMany({
+          where: { productId: { in: dummyIds } },
+        })
+        .catch(() => {});
 
-      const vRes = await prisma.productVariant.deleteMany({
-        where: { productId: { in: dummyIds } },
-      }).catch(() => ({ count: 0 }));
+      const vRes = await prisma.productVariant
+        .deleteMany({
+          where: { productId: { in: dummyIds } },
+        })
+        .catch(() => ({ count: 0 }));
       deletedVariants = vRes.count;
 
-      const imgRes = await prisma.productImage.deleteMany({
-        where: { productId: { in: dummyIds } },
-      }).catch(() => ({ count: 0 }));
+      const imgRes = await prisma.productImage
+        .deleteMany({
+          where: { productId: { in: dummyIds } },
+        })
+        .catch(() => ({ count: 0 }));
       deletedImages = imgRes.count;
 
-      const pRes = await prisma.product.deleteMany({
-        where: { id: { in: dummyIds } },
-      }).catch(() => ({ count: 0 }));
+      const pRes = await prisma.product
+        .deleteMany({
+          where: { id: { in: dummyIds } },
+        })
+        .catch(() => ({ count: 0 }));
       deletedProducts = pRes.count;
     }
 
@@ -164,7 +170,11 @@ export async function POST(request: NextRequest) {
       message: `Cleaned up dummy data successfully! Only 2 live shops and ${activeProducts.length} real products remain.`,
       stats: {
         liveShopsCount: liveShops.length,
-        liveShops: liveShops.map((s) => ({ name: s.name, slug: s.slug, products: s._count.products })),
+        liveShops: liveShops.map((s) => ({
+          name: s.name,
+          slug: s.slug,
+          products: s._count.products,
+        })),
         activeProductsCount: activeProducts.length,
         deletedDummyProductsCount: deletedProducts,
         deletedImagesCount: deletedImages,

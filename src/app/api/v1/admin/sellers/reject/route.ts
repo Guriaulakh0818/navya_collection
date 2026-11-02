@@ -36,11 +36,24 @@ export async function POST(request: NextRequest) {
 
     // Atomic rejection transaction
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Update Shop
+      // 1. Update Shop: set REJECTED, soft-delete, and vacate Founding 50 slot
       const updatedShop = await tx.shop.update({
         where: { id: shopId },
         data: {
           status: ShopStatus.REJECTED,
+          isFoundingSeller: false,
+          foundingSlotNumber: null,
+          foundingStatus: 'INELIGIBLE',
+          deletedAt: new Date(),
+        },
+      });
+
+      // 1b. Safely archive any products associated with the rejected shop
+      await tx.product.updateMany({
+        where: { shopId },
+        data: {
+          status: 'archived',
+          deletedAt: new Date(),
         },
       });
 
