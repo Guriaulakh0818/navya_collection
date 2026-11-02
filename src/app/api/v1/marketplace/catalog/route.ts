@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { Founding50Service } from '@/backend/services/founding-50.service';
 import { prisma } from '@/lib/prisma';
 
 export const revalidate = 120; // 2 minutes Edge CDN cache
@@ -11,6 +12,7 @@ export async function GET() {
     let dbCategories: any[] = [];
 
     try {
+      await Founding50Service.ensureSchema();
       [dbShops, dbProducts, dbCategories] = await Promise.all([
         // 1. Fetch ALL APPROVED non-deleted shops across the entire marketplace
         prisma.shop.findMany({

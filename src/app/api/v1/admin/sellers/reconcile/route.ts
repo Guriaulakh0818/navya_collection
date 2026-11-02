@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getAdminUser } from '@/backend/lib/session';
+import { Founding50Service } from '@/backend/services/founding-50.service';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -10,8 +11,7 @@ const INTERNAL_SYNC_SECRET =
   process.env.INTERNAL_SYNC_SECRET || 'navya_prod_sync_taxonomy_secret_2026';
 
 function isAuthorized(request: NextRequest, admin: any) {
-  const authHeader =
-    request.headers.get('authorization') || request.headers.get('x-sync-secret');
+  const authHeader = request.headers.get('authorization') || request.headers.get('x-sync-secret');
   const isSecretAuthorized =
     authHeader &&
     (authHeader === INTERNAL_SYNC_SECRET || authHeader === `Bearer ${INTERNAL_SYNC_SECRET}`);
@@ -30,24 +30,49 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
 
+    // Auto-heal Founding 50 database schema
+    await Founding50Service.ensureSchema();
+
     const [shops, users] = await Promise.all([
       prisma.shop.findMany({
         where: { slug: { in: ['navya-collection', 'sk-collection'] } },
         include: {
           owner: {
-            select: { id: true, name: true, email: true, mobile: true, role: true, approvalStatus: true },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              mobile: true,
+              role: true,
+              approvalStatus: true,
+            },
           },
         },
       }),
       prisma.user.findMany({
         where: {
           OR: [
-            { email: { in: ['navyacollection45@gmail.com', 'admin@navyacollection.store', 'gurvindersingh0218@gmail.com'] } },
+            {
+              email: {
+                in: [
+                  'navyacollection45@gmail.com',
+                  'admin@navyacollection.store',
+                  'gurvindersingh0218@gmail.com',
+                ],
+              },
+            },
             { name: { contains: 'Ramniwas', mode: 'insensitive' } },
             { name: { contains: 'Jarnail', mode: 'insensitive' } },
           ],
         },
-        select: { id: true, name: true, email: true, mobile: true, role: true, approvalStatus: true },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          mobile: true,
+          role: true,
+          approvalStatus: true,
+        },
       }),
     ]);
 
@@ -64,6 +89,9 @@ export async function POST(request: NextRequest) {
     if (!isAuthorized(request, admin)) {
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
+
+    // Auto-heal Founding 50 database schema
+    await Founding50Service.ensureSchema();
 
     // 1. Reconcile Ramniwas Verma (Navya Collection Flagship in Hisar)
     let ramniwasUser = await prisma.user.findFirst({
@@ -156,14 +184,76 @@ export async function POST(request: NextRequest) {
           fullAddress: 'Hisar, Haryana, India',
           status: 'APPROVED',
           verificationBadge: 'VERIFIED_SELLER',
+          isFoundingSeller: true,
+          foundingSlotNumber: (navyaShop as any).foundingSlotNumber || 1,
+          foundingStatus: 'ACTIVE',
+          foundingJoinedAt: (navyaShop as any).foundingJoinedAt || new Date(),
+          commissionRate: 5.0,
           deletedAt: null,
         },
         include: {
           owner: {
-            select: { id: true, name: true, email: true, mobile: true, role: true, approvalStatus: true },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              mobile: true,
+              role: true,
+              approvalStatus: true,
+            },
           },
         },
       });
+    } else {
+      updatedNavyaShop = await prisma.shop.create({
+        data: {
+          name: 'Navya Collection',
+          slug: 'navya-collection',
+          ownerId: ramniwasUser.id,
+          email: 'navyacollection45@gmail.com',
+          phone: '8901422923',
+          city: 'Hisar',
+          state: 'Haryana',
+          pincode: '125001',
+          fullAddress: 'Hisar, Haryana, India',
+          status: 'APPROVED',
+          verificationBadge: 'VERIFIED_SELLER',
+          isFoundingSeller: true,
+          foundingSlotNumber: 1,
+          foundingStatus: 'ACTIVE',
+          foundingJoinedAt: new Date(),
+          commissionRate: 5.0,
+          deletedAt: null,
+        },
+        include: {
+          owner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              mobile: true,
+              role: true,
+              approvalStatus: true,
+            },
+          },
+        },
+      });
+    }
+
+    // Link unassigned products and active products to Navya Collection
+    let productUpdateCount = 0;
+    if (updatedNavyaShop) {
+      const linked = await prisma.product.updateMany({
+        where: {
+          OR: [{ shopId: null }, { shopId: '' }, { shopId: updatedNavyaShop.id }],
+        },
+        data: {
+          shopId: updatedNavyaShop.id,
+          status: 'active',
+          deletedAt: null,
+        },
+      });
+      productUpdateCount = linked.count;
     }
 
     // 4. Reconcile Sk collection Shop
@@ -196,7 +286,14 @@ export async function POST(request: NextRequest) {
         },
         include: {
           owner: {
-            select: { id: true, name: true, email: true, mobile: true, role: true, approvalStatus: true },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              mobile: true,
+              role: true,
+              approvalStatus: true,
+            },
           },
         },
       });
@@ -208,6 +305,7 @@ export async function POST(request: NextRequest) {
       data: {
         navyaCollection: updatedNavyaShop,
         skCollection: updatedSkShop,
+        linkedProductsCount: productUpdateCount,
       },
     });
   } catch (error: any) {

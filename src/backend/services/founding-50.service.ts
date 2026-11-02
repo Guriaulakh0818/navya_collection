@@ -40,6 +40,43 @@ export class Founding50Service {
   public static readonly RATE_TIER_2 = 7.5; // 7.5%
   public static readonly RATE_STANDARD = 10.0; // 10%
 
+  private static schemaSynced = false;
+
+  /**
+   * Idempotently ensures that Founding 50 program columns exist in the PostgreSQL database.
+   * Runs raw DDL queries to auto-heal production and staging databases.
+   */
+  public static async ensureSchema(): Promise<void> {
+    if (this.schemaSynced) return;
+    try {
+      const ddlStatements = [
+        `ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "isFoundingSeller" BOOLEAN DEFAULT false`,
+        `ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "foundingSlotNumber" INTEGER`,
+        `ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "foundingJoinedAt" TIMESTAMP(3)`,
+        `ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "foundingOrderCount" INTEGER DEFAULT 0`,
+        `ALTER TABLE "shops" ADD COLUMN IF NOT EXISTS "foundingStatus" TEXT DEFAULT 'INELIGIBLE'`,
+        `CREATE UNIQUE INDEX IF NOT EXISTS "shops_foundingSlotNumber_key" ON "shops"("foundingSlotNumber")`,
+        `CREATE INDEX IF NOT EXISTS "shops_isFoundingSeller_idx" ON "shops"("isFoundingSeller")`,
+        `ALTER TABLE "vendor_orders" ADD COLUMN IF NOT EXISTS "appliedCommissionRate" DECIMAL(5, 2) DEFAULT 10.00`,
+        `ALTER TABLE "vendor_orders" ADD COLUMN IF NOT EXISTS "isFoundingOrder" BOOLEAN DEFAULT false`,
+        `ALTER TABLE "vendor_orders" ADD COLUMN IF NOT EXISTS "foundingOrderIndex" INTEGER`,
+        `CREATE INDEX IF NOT EXISTS "vendor_orders_isFoundingOrder_idx" ON "vendor_orders"("isFoundingOrder")`,
+      ];
+
+      for (const sql of ddlStatements) {
+        try {
+          await prisma.$executeRawUnsafe(sql);
+        } catch {
+          // Ignore individual statement failure
+        }
+      }
+
+      this.schemaSynced = true;
+    } catch (err) {
+      console.warn('⚠️ [Founding50Service] Schema sync warning:', err);
+    }
+  }
+
   /**
    * Deterministically resolves the commission rate for the next order based on delivered order history.
    */
@@ -100,6 +137,7 @@ export class Founding50Service {
     status: string;
     initialRate: number;
   }> {
+    await this.ensureSchema();
     const db = txClient || prisma;
 
     // Check if shop is already allocated
@@ -166,6 +204,7 @@ export class Founding50Service {
    * Retrieves comprehensive Founding 50 progress and fee savings for a seller.
    */
   public static async getSellerProgress(shopId: string): Promise<FoundingSellerProgress> {
+    await this.ensureSchema();
     const shop = await prisma.shop.findUnique({
       where: { id: shopId },
       select: {
@@ -326,6 +365,7 @@ export class Founding50Service {
    * Returns complete overview of Founding 50 acquisition and member list for Admin.
    */
   public static async getAdminOverview() {
+    await this.ensureSchema();
     const [totalAllocated, members] = await Promise.all([
       prisma.shop.count({
         where: { isFoundingSeller: true },

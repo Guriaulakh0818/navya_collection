@@ -2,6 +2,7 @@ import { cache } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { Founding50Service } from '@/backend/services/founding-50.service';
 import { generateShopJsonLdSchemas, generateShopMetadata, JsonLd } from '@/features/seo';
 import { ShopProfileStorefront } from '@/frontend/features/shop/components/ShopProfileStorefront';
 import { prisma } from '@/lib/prisma';
@@ -11,6 +12,7 @@ export const dynamicParams = true;
 
 export async function generateStaticParams() {
   try {
+    await Founding50Service.ensureSchema();
     const shops = await prisma.shop.findMany({
       where: { status: 'APPROVED', deletedAt: null },
       select: { slug: true },
@@ -31,6 +33,7 @@ const getApprovedShopBySlug = cache(async (slug: string) => {
   const cleanSlug = slug.toLowerCase().trim();
 
   try {
+    await Founding50Service.ensureSchema();
     const shop = await prisma.shop.findFirst({
       where: {
         OR: [{ slug: cleanSlug }, { id: cleanSlug }],

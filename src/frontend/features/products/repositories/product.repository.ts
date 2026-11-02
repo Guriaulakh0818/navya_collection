@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 
 import { resolveValidCategoryId } from '@/backend/lib/category-resolver';
 import { generateParentSku, generateVariantSku } from '@/backend/lib/sku-generator';
+import { Founding50Service } from '@/backend/services/founding-50.service';
 import { prisma } from '@/lib/prisma';
 
 import { CreateProductInput, UpdateProductInput } from '../schemas/product.schema';
@@ -17,6 +18,8 @@ export class ProductRepository {
     orderBy: Prisma.ProductOrderByWithRelationInput,
   ) {
     try {
+      await Founding50Service.ensureSchema();
+
       const shopApprovalCondition: Prisma.ProductWhereInput = {
         OR: [
           { shopId: null },
@@ -77,7 +80,8 @@ export class ProductRepository {
           },
         },
       });
-    } catch {
+    } catch (err: any) {
+      console.error('[ProductRepository.findMany error]:', err?.message || err);
       return [];
     }
   }
@@ -87,6 +91,8 @@ export class ProductRepository {
    */
   static async count(where: Prisma.ProductWhereInput): Promise<number> {
     try {
+      await Founding50Service.ensureSchema();
+
       const shopApprovalCondition: Prisma.ProductWhereInput = {
         OR: [
           { shopId: null },
@@ -113,7 +119,8 @@ export class ProductRepository {
           AND: baseConditions,
         },
       });
-    } catch {
+    } catch (err: any) {
+      console.error('[ProductRepository.count error]:', err?.message || err);
       return 0;
     }
   }
@@ -123,6 +130,8 @@ export class ProductRepository {
    */
   static async findByIdOrSlug(idOrSlug: string, allowPending = false) {
     try {
+      await Founding50Service.ensureSchema();
+
       return await prisma.product.findFirst({
         where: {
           OR: [{ id: idOrSlug }, { slug: idOrSlug }],
@@ -180,7 +189,8 @@ export class ProductRepository {
           },
         },
       });
-    } catch {
+    } catch (err: any) {
+      console.error('[ProductRepository.findByIdOrSlug error]:', err?.message || err);
       return null;
     }
   }
