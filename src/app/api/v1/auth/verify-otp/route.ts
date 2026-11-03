@@ -37,9 +37,16 @@ export async function POST(request: Request) {
     const result = await OtpService.verifyOtp(email, otp, otpTicket);
 
     if (result.status === 'SUCCESS' && result.user) {
-      // Auto-claim referral welcome bonus if friend arrived with a referral code cookie
+      // Auto-claim referral welcome bonus if friend arrived with a referral code (via request body or cookie)
       if (result.isNewUser) {
-        const referralCode = cookieStore.get('jiivaa_referral_code')?.value;
+        const rawCode =
+          body?.referralCode || body?.ref || cookieStore.get('jiivaa_referral_code')?.value;
+        const referralCode = rawCode
+          ? String(rawCode)
+              .trim()
+              .toUpperCase()
+              .replace(/^JIIVAA-/, '')
+          : null;
         if (referralCode && ReferralService.isValidReferralCode(referralCode)) {
           await ReferralService.recordFriendJoined({
             code: referralCode,

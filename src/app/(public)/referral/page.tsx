@@ -65,8 +65,12 @@ export default function ReferralPage() {
     }
   }, []);
 
+  // Guarantee deterministic, non-empty referral code even for guests
+  const fallbackGuestCode = generateUniqueReferralCode('guest-shopper', 'JIIVAA');
   const shareCode = (
-    user ? generateUniqueReferralCode(user.id, user.name || user.mobile) : referralCode
+    user
+      ? generateUniqueReferralCode(user.id, user.name || user.mobile)
+      : referralCode || fallbackGuestCode
   ).replace(/^JIIVAA-/, '');
   const shareUrl = `${originUrl}/r/${shareCode}`;
   const whatsAppText = REWARDS_CONFIG.getWhatsAppShareText(
@@ -77,6 +81,10 @@ export default function ReferralPage() {
   const whatsAppLink = `https://api.whatsapp.com/send?text=${whatsAppText}`;
 
   useEffect(() => {
+    let isCancelled = false;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     async function loadLiveReferralProfile() {
       setIsLoadingProfile(true);
       try {
@@ -86,20 +94,33 @@ export default function ReferralPage() {
           `/api/v1/referral?userId=${uId}&name=${uName}&code=${encodeURIComponent(shareCode)}`,
           {
             cache: 'no-store',
+            signal: controller.signal,
           },
         );
-        const json = await res.json();
-        if (json?.success && json?.data) {
+        const json = await res.json().catch(() => null);
+        if (!isCancelled && json?.success && json?.data) {
           setProfileData(json.data);
         }
-      } catch (err) {
-        console.error('Failed to fetch live referral profile:', err);
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') {
+          console.error('Failed to fetch live referral profile:', err);
+        }
       } finally {
-        setIsLoadingProfile(false);
+        clearTimeout(timeoutId);
+        if (!isCancelled) {
+          setIsLoadingProfile(false);
+        }
       }
     }
+
     loadLiveReferralProfile();
-  }, [user, shareCode]);
+
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [user?.id, shareCode]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);

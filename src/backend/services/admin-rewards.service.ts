@@ -114,19 +114,26 @@ export class AdminRewardsService {
         );
       `);
 
-      // Ensure new columns exist on older tables
+      // Ensure new columns exist on older tables (single statements to avoid prepared statement multi-command error)
       await prisma
         .$executeRawUnsafe(
-          `
-        ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS spend_to_coin_ratio INTEGER NOT NULL DEFAULT 10;
-        ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS max_order_coin_redemption_pct INTEGER NOT NULL DEFAULT 25;
-        ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS tier_validity_years INTEGER NOT NULL DEFAULT 3;
-      `,
+          `ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS spend_to_coin_ratio INTEGER NOT NULL DEFAULT 10;`,
+        )
+        .catch(() => {});
+      await prisma
+        .$executeRawUnsafe(
+          `ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS max_order_coin_redemption_pct INTEGER NOT NULL DEFAULT 25;`,
+        )
+        .catch(() => {});
+      await prisma
+        .$executeRawUnsafe(
+          `ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS tier_validity_years INTEGER NOT NULL DEFAULT 3;`,
         )
         .catch(() => {});
 
-      // Ensure new columns exist on older tables
-      await prisma.$executeRawUnsafe(`
+      await prisma
+        .$executeRawUnsafe(
+          `
         CREATE TABLE IF NOT EXISTS user_loyalty_cycle (
           user_id VARCHAR(100) PRIMARY KEY,
           cycle_started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -135,9 +142,13 @@ export class AdminRewardsService {
           cumulative_spend DOUBLE PRECISION DEFAULT 0,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
-      `);
+      `,
+        )
+        .catch(() => {});
 
-      await prisma.$executeRawUnsafe(`
+      await prisma
+        .$executeRawUnsafe(
+          `
         CREATE TABLE IF NOT EXISTS user_next_order_perks (
           id VARCHAR(100) PRIMARY KEY,
           user_id VARCHAR(100) NOT NULL,
@@ -148,53 +159,12 @@ export class AdminRewardsService {
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           used_at TIMESTAMP WITH TIME ZONE
         );
-      `);
-      await prisma
-        .$executeRawUnsafe(
-          `
-        CREATE INDEX IF NOT EXISTS idx_user_next_order_perks_user ON user_next_order_perks(user_id);
       `,
         )
         .catch(() => {});
-
       await prisma
         .$executeRawUnsafe(
-          `
-        ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS spend_to_coin_ratio INTEGER NOT NULL DEFAULT 10;
-        ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS max_order_coin_redemption_pct INTEGER NOT NULL DEFAULT 25;
-        ALTER TABLE rewards_settings ADD COLUMN IF NOT EXISTS tier_validity_years INTEGER NOT NULL DEFAULT 3;
-      `,
-        )
-        .catch(() => {});
-
-      await prisma.$executeRawUnsafe(`
-        CREATE TABLE IF NOT EXISTS user_loyalty_cycle (
-          user_id VARCHAR(100) PRIMARY KEY,
-          cycle_started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          current_tier VARCHAR(50) DEFAULT 'NORMAL',
-          unlocked_milestones TEXT DEFAULT '',
-          cumulative_spend DOUBLE PRECISION DEFAULT 0,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-
-      await prisma.$executeRawUnsafe(`
-        CREATE TABLE IF NOT EXISTS user_next_order_perks (
-          id VARCHAR(100) PRIMARY KEY,
-          user_id VARCHAR(100) NOT NULL,
-          coupon_code VARCHAR(100) NOT NULL,
-          discount_pct DOUBLE PRECISION NOT NULL,
-          source_order_id VARCHAR(100),
-          status VARCHAR(50) DEFAULT 'AVAILABLE',
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          used_at TIMESTAMP WITH TIME ZONE
-        );
-      `);
-      await prisma
-        .$executeRawUnsafe(
-          `
-        CREATE INDEX IF NOT EXISTS idx_user_next_order_perks_user ON user_next_order_perks(user_id);
-      `,
+          `CREATE INDEX IF NOT EXISTS idx_user_next_order_perks_user ON user_next_order_perks(user_id);`,
         )
         .catch(() => {});
 
@@ -242,9 +212,11 @@ export class AdminRewardsService {
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
       `);
-      await prisma.$executeRawUnsafe(`
-        CREATE INDEX IF NOT EXISTS idx_referral_events_code ON referral_events(referrer_code);
-      `);
+      await prisma
+        .$executeRawUnsafe(
+          `CREATE INDEX IF NOT EXISTS idx_referral_events_code ON referral_events(referrer_code);`,
+        )
+        .catch(() => {});
 
       // Seed initial default row if missing
       await prisma.$executeRawUnsafe(`

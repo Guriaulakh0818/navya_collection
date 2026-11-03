@@ -59,6 +59,9 @@ export function RefereeWelcomeModal({ referralCode: propCode }: RefereeWelcomeMo
       .replace(/^JIIVAA-/, '');
     if (rawCode) {
       setInputCode(rawCode);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('jiivaa_referral_code', rawCode);
+      }
     }
 
     // 3. Determine whether to show modal

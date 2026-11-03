@@ -80,25 +80,41 @@ export class ReferralService {
         );
       `);
 
-      // Backward-compatible schema evolution for existing DBs
+      // Backward-compatible schema evolution for existing DBs (individual statements to avoid prepared statement multi-command error)
       await prisma
         .$executeRawUnsafe(
-          `
-        ALTER TABLE referral_events ADD COLUMN IF NOT EXISTS referrer_user_id VARCHAR(100);
-        ALTER TABLE referral_events ADD COLUMN IF NOT EXISTS friend_user_id VARCHAR(100);
-        ALTER TABLE referral_events ADD COLUMN IF NOT EXISTS orders_count INTEGER NOT NULL DEFAULT 0;
-      `,
+          `ALTER TABLE referral_events ADD COLUMN IF NOT EXISTS referrer_user_id VARCHAR(100);`,
+        )
+        .catch(() => {});
+      await prisma
+        .$executeRawUnsafe(
+          `ALTER TABLE referral_events ADD COLUMN IF NOT EXISTS friend_user_id VARCHAR(100);`,
+        )
+        .catch(() => {});
+      await prisma
+        .$executeRawUnsafe(
+          `ALTER TABLE referral_events ADD COLUMN IF NOT EXISTS orders_count INTEGER NOT NULL DEFAULT 0;`,
         )
         .catch(() => {});
 
       await prisma
         .$executeRawUnsafe(
-          `
-        CREATE INDEX IF NOT EXISTS idx_referral_events_code ON referral_events(referrer_code);
-        CREATE INDEX IF NOT EXISTS idx_referral_events_friend_user ON referral_events(friend_user_id);
-        CREATE INDEX IF NOT EXISTS idx_referral_events_referrer_user ON referral_events(referrer_user_id);
-        CREATE INDEX IF NOT EXISTS idx_user_referral_codes_code ON user_referral_codes(code);
-      `,
+          `CREATE INDEX IF NOT EXISTS idx_referral_events_code ON referral_events(referrer_code);`,
+        )
+        .catch(() => {});
+      await prisma
+        .$executeRawUnsafe(
+          `CREATE INDEX IF NOT EXISTS idx_referral_events_friend_user ON referral_events(friend_user_id);`,
+        )
+        .catch(() => {});
+      await prisma
+        .$executeRawUnsafe(
+          `CREATE INDEX IF NOT EXISTS idx_referral_events_referrer_user ON referral_events(referrer_user_id);`,
+        )
+        .catch(() => {});
+      await prisma
+        .$executeRawUnsafe(
+          `CREATE INDEX IF NOT EXISTS idx_user_referral_codes_code ON user_referral_codes(code);`,
         )
         .catch(() => {});
 
@@ -649,7 +665,22 @@ export class ReferralService {
     }
 
     const successfulOrders = friends.reduce((sum, f) => sum + (f.ordersCount || 0), 0);
-    const totalCoinsEarned = friends.reduce((sum, f) => sum + (f.coinsAwarded || 0), 0);
+    let totalCoinsEarned = friends.reduce((sum, f) => sum + (f.coinsAwarded || 0), 0);
+
+    // Fallback: If friends list is empty, check authoritative coins ledger for any existing REFERRAL_BONUS
+    if (totalCoinsEarned === 0 && userId && !userId.startsWith('guest')) {
+      try {
+        const ledgerRows: any = await prisma
+          .$queryRawUnsafe(
+            `SELECT COALESCE(SUM(amount), 0) as total FROM user_coins_ledger WHERE user_id = $1 AND type = 'REFERRAL_BONUS'`,
+            userId,
+          )
+          .catch(() => []);
+        if (Array.isArray(ledgerRows) && ledgerRows.length > 0) {
+          totalCoinsEarned = Number(ledgerRows[0].total || 0);
+        }
+      } catch {}
+    }
 
     return {
       userId,

@@ -217,11 +217,22 @@ export function LoginForm({ initialUser }: LoginFormProps) {
     setOtpError(false);
     setOtpErrorMessage(null);
 
+    const storedReferral =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('jiivaa_referral_code') ||
+          sessionStorage.getItem('jiivaa_referral_code') ||
+          new URLSearchParams(window.location.search).get('ref')
+        : null;
+
     try {
       const res = await fetch('/api/v1/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), otp: cleanedOtp }),
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          otp: cleanedOtp,
+          referralCode: storedReferral || undefined,
+        }),
       });
 
       const json = await res.json().catch(() => ({}));
