@@ -9,7 +9,7 @@ export const revalidate = 0;
 
 /**
  * GET /api/v1/referral
- * Returns user's referral code, live link, clicks, and invited friends status.
+ * Returns user's referral code, live share link, clicks, and invited friends status.
  * Reconciled authoritatively with database ledger and referral events.
  */
 export async function GET(request: Request) {
@@ -20,44 +20,36 @@ export async function GET(request: Request) {
       request.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
     const originUrl = `${proto}://${host}`;
 
-    // 1. Resolve authenticated user from session cookie (matching /api/v1/rewards/loyalty)
+    // 1. Resolve authenticated user identically to /api/v1/rewards/loyalty
     const sessionUser =
       (await getCurrentUser().catch(() => null)) ||
       (await getCurrentUser('navya_session', request).catch(() => null));
 
-    const codeOverride = searchParams.get('code') || undefined;
+    const queryUserId = searchParams.get('userId');
+    const queryCode = searchParams.get('code');
+    const queryName = searchParams.get('name');
 
-    let userId =
+    const effectiveUserId =
       sessionUser?.id ||
-      (searchParams.get('userId') && searchParams.get('userId') !== 'guest'
-        ? (searchParams.get('userId') as string)
-        : null) ||
+      (queryUserId && queryUserId !== 'guest' ? queryUserId : null) ||
       'guest-user-default';
 
-    let userName = sessionUser?.name || sessionUser?.email || searchParams.get('name') || undefined;
+    const effectiveUserName =
+      sessionUser?.name ||
+      sessionUser?.email ||
+      (queryName && queryName !== 'undefined' ? queryName : undefined);
 
-    const userContact =
-      sessionUser?.phone || sessionUser?.email || searchParams.get('contact') || undefined;
+    const codeOverride = queryCode || undefined;
 
-    // 2. If userId is still guest but a referral code was passed, resolve the actual owner from DB
-    if ((!userId || userId.startsWith('guest')) && codeOverride) {
-      const resolved = await ReferralService.findReferrer(codeOverride).catch(() => null);
-      if (resolved?.userId) {
-        userId = resolved.userId;
-        if (!userName) userName = resolved.userName;
-      }
-    }
-
-    // 3. Guarantee latest live rewards settings from PostgreSQL
+    // 2. Guarantee latest live rewards settings from PostgreSQL
     await AdminRewardsService.getSettings().catch(() => {});
 
-    // 4. Authoritative profile retrieval with ledger reconciliation
+    // 3. Authoritative profile retrieval with rock-solid SQL queries
     const profile = await ReferralService.getProfile(
-      userId,
+      effectiveUserId,
       originUrl,
-      userName,
+      effectiveUserName,
       codeOverride,
-      userContact,
     );
 
     return NextResponse.json(

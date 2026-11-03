@@ -598,21 +598,26 @@ export class ReferralService {
     originUrl = 'http://localhost:3000',
     userName?: string,
     codeOverride?: string,
-    userContact?: string,
   ): Promise<ReferralProfileData> {
-    // If userId is missing or guest, try resolving real owner from codeOverride
-    let effectiveUserId = userId;
-    let effectiveUserName = userName;
-    if ((!effectiveUserId || effectiveUserId.startsWith('guest')) && codeOverride) {
-      const found = await this.findReferrer(codeOverride).catch(() => null);
-      if (found?.userId) {
-        effectiveUserId = found.userId;
-        if (!effectiveUserName) effectiveUserName = found.userName;
-      }
+    const candidateUserIds = new Set<string>();
+    if (userId && !userId.startsWith('guest')) {
+      candidateUserIds.add(userId);
     }
 
-    const referralCode =
-      codeOverride || this.generateCode(effectiveUserId, effectiveUserName).replace(/^JIIVAA-/, '');
+    // Determine clean uppercase referral code
+    let referralCode = (codeOverride || '')
+      .trim()
+      .replace(/^JIIVAA-/, '')
+      .toUpperCase();
+    if (!referralCode && userId) {
+      referralCode = this.generateCode(userId, userName)
+        .replace(/^JIIVAA-/, '')
+        .toUpperCase();
+    }
+    if (!referralCode) {
+      referralCode = generateUniqueReferralCode('guest-shopper', 'JIIVAA').replace(/^JIIVAA-/, '');
+    }
+
     const shareUrl = `${originUrl}/r/${referralCode}`;
     const whatsAppShareText = REWARDS_CONFIG.getWhatsAppShareText(
       referralCode,
@@ -620,25 +625,27 @@ export class ReferralService {
       REWARDS_CONFIG.referralRefereeDiscountInr,
     );
 
-    // If still guest, try resolving owner using the generated referral code
-    if ((!effectiveUserId || effectiveUserId.startsWith('guest')) && referralCode) {
-      const found = await this.findReferrer(referralCode).catch(() => null);
-      if (found?.userId) {
-        effectiveUserId = found.userId;
-        if (!effectiveUserName) effectiveUserName = found.userName;
+    // If userId is missing/guest, resolve owner from referralCode
+    if (candidateUserIds.size === 0 && referralCode) {
+      const referrer = await this.findReferrer(referralCode).catch(() => null);
+      if (referrer?.userId && !referrer.userId.startsWith('guest')) {
+        candidateUserIds.add(referrer.userId);
+        if (!userName) userName = referrer.userName;
       }
     }
 
-    // Register user code in DB
-    await this.registerUserCode(effectiveUserId, referralCode, effectiveUserName).catch(() => {});
+    const primaryUserId = Array.from(candidateUserIds)[0] || userId;
+    if (primaryUserId && !primaryUserId.startsWith('guest')) {
+      await this.registerUserCode(primaryUserId, referralCode, userName).catch(() => {});
+    }
 
     let clicks = this.clickCounts.get(referralCode) || 0;
-    let friends: ReferralFriendRecord[] = [];
+    const friendsMap = new Map<string, ReferralFriendRecord>();
 
     try {
       await this.ensureTables();
 
-      // Query database clicks
+      // 1. Query clicks with simple parameterized SQL
       const clicksRows: any = await prisma
         .$queryRawUnsafe(
           `SELECT clicks FROM referral_clicks WHERE UPPER(code) = UPPER($1) OR UPPER(code) = UPPER($2) LIMIT 1`,
@@ -654,69 +661,101 @@ export class ReferralService {
         clicks = Math.max(clicks, Number(clicksRows[0].clicks));
       }
 
-      // Query database friends events
-      const eventsRows: any = await prisma
+      // 2. Query referral_events by code (2 guaranteed string parameters)
+      const codeEvents: any = await prisma
         .$queryRawUnsafe(
           `SELECT id, friend_name as "friendName", friend_user_id as "friendUserId",
                   status, coins_awarded as "coinsAwarded", orders_count as "ordersCount",
                   date_label as "date"
            FROM referral_events
-           WHERE (referrer_user_id = $1 OR ($2::text IS NOT NULL AND referrer_user_id = $2))
-              OR UPPER(referrer_code) = UPPER($3)
-              OR UPPER(referrer_code) = UPPER($4)
+           WHERE UPPER(referrer_code) = UPPER($1) OR UPPER(referrer_code) = UPPER($2)
            ORDER BY created_at DESC
            LIMIT 50`,
-          effectiveUserId,
-          userId !== effectiveUserId ? userId : null,
           referralCode,
           `JIIVAA-${referralCode}`,
         )
         .catch(() => []);
 
-      if (Array.isArray(eventsRows) && eventsRows.length > 0) {
-        friends = eventsRows.map((r: any) => ({
-          id: String(r.id),
-          friendName: String(r.friendName || 'Jiivaa Friend'),
-          friendUserId: r.friendUserId ? String(r.friendUserId) : undefined,
-          status: (r.status || 'JOINED') as ReferralFriendRecord['status'],
-          ordersCount: Number(r.ordersCount || 0),
-          coinsAwarded: Number(r.coinsAwarded || 100),
-          date: String(r.date || 'Today'),
-        }));
+      if (Array.isArray(codeEvents)) {
+        for (const r of codeEvents) {
+          const key = (
+            r.friendUserId ? String(r.friendUserId) : String(r.friendName)
+          ).toLowerCase();
+          friendsMap.set(key, {
+            id: String(r.id),
+            friendName: String(r.friendName || 'Jiivaa Friend'),
+            friendUserId: r.friendUserId ? String(r.friendUserId) : undefined,
+            status: (r.status || 'JOINED') as ReferralFriendRecord['status'],
+            ordersCount: Number(r.ordersCount || 0),
+            coinsAwarded: Number(r.coinsAwarded || 100),
+            date: String(r.date || 'Today'),
+          });
+        }
       }
 
-      // Authoritative reconciliation: Reconcile with real transactions in user_coins_ledger
-      try {
+      // 3. Query referral_events by candidate user IDs (1 guaranteed string parameter each)
+      for (const uid of Array.from(candidateUserIds)) {
+        const userEvents: any = await prisma
+          .$queryRawUnsafe(
+            `SELECT id, friend_name as "friendName", friend_user_id as "friendUserId",
+                    status, coins_awarded as "coinsAwarded", orders_count as "ordersCount",
+                    date_label as "date"
+             FROM referral_events
+             WHERE referrer_user_id = $1
+             ORDER BY created_at DESC
+             LIMIT 50`,
+            uid,
+          )
+          .catch(() => []);
+
+        if (Array.isArray(userEvents)) {
+          for (const r of userEvents) {
+            const key = (
+              r.friendUserId ? String(r.friendUserId) : String(r.friendName)
+            ).toLowerCase();
+            if (!friendsMap.has(key)) {
+              friendsMap.set(key, {
+                id: String(r.id),
+                friendName: String(r.friendName || 'Jiivaa Friend'),
+                friendUserId: r.friendUserId ? String(r.friendUserId) : undefined,
+                status: (r.status || 'JOINED') as ReferralFriendRecord['status'],
+                ordersCount: Number(r.ordersCount || 0),
+                coinsAwarded: Number(r.coinsAwarded || 100),
+                date: String(r.date || 'Today'),
+              });
+            }
+          }
+        }
+      }
+
+      // 4. Authoritative reconciliation with user_coins_ledger
+      // Uses the exact same single-parameter query that succeeds in LoyaltyService
+      for (const uid of Array.from(candidateUserIds)) {
         const ledgerRows: any = await prisma
           .$queryRawUnsafe(
             `SELECT id, amount, type, reference, description, created_at as "createdAt"
              FROM user_coins_ledger
-             WHERE (
-               (user_id = $1 AND NOT $1 LIKE 'guest%')
-               OR ($2::text IS NOT NULL AND user_id = $2 AND NOT $2 LIKE 'guest%')
-               OR ($3::text IS NOT NULL AND (user_name ILIKE $3 OR user_email_or_phone = $3))
-               OR ($4::text IS NOT NULL AND user_email_or_phone = $4)
-             ) AND (
-               type = 'REFERRAL_BONUS'
-               OR reference LIKE 'ref_%'
-               OR description ILIKE '%joined via your code%'
-               OR description ILIKE '%referral%'
-             )
+             WHERE user_id = $1
              ORDER BY created_at DESC
-             LIMIT 50`,
-            effectiveUserId,
-            userId !== effectiveUserId ? userId : null,
-            effectiveUserName || null,
-            userContact || null,
+             LIMIT 100`,
+            uid,
           )
           .catch(() => []);
 
         if (Array.isArray(ledgerRows) && ledgerRows.length > 0) {
           for (const tx of ledgerRows) {
             const desc = String(tx.description || '');
+            const type = String(tx.type || '');
             const ref = String(tx.reference || '');
 
-            // Extract friend name from ledger description with robust regex
+            const isReferralTx =
+              type === 'REFERRAL_BONUS' ||
+              ref.startsWith('ref_') ||
+              desc.toLowerCase().includes('joined via your code') ||
+              desc.toLowerCase().includes('referral');
+
+            if (!isReferralTx) continue;
+
             let friendName = 'Jiivaa Friend';
             const joinMatch = desc.match(/Friend\s+(.+?)\s+joined/i);
             const orderMatch = desc.match(/bonus for\s+(.+?)'s\s+1st delivered order/i);
@@ -747,23 +786,17 @@ export class ReferralService {
                 })
               : 'Recently';
 
-            const existingIdx = friends.findIndex(
-              (f) =>
-                (friendUserId && f.friendUserId === friendUserId) ||
-                f.friendName.toLowerCase() === friendName.toLowerCase(),
-            );
+            const key = (friendUserId || friendName).toLowerCase();
+            const existing = friendsMap.get(key);
 
-            if (existingIdx >= 0) {
+            if (existing) {
               if (isDelivered) {
-                friends[existingIdx].status = 'DELIVERED_REWARDED';
-                friends[existingIdx].ordersCount = Math.max(friends[existingIdx].ordersCount, 1);
+                existing.status = 'DELIVERED_REWARDED';
+                existing.ordersCount = Math.max(existing.ordersCount, 1);
               }
-              friends[existingIdx].coinsAwarded = Math.max(
-                friends[existingIdx].coinsAwarded,
-                coinsAwarded,
-              );
+              existing.coinsAwarded = Math.max(existing.coinsAwarded, coinsAwarded);
             } else {
-              friends.push({
+              friendsMap.set(key, {
                 id: String(tx.id),
                 friendName,
                 friendUserId,
@@ -773,7 +806,7 @@ export class ReferralService {
                 date: dateLabel,
               });
 
-              // Self-heal and sync to referral_events table so future queries find it immediately
+              // Self-heal into referral_events
               prisma
                 .$executeRawUnsafe(
                   `INSERT INTO referral_events (
@@ -786,7 +819,7 @@ export class ReferralService {
                      orders_count = EXCLUDED.orders_count`,
                   `ref_event_${tx.id}`,
                   referralCode,
-                  effectiveUserId,
+                  uid,
                   friendUserId || null,
                   friendName,
                   status,
@@ -799,18 +832,17 @@ export class ReferralService {
             }
           }
         }
-      } catch (ledgerErr) {
-        console.warn('[ReferralService] ledger reconciliation error:', ledgerErr);
       }
     } catch (err) {
       console.warn('[ReferralService] getProfile db query fallback:', err);
     }
 
+    const friends = Array.from(friendsMap.values());
     const successfulOrders = friends.reduce((sum, f) => sum + (f.ordersCount || 0), 0);
     const totalCoinsEarned = friends.reduce((sum, f) => sum + (f.coinsAwarded || 0), 0);
 
     return {
-      userId: effectiveUserId,
+      userId: primaryUserId,
       referralCode,
       shareUrl,
       whatsAppShareText,
