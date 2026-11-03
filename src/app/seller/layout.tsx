@@ -157,11 +157,11 @@ function SellerLayoutInner({ children }: { children: React.ReactNode }) {
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-white border-r border-slate-200 transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex h-16 items-center justify-between px-6 border-b border-slate-200 bg-slate-50/50">
+        <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-slate-200 bg-slate-50/50">
           <Link
             href="/seller/dashboard"
             onClick={() => setSidebarOpen(false)}
@@ -179,7 +179,7 @@ function SellerLayoutInner({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Merchant Info Pill */}
-        <div className="p-4 mx-4 my-4 rounded-xl bg-slate-100/80 border border-slate-200">
+        <div className="p-4 mx-4 my-4 shrink-0 rounded-xl bg-slate-100/80 border border-slate-200">
           <span className="text-xs font-bold text-slate-900 block truncate">
             {sellerData?.shop?.name || 'JiivaaKart Merchant Shop'}
           </span>
@@ -189,7 +189,7 @@ function SellerLayoutInner({ children }: { children: React.ReactNode }) {
           </span>
         </div>
 
-        <nav className="space-y-1.5 px-4">
+        <nav className="flex-1 min-h-0 overflow-y-auto space-y-1.5 px-4 pb-6">
           {SELLER_NAV.map((item) => {
             const Icon = item.icon;
             let isActive = false;

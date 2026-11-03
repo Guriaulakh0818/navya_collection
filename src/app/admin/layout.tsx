@@ -238,17 +238,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
 
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-navy-900 text-white transition-transform duration-300 lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-navy-900 text-white transition-transform duration-300 lg:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <div className="flex h-16 items-center justify-center border-b border-white/10">
+          <div className="flex h-16 shrink-0 items-center justify-center border-b border-white/10">
             <h1 className="font-heading text-xl font-bold text-orange tracking-wide">
               JiivaaKart Admin
             </h1>
           </div>
 
-          <nav className="mt-6 px-3 space-y-1">
+          <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-4 space-y-1 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent]">
             {navigation.map((item) => {
               const isActive =
                 pathname === item.href || (pathname ? pathname.startsWith(item.href + '/') : false);
@@ -270,12 +270,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             })}
           </nav>
 
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
+          <div className="shrink-0 p-4 border-t border-white/10 bg-navy-900">
             <div className="flex items-center gap-3 mb-3">
-              <div className="h-8 w-8 rounded-full bg-orange/20 text-orange flex items-center justify-center font-bold">
+              <div className="h-8 w-8 rounded-full bg-orange/20 text-orange flex items-center justify-center font-bold shrink-0">
                 <span className="text-sm">{user?.name?.[0] || 'A'}</span>
               </div>
-              <div className="overflow-hidden">
+              <div className="overflow-hidden min-w-0">
                 <p className="text-sm font-medium truncate">{user?.name || 'Admin User'}</p>
                 <p className="text-xs text-white/60 truncate">
                   {user?.email || user?.role || 'Admin'}
@@ -284,7 +284,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <Button
               variant="outline"
-              className="w-full rounded-full border-white/20 text-white hover:bg-white/10 hover:text-white text-sm"
+              className="w-full rounded-full border-white/20 text-white hover:bg-white/10 hover:text-white text-sm cursor-pointer"
               onClick={handleLogout}
             >
               Sign out
