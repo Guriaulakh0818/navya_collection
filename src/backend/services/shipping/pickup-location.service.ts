@@ -105,20 +105,26 @@ export class PickupLocationService {
           .catch(() => {});
       }
 
-      // Clean phone number (extract 10 digits)
-      const rawPhone =
-        location.contactPhone ||
-        location.shop?.phone ||
-        location.shop?.owner?.mobile ||
-        '9053883125';
-      const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10) || '9053883125';
+      // Solution 1: Central Logistics SPOC Phone & Email (Shiprocket Master Account)
+      // Using the central verified phone on Shiprocket bypasses OTP prompts to sellers,
+      // keeping pickup locations automatically verified.
+      const masterPhone = (
+        process.env.SHIPROCKET_LOGISTICS_PHONE ||
+        process.env.NEXT_PUBLIC_SUPPORT_PHONE ||
+        '8901422923'
+      )
+        .replace(/\D/g, '')
+        .slice(-10);
 
-      // Clean email
-      const cleanEmail =
-        location.contactEmail ||
-        location.shop?.email ||
-        location.shop?.owner?.email ||
-        'seller@navyacollection.store';
+      const masterEmail =
+        process.env.SHIPROCKET_LOGISTICS_EMAIL ||
+        process.env.SHIPROCKET_EMAIL ||
+        'navyacollection45@gmail.com';
+
+      // Seller's direct local contact for courier pickup boy
+      const rawSellerPhone =
+        location.contactPhone || location.shop?.phone || location.shop?.owner?.mobile || '';
+      const sellerDirectPhone = rawSellerPhone.replace(/\D/g, '').slice(-10);
 
       // Clean street address (Shiprocket strictly requires House no / Shop no / Flat no / Road no)
       let rawAddress = (location.addressLine1 || location.shop?.fullAddress || '').trim();
@@ -135,6 +141,18 @@ export class PickupLocationService {
         rawAddress = `Shop No. 1, ${rawAddress}, Main Road`;
       }
 
+      // Embed seller direct contact in address_2 so courier pickup agent sees it on physical manifest
+      const shopContactTag = sellerDirectPhone
+        ? `Shop Contact: ${contactName} (${sellerDirectPhone})`
+        : `Shop Incharge: ${contactName}`;
+
+      let cleanAddress2 = (location.addressLine2 || '').trim();
+      if (!cleanAddress2) {
+        cleanAddress2 = shopContactTag;
+      } else if (sellerDirectPhone && !cleanAddress2.includes(sellerDirectPhone)) {
+        cleanAddress2 = `${cleanAddress2}, ${shopContactTag}`.slice(0, 190);
+      }
+
       const cleanCity = (location.city || location.shop?.city || 'Hisar').trim();
       const cleanState = normalizeIndianState(location.state || location.shop?.state || 'Haryana');
       const cleanPincode = (location.pincode || location.shop?.pincode || '125001')
@@ -143,11 +161,11 @@ export class PickupLocationService {
 
       const payload = {
         pickup_location: shiprocketPickupName,
-        name: contactName,
-        email: cleanEmail,
-        phone: cleanPhone,
+        name: `JiivaaKart - ${contactName}`.slice(0, 50),
+        email: masterEmail,
+        phone: masterPhone,
         address: rawAddress.trim(),
-        address_2: location.addressLine2 || '',
+        address_2: cleanAddress2,
         city: cleanCity,
         state: cleanState,
         country: 'India',
