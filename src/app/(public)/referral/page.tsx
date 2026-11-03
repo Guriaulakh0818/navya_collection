@@ -90,10 +90,14 @@ export default function ReferralPage() {
       try {
         const uId = user?.id || 'guest';
         const uName = encodeURIComponent(user?.name || '');
+        const uContact = encodeURIComponent(user?.mobile || user?.email || '');
         const res = await fetch(
-          `/api/v1/referral?userId=${uId}&name=${uName}&code=${encodeURIComponent(shareCode)}`,
+          `/api/v1/referral?userId=${uId}&name=${uName}&contact=${uContact}&code=${encodeURIComponent(shareCode)}&_t=${Date.now()}`,
           {
             cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store',
+            },
             signal: controller.signal,
           },
         );
@@ -120,7 +124,7 @@ export default function ReferralPage() {
       clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [user?.id, shareCode]);
+  }, [user?.id, user?.mobile, user?.email, shareCode]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);

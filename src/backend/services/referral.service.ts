@@ -598,9 +598,21 @@ export class ReferralService {
     originUrl = 'http://localhost:3000',
     userName?: string,
     codeOverride?: string,
+    userContact?: string,
   ): Promise<ReferralProfileData> {
+    // If userId is missing or guest, try resolving real owner from codeOverride
+    let effectiveUserId = userId;
+    let effectiveUserName = userName;
+    if ((!effectiveUserId || effectiveUserId.startsWith('guest')) && codeOverride) {
+      const found = await this.findReferrer(codeOverride).catch(() => null);
+      if (found?.userId) {
+        effectiveUserId = found.userId;
+        if (!effectiveUserName) effectiveUserName = found.userName;
+      }
+    }
+
     const referralCode =
-      codeOverride || this.generateCode(userId, userName).replace(/^JIIVAA-/, '');
+      codeOverride || this.generateCode(effectiveUserId, effectiveUserName).replace(/^JIIVAA-/, '');
     const shareUrl = `${originUrl}/r/${referralCode}`;
     const whatsAppShareText = REWARDS_CONFIG.getWhatsAppShareText(
       referralCode,
@@ -608,8 +620,17 @@ export class ReferralService {
       REWARDS_CONFIG.referralRefereeDiscountInr,
     );
 
+    // If still guest, try resolving owner using the generated referral code
+    if ((!effectiveUserId || effectiveUserId.startsWith('guest')) && referralCode) {
+      const found = await this.findReferrer(referralCode).catch(() => null);
+      if (found?.userId) {
+        effectiveUserId = found.userId;
+        if (!effectiveUserName) effectiveUserName = found.userName;
+      }
+    }
+
     // Register user code in DB
-    await this.registerUserCode(userId, referralCode, userName).catch(() => {});
+    await this.registerUserCode(effectiveUserId, referralCode, effectiveUserName).catch(() => {});
 
     let clicks = this.clickCounts.get(referralCode) || 0;
     let friends: ReferralFriendRecord[] = [];
@@ -620,7 +641,7 @@ export class ReferralService {
       // Query database clicks
       const clicksRows: any = await prisma
         .$queryRawUnsafe(
-          `SELECT clicks FROM referral_clicks WHERE code = $1 OR code = $2 LIMIT 1`,
+          `SELECT clicks FROM referral_clicks WHERE UPPER(code) = UPPER($1) OR UPPER(code) = UPPER($2) LIMIT 1`,
           referralCode,
           `JIIVAA-${referralCode}`,
         )
@@ -640,10 +661,13 @@ export class ReferralService {
                   status, coins_awarded as "coinsAwarded", orders_count as "ordersCount",
                   date_label as "date"
            FROM referral_events
-           WHERE referrer_user_id = $1 OR UPPER(referrer_code) = $2 OR UPPER(referrer_code) = $3
+           WHERE (referrer_user_id = $1 OR ($2::text IS NOT NULL AND referrer_user_id = $2))
+              OR UPPER(referrer_code) = UPPER($3)
+              OR UPPER(referrer_code) = UPPER($4)
            ORDER BY created_at DESC
            LIMIT 50`,
-          userId,
+          effectiveUserId,
+          userId !== effectiveUserId ? userId : null,
           referralCode,
           `JIIVAA-${referralCode}`,
         )
@@ -660,111 +684,123 @@ export class ReferralService {
           date: String(r.date || 'Today'),
         }));
       }
+
       // Authoritative reconciliation: Reconcile with real transactions in user_coins_ledger
-      if (userId && !userId.startsWith('guest')) {
-        try {
-          const ledgerRows: any = await prisma
-            .$queryRawUnsafe(
-              `SELECT id, amount, type, reference, description, created_at as "createdAt"
-               FROM user_coins_ledger
-               WHERE user_id = $1 AND (type = 'REFERRAL_BONUS' OR reference LIKE 'ref_%' OR description ILIKE '%joined via your code%')
-               ORDER BY created_at DESC
-               LIMIT 50`,
-              userId,
-            )
-            .catch(() => []);
+      try {
+        const ledgerRows: any = await prisma
+          .$queryRawUnsafe(
+            `SELECT id, amount, type, reference, description, created_at as "createdAt"
+             FROM user_coins_ledger
+             WHERE (
+               (user_id = $1 AND NOT $1 LIKE 'guest%')
+               OR ($2::text IS NOT NULL AND user_id = $2 AND NOT $2 LIKE 'guest%')
+               OR ($3::text IS NOT NULL AND (user_name ILIKE $3 OR user_email_or_phone = $3))
+               OR ($4::text IS NOT NULL AND user_email_or_phone = $4)
+             ) AND (
+               type = 'REFERRAL_BONUS'
+               OR reference LIKE 'ref_%'
+               OR description ILIKE '%joined via your code%'
+               OR description ILIKE '%referral%'
+             )
+             ORDER BY created_at DESC
+             LIMIT 50`,
+            effectiveUserId,
+            userId !== effectiveUserId ? userId : null,
+            effectiveUserName || null,
+            userContact || null,
+          )
+          .catch(() => []);
 
-          if (Array.isArray(ledgerRows) && ledgerRows.length > 0) {
-            for (const tx of ledgerRows) {
-              const desc = String(tx.description || '');
-              const ref = String(tx.reference || '');
+        if (Array.isArray(ledgerRows) && ledgerRows.length > 0) {
+          for (const tx of ledgerRows) {
+            const desc = String(tx.description || '');
+            const ref = String(tx.reference || '');
 
-              // Extract friend name from ledger description
-              let friendName = 'Jiivaa Friend';
-              const joinMatch = desc.match(/Friend\s+([^\s]+)\s+joined/i);
-              const orderMatch = desc.match(/bonus for\s+([^']+)'s\s+1st delivered order/i);
-              const repeatMatch = desc.match(/for\s+([^']+)'s\s+delivered order/i);
-              if (joinMatch && joinMatch[1]) {
-                friendName = joinMatch[1].trim();
-              } else if (orderMatch && orderMatch[1]) {
-                friendName = orderMatch[1].trim();
-              } else if (repeatMatch && repeatMatch[1]) {
-                friendName = repeatMatch[1].trim();
+            // Extract friend name from ledger description with robust regex
+            let friendName = 'Jiivaa Friend';
+            const joinMatch = desc.match(/Friend\s+(.+?)\s+joined/i);
+            const orderMatch = desc.match(/bonus for\s+(.+?)'s\s+1st delivered order/i);
+            const repeatMatch = desc.match(/for\s+(.+?)'s\s+delivered order/i);
+            if (joinMatch && joinMatch[1]) {
+              friendName = joinMatch[1].trim();
+            } else if (orderMatch && orderMatch[1]) {
+              friendName = orderMatch[1].trim();
+            } else if (repeatMatch && repeatMatch[1]) {
+              friendName = repeatMatch[1].trim();
+            }
+
+            const friendUserId = ref.startsWith('ref_join_')
+              ? ref.replace('ref_join_', '')
+              : undefined;
+            const isDelivered =
+              ref.startsWith('ref_delivered_') || desc.toLowerCase().includes('delivered order');
+            const status: ReferralFriendRecord['status'] = isDelivered
+              ? 'DELIVERED_REWARDED'
+              : 'JOINED';
+            const ordersCount = isDelivered ? 1 : 0;
+            const coinsAwarded = Number(tx.amount || 100);
+            const dateLabel = tx.createdAt
+              ? new Date(tx.createdAt).toLocaleDateString('en-IN', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })
+              : 'Recently';
+
+            const existingIdx = friends.findIndex(
+              (f) =>
+                (friendUserId && f.friendUserId === friendUserId) ||
+                f.friendName.toLowerCase() === friendName.toLowerCase(),
+            );
+
+            if (existingIdx >= 0) {
+              if (isDelivered) {
+                friends[existingIdx].status = 'DELIVERED_REWARDED';
+                friends[existingIdx].ordersCount = Math.max(friends[existingIdx].ordersCount, 1);
               }
-
-              const friendUserId = ref.startsWith('ref_join_')
-                ? ref.replace('ref_join_', '')
-                : undefined;
-              const isDelivered =
-                ref.startsWith('ref_delivered_') || desc.toLowerCase().includes('delivered order');
-              const status: ReferralFriendRecord['status'] = isDelivered
-                ? 'DELIVERED_REWARDED'
-                : 'JOINED';
-              const ordersCount = isDelivered ? 1 : 0;
-              const coinsAwarded = Number(tx.amount || 100);
-              const dateLabel = tx.createdAt
-                ? new Date(tx.createdAt).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })
-                : 'Recently';
-
-              const existingIdx = friends.findIndex(
-                (f) =>
-                  (friendUserId && f.friendUserId === friendUserId) ||
-                  f.friendName.toLowerCase() === friendName.toLowerCase(),
+              friends[existingIdx].coinsAwarded = Math.max(
+                friends[existingIdx].coinsAwarded,
+                coinsAwarded,
               );
+            } else {
+              friends.push({
+                id: String(tx.id),
+                friendName,
+                friendUserId,
+                status,
+                ordersCount,
+                coinsAwarded,
+                date: dateLabel,
+              });
 
-              if (existingIdx >= 0) {
-                if (isDelivered) {
-                  friends[existingIdx].status = 'DELIVERED_REWARDED';
-                  friends[existingIdx].ordersCount = Math.max(friends[existingIdx].ordersCount, 1);
-                }
-                friends[existingIdx].coinsAwarded = Math.max(
-                  friends[existingIdx].coinsAwarded,
-                  coinsAwarded,
-                );
-              } else {
-                friends.push({
-                  id: String(tx.id),
+              // Self-heal and sync to referral_events table so future queries find it immediately
+              prisma
+                .$executeRawUnsafe(
+                  `INSERT INTO referral_events (
+                     id, referrer_code, referrer_user_id, friend_user_id, friend_name,
+                     status, coins_awarded, orders_count, date_label, created_at, updated_at
+                   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
+                   ON CONFLICT (id) DO UPDATE SET
+                     status = EXCLUDED.status,
+                     coins_awarded = EXCLUDED.coins_awarded,
+                     orders_count = EXCLUDED.orders_count`,
+                  `ref_event_${tx.id}`,
+                  referralCode,
+                  effectiveUserId,
+                  friendUserId || null,
                   friendName,
-                  friendUserId,
                   status,
-                  ordersCount,
                   coinsAwarded,
-                  date: dateLabel,
-                });
-
-                // Self-heal and sync to referral_events table so future queries find it immediately
-                prisma
-                  .$executeRawUnsafe(
-                    `INSERT INTO referral_events (
-                       id, referrer_code, referrer_user_id, friend_user_id, friend_name,
-                       status, coins_awarded, orders_count, date_label, created_at, updated_at
-                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
-                     ON CONFLICT (id) DO UPDATE SET
-                       status = EXCLUDED.status,
-                       coins_awarded = EXCLUDED.coins_awarded,
-                       orders_count = EXCLUDED.orders_count`,
-                    `ref_event_${tx.id}`,
-                    referralCode,
-                    userId,
-                    friendUserId || null,
-                    friendName,
-                    status,
-                    coinsAwarded,
-                    ordersCount,
-                    dateLabel,
-                    tx.createdAt || new Date(),
-                  )
-                  .catch(() => {});
-              }
+                  ordersCount,
+                  dateLabel,
+                  tx.createdAt || new Date(),
+                )
+                .catch(() => {});
             }
           }
-        } catch (ledgerErr) {
-          console.warn('[ReferralService] ledger reconciliation error:', ledgerErr);
         }
+      } catch (ledgerErr) {
+        console.warn('[ReferralService] ledger reconciliation error:', ledgerErr);
       }
     } catch (err) {
       console.warn('[ReferralService] getProfile db query fallback:', err);
@@ -774,7 +810,7 @@ export class ReferralService {
     const totalCoinsEarned = friends.reduce((sum, f) => sum + (f.coinsAwarded || 0), 0);
 
     return {
-      userId,
+      userId: effectiveUserId,
       referralCode,
       shareUrl,
       whatsAppShareText,
