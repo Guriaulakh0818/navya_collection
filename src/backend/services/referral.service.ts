@@ -660,27 +660,118 @@ export class ReferralService {
           date: String(r.date || 'Today'),
         }));
       }
+      // Authoritative reconciliation: Reconcile with real transactions in user_coins_ledger
+      if (userId && !userId.startsWith('guest')) {
+        try {
+          const ledgerRows: any = await prisma
+            .$queryRawUnsafe(
+              `SELECT id, amount, type, reference, description, created_at as "createdAt"
+               FROM user_coins_ledger
+               WHERE user_id = $1 AND (type = 'REFERRAL_BONUS' OR reference LIKE 'ref_%' OR description ILIKE '%joined via your code%')
+               ORDER BY created_at DESC
+               LIMIT 50`,
+              userId,
+            )
+            .catch(() => []);
+
+          if (Array.isArray(ledgerRows) && ledgerRows.length > 0) {
+            for (const tx of ledgerRows) {
+              const desc = String(tx.description || '');
+              const ref = String(tx.reference || '');
+
+              // Extract friend name from ledger description
+              let friendName = 'Jiivaa Friend';
+              const joinMatch = desc.match(/Friend\s+([^\s]+)\s+joined/i);
+              const orderMatch = desc.match(/bonus for\s+([^']+)'s\s+1st delivered order/i);
+              const repeatMatch = desc.match(/for\s+([^']+)'s\s+delivered order/i);
+              if (joinMatch && joinMatch[1]) {
+                friendName = joinMatch[1].trim();
+              } else if (orderMatch && orderMatch[1]) {
+                friendName = orderMatch[1].trim();
+              } else if (repeatMatch && repeatMatch[1]) {
+                friendName = repeatMatch[1].trim();
+              }
+
+              const friendUserId = ref.startsWith('ref_join_')
+                ? ref.replace('ref_join_', '')
+                : undefined;
+              const isDelivered =
+                ref.startsWith('ref_delivered_') || desc.toLowerCase().includes('delivered order');
+              const status: ReferralFriendRecord['status'] = isDelivered
+                ? 'DELIVERED_REWARDED'
+                : 'JOINED';
+              const ordersCount = isDelivered ? 1 : 0;
+              const coinsAwarded = Number(tx.amount || 100);
+              const dateLabel = tx.createdAt
+                ? new Date(tx.createdAt).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })
+                : 'Recently';
+
+              const existingIdx = friends.findIndex(
+                (f) =>
+                  (friendUserId && f.friendUserId === friendUserId) ||
+                  f.friendName.toLowerCase() === friendName.toLowerCase(),
+              );
+
+              if (existingIdx >= 0) {
+                if (isDelivered) {
+                  friends[existingIdx].status = 'DELIVERED_REWARDED';
+                  friends[existingIdx].ordersCount = Math.max(friends[existingIdx].ordersCount, 1);
+                }
+                friends[existingIdx].coinsAwarded = Math.max(
+                  friends[existingIdx].coinsAwarded,
+                  coinsAwarded,
+                );
+              } else {
+                friends.push({
+                  id: String(tx.id),
+                  friendName,
+                  friendUserId,
+                  status,
+                  ordersCount,
+                  coinsAwarded,
+                  date: dateLabel,
+                });
+
+                // Self-heal and sync to referral_events table so future queries find it immediately
+                prisma
+                  .$executeRawUnsafe(
+                    `INSERT INTO referral_events (
+                       id, referrer_code, referrer_user_id, friend_user_id, friend_name,
+                       status, coins_awarded, orders_count, date_label, created_at, updated_at
+                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
+                     ON CONFLICT (id) DO UPDATE SET
+                       status = EXCLUDED.status,
+                       coins_awarded = EXCLUDED.coins_awarded,
+                       orders_count = EXCLUDED.orders_count`,
+                    `ref_event_${tx.id}`,
+                    referralCode,
+                    userId,
+                    friendUserId || null,
+                    friendName,
+                    status,
+                    coinsAwarded,
+                    ordersCount,
+                    dateLabel,
+                    tx.createdAt || new Date(),
+                  )
+                  .catch(() => {});
+              }
+            }
+          }
+        } catch (ledgerErr) {
+          console.warn('[ReferralService] ledger reconciliation error:', ledgerErr);
+        }
+      }
     } catch (err) {
       console.warn('[ReferralService] getProfile db query fallback:', err);
     }
 
     const successfulOrders = friends.reduce((sum, f) => sum + (f.ordersCount || 0), 0);
-    let totalCoinsEarned = friends.reduce((sum, f) => sum + (f.coinsAwarded || 0), 0);
-
-    // Fallback: If friends list is empty, check authoritative coins ledger for any existing REFERRAL_BONUS
-    if (totalCoinsEarned === 0 && userId && !userId.startsWith('guest')) {
-      try {
-        const ledgerRows: any = await prisma
-          .$queryRawUnsafe(
-            `SELECT COALESCE(SUM(amount), 0) as total FROM user_coins_ledger WHERE user_id = $1 AND type = 'REFERRAL_BONUS'`,
-            userId,
-          )
-          .catch(() => []);
-        if (Array.isArray(ledgerRows) && ledgerRows.length > 0) {
-          totalCoinsEarned = Number(ledgerRows[0].total || 0);
-        }
-      } catch {}
-    }
+    const totalCoinsEarned = friends.reduce((sum, f) => sum + (f.coinsAwarded || 0), 0);
 
     return {
       userId,

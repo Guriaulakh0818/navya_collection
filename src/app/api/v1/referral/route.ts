@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { getCurrentUser } from '@/backend/lib/session';
 import { AdminRewardsService } from '@/backend/services/admin-rewards.service';
 import { ReferralService } from '@/backend/services/referral.service';
 
@@ -10,8 +11,17 @@ export async function GET(request: Request) {
     const proto =
       request.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
     const originUrl = `${proto}://${host}`;
-    const userId = searchParams.get('userId') || 'guest-user-default';
-    const userName = searchParams.get('name') || undefined;
+
+    // Resolve authenticated user from session cookie with query param fallback
+    const sessionUser = await getCurrentUser('navya_session', request).catch(() => null);
+    const userId =
+      sessionUser?.id ||
+      (searchParams.get('userId') && searchParams.get('userId') !== 'guest'
+        ? (searchParams.get('userId') as string)
+        : null) ||
+      'guest-user-default';
+    const userName =
+      sessionUser?.name || sessionUser?.email || searchParams.get('name') || undefined;
     const codeOverride = searchParams.get('code') || undefined;
 
     // Guarantee latest live rewards settings from PostgreSQL
