@@ -7,12 +7,16 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  Flame,
   Gift,
+  Heart,
   Mail,
   Megaphone,
   Play,
   RefreshCw,
   Send,
+  ShoppingBag,
+  ShoppingCart,
   Sliders,
   Smartphone,
   Sparkles,
@@ -20,6 +24,7 @@ import {
   Trash2,
   Users,
   X,
+  Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -58,16 +63,30 @@ export default function AdminMarketingPage() {
   const [notifSettings, setNotifSettings] = useState({
     autoPushEnabled: true,
     cadenceHours: 4,
+    cadenceMinutes: 240,
     dailyLimit: 3,
     autoSellerAlerts: true,
     autoProductAlerts: true,
+    abandonedCartAlerts: true,
+    abandonedWishlistAlerts: true,
+    cartRecoveryDelayMins: 30,
   });
   const [notifQueue, setNotifQueue] = useState<any[]>([]);
   const [cadenceStats, setCadenceStats] = useState<{
     total: number;
     eligible: number;
     pendingQueueCount: number;
+    abandonedCartsCount?: number;
   } | null>(null);
+  const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
+  const [catalogShops, setCatalogShops] = useState<any[]>([]);
+  const [selectedCatalogType, setSelectedCatalogType] = useState<'PRODUCT' | 'SHOP'>('PRODUCT');
+  const [selectedCatalogId, setSelectedCatalogId] = useState<string>('');
+  const [selectedTemplate, setSelectedTemplate] = useState<
+    'TRENDING' | 'LOW_STOCK' | 'SPOTLIGHT' | 'WEEKEND_DEAL'
+  >('TRENDING');
+  const [isQueueingCatalog, setIsQueueingCatalog] = useState(false);
+  const [isScanningRecovery, setIsScanningRecovery] = useState(false);
   const [loadingQueue, setLoadingQueue] = useState(false);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isProcessingCadence, setIsProcessingCadence] = useState(false);
@@ -81,6 +100,18 @@ export default function AdminMarketingPage() {
         if (json.data.settings) setNotifSettings(json.data.settings);
         if (Array.isArray(json.data.queue)) setNotifQueue(json.data.queue);
         if (json.data.stats) setCadenceStats(json.data.stats);
+        if (json.data.catalog) {
+          if (Array.isArray(json.data.catalog.products)) {
+            setCatalogProducts(json.data.catalog.products);
+            setSelectedCatalogId((prev) => {
+              if (prev) return prev;
+              return json.data.catalog.products[0]?.id || '';
+            });
+          }
+          if (Array.isArray(json.data.catalog.shops)) {
+            setCatalogShops(json.data.catalog.shops);
+          }
+        }
       }
     } catch (err) {
       console.warn('Failed to load notification queue:', err);
@@ -135,6 +166,75 @@ export default function AdminMarketingPage() {
       setFeedback({ type: 'error', message: 'Network error executing cadence.' });
     } finally {
       setIsProcessingCadence(false);
+    }
+  };
+
+  const handleQueueCatalogItem = async (dispatchImmediate: boolean) => {
+    if (!selectedCatalogId) {
+      setFeedback({ type: 'error', message: 'Please select a product or boutique first.' });
+      return;
+    }
+    try {
+      setIsQueueingCatalog(true);
+      setFeedback(null);
+      const res = await fetch('/api/v1/admin/marketing/notifications/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'queue_catalog_item',
+          targetType: selectedCatalogType,
+          targetId: selectedCatalogId,
+          templateType: selectedTemplate,
+          dispatchImmediate,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setFeedback({
+          type: 'success',
+          message:
+            json.message ||
+            (dispatchImmediate
+              ? 'Notification dispatched immediately to all screens!'
+              : 'Successfully added to cadence drip queue!'),
+        });
+        fetchQueueAndSettings();
+        fetchStats();
+      } else {
+        setFeedback({ type: 'error', message: json.message || 'Failed to queue catalog item.' });
+      }
+    } catch {
+      setFeedback({ type: 'error', message: 'Network error queueing catalog item.' });
+    } finally {
+      setIsQueueingCatalog(false);
+    }
+  };
+
+  const handleScanRecovery = async () => {
+    try {
+      setIsScanningRecovery(true);
+      setFeedback(null);
+      const res = await fetch('/api/v1/admin/marketing/notifications/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'scan_recovery' }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setFeedback({
+          type: 'success',
+          message:
+            json.message ||
+            'Abandoned carts and wishlist scanned and queued for conversion alerts!',
+        });
+        fetchQueueAndSettings();
+      } else {
+        setFeedback({ type: 'error', message: json.message || 'Recovery scan failed.' });
+      }
+    } catch {
+      setFeedback({ type: 'error', message: 'Network error triggering scan.' });
+    } finally {
+      setIsScanningRecovery(false);
     }
   };
 
@@ -276,6 +376,41 @@ export default function AdminMarketingPage() {
       setFeedback({ type: 'error', message: e.message || 'Error triggering browser push.' });
     }
   };
+
+  // Active catalog item selected for preview
+  const activeCatalogProduct =
+    selectedCatalogType === 'PRODUCT'
+      ? catalogProducts.find((p) => p.id === selectedCatalogId) || catalogProducts[0]
+      : null;
+  const activeCatalogShop =
+    selectedCatalogType === 'SHOP'
+      ? catalogShops.find((s) => s.id === selectedCatalogId) || catalogShops[0]
+      : null;
+
+  let previewTitle = '';
+  let previewBody = '';
+  let previewUrl = '';
+  let previewImage = '';
+
+  if (selectedCatalogType === 'PRODUCT' && activeCatalogProduct) {
+    previewUrl = `/product/${activeCatalogProduct.slug || activeCatalogProduct.id}`;
+    previewImage = activeCatalogProduct.imageUrl || '';
+    if (selectedTemplate === 'LOW_STOCK') {
+      previewTitle = `⚡ Few Pieces Left: ${activeCatalogProduct.name}!`;
+      previewBody = `Limited boutique collection by ${activeCatalogProduct.shopName} selling fast at ₹${activeCatalogProduct.price}. Claim yours before stock runs out!`;
+    } else if (selectedTemplate === 'WEEKEND_DEAL') {
+      previewTitle = `🎉 Special Boutique Deal: ${activeCatalogProduct.name}!`;
+      previewBody = `Handcrafted luxury couture starting at ₹${activeCatalogProduct.price}. Tap to claim Flat ₹50 OFF at checkout!`;
+    } else {
+      previewTitle = `🔥 Trending Boutique Pick: ${activeCatalogProduct.name}!`;
+      previewBody = `Loved by shoppers across India by ${activeCatalogProduct.shopName} at ₹${activeCatalogProduct.price}. Tap to explore exclusive styles!`;
+    }
+  } else if (selectedCatalogType === 'SHOP' && activeCatalogShop) {
+    previewUrl = `/shop/${activeCatalogShop.slug || activeCatalogShop.id}`;
+    previewImage = activeCatalogShop.imageUrl || '';
+    previewTitle = `🏪 Boutique Spotlight: ${activeCatalogShop.name}!`;
+    previewBody = `Explore verified handcrafted luxury lehengas, sarees and ethnic suits from ${activeCatalogShop.name}${activeCatalogShop.city ? ` in ${activeCatalogShop.city}` : ''} on JiivaaKart.`;
+  }
 
   return (
     <div className="space-y-8">
@@ -814,27 +949,34 @@ export default function AdminMarketingPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                  {/* Cadence Hours Selector */}
+                {/* Cadence controls and triggers grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
+                  {/* Cadence Frequency Selector */}
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
                     <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block">
                       Frequency Cap (1 Alert Every)
                     </label>
                     <select
-                      value={notifSettings.cadenceHours}
+                      value={notifSettings.cadenceMinutes || 240}
                       onChange={(e) => {
                         const val = parseInt(e.target.value, 10);
-                        const updated = { ...notifSettings, cadenceHours: val };
+                        const updated = {
+                          ...notifSettings,
+                          cadenceMinutes: val,
+                          cadenceHours: Number((val / 60).toFixed(1)),
+                        };
                         setNotifSettings(updated);
                         handleSaveSettings(updated);
                       }}
                       className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:outline-hidden focus:border-navy"
                     >
-                      <option value={2}>2 Hours (Fast Drip)</option>
-                      <option value={4}>4 Hours (Recommended / Standard)</option>
-                      <option value={6}>6 Hours (Relaxed)</option>
-                      <option value={12}>12 Hours (Twice Daily)</option>
-                      <option value={24}>24 Hours (Once Daily)</option>
+                      <option value={30}>⚡ 30 Minutes (Rapid Flash Drip)</option>
+                      <option value={60}>🔥 1 Hour (Active Engagement Drip)</option>
+                      <option value={120}>2 Hours (Fast Drip)</option>
+                      <option value={240}>4 Hours (Standard Recommended)</option>
+                      <option value={360}>6 Hours (Relaxed)</option>
+                      <option value={720}>12 Hours (Twice Daily)</option>
+                      <option value={1440}>24 Hours (Once Daily)</option>
                     </select>
                   </div>
 
@@ -855,10 +997,10 @@ export default function AdminMarketingPage() {
                     />
                     <div className="min-w-0">
                       <span className="text-xs font-bold text-slate-800 block">
-                        New Boutique Live Alerts
+                        New Boutique Alerts
                       </span>
                       <span className="text-[10px] text-slate-500 block">
-                        Auto-queues when seller is approved
+                        Auto-queues when seller approved
                       </span>
                     </div>
                   </label>
@@ -883,35 +1025,323 @@ export default function AdminMarketingPage() {
                         New Product Drops
                       </span>
                       <span className="text-[10px] text-slate-500 block">
-                        Auto-queues when products are published
+                        Auto-queues on new arrivals
+                      </span>
+                    </div>
+                  </label>
+
+                  {/* Auto-Trigger Checkbox 3: Abandoned Cart Recovery */}
+                  <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={notifSettings.abandonedCartAlerts !== false}
+                      onChange={(e) => {
+                        const updated = {
+                          ...notifSettings,
+                          abandonedCartAlerts: e.target.checked,
+                        };
+                        setNotifSettings(updated);
+                        handleSaveSettings(updated);
+                      }}
+                      className="w-4 h-4 text-purple-600 rounded-sm border-slate-300 focus:ring-purple-500 cursor-pointer"
+                    />
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-slate-800 block">
+                        Cart Recovery Alerts
+                      </span>
+                      <span className="text-[10px] text-slate-500 block">
+                        Auto-alerts cart drop-offs (&gt;30m)
+                      </span>
+                    </div>
+                  </label>
+
+                  {/* Auto-Trigger Checkbox 4: Abandoned Wishlist Reminders */}
+                  <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={notifSettings.abandonedWishlistAlerts !== false}
+                      onChange={(e) => {
+                        const updated = {
+                          ...notifSettings,
+                          abandonedWishlistAlerts: e.target.checked,
+                        };
+                        setNotifSettings(updated);
+                        handleSaveSettings(updated);
+                      }}
+                      className="w-4 h-4 text-purple-600 rounded-sm border-slate-300 focus:ring-purple-500 cursor-pointer"
+                    />
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-slate-800 block">
+                        Wishlist Alerts
+                      </span>
+                      <span className="text-[10px] text-slate-500 block">
+                        Reminds on saved favorites
                       </span>
                     </div>
                   </label>
                 </div>
 
-                {/* Real-time Cadence Metrics Pill */}
-                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                  <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg font-bold border border-slate-200">
-                    Total Subscribers:{' '}
-                    <strong className="text-navy">{stats?.pushSubscribersCount || 0}</strong>
-                  </span>
-                  <span className="px-3 py-1 bg-emerald-50 text-emerald-800 rounded-lg font-bold border border-emerald-200">
-                    Eligible for Next Cadence:{' '}
-                    <strong className="text-emerald-700">
-                      {cadenceStats?.eligible ?? stats?.pushSubscribersCount ?? 0}
-                    </strong>{' '}
-                    (no alert in last {notifSettings.cadenceHours}h)
-                  </span>
-                  <span className="px-3 py-1 bg-purple-50 text-purple-800 rounded-lg font-bold border border-purple-200">
-                    Pending in Queue:{' '}
-                    <strong className="text-purple-700">
-                      {cadenceStats?.pendingQueueCount ?? 0} items
-                    </strong>
-                  </span>
+                {/* Real-time Cadence Metrics Pill & Manual Recovery Trigger */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100 mt-2">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg font-bold border border-slate-200">
+                      Total Subscribers:{' '}
+                      <strong className="text-navy">{stats?.pushSubscribersCount || 0}</strong>
+                    </span>
+                    <span className="px-3 py-1 bg-emerald-50 text-emerald-800 rounded-lg font-bold border border-emerald-200">
+                      Eligible for Next Cadence:{' '}
+                      <strong className="text-emerald-700">
+                        {cadenceStats?.eligible ?? stats?.pushSubscribersCount ?? 0}
+                      </strong>{' '}
+                      (no alert in last{' '}
+                      {(notifSettings.cadenceMinutes || 240) < 60
+                        ? `${notifSettings.cadenceMinutes || 30}m`
+                        : `${((notifSettings.cadenceMinutes || 240) / 60).toFixed(1)}h`}
+                      )
+                    </span>
+                    <span className="px-3 py-1 bg-purple-50 text-purple-800 rounded-lg font-bold border border-purple-200">
+                      Pending in Queue:{' '}
+                      <strong className="text-purple-700">
+                        {cadenceStats?.pendingQueueCount ?? 0} items
+                      </strong>
+                    </span>
+                    <span className="px-3 py-1 bg-amber-50 text-amber-800 rounded-lg font-bold border border-amber-200">
+                      Active Abandoned Carts:{' '}
+                      <strong className="text-amber-700">
+                        {cadenceStats?.abandonedCartsCount ?? 0}
+                      </strong>
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={handleScanRecovery}
+                    disabled={isScanningRecovery}
+                    className="px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                  >
+                    <ShoppingCart className="w-3.5 h-3.5" />
+                    {isScanningRecovery ? 'Scanning...' : 'Scan Abandoned Carts Now'}
+                  </button>
                 </div>
               </div>
 
-              {/* SECTION 2: LIVE NOTIFICATION QUEUE (PENDING & DISPATCHED FEED) */}
+              {/* SECTION 2: 1-CLICK CURRENT CATALOG & BOUTIQUE QUICK-DISPATCHER */}
+              <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                  <div>
+                    <h4 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-purple-600" />
+                      1-Click Current Catalog &amp; Boutique Quick-Dispatcher
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Pick any current live product or approved boutique from JiivaaKart to
+                      broadcast instantly or queue for scheduled cadence delivery.
+                    </p>
+                  </div>
+
+                  {/* Target Type Switcher */}
+                  <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCatalogType('PRODUCT');
+                        if (catalogProducts.length > 0) setSelectedCatalogId(catalogProducts[0].id);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        selectedCatalogType === 'PRODUCT'
+                          ? 'bg-white text-navy shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5 text-purple-600" />
+                      Active Products ({catalogProducts.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCatalogType('SHOP');
+                        if (catalogShops.length > 0) setSelectedCatalogId(catalogShops[0].id);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        selectedCatalogType === 'SHOP'
+                          ? 'bg-white text-navy shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <Store className="w-3.5 h-3.5 text-purple-600" />
+                      Boutiques ({catalogShops.length})
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                  {/* Left Column: Selection Controls */}
+                  <div className="lg:col-span-7 space-y-3.5">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                        {selectedCatalogType === 'PRODUCT'
+                          ? 'Choose Live Product from Catalog'
+                          : 'Choose Approved Boutique'}
+                      </label>
+                      {selectedCatalogType === 'PRODUCT' ? (
+                        <select
+                          value={selectedCatalogId}
+                          onChange={(e) => setSelectedCatalogId(e.target.value)}
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-hidden focus:border-navy"
+                        >
+                          {catalogProducts.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name} — ₹{p.price} ({p.shopName})
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <select
+                          value={selectedCatalogId}
+                          onChange={(e) => setSelectedCatalogId(e.target.value)}
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-hidden focus:border-navy"
+                        >
+                          {catalogShops.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.name} {s.city ? `(${s.city})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+
+                    {/* Marketing Template Preset (Products only) */}
+                    {selectedCatalogType === 'PRODUCT' && (
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                          Push Angle / Marketing Angle
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTemplate('TRENDING')}
+                            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                              selectedTemplate === 'TRENDING'
+                                ? 'border-purple-600 bg-purple-50/70 ring-2 ring-purple-600/20'
+                                : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/60'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-900">
+                              <Flame className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                              Trending Pick
+                            </div>
+                            <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">
+                              Loved by shoppers across India
+                            </p>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTemplate('LOW_STOCK')}
+                            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                              selectedTemplate === 'LOW_STOCK'
+                                ? 'border-purple-600 bg-purple-50/70 ring-2 ring-purple-600/20'
+                                : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/60'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-900">
+                              <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                              Selling Fast
+                            </div>
+                            <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">
+                              Few pieces left in stock
+                            </p>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTemplate('WEEKEND_DEAL')}
+                            className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                              selectedTemplate === 'WEEKEND_DEAL'
+                                ? 'border-purple-600 bg-purple-50/70 ring-2 ring-purple-600/20'
+                                : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/60'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-900">
+                              <Gift className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                              Weekend Deal
+                            </div>
+                            <p className="text-[10px] text-slate-500 mt-1 line-clamp-1">
+                              Flat ₹50 OFF incentive
+                            </p>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Dispatch & Queue Buttons */}
+                    <div className="flex flex-wrap items-center gap-2.5 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => handleQueueCatalogItem(false)}
+                        disabled={isQueueingCatalog || !selectedCatalogId}
+                        className="px-4 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-extrabold shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        <Clock className="w-3.5 h-3.5 text-purple-300" />
+                        {isQueueingCatalog ? 'Queueing...' : '+ Add to Drip Queue'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleQueueCatalogItem(true)}
+                        disabled={
+                          isQueueingCatalog ||
+                          !selectedCatalogId ||
+                          (stats?.pushSubscribersCount || 0) === 0
+                        }
+                        className="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl text-xs font-extrabold shadow-md shadow-purple-600/20 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        {isQueueingCatalog
+                          ? 'Dispatching...'
+                          : `🚀 Dispatch Now to All ${stats?.pushSubscribersCount || 0} Screens`}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Live Mockup Card */}
+                  <div className="lg:col-span-5 bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 space-y-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                      Live Push Preview (Desktop &amp; Mobile)
+                    </span>
+
+                    <div className="bg-white rounded-2xl p-3.5 border border-slate-200/90 shadow-sm flex items-start gap-3">
+                      {previewImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={previewImage}
+                          alt="preview"
+                          className="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-11 h-11 rounded-xl bg-purple-900 text-white flex items-center justify-center text-xs font-black shrink-0">
+                          JK
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-xs font-extrabold text-slate-900 truncate">
+                            {previewTitle || 'Notification Title'}
+                          </p>
+                          <span className="text-[10px] text-slate-400 shrink-0">now</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-snug line-clamp-2">
+                          {previewBody || 'Body text will appear here...'}
+                        </p>
+                        <span className="text-[10px] text-purple-700 font-bold block pt-0.5 truncate">
+                          Target: {previewUrl || '/'} ↗
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: LIVE NOTIFICATION QUEUE (PENDING & DISPATCHED FEED) */}
               <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
@@ -958,14 +1388,22 @@ export default function AdminMarketingPage() {
                                   ? 'bg-blue-100 text-blue-800'
                                   : item.type === 'NEW_PRODUCT'
                                     ? 'bg-purple-100 text-purple-800'
-                                    : 'bg-emerald-100 text-emerald-800'
+                                    : item.type === 'CART_RECOVERY'
+                                      ? 'bg-amber-100 text-amber-800'
+                                      : item.type === 'WISHLIST_REMINDER'
+                                        ? 'bg-pink-100 text-pink-800'
+                                        : 'bg-emerald-100 text-emerald-800'
                               }`}
                             >
                               {item.type === 'NEW_SELLER'
                                 ? '🏪 New Boutique'
                                 : item.type === 'NEW_PRODUCT'
                                   ? '✨ New Product'
-                                  : '🔥 Promo'}
+                                  : item.type === 'CART_RECOVERY'
+                                    ? '🛒 Cart Recovery'
+                                    : item.type === 'WISHLIST_REMINDER'
+                                      ? '❤️ Wishlist Drop'
+                                      : '🔥 Catalog Promo'}
                             </span>
                             <span className="font-extrabold text-slate-800 truncate">
                               {item.title}
@@ -1007,7 +1445,7 @@ export default function AdminMarketingPage() {
                 )}
               </div>
 
-              {/* SECTION 3: MANUAL INSTANT PUSH BROADCAST (CUSTOM CAMPAIGNS) */}
+              {/* SECTION 4: MANUAL INSTANT PUSH BROADCAST (CUSTOM CAMPAIGNS) */}
               <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div>

@@ -17,10 +17,13 @@ export async function GET() {
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
 
-    const [settings, queue, subscribersStats] = await Promise.all([
-      PushNotificationService.getSettings(),
-      PushNotificationService.getQueueItems(20),
-      PushNotificationService.getSubscribersCadenceStats(4),
+    const settings = await PushNotificationService.getSettings();
+    const cadenceMins = settings.cadenceMinutes || 240;
+
+    const [queue, subscribersStats, catalog] = await Promise.all([
+      PushNotificationService.getQueueItems(25),
+      PushNotificationService.getSubscribersCadenceStats(cadenceMins),
+      PushNotificationService.getLiveCatalogForPush(),
     ]);
 
     return NextResponse.json({
@@ -29,6 +32,7 @@ export async function GET() {
         settings,
         queue,
         stats: subscribersStats,
+        catalog,
       },
     });
   } catch (error: any) {
@@ -66,6 +70,41 @@ export async function POST(request: NextRequest) {
         success: true,
         message: result.message,
         data: result,
+      });
+    }
+
+    if (action === 'scan_recovery') {
+      const result = await PushNotificationService.scanAndEnqueueAbandonedCartsAndWishlists();
+      return NextResponse.json({
+        success: true,
+        message: `Recovery scan completed: ${result.abandonedCartsQueued} cart(s) and ${result.abandonedWishlistsQueued} wishlist(s) queued.`,
+        data: result,
+      });
+    }
+
+    if (action === 'queue_catalog_item') {
+      const { targetType, targetId, templateType, customTitle, customBody, dispatchImmediate } =
+        body;
+      if (!targetId || !targetType) {
+        return NextResponse.json(
+          { success: false, message: 'targetId and targetType are required.' },
+          { status: 400 },
+        );
+      }
+
+      const res = await PushNotificationService.enqueueCatalogItem({
+        targetType,
+        targetId,
+        templateType,
+        customTitle,
+        customBody,
+        dispatchImmediate: Boolean(dispatchImmediate),
+      });
+
+      return NextResponse.json({
+        success: res.success,
+        message: res.message,
+        data: res.data,
       });
     }
 
