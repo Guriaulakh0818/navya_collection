@@ -103,8 +103,107 @@ export default function ReferralPage() {
           },
         );
         const json = await res.json().catch(() => null);
-        if (!isCancelled && json?.success && json?.data) {
-          setProfileData(json.data);
+        let liveProfile = json?.success && json?.data ? json.data : null;
+
+        // Guaranteed Client-Side Dual Reconciliation with Loyalty Ledger:
+        // Always fetch /api/v1/rewards/loyalty to ensure friends in coins passbook appear here immediately
+        try {
+          const loyaltyRes = await fetch(`/api/v1/rewards/loyalty?_t=${Date.now()}`, {
+            cache: 'no-store',
+            credentials: 'include',
+          });
+          const loyaltyJson = await loyaltyRes.json().catch(() => null);
+          if (loyaltyJson?.success && Array.isArray(loyaltyJson.data?.transactions)) {
+            const txs = loyaltyJson.data.transactions;
+            const friendsFromLoyalty: typeof profileData.friends = [];
+
+            for (const tx of txs) {
+              const desc = String(tx.description || '');
+              const type = String(tx.type || '');
+              const ref = String(tx.reference || '');
+              const isRef =
+                type === 'REFERRAL_BONUS' ||
+                ref.startsWith('ref_') ||
+                desc.toLowerCase().includes('joined via your code') ||
+                desc.toLowerCase().includes('referral');
+
+              if (!isRef) continue;
+
+              let friendName = 'Jiivaa Friend';
+              const joinMatch = desc.match(/Friend\s+(.+?)\s+joined/i);
+              const orderMatch = desc.match(/bonus for\s+(.+?)'s\s+1st delivered order/i);
+              const repeatMatch = desc.match(/for\s+(.+?)'s\s+delivered order/i);
+              if (joinMatch && joinMatch[1]) friendName = joinMatch[1].trim();
+              else if (orderMatch && orderMatch[1]) friendName = orderMatch[1].trim();
+              else if (repeatMatch && repeatMatch[1]) friendName = repeatMatch[1].trim();
+
+              const isDelivered =
+                ref.startsWith('ref_delivered_') || desc.toLowerCase().includes('delivered order');
+
+              friendsFromLoyalty.push({
+                id: String(tx.id),
+                friendName,
+                friendUserId: ref.startsWith('ref_join_')
+                  ? ref.replace('ref_join_', '')
+                  : undefined,
+                status: isDelivered ? 'DELIVERED_REWARDED' : 'JOINED',
+                ordersCount: isDelivered ? 1 : 0,
+                coinsAwarded: Number(tx.amount || 100),
+                date: tx.createdAt
+                  ? new Date(tx.createdAt).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  : 'Recently',
+              });
+            }
+
+            if (friendsFromLoyalty.length > 0) {
+              if (!liveProfile) {
+                liveProfile = {
+                  stats: {
+                    totalClicks: 0,
+                    friendsJoined: 0,
+                    successfulOrders: 0,
+                    totalCoinsEarned: 0,
+                    totalEarnedInr: 0,
+                  },
+                  friends: [],
+                };
+              }
+
+              for (const fl of friendsFromLoyalty) {
+                const exists = liveProfile.friends.some(
+                  (f: any) =>
+                    f.friendName.toLowerCase() === fl.friendName.toLowerCase() ||
+                    (f.friendUserId && fl.friendUserId && f.friendUserId === fl.friendUserId),
+                );
+                if (!exists) {
+                  liveProfile.friends.push(fl);
+                }
+              }
+
+              liveProfile.stats.friendsJoined = liveProfile.friends.length;
+              liveProfile.stats.successfulOrders = liveProfile.friends.reduce(
+                (sum: number, f: any) => sum + (f.ordersCount || 0),
+                0,
+              );
+              liveProfile.stats.totalCoinsEarned = liveProfile.friends.reduce(
+                (sum: number, f: any) => sum + (f.coinsAwarded || 0),
+                0,
+              );
+              liveProfile.stats.totalEarnedInr = Math.round(
+                liveProfile.stats.totalCoinsEarned * 0.1,
+              );
+            }
+          }
+        } catch (loyaltyErr) {
+          console.warn('Loyalty fallback check error:', loyaltyErr);
+        }
+
+        if (!isCancelled && liveProfile) {
+          setProfileData(liveProfile);
         }
       } catch (err: any) {
         if (err?.name !== 'AbortError') {
