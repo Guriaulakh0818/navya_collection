@@ -33,6 +33,7 @@ export async function GET() {
         queue,
         stats: subscribersStats,
         catalog,
+        templates: PushNotificationService.getTemplatesCatalog(),
       },
     });
   } catch (error: any) {
@@ -99,6 +100,40 @@ export async function POST(request: NextRequest) {
         customTitle,
         customBody,
         dispatchImmediate: Boolean(dispatchImmediate),
+      });
+
+      return NextResponse.json({
+        success: res.success,
+        message: res.message,
+        data: res.data,
+      });
+    }
+
+    if (action === 'enqueue_template') {
+      const {
+        templateId,
+        customerName,
+        productName,
+        shopName,
+        customUrl,
+        dispatchImmediate,
+        priority,
+      } = body;
+      if (!templateId) {
+        return NextResponse.json(
+          { success: false, message: 'templateId is required.' },
+          { status: 400 },
+        );
+      }
+
+      const res = await PushNotificationService.enqueueFromTemplate({
+        templateId,
+        customerName,
+        productName,
+        shopName,
+        customUrl,
+        dispatchImmediate: Boolean(dispatchImmediate),
+        priority,
       });
 
       return NextResponse.json({

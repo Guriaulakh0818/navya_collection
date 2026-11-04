@@ -1,6 +1,12 @@
 import webpush from 'web-push';
 
 import { prisma } from '@/lib/prisma';
+import {
+  formatNotificationTemplate,
+  getNotificationTemplateById,
+  JIIVAA_PUSH_TEMPLATES,
+  JIIVAA_TEMPLATE_CATEGORIES,
+} from '@/shared/config/push-notification-templates.config';
 
 export interface PushPayload {
   title: string;
@@ -694,6 +700,77 @@ export class PushNotificationService {
         ? `Added "${title}" to the Notification Drip Queue!`
         : `Could not queue item.`,
       data: { title, body, url },
+    };
+  }
+
+  /**
+   * Enqueue or immediately broadcast one of the 200 approved viral Hinglish templates
+   */
+  public static async enqueueFromTemplate(params: {
+    templateId: string;
+    customerName?: string;
+    productName?: string;
+    shopName?: string;
+    customUrl?: string;
+    dispatchImmediate?: boolean;
+    priority?: number;
+  }): Promise<{ success: boolean; message: string; data?: any }> {
+    await this.ensureTable();
+
+    const template = getNotificationTemplateById(params.templateId);
+    if (!template) {
+      return { success: false, message: `Template #${params.templateId} not found.` };
+    }
+
+    const formatted = formatNotificationTemplate(template, {
+      customerName: params.customerName,
+      productName: params.productName,
+      shopName: params.shopName,
+    });
+
+    const targetUrl = params.customUrl || formatted.url || '/shop';
+
+    if (params.dispatchImmediate) {
+      const dispatchRes = await this.broadcastPush({
+        title: formatted.title,
+        body: formatted.message,
+        url: targetUrl,
+      });
+
+      return {
+        success: true,
+        message: `Dispatched Template #${template.id} immediately to ${dispatchRes.sent} subscribers (${dispatchRes.failed} failed).`,
+        data: dispatchRes,
+      };
+    }
+
+    const enqueueRes = await this.enqueueNotification({
+      type: 'PROMO',
+      title: formatted.title,
+      body: formatted.message,
+      url: targetUrl,
+      entityId: `template_${template.id}`,
+      entityName: template.title,
+      priority: params.priority || 2,
+    });
+
+    return {
+      success: enqueueRes.success,
+      message: enqueueRes.success
+        ? `Queued Template #${template.id} ("${formatted.title}") successfully in Drip Queue!`
+        : `Could not queue template.`,
+      data: { ...formatted, targetUrl },
+    };
+  }
+
+  /**
+   * Returns all 200 approved templates and category metadata
+   */
+  public static getTemplatesCatalog() {
+    return {
+      templates: JIIVAA_PUSH_TEMPLATES,
+      categories: JIIVAA_TEMPLATE_CATEGORIES,
+      totalCount: JIIVAA_PUSH_TEMPLATES.length,
     };
   }
 

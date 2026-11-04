@@ -95,6 +95,7 @@ export default function ReferralPage() {
           `/api/v1/referral?userId=${uId}&name=${uName}&contact=${uContact}&code=${encodeURIComponent(shareCode)}&_t=${Date.now()}`,
           {
             cache: 'no-store',
+            credentials: 'include',
             headers: {
               'Cache-Control': 'no-cache, no-store',
             },

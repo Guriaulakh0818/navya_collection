@@ -194,7 +194,7 @@ export class ReferralService {
 
       // Check Prisma User records directly
       const dbUsers: any = await (prisma as any).user.findMany({
-        take: 30,
+        take: 500,
         select: { id: true, name: true, mobile: true },
       });
       for (const u of dbUsers) {
@@ -625,8 +625,8 @@ export class ReferralService {
       REWARDS_CONFIG.referralRefereeDiscountInr,
     );
 
-    // If userId is missing/guest, resolve owner from referralCode
-    if (candidateUserIds.size === 0 && referralCode) {
+    // Always resolve owner from referralCode and add to candidate user IDs
+    if (referralCode) {
       const referrer = await this.findReferrer(referralCode).catch(() => null);
       if (referrer?.userId && !referrer.userId.startsWith('guest')) {
         candidateUserIds.add(referrer.userId);
