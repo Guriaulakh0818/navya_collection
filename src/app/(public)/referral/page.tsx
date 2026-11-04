@@ -20,6 +20,27 @@ import { useRewardsSettings } from '@/frontend/features/rewards/hooks/useRewards
 import { generateUniqueReferralCode, REWARDS_CONFIG } from '@/shared/config/rewards.config';
 import { useAuthStore, useRewardsStore } from '@/stores';
 
+interface ReferralFriendItem {
+  id: string;
+  friendName: string;
+  friendUserId?: string;
+  status: 'JOINED' | 'ORDER_PLACED' | 'DELIVERED_REWARDED' | 'ACTIVE';
+  ordersCount: number;
+  coinsAwarded: number;
+  date: string;
+}
+
+interface ReferralProfileState {
+  stats: {
+    totalClicks: number;
+    friendsJoined: number;
+    successfulOrders: number;
+    totalCoinsEarned: number;
+    totalEarnedInr: number;
+  };
+  friends: ReferralFriendItem[];
+}
+
 export default function ReferralPage() {
   const { settings } = useRewardsSettings();
   const user = useAuthStore((s) => s.user);
@@ -30,24 +51,7 @@ export default function ReferralPage() {
   const [originUrl, setOriginUrl] = useState('http://localhost:3000');
   const [mounted, setMounted] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-  const [profileData, setProfileData] = useState<{
-    stats: {
-      totalClicks: number;
-      friendsJoined: number;
-      successfulOrders: number;
-      totalCoinsEarned: number;
-      totalEarnedInr: number;
-    };
-    friends: Array<{
-      id: string;
-      friendName: string;
-      friendUserId?: string;
-      status: 'JOINED' | 'ORDER_PLACED' | 'DELIVERED_REWARDED' | 'ACTIVE';
-      ordersCount: number;
-      coinsAwarded: number;
-      date: string;
-    }>;
-  }>({
+  const [profileData, setProfileData] = useState<ReferralProfileState>({
     stats: {
       totalClicks: 0,
       friendsJoined: 0,
@@ -115,7 +119,7 @@ export default function ReferralPage() {
           const loyaltyJson = await loyaltyRes.json().catch(() => null);
           if (loyaltyJson?.success && Array.isArray(loyaltyJson.data?.transactions)) {
             const txs = loyaltyJson.data.transactions;
-            const friendsFromLoyalty: typeof profileData.friends = [];
+            const friendsFromLoyalty: ReferralFriendItem[] = [];
 
             for (const tx of txs) {
               const desc = String(tx.description || '');
@@ -224,7 +228,7 @@ export default function ReferralPage() {
       clearTimeout(timeoutId);
       controller.abort();
     };
-  }, [user?.id, user?.mobile, user?.email, shareCode]);
+  }, [user?.id, user?.name, user?.mobile, user?.email, shareCode]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
