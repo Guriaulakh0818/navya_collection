@@ -89,13 +89,13 @@ export function generateProductSchema(product: ProductSchemaInput) {
     '@context': 'https://schema.org',
     '@type': 'Product',
     '@id': `${SEO_CONSTANTS.SITE_URL}/product/${product.id}#product`,
-    name: product.name,
+    name: (product.name || '').trim(),
     description: product.description,
     image: images,
     sku: product.sku || product.id,
     brand: {
       '@type': 'Brand',
-      name: product.brand || SEO_CONSTANTS.SITE_NAME,
+      name: (product.brand || SEO_CONSTANTS.SITE_NAME).trim(),
     },
     offers: {
       '@type': 'Offer',
