@@ -10,6 +10,7 @@ const INTERNAL_SYNC_SECRET =
 const CRON_SECRET = process.env.CRON_SECRET || 'navya_settlement_secret_key';
 
 function isAuthorized(request: NextRequest, user: any) {
+  const isVercelCron = request.headers.get('x-vercel-cron') === '1';
   const authHeader = request.headers.get('authorization') || request.headers.get('x-sync-secret');
   const isSecretAuthorized =
     authHeader &&
@@ -20,7 +21,7 @@ function isAuthorized(request: NextRequest, user: any) {
   const isAdminAuthorized =
     user && ['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(user.role?.toUpperCase());
 
-  return Boolean(isSecretAuthorized || isAdminAuthorized);
+  return Boolean(isVercelCron || isSecretAuthorized || isAdminAuthorized);
 }
 
 export async function GET(request: NextRequest) {

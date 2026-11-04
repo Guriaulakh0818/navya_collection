@@ -52,6 +52,7 @@ export interface QueueItem {
   icon?: string;
   entityId?: string;
   entityName?: string;
+  targetUserId?: string;
   status: 'PENDING' | 'SENT' | 'CANCELLED';
   priority: number;
   scheduledFor: string;
@@ -142,7 +143,15 @@ export class PushNotificationService {
       `);
 
       await prisma.$executeRawUnsafe(`
+        ALTER TABLE "notification_queue" ADD COLUMN IF NOT EXISTS "target_user_id" VARCHAR(100);
+      `);
+
+      await prisma.$executeRawUnsafe(`
         CREATE INDEX IF NOT EXISTS "idx_notif_queue_status_sched" ON "notification_queue"("status", "scheduled_for");
+      `);
+
+      await prisma.$executeRawUnsafe(`
+        CREATE INDEX IF NOT EXISTS "idx_notif_queue_target_user" ON "notification_queue"("target_user_id");
       `);
 
       // 3. Ensure notification_settings table
@@ -408,6 +417,7 @@ export class PushNotificationService {
     icon?: string;
     entityId?: string;
     entityName?: string;
+    targetUserId?: string;
     priority?: number;
   }): Promise<{ success: boolean; id?: string }> {
     await this.ensureTable();
@@ -428,8 +438,8 @@ export class PushNotificationService {
       }
 
       await prisma.$executeRawUnsafe(
-        `INSERT INTO "notification_queue" ("id", "type", "title", "body", "url", "image", "icon", "entity_id", "entity_name", "status", "priority", "created_at")
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'PENDING', $10, CURRENT_TIMESTAMP);`,
+        `INSERT INTO "notification_queue" ("id", "type", "title", "body", "url", "image", "icon", "entity_id", "entity_name", "target_user_id", "status", "priority", "created_at")
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'PENDING', $11, CURRENT_TIMESTAMP);`,
         id,
         item.type,
         item.title,
@@ -439,6 +449,7 @@ export class PushNotificationService {
         item.icon || '/icons/icon-192x192.png',
         item.entityId || null,
         item.entityName || null,
+        item.targetUserId || null,
         item.priority || 1,
       );
       return { success: true, id };
@@ -842,15 +853,28 @@ export class PushNotificationService {
 
           if (recentOrder) continue;
 
+          // Proven Viral Hinglish Recovery Template #001
+          const cartTemplate = getNotificationTemplateById('001');
+          const title = cartTemplate
+            ? cartTemplate.title
+            : `Are Suno! Ye Suit Aapke Cart Me Rota Chhod Aaye? 🥺`;
+          const body = cartTemplate
+            ? formatNotificationTemplate(cartTemplate, {
+                customerName: cart.user?.name || 'Jiivaa Shopper',
+                productName: product.name,
+              }).message
+            : `${product.name} abhi bhi aapke cart me hai. Complete your order now & get Flat ₹50 OFF!`;
+
           const img = product.images?.[0]?.imageUrl || undefined;
           await this.enqueueNotification({
             type: 'ABANDONED_CART',
-            title: `🛒 Aapka Cart Intezaar Kar Raha Hai!`,
-            body: `${product.name} abhi bhi aapke cart me hai. Complete your order now & get Flat ₹50 OFF!`,
+            title,
+            body,
             url: `/cart`,
             image: img,
             entityId: dedupeKey,
             entityName: product.name,
+            targetUserId: cart.userId,
             priority: 3, // Highest priority for conversion!
           });
           abandonedCartsQueued++;
@@ -917,6 +941,71 @@ export class PushNotificationService {
   }
 
   /**
+   * Scan for users with unused welcome/signup coins (> 24 hours) and auto-enqueue Viral Template #121
+   */
+  public static async scanAndEnqueueWelcomeCoinsReminders(): Promise<number> {
+    await this.ensureTable();
+    let queued = 0;
+    try {
+      // Find ledger rows with referral or welcome bonus created > 24 hours ago
+      const ledgerRows: any = await prisma
+        .$queryRawUnsafe(
+          `SELECT DISTINCT l.user_id as "userId", l.user_name as "userName", l.amount
+           FROM user_coins_ledger l
+           WHERE l.type IN ('REFERRAL_BONUS', 'SIGNUP_BONUS')
+             AND l.created_at <= NOW() - INTERVAL '24 hours'
+             AND l.created_at >= NOW() - INTERVAL '30 days'
+             AND NOT EXISTS (
+               SELECT 1 FROM "Order" o WHERE o."userId" = l.user_id AND o."orderStatus" IN ('DELIVERED', 'SHIPPED', 'CONFIRMED')
+             )
+           LIMIT 20;`,
+        )
+        .catch(() => []);
+
+      if (Array.isArray(ledgerRows)) {
+        for (const row of ledgerRows) {
+          const uid = String(row.userId);
+          if (!uid || uid.startsWith('guest')) continue;
+
+          const dedupeKey = `coins_remind_${uid}`;
+          const existing: any = await prisma
+            .$queryRawUnsafe(
+              `SELECT id FROM "notification_queue" WHERE entity_id = $1 AND created_at >= NOW() - INTERVAL '7 days' LIMIT 1;`,
+              dedupeKey,
+            )
+            .catch(() => []);
+
+          if (Array.isArray(existing) && existing.length > 0) continue;
+
+          // Viral High-Converting Coins Template #121
+          const coinsTemplate = getNotificationTemplateById('121');
+          const title = coinsTemplate?.title || 'Aapke Wallet Me ₹50 (500 Coins) Pade Hain! 🎁';
+          const body = coinsTemplate
+            ? formatNotificationTemplate(coinsTemplate, {
+                customerName: row.userName || 'Jiivaa Shopper',
+              }).message
+            : 'Ise apne agle boutique order par seedha cash ki tarah use karein. Cart me apply karein!';
+
+          await this.enqueueNotification({
+            type: 'PROMO',
+            title,
+            body,
+            url: '/account/rewards',
+            entityId: dedupeKey,
+            entityName: 'VIP Coins Reminder',
+            targetUserId: uid,
+            priority: 2,
+          });
+          queued++;
+        }
+      }
+    } catch (err) {
+      console.warn('⚠️ [PushNotificationService] scan welcome coins error:', err);
+    }
+    return queued;
+  }
+
+  /**
    * Auto-enqueue rotating pick from existing catalog so queue is never empty.
    */
   public static async autoEnqueueRotatingCatalogPick(): Promise<boolean> {
@@ -944,28 +1033,38 @@ export class PushNotificationService {
       });
 
       if (product) {
-        const templates = [
-          {
-            title: `🔥 Trending Boutique Pick: ${product.name}!`,
-            body: `Handcrafted ethnic fashion starting ₹${product.price}${product.shop?.name ? ' from ' + product.shop.name : ''}. Check new designs!`,
-          },
-          {
-            title: `⚡ Limited Stock Alert: ${product.name}!`,
-            body: `Fast selling boutique couture at ₹${product.price}. Tap to claim Flat ₹50 OFF on your order!`,
-          },
-          {
-            title: `✨ Fashion Insider: ${product.name}!`,
-            body: `Curated Indian ethnic style by ${product.shop?.name || 'Jiivaa Boutiques'}. Tap to explore now.`,
-          },
-        ];
+        // Time-aware Viral Hinglish Template Selection (IST = UTC + 5.5 hours)
+        const nowUtc = new Date();
+        const istHour = (nowUtc.getUTCHours() + 5.5) % 24;
 
-        const selected = templates[Math.floor(Math.random() * templates.length)];
+        let templateId = '161'; // Default: Evening Boutique Showcase
+        if (istHour >= 12 && istHour < 15) {
+          templateId = '061'; // Lunch Break Flash: "Lunch ke sath thodi shopping ho jaye? 🥪"
+        } else if (istHour >= 18 && istHour < 23) {
+          // Evening Bedtime/Relax scroll: Rotate between #165 and #161
+          templateId = Math.random() > 0.5 ? '165' : '161';
+        } else {
+          templateId = '021'; // FOMO: "Masterji Ne Sirf 3 Piece Banaye The! 👗"
+        }
+
+        const template = getNotificationTemplateById(templateId);
+        const formatted = template
+          ? formatNotificationTemplate(template, {
+              productName: product.name,
+              shopName: product.shop?.name || 'Verified Boutique',
+            })
+          : {
+              title: `🔥 Trending Boutique Pick: ${product.name}!`,
+              message: `Handcrafted ethnic fashion starting ₹${product.price}${product.shop?.name ? ' from ' + product.shop.name : ''}. Check new designs!`,
+              url: `/product/${product.slug || product.id}`,
+            };
+
         const img = product.images?.[0]?.imageUrl || undefined;
 
         await this.enqueueNotification({
           type: 'PROMO',
-          title: selected.title,
-          body: selected.body,
+          title: formatted.title,
+          body: formatted.message,
           url: `/product/${product.slug || product.id}`,
           image: img,
           entityId: product.id,
@@ -998,7 +1097,7 @@ export class PushNotificationService {
     await this.ensureTable();
     try {
       const rows: any = await prisma.$queryRawUnsafe(
-        `SELECT id, type, title, body, url, image, icon, entity_id as "entityId", entity_name as "entityName", status, priority, scheduled_for as "scheduledFor", sent_at as "sentAt", recipients_count as "recipientsCount", created_at as "createdAt"
+        `SELECT id, type, title, body, url, image, icon, entity_id as "entityId", entity_name as "entityName", target_user_id as "targetUserId", status, priority, scheduled_for as "scheduledFor", sent_at as "sentAt", recipients_count as "recipientsCount", created_at as "createdAt"
          FROM "notification_queue"
          ORDER BY CASE WHEN status = 'PENDING' THEN 0 ELSE 1 END, created_at DESC
          LIMIT $1;`,
@@ -1015,6 +1114,7 @@ export class PushNotificationService {
           icon: r.icon || undefined,
           entityId: r.entityId || undefined,
           entityName: r.entityName || undefined,
+          targetUserId: r.targetUserId || undefined,
           status: r.status,
           priority: Number(r.priority) || 1,
           scheduledFor: r.scheduledFor
@@ -1075,8 +1175,11 @@ export class PushNotificationService {
       };
     }
 
-    // 0. Proactively scan for abandoned carts & wishlists
-    await this.scanAndEnqueueAbandonedCartsAndWishlists().catch(() => {});
+    // 0. Proactively scan for abandoned carts, wishlists & welcome coins
+    await Promise.all([
+      this.scanAndEnqueueAbandonedCartsAndWishlists().catch(() => {}),
+      this.scanAndEnqueueWelcomeCoinsReminders().catch(() => {}),
+    ]);
 
     // 1. Pick top pending item
     let pendingRows: any = await prisma.$queryRawUnsafe(
@@ -1109,31 +1212,64 @@ export class PushNotificationService {
     }
 
     const item = pendingRows[0];
+    const targetUserId = item.target_user_id || item.targetUserId;
 
-    // 2. Find eligible subscribers (enforcing frequency cap: minimum cadenceMinutes gap)
-    const cadenceMinutes = settings.cadenceMinutes || Math.round((settings.cadenceHours || 4) * 60);
-    const subscribers: any[] = await prisma.$queryRawUnsafe(
-      `SELECT "id", "endpoint", "p256dh", "auth" 
-       FROM "push_subscriptions"
-       WHERE last_notified_at IS NULL OR last_notified_at <= NOW() - ($1 || ' minutes')::interval;`,
-      cadenceMinutes,
-    );
+    // 2. Find eligible subscribers
+    let subscribers: any[] = [];
+    if (targetUserId) {
+      // 1-to-1 Targeted alert (Abandoned Cart / Welcome Coins)
+      subscribers = await prisma.$queryRawUnsafe(
+        `SELECT "id", "endpoint", "p256dh", "auth" 
+         FROM "push_subscriptions"
+         WHERE "user_id" = $1;`,
+        targetUserId,
+      );
 
-    const intervalLabel =
-      cadenceMinutes < 60
-        ? `${cadenceMinutes} minutes`
-        : `${(cadenceMinutes / 60).toFixed(1).replace('.0', '')} hours`;
+      // If user has not subscribed to browser push, gracefully mark SKIPPED so queue advances
+      if (!Array.isArray(subscribers) || subscribers.length === 0) {
+        await prisma.$executeRawUnsafe(
+          `UPDATE "notification_queue"
+           SET status = 'SKIPPED', sent_at = CURRENT_TIMESTAMP, recipients_count = 0
+           WHERE id = $1;`,
+          item.id,
+        );
+        return {
+          success: true,
+          dispatched: false,
+          message: `Target user ${targetUserId} has no active push subscription. Queue item skipped.`,
+          item: { id: item.id, title: item.title },
+          sentCount: 0,
+          failedCount: 0,
+          eligibleCount: 0,
+        };
+      }
+    } else {
+      // General Broadcast: Respect cadence frequency cap
+      const cadenceMinutes =
+        settings.cadenceMinutes || Math.round((settings.cadenceHours || 4) * 60);
+      subscribers = await prisma.$queryRawUnsafe(
+        `SELECT "id", "endpoint", "p256dh", "auth" 
+         FROM "push_subscriptions"
+         WHERE last_notified_at IS NULL OR last_notified_at <= NOW() - ($1 || ' minutes')::interval;`,
+        cadenceMinutes,
+      );
 
-    if (!Array.isArray(subscribers) || subscribers.length === 0) {
-      return {
-        success: true,
-        dispatched: false,
-        message: `Cadence frequency cap active: All subscribers received an alert within the last ${intervalLabel}. Queue item "${item.title}" retained for the next time window.`,
-        item: { id: item.id, title: item.title },
-        sentCount: 0,
-        failedCount: 0,
-        eligibleCount: 0,
-      };
+      const intervalLabel =
+        cadenceMinutes < 60
+          ? `${cadenceMinutes} minutes`
+          : `${(cadenceMinutes / 60).toFixed(1).replace('.0', '')} hours`;
+
+      if (!Array.isArray(subscribers) || subscribers.length === 0) {
+        return {
+          success: true,
+          dispatched: false,
+          message: `Cadence frequency cap active: All subscribers received an alert within the last ${intervalLabel}. Queue item "${item.title}" retained for the next time window.`,
+          item: { id: item.id, title: item.title },
+          sentCount: 0,
+          failedCount: 0,
+          eligibleCount: 0,
+        };
+      }
     }
 
     // 3. Dispatch web push to eligible subscribers
