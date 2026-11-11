@@ -224,7 +224,7 @@ export default function OrderInvoicePage() {
                 </span>
               </div>
               <p className="text-xs font-semibold text-slate-700 mt-1">
-                Navya Collection Private Limited
+                JiivaaKart Private Limited
               </p>
               <p className="text-[11px] text-slate-500">Main Market, Fatehabad, Haryana - 125050</p>
               <p className="text-[11px] text-slate-500">
@@ -232,7 +232,7 @@ export default function OrderInvoicePage() {
                 State: Haryana (06)
               </p>
               <p className="text-[11px] text-slate-500">
-                Email: support@navyacollection.store | WhatsApp: +91 9053883125
+                Email: helpdesk@jiivaakart.com | WhatsApp: +91 9053883125
               </p>
             </div>
 
@@ -469,7 +469,7 @@ export default function OrderInvoicePage() {
               </p>
               <div className="my-2 h-7 flex items-center justify-center">
                 <span className="font-heading font-black text-navy text-sm italic tracking-tight">
-                  Navya Collection Pvt Ltd
+                  JiivaaKart Private Limited
                 </span>
               </div>
               <p className="text-[9px] font-semibold text-emerald-600">

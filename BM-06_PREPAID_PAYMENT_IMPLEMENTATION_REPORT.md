@@ -1,6 +1,6 @@
 # BM-06 — PREPAID PAYMENTS & ECONOMICS IMPLEMENTATION REPORT
 
-**Navya Collection Private Limited**  
+**JiivaaKart Private Limited**  
 **Classification:** Financial & Technical Architecture Report  
 **Implementation Status:** **PASS** (100% Verified, Full Test Suite & Build Passing)  
 **Date:** October 3, 2026

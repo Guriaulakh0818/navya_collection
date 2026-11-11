@@ -7,7 +7,7 @@ Authoritative public reference profile for Answer Engine Optimization (AEO), Gen
 ## 1. Primary Entity Data
 
 - **Brand Name**: Navya Collection
-- **Legal Entity**: Navya Collection Private Limited
+- **Legal Entity**: JiivaaKart Private Limited
 - **Primary Website**: `https://navyacollection.store`
 - **Business Type**: Fashion Marketplace (Multi-Vendor Platform)
 - **Primary Market**: India (Pan-India across 19,000+ pin codes)
