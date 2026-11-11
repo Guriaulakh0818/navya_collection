@@ -370,7 +370,7 @@ export default function SellerOrdersPage() {
                         <span className="text-[10px] text-slate-400 font-mono">
                           Master: #{masterOrder.orderNumber}
                         </span>
-                        {/* Live Dispatch SLA Countdown Badge */}
+                        {/* Live Dispatch Countdown Badge */}
                         {['PENDING', 'CONFIRMED', 'PROCESSING'].includes(order.status) && (
                           <div className="mt-1">
                             {(() => {
@@ -382,20 +382,29 @@ export default function SellerOrdersPage() {
                               );
                               if (hoursLeft <= 0) {
                                 return (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-100 text-rose-800 border border-rose-300">
-                                    ⚠️ SLA Breached
+                                  <span
+                                    title="Order dispatch deadline (24 hours) passed"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-100 text-rose-800 border border-rose-300"
+                                  >
+                                    ⚠️ Dispatch Delayed
                                   </span>
                                 );
                               } else if (hoursLeft < 6) {
                                 return (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
-                                    ⚡ Ship in {Math.round(hoursLeft)}h
+                                  <span
+                                    title="Dispatch required within 6 hours"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-300 animate-pulse"
+                                  >
+                                    ⚡ Dispatch in {Math.round(hoursLeft)}h
                                   </span>
                                 );
                               } else {
                                 return (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                    ✓ SLA: {Math.round(hoursLeft)}h
+                                  <span
+                                    title="Time left to dispatch"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                  >
+                                    ✓ Dispatch in {Math.round(hoursLeft)}h
                                   </span>
                                 );
                               }
