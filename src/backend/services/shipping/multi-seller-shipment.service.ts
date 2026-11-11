@@ -677,6 +677,108 @@ export class MultiSellerShipmentService {
   }
 
   /**
+   * Complete zero-touch automated shipping pipeline for a single shipment:
+   * 1. Register / dispatch shipment on Shiprocket (Order Creation)
+   * 2. Auto-assign fastest/cheapest Courier & generate AWB code
+   * 3. Auto-schedule doorstep pickup with selected courier
+   * 4. Auto-generate printable shipping label PDF (AWB sticker)
+   */
+  static async autoFulfillShipment(shipmentId: string) {
+    ShiprocketLogger.info(
+      `[AUTO_FULFILL_INIT] Starting zero-touch automated fulfillment for shipment ${shipmentId}`,
+    );
+
+    // Step 1: Push / Dispatch to Shiprocket (adhoc order creation)
+    const dispatchResult = await this.dispatchShipmentToShiprocket(shipmentId);
+    if (!dispatchResult.success) {
+      ShiprocketLogger.warn(
+        `[AUTO_FULFILL_DISPATCH_FAILED] Shipment ${shipmentId}: ${dispatchResult.message}`,
+      );
+      return { success: false, step: 'DISPATCH', message: dispatchResult.message };
+    }
+
+    const { AwbService } = await import('./awb.service');
+    const { PickupService } = await import('./pickup.service');
+    const { LabelService } = await import('./label.service');
+
+    // Step 2: Auto AWB assignment (Shiprocket CORE recommends best courier automatically)
+    const awbResult = await AwbService.generateAwbForShipment(shipmentId);
+    if (!awbResult.success) {
+      ShiprocketLogger.warn(`[AUTO_FULFILL_AWB_WARN] Shipment ${shipmentId}: ${awbResult.message}`);
+      return {
+        success: false,
+        step: 'AWB',
+        message: awbResult.message,
+        shiprocketOrderId: dispatchResult.shipment?.shiprocketOrderId,
+      };
+    }
+
+    // Step 3: Auto Doorstep Pickup Scheduling
+    let pickupResult: any = null;
+    try {
+      pickupResult = await PickupService.schedulePickupForShipment(shipmentId);
+      if (!pickupResult.success) {
+        ShiprocketLogger.warn(
+          `[AUTO_FULFILL_PICKUP_WARN] Shipment ${shipmentId}: ${pickupResult.message}`,
+        );
+      }
+    } catch (pickupErr: any) {
+      ShiprocketLogger.warn(
+        `[AUTO_FULFILL_PICKUP_EX] Shipment ${shipmentId}: ${pickupErr.message}`,
+      );
+    }
+
+    // Step 4: Auto Label Generation (PDF AWB Sticker)
+    let labelResult: any = null;
+    try {
+      labelResult = await LabelService.generateLabelForShipment(shipmentId);
+      if (!labelResult.success) {
+        ShiprocketLogger.warn(
+          `[AUTO_FULFILL_LABEL_WARN] Shipment ${shipmentId}: ${labelResult.message}`,
+        );
+      }
+    } catch (labelErr: any) {
+      ShiprocketLogger.warn(`[AUTO_FULFILL_LABEL_EX] Shipment ${shipmentId}: ${labelErr.message}`);
+    }
+
+    ShiprocketLogger.info(
+      `[AUTO_FULFILL_COMPLETE] Zero-touch fulfillment completed for shipment ${shipmentId}`,
+    );
+
+    return {
+      success: true,
+      shipmentId,
+      awbCode: awbResult.data?.awbCode,
+      courierName: awbResult.data?.courierName,
+      pickupToken: pickupResult?.data?.pickupTokenNumber,
+      labelUrl: labelResult?.data?.labelUrl,
+    };
+  }
+
+  /**
+   * Auto-fulfill all shipments associated with an order ID / number
+   */
+  static async autoFulfillOrder(orderIdOrNumber: string) {
+    const shipments = await prisma.shipment.findMany({
+      where: {
+        OR: [
+          { masterOrderId: orderIdOrNumber },
+          { vendorOrderId: orderIdOrNumber },
+          { id: orderIdOrNumber },
+          { shipmentNumber: orderIdOrNumber },
+        ],
+      },
+    });
+
+    const results = [];
+    for (const shipment of shipments) {
+      const res = await this.autoFulfillShipment(shipment.id);
+      results.push(res);
+    }
+    return results;
+  }
+
+  /**
    * Cancels a discrete shipment safely without corrupting other sellers' shipments.
    * Atomically restores inventory for the cancelled shipment's items.
    */

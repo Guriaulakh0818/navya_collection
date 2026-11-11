@@ -527,6 +527,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json(res, { status: res.success ? 200 : 400 });
     }
 
+    // 0b. Action: AUTO_FULFILL (Zero-Touch: Shiprocket Push -> AWB -> Pickup -> Label)
+    if (action === 'AUTO_FULFILL' && shipment) {
+      const res = await MultiSellerShipmentService.autoFulfillShipment(shipment.id);
+      return NextResponse.json(res, { status: res.success ? 200 : 400 });
+    }
+
     // 1. Action: GENERATE_AWB
     if (action === 'GENERATE_AWB' && shipment) {
       const res = await AwbService.generateAwbForShipment(shipment.id);

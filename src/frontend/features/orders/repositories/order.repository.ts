@@ -782,7 +782,7 @@ export class OrderRepository {
         console.warn('[ORDER_REPO_CART_CLEAR_WARN]', cartErr);
       }
 
-      // 7. Background Dispatch to Shiprocket
+      // 7. Background Automated Dispatch & Zero-Touch Fulfillment to Shiprocket
       try {
         const orderWithShipments = await prisma.order.findUnique({
           where: { id: result.orderId },
@@ -790,9 +790,13 @@ export class OrderRepository {
         });
         if (orderWithShipments?.shipments) {
           for (const shp of orderWithShipments.shipments) {
-            MultiSellerShipmentService.dispatchShipmentToShiprocket(shp.id).catch((err) => {
-              console.warn(`[BACKGROUND_SHIPROCKET_DISPATCH_FAILED] Shipment: ${shp.id}`, err);
-            });
+            // BM-07: For prepaid orders, trigger the full zero-touch automated shipping pipeline (Order -> AWB -> Pickup -> Label)
+            // COD orders are held until customer completes OTP verification
+            if (!result.isCod) {
+              MultiSellerShipmentService.autoFulfillShipment(shp.id).catch((err) => {
+                console.warn(`[BACKGROUND_SHIPROCKET_AUTOFULFILL_FAILED] Shipment: ${shp.id}`, err);
+              });
+            }
           }
         }
       } catch {}

@@ -573,6 +573,17 @@ export default function SellerOrdersPage() {
                             <FileText className="w-4 h-4 text-navy" />
                           </Link>
 
+                          {/* Print Shipping Label / AWB Sticker */}
+                          <a
+                            href={`/api/v1/shipping/label/${order.id}?download=true`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 inline-flex bg-slate-100 hover:bg-orange/10 text-slate-700 hover:text-orange border border-slate-200 rounded-xl transition-colors shadow-2xs"
+                            title="Download Shipping Label / AWB Sticker PDF"
+                          >
+                            <Tag className="w-4 h-4 text-orange" />
+                          </a>
+
                           {/* Track Button */}
                           <button
                             onClick={() => setTrackingOrder(order)}

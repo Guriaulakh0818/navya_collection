@@ -135,7 +135,7 @@ export class ShiprocketCodService {
       // 3. Dispatch each created shipment to Shiprocket
       for (const shipment of shipments) {
         try {
-          await MultiSellerShipmentService.dispatchShipmentToShiprocket(shipment.id);
+          await MultiSellerShipmentService.autoFulfillShipment(shipment.id);
         } catch (dispatchErr: any) {
           ShiprocketLogger.warn(
             `[SHIPROCKET_DISPATCH_DEFERRED] Shipment ${shipment.shipmentNumber} will be retried: ${dispatchErr?.message}`,
