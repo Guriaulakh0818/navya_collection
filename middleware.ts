@@ -45,7 +45,15 @@ const PUBLIC_API_EXCEPTIONS = [
 ];
 
 function getJwtSecretKey(): Uint8Array {
-  const secret = process.env.JWT_SECRET || 'navya_collection_jwt_secret_key_2026_min_32chars';
+  const secret = process.env.JWT_SECRET;
+  if (!secret || secret.trim().length === 0) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'FATAL SECURITY MISCONFIGURATION: JWT_SECRET environment variable must be defined in production.',
+      );
+    }
+    return new TextEncoder().encode('dev_only_jwt_secret_key_change_in_production_32chars');
+  }
   return new TextEncoder().encode(secret);
 }
 

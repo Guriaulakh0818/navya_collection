@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  FileText,
   HelpCircle,
   Image as ImageIcon,
   MapPin,
@@ -389,6 +390,16 @@ export default function OrderDetailPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <Button
+              asChild
+              variant="outline"
+              className="rounded-xl border-slate-200 text-navy hover:bg-slate-50 text-xs font-bold shadow-xs flex items-center gap-1.5"
+            >
+              <Link href={`/account/orders/${order.id}/invoice`} target="_blank">
+                <FileText className="w-3.5 h-3.5 text-orange" />
+                Tax Invoice
+              </Link>
+            </Button>
             {canCancel && (
               <Button
                 variant="outline"

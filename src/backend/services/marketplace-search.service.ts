@@ -13,6 +13,41 @@ export interface MarketplaceSearchOptions {
   limit?: number;
 }
 
+const INDIAN_FASHION_SYNONYMS: Record<string, string[]> = {
+  kurti: ['kurti', 'kurty', 'kurtis', 'kurta', 'kurtas'],
+  lehenga: ['lehenga', 'lehnga', 'lehanga', 'ghagra', 'chaniya'],
+  saree: ['saree', 'sari', 'saris', 'sarees'],
+  dupatta: ['dupatta', 'dupata', 'chunni', 'chuni', 'stole', 'scarf'],
+  churidar: ['churidar', 'chudidar', 'churidars'],
+  anarkali: ['anarkali', 'anarkly'],
+  sharara: ['sharara', 'gharara', 'sarara'],
+  suit: ['suit', 'suits', 'soot', 'salwar'],
+  cardigan: ['cardigan', 'kardigan', 'sweater', 'knitted'],
+  winter: ['winter', 'wintr', 'woolen', 'warm'],
+};
+
+function getExpandedSearchTerms(query: string): string[] {
+  const terms = new Set<string>();
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return [];
+
+  terms.add(normalized);
+
+  const words = normalized.split(/\s+/);
+  for (const word of words) {
+    if (word.length >= 3) {
+      terms.add(word);
+      for (const [key, variants] of Object.entries(INDIAN_FASHION_SYNONYMS)) {
+        if (variants.includes(word) || key === word) {
+          variants.forEach((v) => terms.add(v));
+        }
+      }
+    }
+  }
+
+  return Array.from(terms).slice(0, 8);
+}
+
 export class MarketplaceSearchService {
   /**
    * Primary entry point for multi-entity marketplace search.
@@ -71,14 +106,15 @@ export class MarketplaceSearchService {
     }
 
     if (q) {
-      productWhere.OR = [
-        { name: { contains: q, mode: 'insensitive' } },
-        { description: { contains: q, mode: 'insensitive' } },
-        { sku: { contains: q, mode: 'insensitive' } },
-        { fabric: { contains: q, mode: 'insensitive' } },
-        { occasion: { contains: q, mode: 'insensitive' } },
-        { shop: { name: { contains: q, mode: 'insensitive' } } },
-      ];
+      const searchTerms = getExpandedSearchTerms(q);
+      productWhere.OR = searchTerms.flatMap((term) => [
+        { name: { contains: term, mode: 'insensitive' } },
+        { description: { contains: term, mode: 'insensitive' } },
+        { sku: { contains: term, mode: 'insensitive' } },
+        { fabric: { contains: term, mode: 'insensitive' } },
+        { occasion: { contains: term, mode: 'insensitive' } },
+        { shop: { name: { contains: term, mode: 'insensitive' } } },
+      ]);
     }
 
     // Sorting Order
@@ -189,12 +225,14 @@ export class MarketplaceSearchService {
       return { products: [], shops: [], categories: [] };
     }
 
+    const searchTerms = getExpandedSearchTerms(keyword);
+
     const [products, shops, categories] = await Promise.all([
       prisma.product.findMany({
         where: {
           deletedAt: null,
           status: 'active',
-          name: { contains: keyword, mode: 'insensitive' },
+          OR: searchTerms.map((term) => ({ name: { contains: term, mode: 'insensitive' } })),
           shop: {
             status: 'APPROVED',
             deletedAt: null,

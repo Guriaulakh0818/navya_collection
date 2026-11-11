@@ -10,18 +10,33 @@ const INTERNAL_SYNC_SECRET =
 const CRON_SECRET = process.env.CRON_SECRET || 'navya_settlement_secret_key';
 
 function isAuthorized(request: NextRequest, user: any) {
-  const isVercelCron = request.headers.get('x-vercel-cron') === '1';
+  const cronSecret = process.env.CRON_SECRET;
+  const syncSecret = process.env.INTERNAL_SYNC_SECRET;
   const authHeader = request.headers.get('authorization') || request.headers.get('x-sync-secret');
-  const isSecretAuthorized =
-    authHeader &&
-    (authHeader === INTERNAL_SYNC_SECRET ||
-      authHeader === `Bearer ${INTERNAL_SYNC_SECRET}` ||
-      authHeader === `Bearer ${CRON_SECRET}`);
 
-  const isAdminAuthorized =
-    user && ['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(user.role?.toUpperCase());
+  // 1. Bearer Secret check (Matches CRON_SECRET or INTERNAL_SYNC_SECRET)
+  const isSecretAuthorized = Boolean(
+    (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
+    (syncSecret && (authHeader === syncSecret || authHeader === `Bearer ${syncSecret}`)) ||
+    (process.env.NODE_ENV !== 'production' &&
+      (authHeader === 'Bearer navya_settlement_secret_key' ||
+        authHeader === 'navya_prod_sync_taxonomy_secret_2026' ||
+        authHeader === 'Bearer navya_prod_sync_taxonomy_secret_2026')),
+  );
 
-  return Boolean(isVercelCron || isSecretAuthorized || isAdminAuthorized);
+  // 2. Admin Session check
+  const isAdminAuthorized = Boolean(
+    user && ['OWNER', 'ADMIN', 'SUPER_ADMIN', 'SUPERVISOR'].includes(user.role?.toUpperCase()),
+  );
+
+  // 3. Vercel Cron header verification
+  const isVercelCron = request.headers.get('x-vercel-cron') === '1';
+  const isVercelCronAuthorized =
+    process.env.NODE_ENV !== 'production'
+      ? isVercelCron
+      : isVercelCron && (!cronSecret || authHeader === `Bearer ${cronSecret}`);
+
+  return isSecretAuthorized || isAdminAuthorized || isVercelCronAuthorized;
 }
 
 export async function GET(request: NextRequest) {

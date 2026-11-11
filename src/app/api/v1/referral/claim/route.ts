@@ -2,11 +2,24 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getCurrentUser } from '@/backend/lib/session';
+import { checkRateLimit } from '@/backend/security';
 import { AdminRewardsService } from '@/backend/services/admin-rewards.service';
 import { ReferralService } from '@/backend/services/referral.service';
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
+    const rateCheck = checkRateLimit(`referral_claim:${ip}`, 5, 3600000); // Max 5 claims/hr per IP
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Too many referral claims from your network. Please try again later.',
+        },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const { code, friendName, userId: bodyUserId } = body;
     const cleanCode = (code || '')

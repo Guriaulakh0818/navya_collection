@@ -243,7 +243,8 @@ export class OrderPreviewService {
           let isAvailable = true;
           let inStock = true;
           let availableStock = 0;
-          let availabilityStatus: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DELETED' | 'INACTIVE' = 'AVAILABLE';
+          let availabilityStatus: 'AVAILABLE' | 'OUT_OF_STOCK' | 'DELETED' | 'INACTIVE' =
+            'AVAILABLE';
           let availabilityMessage = 'In Stock';
 
           if (!dbProduct || dbProduct.deletedAt !== null) {
@@ -360,7 +361,8 @@ export class OrderPreviewService {
           subtotal: inputSubtotal,
           discount: 0,
           shipping: availableResolved.length === 0 ? 0 : initialShip.finalShippingAmount,
-          total: inputSubtotal + (availableResolved.length === 0 ? 0 : initialShip.finalShippingAmount),
+          total:
+            inputSubtotal + (availableResolved.length === 0 ? 0 : initialShip.finalShippingAmount),
           freeShippingThreshold: threshold,
           freeShippingRemaining: (initialShip.sellerBreakdown || []).reduce(
             (m: number, s: any) => Math.max(m, s.freeShippingRemaining || 0),
@@ -387,10 +389,8 @@ export class OrderPreviewService {
         const isAvailable =
           item.isAvailable !== undefined ? item.isAvailable : item.inStock !== false;
         const inStock =
-          item.inStock !== false &&
-          (item.availableStock === undefined || item.availableStock > 0);
-        const isStockAvailable =
-          !isAvailable || item.quantity <= (item.availableStock ?? 99);
+          item.inStock !== false && (item.availableStock === undefined || item.availableStock > 0);
+        const isStockAvailable = !isAvailable || item.quantity <= (item.availableStock ?? 99);
         if (isAvailable && !isStockAvailable) {
           warnings.push(
             `Item '${item.name}' has only ${item.availableStock} unit(s) left in stock. Quantity adjusted.`,
@@ -400,11 +400,9 @@ export class OrderPreviewService {
           ...item,
           isAvailable,
           inStock,
-          availabilityStatus:
-            item.availabilityStatus || (isAvailable ? 'AVAILABLE' : 'DELETED'),
+          availabilityStatus: item.availabilityStatus || (isAvailable ? 'AVAILABLE' : 'DELETED'),
           availabilityMessage:
-            item.availabilityMessage ||
-            (isAvailable ? 'In Stock' : 'Currently unavailable'),
+            item.availabilityMessage || (isAvailable ? 'In Stock' : 'Currently unavailable'),
         };
       });
 
@@ -533,7 +531,22 @@ export class OrderPreviewService {
 
       // 7. BM-07 Cash on Delivery (COD) Rules & Multi-Seller Fee Breakdown
       // Selling price limit: ₹5,000 max applied ONLY to product selling price subtotal
-      const isCodEligible = subtotal <= 5000 && availableItems.length > 0;
+      let isHighRtoRisk = false;
+      if (userId && !userId.startsWith('guest_')) {
+        try {
+          const rtoCount = await prisma.order.count({
+            where: {
+              userId,
+              orderStatus: 'RTO',
+            },
+          });
+          if (rtoCount >= 2) {
+            isHighRtoRisk = true;
+          }
+        } catch {}
+      }
+
+      const isCodEligible = subtotal <= 5000 && availableItems.length > 0 && !isHighRtoRisk;
 
       let codFee = 0;
       let codFeeTax = 0;
@@ -642,7 +655,11 @@ export class OrderPreviewService {
 
       if (input.paymentMethod === 'COD') {
         if (!isCodEligible) {
-          if (availableItems.length > 0) {
+          if (isHighRtoRisk) {
+            warnings.push(
+              'Cash on Delivery is unavailable on this account due to previous courier delivery exceptions. Please complete your order via Online Payment (UPI / Cards).',
+            );
+          } else if (availableItems.length > 0) {
             warnings.push(
               'Cash on Delivery is unavailable for orders with product selling price exceeding ₹5,000.',
             );
@@ -674,7 +691,9 @@ export class OrderPreviewService {
           name: 'Cash on Delivery (COD)',
           description: isCodEligible
             ? 'Pay cash upon package arrival at your doorstep (1.5% COD handling fee applies)'
-            : 'Cash on Delivery is unavailable for orders with product value exceeding ₹5,000',
+            : isHighRtoRisk
+              ? 'COD disabled due to prior courier return history. Please choose Online Payment.'
+              : 'Cash on Delivery is unavailable for orders with product value exceeding ₹5,000',
           isAvailable: isCodEligible,
           badge: isCodEligible ? 'PAY ON DELIVERY (1.5% FEE)' : 'UNAVAILABLE ABOVE ₹5,000',
         },

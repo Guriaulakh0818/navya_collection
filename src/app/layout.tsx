@@ -24,7 +24,7 @@ const dmSans = DM_Sans({
   weight: ['400', '600', '700'],
   variable: '--font-dm-sans',
   display: 'swap',
-  preload: true,
+  adjustFontFallback: false,
 });
 
 export const viewport: Viewport = {

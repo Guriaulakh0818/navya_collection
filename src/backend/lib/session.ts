@@ -13,7 +13,12 @@ export const SESSION_EXPIRY_SECONDS = SESSION_EXPIRY_DAYS * 24 * 60 * 60; // 604
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.trim().length === 0) {
-    return 'navya_collection_jwt_secret_key_2026_min_32chars';
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'FATAL SECURITY MISCONFIGURATION: JWT_SECRET environment variable must be defined in production.',
+      );
+    }
+    return 'dev_only_jwt_secret_key_change_in_production_32chars';
   }
   return secret;
 }

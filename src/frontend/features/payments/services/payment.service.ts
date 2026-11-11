@@ -424,7 +424,12 @@ export class PaymentService {
         return {
           success: false,
           message:
-            'Cash on Delivery is unavailable for orders where product selling price exceeds ₹5,000.',
+            preview.subtotal > 5000
+              ? 'Cash on Delivery is unavailable for orders where product selling price exceeds ₹5,000.'
+              : (preview as any).warnings?.find((w: string) =>
+                  w.toLowerCase().includes('cash on delivery'),
+                ) ||
+                'Cash on Delivery is unavailable for orders where product selling price exceeds ₹5,000.',
           statusCode: 400,
         };
       }

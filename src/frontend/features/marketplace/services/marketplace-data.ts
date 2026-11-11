@@ -385,5 +385,12 @@ const getCachedMarketplaceHomeData = unstable_cache(
 );
 
 export const getMarketplaceHomeData = safeCache(async () => {
-  return getCachedMarketplaceHomeData();
+  if (process.env.NODE_ENV === 'test') {
+    return fetchMarketplaceHomeData();
+  }
+  try {
+    return await getCachedMarketplaceHomeData();
+  } catch {
+    return fetchMarketplaceHomeData();
+  }
 });

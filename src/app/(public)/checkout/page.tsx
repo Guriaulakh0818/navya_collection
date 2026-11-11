@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ProtectedRoute } from '@/features/auth/components/protected-route';
 import { AddressStep } from '@/features/checkout/components/address-step';
 import { CartReviewStep } from '@/features/checkout/components/cart-review-step';
+import { CheckoutExitIntentModal } from '@/features/checkout/components/checkout-exit-intent-modal';
 import { DeliveryStep } from '@/features/checkout/components/delivery-step';
 import { PaymentStep } from '@/features/checkout/components/payment-step';
 import { ReviewStep } from '@/features/checkout/components/review-step';
@@ -41,6 +42,7 @@ function CheckoutSteps() {
 
   return (
     <div className="min-h-screen">
+      <CheckoutExitIntentModal />
       <Breadcrumb
         items={[
           { label: 'Home', href: '/' },
