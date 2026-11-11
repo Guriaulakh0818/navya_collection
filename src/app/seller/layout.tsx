@@ -150,14 +150,14 @@ function SellerLayoutInner({ children }: { children: React.ReactNode }) {
       {/* Mobile Backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden print:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-white border-r border-slate-200 transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col w-64 bg-white border-r border-slate-200 transition-transform duration-300 lg:translate-x-0 print:hidden ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -228,13 +228,13 @@ function SellerLayoutInner({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <div className="lg:pl-64 flex flex-col min-h-screen">
+      <div className="lg:pl-64 flex flex-col min-h-screen print:pl-0">
         {/* First-time Language Selection Modal */}
         <SellerLanguageModal />
 
         {/* Top Header */}
         {/* Top Merchant Header Bar */}
-        <header className="h-16 bg-white/95 border-b border-slate-200 sticky top-0 z-30 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between shadow-xs">
+        <header className="h-16 bg-white/95 border-b border-slate-200 sticky top-0 z-30 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between shadow-xs print:hidden">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -291,7 +291,7 @@ function SellerLayoutInner({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 print:p-0">{children}</main>
       </div>
     </div>
   );
