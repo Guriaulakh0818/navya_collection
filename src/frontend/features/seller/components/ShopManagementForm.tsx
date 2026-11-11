@@ -77,12 +77,16 @@ export function ShopManagementForm() {
   const fetchShopData = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/v1/seller/dashboard');
-      const data = await res.json();
+      let res = await fetch('/api/v1/seller/shop');
+      let data = await res.json();
+      if (!data.success || !data.data?.shop) {
+        res = await fetch('/api/v1/seller/dashboard?fresh=true');
+        data = await res.json();
+      }
       if (data.success && data.data?.shop) {
         const s = data.data.shop;
-        const p = data.data.sellerProfile || {};
-        const owner = data.data.owner || {};
+        const p = data.data.sellerProfile || s.sellerProfile || {};
+        const owner = data.data.owner || s.owner || {};
         const primaryPickup =
           s.pickupLocations?.find((pk: any) => pk.isPrimary) || s.pickupLocations?.[0];
 

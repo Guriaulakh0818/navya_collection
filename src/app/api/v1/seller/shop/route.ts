@@ -11,6 +11,93 @@ function getJwtSecretKey(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
+export async function GET(req: Request) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required.' },
+        { status: 401 },
+      );
+    }
+
+    const { payload } = await jwtVerify(token, getJwtSecretKey());
+    const userId = payload.userId as string;
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid session token.' },
+        { status: 401 },
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, name: true, email: true, mobile: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ success: false, message: 'User not found.' }, { status: 401 });
+    }
+
+    const userRole = String(user.role || payload.role || 'USER').toUpperCase();
+    const validSellerRoles = ['SELLER', 'OWNER', 'ADMIN', 'SUPER_ADMIN'];
+    if (!validSellerRoles.includes(userRole)) {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden. Seller or Admin role required.' },
+        { status: 403 },
+      );
+    }
+
+    let shop = await prisma.shop.findFirst({
+      where: {
+        deletedAt: null,
+        OR: [{ ownerId: userId }, { sellerProfile: { userId } }],
+      },
+      include: {
+        pickupLocations: true,
+        sellerProfile: true,
+        owner: { select: { id: true, name: true, email: true, mobile: true, role: true } },
+      },
+    });
+
+    if (!shop && ['ADMIN', 'SUPER_ADMIN', 'OWNER'].includes(userRole)) {
+      shop = await prisma.shop.findFirst({
+        where: { deletedAt: null },
+        orderBy: { createdAt: 'asc' },
+        include: {
+          pickupLocations: true,
+          sellerProfile: true,
+          owner: { select: { id: true, name: true, email: true, mobile: true, role: true } },
+        },
+      });
+    }
+
+    if (!shop) {
+      return NextResponse.json(
+        { success: false, message: 'Seller shop not found.' },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        shop,
+        sellerProfile: shop.sellerProfile,
+        owner: shop.owner || user,
+      },
+    });
+  } catch (error: any) {
+    console.error('❌ GET Seller Shop API Error:', error);
+    return NextResponse.json(
+      { success: false, message: error.message || 'Failed to load shop details.' },
+      { status: 500 },
+    );
+  }
+}
+
 export async function PUT(req: Request) {
   try {
     const cookieStore = await cookies();
