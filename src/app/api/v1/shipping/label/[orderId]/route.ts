@@ -44,38 +44,40 @@ function renderThermalShippingLabelHtml(data: {
   <title>Shipping Label - ${orderNum}</title>
   <style>
     @page {
-      size: 100mm 150mm;
-      margin: 4mm;
+      size: auto;
+      margin: 0;
     }
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    body {
+    html, body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: #f8fafc;
       color: #0f172a;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 24px 16px;
+      padding: 16px 10px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     .print-controls {
       display: flex;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 14px;
     }
     .btn {
-      padding: 10px 22px;
+      padding: 8px 18px;
       font-size: 13px;
       font-weight: 700;
-      border-radius: 12px;
+      border-radius: 10px;
       border: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       transition: all 0.2s;
     }
     .btn-primary {
@@ -91,99 +93,106 @@ function renderThermalShippingLabelHtml(data: {
       color: #fff;
     }
     .label-wrapper {
-      width: 380px;
+      width: 360px;
+      max-width: 100%;
       background: #fff;
       border: 2px solid #000;
-      padding: 14px;
+      padding: 10px 12px;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-before: avoid !important;
+      page-break-after: avoid !important;
     }
     .header-bar {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       border-bottom: 2px solid #000;
-      padding-bottom: 8px;
+      padding-bottom: 4px;
     }
     .brand-name {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 900;
       letter-spacing: 0.5px;
       text-transform: uppercase;
+      line-height: 1.1;
     }
     .brand-sub {
-      font-size: 8px;
+      font-size: 7.5px;
       color: #475569;
       font-weight: 600;
       margin-top: 1px;
     }
     .courier-badge {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 900;
       border: 1.5px solid #000;
-      padding: 3px 6px;
+      padding: 2px 5px;
       border-radius: 4px;
       text-transform: uppercase;
       background: #fff;
+      white-space: nowrap;
     }
     .barcode-section {
       text-align: center;
-      padding: 12px 0 8px 0;
+      padding: 6px 0 4px 0;
       border-bottom: 2px solid #000;
     }
     .barcode-graphic {
       font-family: monospace;
-      font-size: 26px;
-      letter-spacing: 3px;
+      font-size: 22px;
+      letter-spacing: 2px;
       font-weight: 900;
       line-height: 1;
     }
     .awb-label {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
-      letter-spacing: 1.5px;
-      margin-top: 5px;
+      letter-spacing: 1.2px;
+      margin-top: 3px;
     }
     .routing-row {
       display: flex;
       justify-content: space-between;
-      padding: 6px 0;
+      padding: 4px 0;
       border-bottom: 1.5px solid #000;
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
     }
     .section-title {
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: 900;
       color: #475569;
       text-transform: uppercase;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
     .address-box {
-      padding: 8px 0;
+      padding: 5px 0;
       border-bottom: 1.5px solid #000;
     }
     .person-name {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
     .address-text {
-      font-size: 11px;
-      line-height: 1.35;
+      font-size: 10px;
+      line-height: 1.25;
       color: #1e293b;
     }
     .phone-text {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      margin-top: 3px;
+      margin-top: 2px;
     }
     .meta-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      padding: 8px 0;
+      gap: 4px;
+      padding: 5px 0;
       border-bottom: 1.5px solid #000;
-      font-size: 10px;
+      font-size: 9.5px;
     }
     .meta-item strong {
       font-weight: 800;
@@ -192,48 +201,54 @@ function renderThermalShippingLabelHtml(data: {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 0 4px 0;
+      padding: 5px 0 3px 0;
     }
     .payment-pill {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 900;
       border: 1.5px solid #000;
-      padding: 3px 8px;
+      padding: 2px 6px;
       text-transform: uppercase;
     }
     .amount-text {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 900;
     }
     .footer-note {
-      font-size: 8px;
+      font-size: 7.5px;
       color: #64748b;
       text-align: center;
-      margin-top: 8px;
-      line-height: 1.3;
+      margin-top: 4px;
+      line-height: 1.25;
       border-top: 1px dashed #94a3b8;
-      padding-top: 6px;
+      padding-top: 4px;
     }
     @media print {
-      body {
-        background: #fff;
-        padding: 0;
+      html, body {
+        background: #fff !important;
+        padding: 4mm 0 !important;
+        margin: 0 !important;
+        height: auto !important;
       }
       .print-controls {
         display: none !important;
       }
       .label-wrapper {
-        box-shadow: none;
-        border: 2px solid #000;
-        width: 100%;
-        max-width: 100mm;
+        box-shadow: none !important;
+        border: 2px solid #000 !important;
+        width: 360px !important;
+        margin: 0 auto !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
       }
     }
   </style>
 </head>
 <body>
   <div class="print-controls">
-    <button class="btn btn-primary" onclick="window.print()">🖨️ Print Label Sticker (4x6 / A4)</button>
+    <button class="btn btn-primary" onclick="window.print()">🖨️ Print Label Sticker (Single Page)</button>
     <button class="btn btn-secondary" onclick="window.close()">✕ Close Tab</button>
   </div>
 
