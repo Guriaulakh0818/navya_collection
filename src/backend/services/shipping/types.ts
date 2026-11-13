@@ -337,6 +337,15 @@ export interface GenerateLabelOptions {
 }
 
 export interface ShippingLabelResult {
+  customerName?: string;
+  customerCity?: string;
+  customerAddress?: string;
+  customerPhone?: string;
+  sellerName?: string;
+  sellerCity?: string;
+  totalAmount?: number;
+  paymentMethod?: string;
+  itemsCount?: number;
   orderId: string;
   orderNumber: string;
   shiprocketShipmentId: string;
