@@ -35,8 +35,8 @@ export class OrderPreviewService {
       // 1. Resolve Customer Profile
       let customer = {
         id: userId,
-        name: 'Navya Customer',
-        email: 'customer@navyacollection.store',
+        name: 'Jiivaa Customer',
+        email: 'customer@jiivaakart.com',
         mobile: '9876543210',
       };
 
@@ -48,8 +48,8 @@ export class OrderPreviewService {
         if (userDb) {
           customer = {
             id: userDb.id,
-            name: userDb.name || 'Navya Customer',
-            email: userDb.email || 'customer@navyacollection.store',
+            name: userDb.name || 'Jiivaa Customer',
+            email: userDb.email || 'customer@jiivaakart.com',
             mobile: userDb.mobile || '9876543210',
           };
         }

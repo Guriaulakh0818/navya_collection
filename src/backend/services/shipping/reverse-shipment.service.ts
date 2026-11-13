@@ -92,7 +92,7 @@ export class ReverseShipmentService {
             pickup_state: customerAddress?.state || 'Haryana',
             pickup_pincode: customerAddress?.pincode || '132001',
             pickup_phone: customerAddress?.mobile || order.user?.mobile || '9876543210',
-            pickup_email: order.user?.email || 'customer@navyacollection.store',
+            pickup_email: order.user?.email || 'customer@jiivaakart.com',
             shipping_customer_name: returnReq.shop?.name || 'Navya Fulfillment Center',
             shipping_address: returnReq.shop?.fullAddress || 'Sector 12, Urban Estate',
             shipping_city: returnReq.shop?.city || 'Karnal',

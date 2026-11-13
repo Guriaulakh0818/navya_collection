@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
                 in: [
                   'navyacollection45@gmail.com',
                   'admin@navyacollection.store',
+                  'admin@jiivaakart.com',
                   'gurvindersingh0218@gmail.com',
                 ],
               },

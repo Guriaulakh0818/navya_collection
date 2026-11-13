@@ -353,7 +353,7 @@ export class PickupLocationService {
             country: 'India',
             contactName: shop.bankAccountHolder || shop.name || 'Store Manager',
             contactPhone: shop.phone || '9053883125',
-            contactEmail: shop.email || 'seller@navyacollection.store',
+            contactEmail: shop.email || 'seller@jiivaakart.com',
             isPrimary: true,
             status: 'ACTIVE',
             shiprocketPickupName: locationCode,
@@ -436,7 +436,7 @@ export class PickupLocationService {
             shop.email ||
             shop.owner?.email ||
             primaryLocation.contactEmail ||
-            'seller@navyacollection.store',
+            'seller@jiivaakart.com',
         },
       });
     } else {
@@ -455,7 +455,7 @@ export class PickupLocationService {
           country: 'India',
           contactName,
           contactPhone: shop.phone || shop.owner?.mobile || '9053883125',
-          contactEmail: shop.email || shop.owner?.email || 'seller@navyacollection.store',
+          contactEmail: shop.email || shop.owner?.email || 'seller@jiivaakart.com',
           isPrimary: true,
           status: 'ACTIVE',
           shiprocketPickupName: locationCode,

@@ -20,7 +20,9 @@ export default async function LoginPage() {
   const headersList = await headers();
   const host = (headersList.get('x-forwarded-host') || headersList.get('host') || '').toLowerCase();
   const isAdminSubdomain =
-    host.startsWith('admin.') || host.includes('admin.navyacollection.store');
+    host.startsWith('admin.') ||
+    host.includes('admin.jiivaakart.com') ||
+    host.includes('admin.navyacollection.store');
 
   // If accessed from admin.navyacollection.store, render dedicated Admin Portal Login
   if (isAdminSubdomain) {
