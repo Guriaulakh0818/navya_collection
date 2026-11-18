@@ -36,7 +36,16 @@ export interface ProductTypeDefinition {
   name: string;
   description?: string;
   sizeSystemId:
-    'MEN_CLOTHING' | 'MEN_BOTTOMWEAR' | 'WOMEN_CLOTHING' | 'KIDS_AGE' | 'ACCESSORIES_ONE_SIZE';
+    | 'MEN_CLOTHING'
+    | 'MEN_BOTTOMWEAR'
+    | 'WOMEN_CLOTHING'
+    | 'KIDS_AGE'
+    | 'ACCESSORIES_ONE_SIZE'
+    | 'FOOTWEAR_MEN_UK'
+    | 'FOOTWEAR_WOMEN_UK'
+    | 'FOOTWEAR_UNISEX_UK'
+    | 'BELT_WAIST_SIZE'
+    | 'BANGLE_SIZE';
   attributes: AttributeFieldDefinition[];
 }
 
@@ -51,7 +60,7 @@ export interface MainCategoryDefinition {
   id: string;
   name: string;
   slug: string;
-  department: 'MEN' | 'WOMEN' | 'KIDS' | 'LIVING' | 'BEAUTY';
+  department: 'MEN' | 'WOMEN' | 'KIDS' | 'FOOTWEAR' | 'ACCESSORIES' | 'LIVING' | 'BEAUTY';
   subCategories: SubCategoryDefinition[];
 }
 
@@ -104,7 +113,37 @@ export const SIZE_SYSTEMS: Record<string, SizeSystemOption> = {
     id: 'ACCESSORIES_ONE_SIZE',
     name: 'One Size / Free Size',
     description: 'For Bags, Jewellery, Watches, Belts & Eyewear',
-    sizes: ['One Size'],
+    sizes: ['One Size', 'Free Size'],
+  },
+  FOOTWEAR_MEN_UK: {
+    id: 'FOOTWEAR_MEN_UK',
+    name: "Men's Footwear (UK / IND)",
+    description: 'Standard UK / India sizes for Men sneakers, formals, loafers, juttis & sandals',
+    sizes: ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10', 'UK 11', 'UK 12'],
+  },
+  FOOTWEAR_WOMEN_UK: {
+    id: 'FOOTWEAR_WOMEN_UK',
+    name: "Women's Footwear (UK / IND)",
+    description: 'Standard UK / India sizes for Women heels, flats, juttis, sneakers & sandals',
+    sizes: ['UK 3', 'UK 4', 'UK 5', 'UK 6', 'UK 7', 'UK 8', 'UK 9'],
+  },
+  FOOTWEAR_UNISEX_UK: {
+    id: 'FOOTWEAR_UNISEX_UK',
+    name: 'Unisex Footwear (UK / IND)',
+    description: 'Full UK / India range for unisex sneakers, sliders & clogs',
+    sizes: ['UK 3', 'UK 4', 'UK 5', 'UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10', 'UK 11', 'UK 12'],
+  },
+  BELT_WAIST_SIZE: {
+    id: 'BELT_WAIST_SIZE',
+    name: 'Belt Waist Sizes (Inches)',
+    description: 'Waist fit sizing for Men & Women belts',
+    sizes: ['28', '30', '32', '34', '36', '38', '40', '42', 'Free Size'],
+  },
+  BANGLE_SIZE: {
+    id: 'BANGLE_SIZE',
+    name: 'Indian Bangle Sizes',
+    description: 'Standard Indian bangle diameter sizes',
+    sizes: ['2.2', '2.4', '2.6', '2.8', '2.10', 'Adjustable'],
   },
 };
 
@@ -4481,6 +4520,158 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
       },
     ],
   },
+
+  // --------------------------------------------------------------------------
+  // DEPARTMENT 4: FOOTWEAR (MEN & WOMEN)
+  // --------------------------------------------------------------------------
+  {
+    id: 'group_footwear',
+    name: 'Footwear',
+    slug: 'footwear',
+    department: 'FOOTWEAR',
+    subCategories: [
+      {
+        id: 'sec_footwear_men',
+        name: "Men's Footwear",
+        slug: 'men-footwear',
+        productTypes: [
+          {
+            id: 'men_footwear_general',
+            name: "Men's Shoes & Footwear",
+            description: 'Sneakers, Sports Shoes, Formal Shoes, Loafers, Ethnic Juttis & Sandals',
+            sizeSystemId: 'FOOTWEAR_MEN_UK',
+            attributes: [
+              {
+                id: 'upper_material',
+                label: 'Upper Material',
+                type: 'select',
+                required: true,
+                options: [
+                  'Genuine Leather',
+                  'Faux / PU Leather',
+                  'Breathable Mesh / Knit',
+                  'Suede',
+                  'Canvas',
+                  'Velvet / Silk (Ethnic Jutti)',
+                  'EVA / Synthetic',
+                ],
+                group: 'Fabric & Material',
+              },
+              {
+                id: 'sole_material',
+                label: 'Sole Material',
+                type: 'select',
+                required: true,
+                options: ['Rubber', 'EVA (Lightweight)', 'TPR', 'PU', 'Phylon / Airmax', 'Leather'],
+                group: 'Fabric & Material',
+              },
+              {
+                id: 'closure_type',
+                label: 'Closure Type',
+                type: 'select',
+                options: ['Lace-Up', 'Slip-On', 'Velcro', 'Buckle / Strap', 'Zip'],
+                group: 'Styling & Fit',
+              },
+              {
+                id: 'toe_shape',
+                label: 'Toe Shape',
+                type: 'select',
+                options: ['Round Toe', 'Pointed Toe', 'Square Toe', 'Open Toe'],
+                group: 'Styling & Fit',
+              },
+              {
+                id: 'occasion',
+                label: 'Occasion',
+                type: 'select',
+                options: [
+                  'Casual & Daily Wear',
+                  'Office & Formal',
+                  'Wedding & Festive',
+                  'Sports & Gym',
+                  'Party & Evening',
+                ],
+                group: 'Care & Details',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'sec_footwear_women',
+        name: "Women's Footwear",
+        slug: 'women-footwear',
+        productTypes: [
+          {
+            id: 'women_footwear_general',
+            name: "Women's Heels, Flats & Ethnic Juttis",
+            description: 'Heels, Wedges, Flats, Handcrafted Punjabi Juttis, Sneakers & Sandals',
+            sizeSystemId: 'FOOTWEAR_WOMEN_UK',
+            attributes: [
+              {
+                id: 'upper_material',
+                label: 'Upper Material',
+                type: 'select',
+                required: true,
+                options: [
+                  'Faux / PU Leather',
+                  'Genuine Leather',
+                  'Velvet / Raw Silk (Juttis)',
+                  'Suede',
+                  'Mesh / Knit',
+                  'Canvas',
+                  'EVA / Synthetic',
+                ],
+                group: 'Fabric & Material',
+              },
+              {
+                id: 'sole_material',
+                label: 'Sole Material',
+                type: 'select',
+                required: true,
+                options: ['TPR', 'Rubber', 'EVA', 'PU', 'Leather (Handcrafted)'],
+                group: 'Fabric & Material',
+              },
+              {
+                id: 'heel_type',
+                label: 'Heel Type & Height',
+                type: 'select',
+                options: [
+                  'Flat (0 in)',
+                  'Low Heel (1–2 in)',
+                  'Mid Block Heel (2–3 in)',
+                  'High Heel / Stiletto (3+ in)',
+                  'Wedge Heel',
+                  'Platform Heel',
+                  'Kitten Heel',
+                ],
+                group: 'Styling & Fit',
+              },
+              {
+                id: 'closure_type',
+                label: 'Closure Type',
+                type: 'select',
+                options: ['Slip-On', 'Buckle / Ankle Strap', 'Lace-Up', 'Backstrap', 'Zip'],
+                group: 'Styling & Fit',
+              },
+              {
+                id: 'occasion',
+                label: 'Occasion',
+                type: 'select',
+                options: [
+                  'Daily & Office Wear',
+                  'Wedding & Bridal',
+                  'Festive & Ethnic',
+                  'Party & Evening',
+                  'Sports & Walking',
+                ],
+                group: 'Care & Details',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 // ============================================================================
@@ -4519,6 +4710,30 @@ export function resolveAttributeTemplate(
   }
 
   // 3. Exact Category Mappings
+  if (
+    normalized.includes('footwear') ||
+    normalized.includes('shoe') ||
+    normalized.includes('sneaker') ||
+    normalized.includes('heel') ||
+    normalized.includes('flat') ||
+    normalized.includes('jutti') ||
+    normalized.includes('mojari') ||
+    normalized.includes('loafer') ||
+    normalized.includes('sandal') ||
+    normalized.includes('flip-flop') ||
+    normalized.includes('slipper') ||
+    normalized.includes('boot')
+  ) {
+    if (
+      normalized.includes('women') ||
+      normalized.includes('heel') ||
+      normalized.includes('flat') ||
+      normalized.includes('ballerina')
+    ) {
+      return resolveAttributeTemplate(undefined, 'women_footwear_general');
+    }
+    return resolveAttributeTemplate(undefined, 'men_footwear_general');
+  }
   if (normalized.includes('jean') || normalized.includes('denim')) {
     return resolveAttributeTemplate(undefined, 'men_jeans');
   }

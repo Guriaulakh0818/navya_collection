@@ -98,7 +98,53 @@ export const CATEGORIES: Category[] = [
     ],
   },
 
-  // 5. JIIVAAKART SHOPS
+  // 5. FOOTWEAR
+  {
+    id: 'group_footwear',
+    name: 'Footwear',
+    slug: 'footwear',
+    description:
+      'Sneakers, formal shoes, heels, flats, handcrafted ethnic juttis, sandals & slippers for Men & Women.',
+    image: '/images/categories/category-footwear.png',
+    banner: '/images/categories/category-footwear.png',
+    productCount: 16,
+    accent: CATEGORY_ACCENTS[5],
+    subCategories: [
+      { id: 'cat_fw_men_casual', name: 'Men Sneakers', slug: 'men-casual-shoes' },
+      { id: 'cat_fw_men_formal', name: 'Men Formal', slug: 'men-formal-shoes' },
+      { id: 'cat_fw_men_ethnic', name: 'Men Juttis', slug: 'men-ethnic-footwear' },
+      { id: 'cat_fw_men_sports', name: 'Men Sports', slug: 'men-sports-shoes' },
+      { id: 'cat_fw_women_heels', name: 'Women Heels', slug: 'women-heels' },
+      { id: 'cat_fw_women_flats', name: 'Women Flats', slug: 'women-flats' },
+      { id: 'cat_fw_women_juttis', name: 'Women Juttis', slug: 'women-juttis-mojaris' },
+      { id: 'cat_fw_women_sneakers', name: 'Women Sneakers', slug: 'women-sneakers' },
+    ],
+  },
+
+  // 6. ACCESSORIES
+  {
+    id: 'group_accessories',
+    name: 'Accessories',
+    slug: 'accessories',
+    description:
+      'Handbags, clutches, ethnic jewellery, watches, wallets, belts, sunglasses & gifting essentials for Men & Women.',
+    image: '/images/categories/category-accessories.png',
+    banner: '/images/categories/category-accessories.png',
+    productCount: 18,
+    accent: CATEGORY_ACCENTS[6],
+    subCategories: [
+      { id: 'cat_women_bags', name: 'Women Bags', slug: 'women-bags' },
+      { id: 'cat_women_jewellery', name: 'Women Jewellery', slug: 'women-jewellery' },
+      { id: 'cat_women_watches', name: 'Women Watches', slug: 'women-watches' },
+      { id: 'cat_women_sunglasses', name: 'Women Sunglasses', slug: 'women-sunglasses' },
+      { id: 'cat_men_wallets', name: 'Men Wallets', slug: 'men-wallets' },
+      { id: 'cat_men_belts', name: 'Men Belts', slug: 'men-belts' },
+      { id: 'cat_men_watches', name: 'Men Watches', slug: 'men-watches' },
+      { id: 'cat_men_bags_backpacks', name: 'Men Backpacks', slug: 'men-bags-backpacks' },
+    ],
+  },
+
+  // 7. JIIVAAKART SHOPS
   {
     id: 'group_shops',
     name: 'JiivaaKart',

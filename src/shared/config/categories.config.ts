@@ -26,8 +26,8 @@ export interface MainCategoryOption {
 }
 
 /**
- * Official Canonical Taxonomy for Navya Collection
- * Structured as 5 Core Groups: In The Spotlight, Men, Women, Kids, Shops
+ * Official Canonical Taxonomy for JiivaaKart
+ * Structured as 7 Core Groups: In The Spotlight, Men, Women, Kids, Footwear, Accessories, Shops
  */
 export const CATEGORY_TAXONOMY: MainCategoryOption[] = [
   // 1. IN THE SPOTLIGHT
@@ -167,30 +167,6 @@ export const CATEGORY_TAXONOMY: MainCategoryOption[] = [
             ],
           },
           { id: 'cat_men_all_clothing', name: "All Men's Clothing", slug: 'all-men-clothing' },
-        ],
-      },
-      {
-        id: 'sec_men_accessories',
-        title: "Men's Accessories",
-        subCategories: [
-          { id: 'cat_men_acc_new_arrivals', name: 'New Arrivals', slug: 'men-acc-new-arrivals' },
-          { id: 'cat_men_wallets', name: 'Wallets', slug: 'men-wallets' },
-          { id: 'cat_men_belts', name: 'Belts', slug: 'men-belts' },
-          { id: 'cat_men_watches', name: 'Watches', slug: 'men-watches' },
-          { id: 'cat_men_sunglasses', name: 'Sunglasses', slug: 'men-sunglasses' },
-          { id: 'cat_men_caps_hats', name: 'Caps & Hats', slug: 'men-caps-hats' },
-          { id: 'cat_men_ties', name: 'Ties & Pocket Squares', slug: 'men-ties' },
-          { id: 'cat_men_jewellery', name: 'Jewellery', slug: 'men-jewellery' },
-          {
-            id: 'cat_men_fashion_acc',
-            name: 'Fashion Accessories',
-            slug: 'men-fashion-accessories',
-          },
-          {
-            id: 'cat_men_all_accessories',
-            name: "All Men's Accessories",
-            slug: 'all-men-accessories',
-          },
         ],
       },
       {
@@ -373,43 +349,6 @@ export const CATEGORY_TAXONOMY: MainCategoryOption[] = [
         ],
       },
       {
-        id: 'sec_women_accessories',
-        title: "Women's Accessories",
-        subCategories: [
-          {
-            id: 'cat_women_acc_new_arrivals',
-            name: 'New Arrivals',
-            slug: 'women-acc-new-arrivals',
-          },
-          {
-            id: 'cat_women_bags',
-            name: 'Bags',
-            slug: 'women-bags',
-            items: [
-              { id: 'cat_women_handbags', name: 'Handbags', slug: 'women-handbags' },
-              { id: 'cat_women_sling_bags', name: 'Sling Bags', slug: 'women-sling-bags' },
-              { id: 'cat_women_shoulder_bags', name: 'Shoulder Bags', slug: 'women-shoulder-bags' },
-              { id: 'cat_women_tote_bags', name: 'Tote Bags', slug: 'women-tote-bags' },
-              { id: 'cat_women_clutches', name: 'Clutches', slug: 'women-clutches' },
-            ],
-          },
-          { id: 'cat_women_sunglasses', name: 'Sunglasses', slug: 'women-sunglasses' },
-          { id: 'cat_women_watches', name: 'Watches', slug: 'women-watches' },
-          { id: 'cat_women_jewellery', name: 'Jewellery', slug: 'women-jewellery' },
-          { id: 'cat_women_belts', name: 'Belts', slug: 'women-belts' },
-          {
-            id: 'cat_women_scarves_stoles',
-            name: 'Scarves & Stoles',
-            slug: 'women-scarves-stoles',
-          },
-          {
-            id: 'cat_women_all_accessories',
-            name: "All Women's Accessories",
-            slug: 'all-women-accessories',
-          },
-        ],
-      },
-      {
         id: 'sec_women_essentials',
         title: "Women's Essentials",
         subCategories: [
@@ -565,7 +504,244 @@ export const CATEGORY_TAXONOMY: MainCategoryOption[] = [
     ],
   },
 
-  // 5. JIIVAAKART SHOPS
+  // 5. FOOTWEAR (Standalone Group with Men & Women Sections)
+  {
+    id: 'group_footwear',
+    name: 'Footwear',
+    slug: 'footwear',
+    badge: 'New',
+    sections: [
+      {
+        id: 'sec_footwear_men',
+        title: "Men's Footwear",
+        subCategories: [
+          {
+            id: 'cat_fw_men_casual',
+            name: 'Casual Shoes & Sneakers',
+            slug: 'men-casual-shoes',
+          },
+          {
+            id: 'cat_fw_men_sports',
+            name: 'Sports & Running Shoes',
+            slug: 'men-sports-shoes',
+          },
+          {
+            id: 'cat_fw_men_formal',
+            name: 'Formal Shoes',
+            slug: 'men-formal-shoes',
+          },
+          {
+            id: 'cat_fw_men_loafers',
+            name: 'Loafers & Moccasins',
+            slug: 'men-loafers',
+          },
+          {
+            id: 'cat_fw_men_ethnic',
+            name: 'Ethnic Juttis & Mojaris',
+            slug: 'men-ethnic-footwear',
+          },
+          {
+            id: 'cat_fw_men_sandals',
+            name: 'Sandals & Floaters',
+            slug: 'men-sandals',
+          },
+          {
+            id: 'cat_fw_men_slippers',
+            name: 'Slippers & Flip-Flops',
+            slug: 'men-flip-flops',
+          },
+          {
+            id: 'cat_fw_men_boots',
+            name: 'Boots',
+            slug: 'men-boots',
+          },
+        ],
+      },
+      {
+        id: 'sec_footwear_women',
+        title: "Women's Footwear",
+        subCategories: [
+          {
+            id: 'cat_fw_women_flats',
+            name: 'Flats & Ballerinas',
+            slug: 'women-flats',
+          },
+          {
+            id: 'cat_fw_women_heels',
+            name: 'Heels & Wedges',
+            slug: 'women-heels',
+          },
+          {
+            id: 'cat_fw_women_juttis',
+            name: 'Ethnic Juttis & Mojaris',
+            slug: 'women-juttis-mojaris',
+          },
+          {
+            id: 'cat_fw_women_sneakers',
+            name: 'Sneakers & Casual Shoes',
+            slug: 'women-sneakers',
+          },
+          {
+            id: 'cat_fw_women_sports',
+            name: 'Sports & Walking Shoes',
+            slug: 'women-sports-shoes',
+          },
+          {
+            id: 'cat_fw_women_sandals',
+            name: 'Sandals',
+            slug: 'women-sandals',
+          },
+          {
+            id: 'cat_fw_women_slippers',
+            name: 'Slippers & Flip-Flops',
+            slug: 'women-flip-flops',
+          },
+          {
+            id: 'cat_fw_women_boots',
+            name: 'Boots',
+            slug: 'women-boots',
+          },
+        ],
+      },
+      {
+        id: 'sec_footwear_curations',
+        title: 'Footwear Curations',
+        subCategories: [
+          {
+            id: 'cat_fw_new_arrivals',
+            name: 'New Arrivals',
+            slug: 'footwear-new-arrivals',
+          },
+          {
+            id: 'cat_fw_under_999',
+            name: 'Footwear Under ₹999',
+            slug: 'footwear-under-999',
+          },
+          {
+            id: 'cat_fw_wedding',
+            name: 'Wedding & Festive Footwear',
+            slug: 'footwear-wedding',
+          },
+          {
+            id: 'cat_fw_all',
+            name: 'All Footwear',
+            slug: 'all-footwear',
+          },
+        ],
+      },
+    ],
+  },
+
+  // 6. ACCESSORIES (Standalone Group with Women & Men Sections)
+  {
+    id: 'group_accessories',
+    name: 'Accessories',
+    slug: 'accessories',
+    badge: 'Style',
+    sections: [
+      {
+        id: 'sec_women_accessories',
+        title: "Women's Accessories",
+        subCategories: [
+          {
+            id: 'cat_women_acc_new_arrivals',
+            name: 'New Arrivals',
+            slug: 'women-acc-new-arrivals',
+          },
+          {
+            id: 'cat_women_bags',
+            name: 'Bags & Purses',
+            slug: 'women-bags',
+            items: [
+              { id: 'cat_women_handbags', name: 'Handbags', slug: 'women-handbags' },
+              { id: 'cat_women_sling_bags', name: 'Sling Bags', slug: 'women-sling-bags' },
+              { id: 'cat_women_shoulder_bags', name: 'Shoulder Bags', slug: 'women-shoulder-bags' },
+              { id: 'cat_women_tote_bags', name: 'Tote Bags', slug: 'women-tote-bags' },
+              { id: 'cat_women_clutches', name: 'Clutches & Potlis', slug: 'women-clutches' },
+            ],
+          },
+          {
+            id: 'cat_women_jewellery',
+            name: 'Fashion & Ethnic Jewellery',
+            slug: 'women-jewellery',
+          },
+          { id: 'cat_women_watches', name: 'Watches', slug: 'women-watches' },
+          { id: 'cat_women_sunglasses', name: 'Sunglasses & Eyewear', slug: 'women-sunglasses' },
+          {
+            id: 'cat_women_scarves_stoles',
+            name: 'Scarves, Stoles & Dupattas',
+            slug: 'women-scarves-stoles',
+          },
+          { id: 'cat_women_wallets', name: 'Wallets & Cardholders', slug: 'women-wallets' },
+          { id: 'cat_women_hair_acc', name: 'Hair Accessories', slug: 'women-hair-accessories' },
+          { id: 'cat_women_belts', name: 'Belts & Kamarbandh', slug: 'women-belts' },
+          {
+            id: 'cat_women_all_accessories',
+            name: "All Women's Accessories",
+            slug: 'all-women-accessories',
+          },
+        ],
+      },
+      {
+        id: 'sec_men_accessories',
+        title: "Men's Accessories",
+        subCategories: [
+          { id: 'cat_men_acc_new_arrivals', name: 'New Arrivals', slug: 'men-acc-new-arrivals' },
+          { id: 'cat_men_wallets', name: 'Wallets & Cardholders', slug: 'men-wallets' },
+          { id: 'cat_men_belts', name: 'Belts', slug: 'men-belts' },
+          { id: 'cat_men_watches', name: 'Watches', slug: 'men-watches' },
+          {
+            id: 'cat_men_bags_backpacks',
+            name: 'Backpacks & Laptop Bags',
+            slug: 'men-bags-backpacks',
+          },
+          { id: 'cat_men_travel_bags', name: 'Travel & Duffle Bags', slug: 'men-travel-bags' },
+          { id: 'cat_men_sunglasses', name: 'Sunglasses & Eyewear', slug: 'men-sunglasses' },
+          { id: 'cat_men_caps_hats', name: 'Caps & Hats', slug: 'men-caps-hats' },
+          { id: 'cat_men_ties', name: 'Ties, Bow Ties & Cufflinks', slug: 'men-ties' },
+          { id: 'cat_men_jewellery', name: "Men's Jewellery", slug: 'men-jewellery' },
+          {
+            id: 'cat_men_groom_acc',
+            name: 'Ethnic Groom Accessories',
+            slug: 'men-groom-accessories',
+          },
+          {
+            id: 'cat_men_fashion_acc',
+            name: 'Fashion Accessories',
+            slug: 'men-fashion-accessories',
+          },
+          {
+            id: 'cat_men_all_accessories',
+            name: "All Men's Accessories",
+            slug: 'all-men-accessories',
+          },
+        ],
+      },
+      {
+        id: 'sec_accessories_curations',
+        title: 'Gifting & Deals',
+        subCategories: [
+          {
+            id: 'cat_acc_gift_sets',
+            name: 'Gift Combos & Hampers',
+            slug: 'accessories-gift-sets',
+          },
+          {
+            id: 'cat_acc_under_499',
+            name: 'Accessories Under ₹499',
+            slug: 'accessories-under-499',
+          },
+          {
+            id: 'cat_acc_all',
+            name: 'All Accessories',
+            slug: 'all-accessories',
+          },
+        ],
+      },
+    ],
+  },
+
+  // 7. JIIVAAKART SHOPS
   {
     id: 'group_shops',
     name: 'JiivaaKart',
@@ -713,11 +889,28 @@ export const CATEGORY_ALIAS_MAP: Record<string, string> = {
   'nehru-jackets': 'men-nehru-jackets',
   'turbans-stoles': 'women-scarves-stoles',
   'women-backpacks': 'women-bags',
-  'men-bags-backpacks': 'men-accessories',
   'boys-party-suits': 'boys-ethnic-wear',
   'all-women-clothing': 'women',
-  'all-men-accessories': 'men-accessories',
-  'all-women-accessories': 'women-accessories',
+  'all-men-accessories': 'accessories',
+  'all-women-accessories': 'accessories',
+  'men-accessories': 'accessories',
+  'women-accessories': 'accessories',
+  'all-accessories': 'accessories',
+  'all-footwear': 'footwear',
+  shoes: 'footwear',
+  sneakers: 'men-casual-shoes',
+  heels: 'women-heels',
+  flats: 'women-flats',
+  juttis: 'women-juttis-mojaris',
+  mojaris: 'men-ethnic-footwear',
+  sandals: 'footwear',
+  slippers: 'footwear',
+  loafers: 'men-loafers',
+  jewellery: 'women-jewellery',
+  bags: 'women-bags',
+  wallets: 'men-wallets',
+  belts: 'men-belts',
+  sunglasses: 'accessories',
   'men-outer-jackets': 'men-jackets',
   'men-thermal-bottoms': 'men-thermals',
   'women-activewear-sets': 'women-activewear',

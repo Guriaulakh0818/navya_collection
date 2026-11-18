@@ -46,6 +46,10 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const redirectTarget = sanitizeRedirectTarget(searchParams.get('redirect'));
+  const isMobile =
+    searchParams.get('mobile') === 'true' ||
+    searchParams.get('platform') === 'mobile' ||
+    searchParams.get('source') === 'app';
 
   // Build canonical redirect_uri matching Google Console configuration
   const baseUrl = getCanonicalBaseUrl(request);
@@ -54,8 +58,8 @@ export async function GET(request: NextRequest) {
   // Cryptographic nonce for CSRF mitigation
   const nonce = crypto.randomUUID();
 
-  // Encode state with nonce & sanitized redirect target
-  const state = Buffer.from(JSON.stringify({ nonce, redirect: redirectTarget })).toString(
+  // Encode state with nonce & sanitized redirect target & mobile flag
+  const state = Buffer.from(JSON.stringify({ nonce, redirect: redirectTarget, isMobile })).toString(
     'base64url',
   );
 

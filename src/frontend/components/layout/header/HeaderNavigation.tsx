@@ -64,6 +64,34 @@ const megaCategoriesData = [
     ],
   },
   {
+    title: 'Footwear',
+    href: '/category/footwear',
+    items: [
+      { name: "Men's Footwear", href: '/category/footwear?gender=men' },
+      { name: "Women's Footwear", href: '/category/footwear?gender=women' },
+      { name: 'Sneakers & Casual', href: '/category/men-casual-shoes' },
+      { name: 'Sports & Running', href: '/category/men-sports-shoes' },
+      { name: 'Formal & Loafers', href: '/category/men-formal-shoes' },
+      { name: 'Heels & Flats', href: '/category/women-heels' },
+      { name: 'Ethnic Juttis & Mojaris', href: '/category/women-juttis-mojaris' },
+      { name: 'All Footwear', href: '/category/footwear' },
+    ],
+  },
+  {
+    title: 'Accessories',
+    href: '/category/accessories',
+    items: [
+      { name: "Women's Accessories", href: '/category/accessories?gender=women' },
+      { name: "Men's Accessories", href: '/category/accessories?gender=men' },
+      { name: 'Handbags & Potlis', href: '/category/women-bags' },
+      { name: 'Ethnic Jewellery', href: '/category/women-jewellery' },
+      { name: 'Watches (Men & Women)', href: '/category/men-watches' },
+      { name: 'Wallets & Belts', href: '/category/men-wallets' },
+      { name: 'Sunglasses & Eyewear', href: '/category/women-sunglasses' },
+      { name: 'Backpacks & Gifting', href: '/category/men-bags-backpacks' },
+    ],
+  },
+  {
     title: 'Shops',
     href: '/shop',
     items: [
@@ -114,7 +142,7 @@ export function HeaderNavigation() {
         </Link>
 
         {activeMenu === 'categories' && (
-          <div className="absolute top-full -left-12 xl:left-0 w-[880px] bg-white rounded-2xl shadow-dropdown border border-slate-100 p-6 grid grid-cols-5 gap-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute top-full -left-24 xl:-left-12 w-[960px] max-w-[92vw] bg-white rounded-2xl shadow-dropdown border border-slate-100 p-6 grid grid-cols-4 gap-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             {megaCategoriesData.map((categoryGroup) => (
               <div key={categoryGroup.title}>
                 <Link

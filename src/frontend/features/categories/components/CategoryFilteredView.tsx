@@ -28,12 +28,14 @@ import {
   X,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { ProductCard } from '@/frontend/features/products/components/ProductCard';
 
 export interface CategoryFilteredViewProps {
   initialProducts: any[];
+  initialGender?: 'all' | 'men' | 'women' | 'unisex';
   category: {
     id: string;
     name: string;
@@ -45,8 +47,8 @@ export interface CategoryFilteredViewProps {
   };
 }
 
-// 1. PRODUCT TYPES (Reference UI Image 1 & 4)
-const PRODUCT_TYPE_OPTIONS = [
+// 1. PRODUCT TYPES (Clothing, Footwear & Accessories Context-Aware)
+const CLOTHING_PRODUCT_TYPE_OPTIONS = [
   { id: 'shirts', label: 'Shirts', sublabel: 'Shirt / Shirts', count: 245, icon: Shirt },
   { id: 'tshirts', label: 'T-Shirts', sublabel: 'T-Shirt / Tees', count: 189, icon: Shirt },
   { id: 'kurtas', label: 'Kurtas', sublabel: 'Kurta / Ethnic Wear', count: 132, icon: Sparkles },
@@ -63,8 +65,99 @@ const PRODUCT_TYPE_OPTIONS = [
   },
 ];
 
-// 2. FABRIC / MATERIAL OPTIONS (Reference UI Image 4)
-const FABRIC_OPTIONS = [
+const FOOTWEAR_PRODUCT_TYPE_OPTIONS = [
+  {
+    id: 'sneakers',
+    label: 'Sneakers & Casual',
+    sublabel: 'Low-top / Chunky',
+    count: 120,
+    icon: ShoppingBag,
+  },
+  {
+    id: 'sports_shoes',
+    label: 'Sports & Running',
+    sublabel: 'Gym / Walking',
+    count: 85,
+    icon: Sparkles,
+  },
+  {
+    id: 'formal_shoes',
+    label: 'Formal Shoes',
+    sublabel: 'Oxfords / Derbies',
+    count: 64,
+    icon: ShieldCheck,
+  },
+  { id: 'loafers', label: 'Loafers', sublabel: 'Moccasins / Slip-on', count: 52, icon: Layers },
+  {
+    id: 'heels',
+    label: 'Heels & Wedges',
+    sublabel: 'Block / Stilettos',
+    count: 94,
+    icon: Sparkles,
+  },
+  { id: 'flats', label: 'Flats & Ballerinas', sublabel: 'Daily / Bellies', count: 110, icon: Tag },
+  {
+    id: 'juttis',
+    label: 'Ethnic Juttis',
+    sublabel: 'Mojaris / Kolhapuri',
+    count: 145,
+    icon: Sparkles,
+  },
+  {
+    id: 'sandals',
+    label: 'Sandals & Slippers',
+    sublabel: 'Floaters / Sliders',
+    count: 78,
+    icon: ShoppingBag,
+  },
+  { id: 'boots', label: 'Boots', sublabel: 'Chelsea / Ankle', count: 36, icon: ShieldCheck },
+];
+
+const ACCESSORIES_PRODUCT_TYPE_OPTIONS = [
+  {
+    id: 'bags',
+    label: 'Handbags & Totes',
+    sublabel: 'Totes / Shoulder',
+    count: 132,
+    icon: ShoppingBag,
+  },
+  {
+    id: 'clutches',
+    label: 'Clutches & Potlis',
+    sublabel: 'Bridal / Slings',
+    count: 88,
+    icon: Sparkles,
+  },
+  {
+    id: 'jewellery',
+    label: 'Jewellery & Sets',
+    sublabel: 'Jhumkas / Chokers',
+    count: 175,
+    icon: Sparkles,
+  },
+  { id: 'watches', label: 'Watches', sublabel: 'Analog / Smart', count: 96, icon: Star },
+  { id: 'wallets', label: 'Wallets', sublabel: 'Leather / RFID', count: 84, icon: Layers },
+  { id: 'belts', label: 'Belts', sublabel: 'Leather / Kamarbandh', count: 62, icon: Ruler },
+  {
+    id: 'sunglasses',
+    label: 'Sunglasses',
+    sublabel: 'UV400 / Aviators',
+    count: 74,
+    icon: Sparkles,
+  },
+  { id: 'scarves', label: 'Scarves & Stoles', sublabel: 'Silk / Phulkari', count: 58, icon: Tag },
+  {
+    id: 'backpacks',
+    label: 'Backpacks & Travel',
+    sublabel: 'Laptop / Duffle',
+    count: 49,
+    icon: ShoppingBag,
+  },
+  { id: 'hair_caps', label: 'Caps, Ties & Hair', sublabel: 'Groom / Clips', count: 44, icon: Gift },
+];
+
+// 2. FABRIC / MATERIAL OPTIONS
+const CLOTHING_FABRIC_OPTIONS = [
   { id: 'cotton', label: 'Pure Cotton', count: 320 },
   { id: 'cotton_blend', label: 'Cotton Blend', count: 214 },
   { id: 'linen', label: 'Linen', count: 86 },
@@ -78,6 +171,27 @@ const FABRIC_OPTIONS = [
   { id: 'velvet', label: 'Royal Velvet', count: 42 },
   { id: 'satin', label: 'Satin Silk', count: 58 },
   { id: 'crepe', label: 'Crepe', count: 36 },
+];
+
+const FOOTWEAR_MATERIAL_OPTIONS = [
+  { id: 'leather', label: 'Genuine Leather', count: 115 },
+  { id: 'pu_leather', label: 'Faux / PU Leather', count: 142 },
+  { id: 'suede', label: 'Suede', count: 48 },
+  { id: 'mesh', label: 'Breathable Mesh / Knit', count: 96 },
+  { id: 'canvas', label: 'Canvas', count: 64 },
+  { id: 'velvet', label: 'Velvet / Embroidered Silk', count: 88 },
+  { id: 'rubber', label: 'Rubber / EVA', count: 112 },
+];
+
+const ACCESSORIES_MATERIAL_OPTIONS = [
+  { id: 'leather', label: 'Genuine Leather', count: 120 },
+  { id: 'faux_leather', label: 'Vegan / Faux Leather', count: 158 },
+  { id: 'brass', label: 'Brass / Kundan / Alloy', count: 134 },
+  { id: 'oxidised', label: 'Oxidised Silver', count: 86 },
+  { id: 'steel', label: 'Stainless Steel', count: 92 },
+  { id: 'silver', label: '925 Sterling Silver', count: 44 },
+  { id: 'silk', label: 'Silk / Pashmina', count: 62 },
+  { id: 'canvas', label: 'Canvas / Nylon', count: 54 },
 ];
 
 // 3. COLOR PALETTES (Reference UI Image 4: circular dot swatches with badges)
@@ -103,8 +217,257 @@ const COLOR_OPTIONS = [
   },
 ];
 
-// 4. SIZE PILLS (Reference UI Image 4)
-const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free Size'];
+// 4. SIZE PILLS (Context-Aware)
+const CLOTHING_SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free Size'];
+const FOOTWEAR_SIZE_OPTIONS = [
+  'UK 3',
+  'UK 4',
+  'UK 5',
+  'UK 6',
+  'UK 7',
+  'UK 8',
+  'UK 9',
+  'UK 10',
+  'UK 11',
+  'UK 12',
+];
+const ACCESSORIES_SIZE_OPTIONS = [
+  'Free Size',
+  '28',
+  '30',
+  '32',
+  '34',
+  '36',
+  '38',
+  '40',
+  '2.4',
+  '2.6',
+  '2.8',
+  'Adjustable',
+];
+
+// Curated Sub-Categories with Gender Tags for Footwear & Accessories Quick Navigation
+const FOOTWEAR_SUBCAT_SHOWCASE: {
+  name: string;
+  slug: string;
+  gender: 'men' | 'women';
+  image: string;
+  badge?: string;
+}[] = [
+  {
+    name: 'Men Sneakers',
+    slug: 'men-casual-shoes',
+    gender: 'men',
+    image: '/images/categories/footwear-men-sneakers.png',
+    badge: 'HOT',
+  },
+  {
+    name: 'Men Sports',
+    slug: 'men-sports-shoes',
+    gender: 'men',
+    image: '/images/categories/footwear-men-sneakers.png',
+  },
+  {
+    name: 'Men Formal',
+    slug: 'men-formal-shoes',
+    gender: 'men',
+    image: '/images/categories/footwear-men-formal.png',
+  },
+  {
+    name: 'Men Loafers',
+    slug: 'men-loafers',
+    gender: 'men',
+    image: '/images/categories/footwear-men-formal.png',
+  },
+  {
+    name: 'Men Juttis & Mojaris',
+    slug: 'men-ethnic-footwear',
+    gender: 'men',
+    image: '/images/categories/footwear-men-ethnic.png',
+    badge: 'WEDDING',
+  },
+  {
+    name: 'Men Sandals',
+    slug: 'men-sandals',
+    gender: 'men',
+    image: '/images/categories/footwear-men-formal.png',
+  },
+  {
+    name: 'Men Slippers',
+    slug: 'men-flip-flops',
+    gender: 'men',
+    image: '/images/categories/category-footwear.png',
+  },
+  {
+    name: 'Men Boots',
+    slug: 'men-boots',
+    gender: 'men',
+    image: '/images/categories/footwear-men-formal.png',
+  },
+  {
+    name: 'Women Flats',
+    slug: 'women-flats',
+    gender: 'women',
+    image: '/images/categories/footwear-women-flats.png',
+    badge: 'DAILY',
+  },
+  {
+    name: 'Women Heels',
+    slug: 'women-heels',
+    gender: 'women',
+    image: '/images/categories/footwear-women-heels.png',
+    badge: 'PARTY',
+  },
+  {
+    name: 'Women Ethnic Juttis',
+    slug: 'women-juttis-mojaris',
+    gender: 'women',
+    image: '/images/categories/footwear-women-juttis.png',
+    badge: 'BRIDAL',
+  },
+  {
+    name: 'Women Sneakers',
+    slug: 'women-sneakers',
+    gender: 'women',
+    image: '/images/categories/footwear-men-sneakers.png',
+  },
+  {
+    name: 'Women Sports',
+    slug: 'women-sports-shoes',
+    gender: 'women',
+    image: '/images/categories/footwear-men-sneakers.png',
+  },
+  {
+    name: 'Women Sandals',
+    slug: 'women-sandals',
+    gender: 'women',
+    image: '/images/categories/footwear-women-flats.png',
+  },
+  {
+    name: 'Women Slippers',
+    slug: 'women-flip-flops',
+    gender: 'women',
+    image: '/images/categories/footwear-women-flats.png',
+  },
+  {
+    name: 'Women Boots',
+    slug: 'women-boots',
+    gender: 'women',
+    image: '/images/categories/footwear-women-heels.png',
+  },
+];
+
+const ACCESSORIES_SUBCAT_SHOWCASE: {
+  name: string;
+  slug: string;
+  gender: 'men' | 'women';
+  image: string;
+  badge?: string;
+}[] = [
+  {
+    name: 'Handbags & Totes',
+    slug: 'women-bags',
+    gender: 'women',
+    image: '/images/categories/Handbags (womens).png',
+    badge: 'POPULAR',
+  },
+  {
+    name: 'Clutches & Potlis',
+    slug: 'women-clutches',
+    gender: 'women',
+    image: '/images/categories/Clutches & Potlis (womens).png',
+    badge: 'BRIDAL',
+  },
+  {
+    name: 'Ethnic Jewellery',
+    slug: 'women-jewellery',
+    gender: 'women',
+    image: '/images/categories/Jewellery & Sets (womens).png',
+    badge: 'FESTIVE',
+  },
+  {
+    name: 'Women Watches',
+    slug: 'women-watches',
+    gender: 'women',
+    image: '/images/categories/Watches (womens).png',
+  },
+  {
+    name: 'Women Sunglasses',
+    slug: 'women-sunglasses',
+    gender: 'women',
+    image: '/images/categories/Sunglasses (womens).png',
+  },
+  {
+    name: 'Scarves & Stoles',
+    slug: 'women-scarves-stoles',
+    gender: 'women',
+    image: '/images/categories/Scarves, Stoles & Dupattas (womens).png',
+  },
+  {
+    name: 'Women Belts',
+    slug: 'women-belts',
+    gender: 'women',
+    image: '/images/categories/Belts (womens).png',
+  },
+  {
+    name: 'Hair Accessories',
+    slug: 'women-hair-accessories',
+    gender: 'women',
+    image: '/images/categories/Jewellery & Sets (womens).png',
+    badge: 'NEW',
+  },
+  {
+    name: 'Men Wallets',
+    slug: 'men-wallets',
+    gender: 'men',
+    image: '/images/categories/men-wallets.png',
+    badge: 'BESTSELLER',
+  },
+  {
+    name: 'Men Belts',
+    slug: 'men-belts',
+    gender: 'men',
+    image: '/images/categories/men-belts.png',
+  },
+  {
+    name: 'Men Watches',
+    slug: 'men-watches',
+    gender: 'men',
+    image: '/images/categories/men-accessories.png',
+    badge: 'PREMIUM',
+  },
+  {
+    name: 'Men Sunglasses',
+    slug: 'men-sunglasses',
+    gender: 'men',
+    image: '/images/categories/men-sunglasses.png',
+  },
+  {
+    name: 'Backpacks & Office',
+    slug: 'men-bags-backpacks',
+    gender: 'men',
+    image: '/images/categories/men-all-accessories.png',
+  },
+  {
+    name: 'Caps & Hats',
+    slug: 'men-caps-hats',
+    gender: 'men',
+    image: '/images/categories/men-all-caps.png',
+  },
+  {
+    name: 'Ties & Cufflinks',
+    slug: 'men-ties',
+    gender: 'men',
+    image: '/images/categories/men-ties.png',
+  },
+  {
+    name: 'Groom Accessories',
+    slug: 'men-groom-accessories',
+    gender: 'men',
+    image: '/images/categories/men-ties.png',
+    badge: 'WEDDING',
+  },
+];
 
 // 5. CUSTOMER RATINGS (Reference UI Image 1: golden star rows with counts)
 const RATING_OPTIONS = [
@@ -212,7 +575,88 @@ function renderStarRating(rating: number) {
   );
 }
 
-export function CategoryFilteredView({ initialProducts, category }: CategoryFilteredViewProps) {
+function resolveProductGender(p: any): 'men' | 'women' | 'unisex' | 'kids' {
+  const g = String(p.gender || '')
+    .toLowerCase()
+    .trim();
+  if (g === 'men' || g === 'male') return 'men';
+  if (g === 'women' || g === 'female') return 'women';
+  if (g === 'unisex') return 'unisex';
+  if (g === 'kids') return 'kids';
+
+  const catSlug = String(p.category?.slug || '').toLowerCase();
+  const text = `${catSlug} ${p.name || ''} ${p.category?.name || ''}`.toLowerCase();
+  if (
+    catSlug.startsWith('women-') ||
+    /\b(women|woman|ladies|bridal|heel|jutti|saree|lehenga|handbag|potli|clutch|jhumka)\b/.test(
+      text,
+    )
+  ) {
+    return 'women';
+  }
+  if (
+    catSlug.startsWith('men-') ||
+    /\b(men|mens|gent|formal shoe|oxford|loafer|sherwani|tie|cufflink|groom)\b/.test(text)
+  ) {
+    return 'men';
+  }
+  return 'unisex';
+}
+
+export function CategoryFilteredView({
+  initialProducts,
+  category,
+  initialGender = 'all',
+}: CategoryFilteredViewProps) {
+  const slugLower = (category.slug || '').toLowerCase();
+  const parentSlugLower = (category.parentSlug || '').toLowerCase();
+
+  const isFootwearCategory =
+    slugLower === 'footwear' ||
+    slugLower.startsWith('footwear-') ||
+    slugLower === 'all-footwear' ||
+    parentSlugLower === 'footwear' ||
+    category.id === 'group_footwear' ||
+    /shoe|sneaker|heel|flat|jutti|mojari|loafer|sandal|flip-flop|boot/.test(slugLower);
+
+  const isAccessoriesCategory =
+    slugLower === 'accessories' ||
+    slugLower.startsWith('accessories-') ||
+    slugLower === 'all-accessories' ||
+    parentSlugLower === 'accessories' ||
+    category.id === 'group_accessories' ||
+    /wallet|belt|watch|sunglass|jewellery|bag|clutch|scarf|stole|caps-hats|ties|hair-acc|groom-acc/.test(
+      slugLower,
+    );
+
+  // Show prominent Men / Women / Unisex switcher on Footwear, Accessories, and mixed hubs
+  const showGenderFilter =
+    isFootwearCategory ||
+    isAccessoriesCategory ||
+    slugLower === 'spotlight' ||
+    slugLower === 'trending' ||
+    slugLower === 'new-arrivals' ||
+    slugLower === 'best-sellers';
+
+  // Context-aware filter options (replaces clothing filters on Footwear & Accessories pages)
+  const PRODUCT_TYPE_OPTIONS = isFootwearCategory
+    ? FOOTWEAR_PRODUCT_TYPE_OPTIONS
+    : isAccessoriesCategory
+      ? ACCESSORIES_PRODUCT_TYPE_OPTIONS
+      : CLOTHING_PRODUCT_TYPE_OPTIONS;
+
+  const FABRIC_OPTIONS = isFootwearCategory
+    ? FOOTWEAR_MATERIAL_OPTIONS
+    : isAccessoriesCategory
+      ? ACCESSORIES_MATERIAL_OPTIONS
+      : CLOTHING_FABRIC_OPTIONS;
+
+  const SIZE_OPTIONS = isFootwearCategory
+    ? FOOTWEAR_SIZE_OPTIONS
+    : isAccessoriesCategory
+      ? ACCESSORIES_SIZE_OPTIONS
+      : CLOTHING_SIZE_OPTIONS;
+
   // Mobile drawer state
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [mobileActiveTab, setMobileActiveTab] = useState<string>('product_type');
@@ -229,6 +673,9 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
   }, [isMobileFilterOpen]);
 
   // Primary Filter states
+  const [selectedGender, setSelectedGender] = useState<'all' | 'men' | 'women' | 'unisex'>(
+    initialGender,
+  );
   const [selectedProductTypes, setSelectedProductTypes] = useState<string[]>([]);
   const [productTypeViewMode, setProductTypeViewMode] = useState<'cards' | 'list'>('cards');
   const [selectedFabrics, setSelectedFabrics] = useState<string[]>([]);
@@ -236,8 +683,8 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedPriceRanges, setSelectedPriceRanges] = useState<string[]>([]);
-  const [customMinPrice, setCustomMinPrice] = useState<string>('500');
-  const [customMaxPrice, setCustomMaxPrice] = useState<string>('2000');
+  const [customMinPrice, setCustomMinPrice] = useState<string>('');
+  const [customMaxPrice, setCustomMaxPrice] = useState<string>('');
   const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
   const [isNavyaAssuredOnly, setIsNavyaAssuredOnly] = useState<boolean>(false);
   const [selectedShops, setSelectedShops] = useState<string[]>([]);
@@ -248,11 +695,37 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
   const [selectedDiscounts, setSelectedDiscounts] = useState<string[]>([]);
   const [selectedOrigins, setSelectedOrigins] = useState<string[]>([]);
 
+  const handleGenderChange = (gender: 'all' | 'men' | 'women' | 'unisex') => {
+    setSelectedGender(gender);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (gender === 'all') {
+        url.searchParams.delete('gender');
+      } else {
+        url.searchParams.set('gender', gender);
+      }
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
+  // Gender breakdown counts for top segmented tabs
+  const genderCounts = useMemo(() => {
+    const counts = { all: initialProducts.length, men: 0, women: 0, unisex: 0 };
+    for (const p of initialProducts) {
+      const g = resolveProductGender(p);
+      if (g === 'men') counts.men += 1;
+      else if (g === 'women') counts.women += 1;
+      else if (g === 'unisex') counts.unisex += 1;
+    }
+    return counts;
+  }, [initialProducts]);
+
   // Sorting
   const [sortBy, setSortBy] = useState<string>('popularity');
 
   // Desktop Accordion expand/collapse states (default matches screenshots)
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    gender: true,
     product_type: true,
     fabric: true,
     color: true,
@@ -299,6 +772,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
 
   // Reset all filters
   const handleClearAllFilters = () => {
+    handleGenderChange('all');
     setSelectedProductTypes([]);
     setSelectedFabrics([]);
     setSelectedColors([]);
@@ -320,6 +794,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
   // Active filter count
   const activeFilterCount = useMemo(() => {
     return (
+      (selectedGender !== 'all' ? 1 : 0) +
       selectedProductTypes.length +
       selectedFabrics.length +
       selectedColors.length +
@@ -337,6 +812,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
       selectedOrigins.length
     );
   }, [
+    selectedGender,
     selectedProductTypes,
     selectedFabrics,
     selectedColors,
@@ -359,11 +835,20 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
   const filteredProducts = useMemo(() => {
     let list = [...initialProducts];
 
+    // 0. Gender Filter (Men / Women / Unisex)
+    if (selectedGender !== 'all') {
+      list = list.filter((p) => {
+        const g = resolveProductGender(p);
+        if (selectedGender === 'unisex') return g === 'unisex';
+        return g === selectedGender || g === 'unisex';
+      });
+    }
+
     // 1. Product Type
     if (selectedProductTypes.length > 0) {
       list = list.filter((p) => {
         const text =
-          `${p.name || ''} ${p.description || ''} ${p.category?.name || ''} ${p.categoryName || ''}`.toLowerCase();
+          `${p.name || ''} ${p.description || ''} ${p.category?.name || ''} ${p.category?.slug || ''} ${p.categoryName || ''}`.toLowerCase();
         return selectedProductTypes.some((type) => {
           if (type === 'shirts')
             return text.includes('shirt') && !text.includes('t-shirt') && !text.includes('tshirt');
@@ -381,6 +866,70 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
               text.includes('lehenga') ||
               text.includes('saree') ||
               text.includes('sherwani')
+            );
+          // Footwear product types
+          if (type === 'sneakers') return text.includes('sneaker') || text.includes('casual shoe');
+          if (type === 'sports_shoes')
+            return text.includes('sport') || text.includes('running') || text.includes('walking');
+          if (type === 'formal_shoes')
+            return text.includes('formal') || text.includes('oxford') || text.includes('derby');
+          if (type === 'loafers') return text.includes('loafer') || text.includes('moccasin');
+          if (type === 'heels')
+            return text.includes('heel') || text.includes('wedge') || text.includes('stiletto');
+          if (type === 'flats') return text.includes('flat') || text.includes('ballerina');
+          if (type === 'juttis')
+            return (
+              text.includes('jutti') ||
+              text.includes('mojari') ||
+              text.includes('kolhapuri') ||
+              text.includes('ethnic-footwear')
+            );
+          if (type === 'sandals')
+            return (
+              text.includes('sandal') ||
+              text.includes('floater') ||
+              text.includes('slipper') ||
+              text.includes('flip-flop') ||
+              text.includes('slider')
+            );
+          if (type === 'boots') return text.includes('boot');
+          // Accessories product types
+          if (type === 'bags')
+            return (
+              text.includes('handbag') ||
+              text.includes('tote') ||
+              text.includes('shoulder bag') ||
+              text.includes('women-bags')
+            );
+          if (type === 'clutches')
+            return text.includes('clutch') || text.includes('potli') || text.includes('sling');
+          if (type === 'jewellery')
+            return (
+              text.includes('jewellery') ||
+              text.includes('jewelry') ||
+              text.includes('earring') ||
+              text.includes('jhumka') ||
+              text.includes('necklace') ||
+              text.includes('bangle')
+            );
+          if (type === 'watches') return text.includes('watch');
+          if (type === 'wallets') return text.includes('wallet') || text.includes('cardholder');
+          if (type === 'belts') return text.includes('belt') || text.includes('kamarbandh');
+          if (type === 'sunglasses') return text.includes('sunglass') || text.includes('eyewear');
+          if (type === 'scarves')
+            return text.includes('scarf') || text.includes('stole') || text.includes('dupatta');
+          if (type === 'backpacks')
+            return (
+              text.includes('backpack') || text.includes('duffle') || text.includes('travel bag')
+            );
+          if (type === 'hair_caps')
+            return (
+              text.includes('cap') ||
+              text.includes('hat') ||
+              text.includes('tie') ||
+              text.includes('cufflink') ||
+              text.includes('hair') ||
+              text.includes('groom')
             );
           return text.includes(type);
         });
@@ -569,6 +1118,7 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
     return list;
   }, [
     initialProducts,
+    selectedGender,
     selectedProductTypes,
     selectedFabrics,
     selectedColors,
@@ -587,106 +1137,240 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
     sortBy,
   ]);
 
-  // Mobile drawer categories tab list
+  // Mobile drawer categories tab list (context-aware: hides sleeve length on Footwear & Accessories)
   const MOBILE_FILTER_TABS = [
+    ...(showGenderFilter
+      ? [{ id: 'gender', label: 'Gender (Men/Women)', count: selectedGender !== 'all' ? 1 : 0 }]
+      : []),
     { id: 'product_type', label: 'Product Type', count: selectedProductTypes.length },
-    { id: 'fabric', label: 'Fabric / Material', count: selectedFabrics.length },
+    {
+      id: 'fabric',
+      label: isFootwearCategory || isAccessoriesCategory ? 'Material' : 'Fabric / Material',
+      count: selectedFabrics.length,
+    },
     { id: 'color', label: 'Color', count: selectedColors.length },
-    { id: 'size', label: 'Size', count: selectedSizes.length },
+    {
+      id: 'size',
+      label: isFootwearCategory ? 'UK Shoe Size' : 'Size',
+      count: selectedSizes.length,
+    },
     {
       id: 'price',
       label: 'Price',
       count: selectedPriceRanges.length + (customMinPrice || customMaxPrice ? 1 : 0),
     },
     { id: 'ratings', label: 'Customer Ratings', count: selectedRatings.length },
-    { id: 'n_assured', label: 'Navya Assured', count: isNavyaAssuredOnly ? 1 : 0 },
+    { id: 'n_assured', label: 'JiivaaKart Assured', count: isNavyaAssuredOnly ? 1 : 0 },
     { id: 'shop', label: 'Boutique Store', count: selectedShops.length },
-    { id: 'print_type', label: 'Print Type', count: selectedPrintTypes.length },
-    { id: 'sleeve_length', label: 'Sleeve Length', count: selectedSleeveLengths.length },
+    ...(!isFootwearCategory && !isAccessoriesCategory
+      ? [
+          { id: 'print_type', label: 'Print Type', count: selectedPrintTypes.length },
+          { id: 'sleeve_length', label: 'Sleeve Length', count: selectedSleeveLengths.length },
+        ]
+      : []),
     { id: 'occasion', label: 'Occasion', count: selectedOccasions.length },
     { id: 'discount', label: 'Discount %', count: selectedDiscounts.length },
     { id: 'origin', label: 'Country Of Origin', count: selectedOrigins.length },
   ];
 
-  if (initialProducts.length === 0) {
-    return (
-      <div className="space-y-8 max-w-5xl mx-auto py-6">
-        <div className="relative overflow-hidden bg-gradient-to-br from-navy via-[#1e3a6c] to-[#0f2142] text-white rounded-3xl p-8 sm:p-12 shadow-xl border border-white/10 text-center space-y-6">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-orange/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange/10 rounded-full blur-3xl pointer-events-none" />
+  // Visual Sub-Category Showcase filtered by active Gender (Men / Women / All)
+  const visibleShowcaseSubcats = useMemo(() => {
+    const source = isFootwearCategory
+      ? FOOTWEAR_SUBCAT_SHOWCASE
+      : isAccessoriesCategory
+        ? ACCESSORIES_SUBCAT_SHOWCASE
+        : [];
+    if (selectedGender === 'men' || selectedGender === 'women') {
+      return source.filter((item) => item.gender === selectedGender);
+    }
+    return source;
+  }, [isFootwearCategory, isAccessoriesCategory, selectedGender]);
 
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-xs font-black uppercase tracking-widest shadow-xs">
-            <Sparkles className="w-4 h-4 text-orange animate-pulse" />
-            <span>Curated Boutique Collection</span>
-          </div>
-
-          <div className="max-w-2xl mx-auto space-y-3">
-            <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-heading">
-              {category.name} Arrivals Landing Soon
-            </h2>
-            <p className="text-sm sm:text-base text-slate-200/90 leading-relaxed font-medium">
-              Verified boutique designers and regional textile artisans are currently preparing
-              handcrafted, exclusive season releases for{' '}
-              <strong className="text-white font-bold">{category.name}</strong>.
-            </p>
-          </div>
-
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/category/women-sarees"
-              className="px-5 py-2.5 rounded-full bg-white text-navy font-extrabold text-xs shadow-md hover:bg-slate-100 transition-all hover:scale-105"
-            >
-              Explore Festive Sarees
-            </Link>
-            <Link
-              href="/category/women-lehengas"
-              className="px-5 py-2.5 rounded-full bg-white/15 text-white border border-white/30 font-bold text-xs hover:bg-white/25 transition-all"
-            >
-              Explore Designer Lehengas
-            </Link>
-            <Link
-              href="/category/men-shirts"
-              className="px-5 py-2.5 rounded-full bg-white/15 text-white border border-white/30 font-bold text-xs hover:bg-white/25 transition-all"
-            >
-              Explore Men&apos;s Shirts
-            </Link>
-            <Link
-              href="/category"
-              className="px-5 py-2.5 rounded-full bg-orange text-white font-extrabold text-xs shadow-md shadow-orange/20 hover:bg-orange/90 transition-all"
-            >
-              Browse All Categories
-            </Link>
+  // Reusable Gender Switcher + Visual Sub-Category Strip for Footwear & Accessories
+  const genderAndSubcatStrip = showGenderFilter ? (
+    <div className="bg-white rounded-2xl border border-slate-200/90 p-3.5 sm:p-4 shadow-xs space-y-3.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+            Shop For:
+          </span>
+          <div className="inline-flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 gap-1">
+            {(
+              [
+                { id: 'all', label: 'All', count: genderCounts.all },
+                { id: 'men', label: 'Men', count: genderCounts.men },
+                { id: 'women', label: 'Women', count: genderCounts.women },
+                { id: 'unisex', label: 'Unisex', count: genderCounts.unisex },
+              ] as const
+            ).map((opt) => {
+              const isActive = selectedGender === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => handleGenderChange(opt.id)}
+                  className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-navy text-white shadow-xs'
+                      : 'text-slate-600 hover:text-navy hover:bg-white/70'
+                  }`}
+                >
+                  <span>{opt.label}</span>
+                  {opt.count > 0 && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-slate-200/80 text-slate-600'
+                      }`}
+                    >
+                      {opt.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-amber-500/10 via-orange/10 to-amber-500/10 border border-amber-300/80 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-          <div className="space-y-2 text-center md:text-left">
-            <span className="text-[11px] font-black uppercase tracking-wider text-orange bg-orange/10 px-3 py-1 rounded-full">
-              Boutique Merchants Wanted
-            </span>
-            <h3 className="text-lg sm:text-xl font-extrabold text-navy font-heading">
-              Are you a boutique seller or designer in {category.name}?
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-xl">
-              Partner with Navya Collection to showcase your collections to thousands of fashion
-              shoppers across India. Enjoy 0% listing fee, pan-India express courier pickup, and
-              guaranteed weekly payouts.
-            </p>
+        <span className="text-[11px] font-semibold text-slate-500">
+          {selectedGender === 'all'
+            ? `Showing Men & Women ${isFootwearCategory ? 'Footwear' : isAccessoriesCategory ? 'Accessories' : 'Styles'}`
+            : `Filtered for ${selectedGender.charAt(0).toUpperCase() + selectedGender.slice(1)}`}
+        </span>
+      </div>
+
+      {/* Gender-Filtered Visual Sub-Category Strip (Footwear & Accessories) */}
+      {visibleShowcaseSubcats.length > 0 && (
+        <div className="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+          {visibleShowcaseSubcats.map((item) => {
+            const isActive = item.slug === slugLower;
+            return (
+              <Link
+                key={item.slug}
+                href={`/category/${item.slug}`}
+                className={`group flex items-center gap-2.5 pl-1.5 pr-3.5 py-1.5 rounded-full border shrink-0 transition-all ${
+                  isActive
+                    ? 'bg-navy text-white border-navy shadow-xs'
+                    : 'bg-slate-50 hover:bg-orange-50/70 text-slate-800 border-slate-200 hover:border-orange'
+                }`}
+              >
+                <div className="relative w-8 h-8 rounded-full overflow-hidden bg-white border border-slate-200 shrink-0">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    sizes="32px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold leading-tight whitespace-nowrap">
+                    {item.name}
+                  </span>
+                  <span
+                    className={`text-[9px] font-extrabold uppercase tracking-wider ${
+                      isActive ? 'text-orange-300' : 'text-slate-400 group-hover:text-orange'
+                    }`}
+                  >
+                    {item.gender === 'men' ? "Men's" : "Women's"}
+                    {item.badge ? ` • ${item.badge}` : ''}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  ) : null;
+
+  if (initialProducts.length === 0) {
+    return (
+      <div className="space-y-6">
+        {genderAndSubcatStrip}
+        <div className="space-y-8 max-w-5xl mx-auto py-4">
+          <div className="relative overflow-hidden bg-gradient-to-br from-navy via-[#1e3a6c] to-[#0f2142] text-white rounded-3xl p-8 sm:p-12 shadow-xl border border-white/10 text-center space-y-6">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-orange/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-xs font-black uppercase tracking-widest shadow-xs">
+              <Sparkles className="w-4 h-4 text-orange animate-pulse" />
+              <span>Curated Boutique Collection</span>
+            </div>
+
+            <div className="max-w-2xl mx-auto space-y-3">
+              <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white font-heading">
+                {selectedGender !== 'all'
+                  ? `${selectedGender.charAt(0).toUpperCase() + selectedGender.slice(1)}'s ${category.name}`
+                  : category.name}{' '}
+                Arrivals Landing Soon
+              </h2>
+              <p className="text-sm sm:text-base text-slate-200/90 leading-relaxed font-medium">
+                Verified boutique designers and regional artisans are currently preparing
+                handcrafted, exclusive season releases for{' '}
+                <strong className="text-white font-bold">{category.name}</strong>.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/category/women-sarees"
+                className="px-5 py-2.5 rounded-full bg-white text-navy font-extrabold text-xs shadow-md hover:bg-slate-100 transition-all hover:scale-105"
+              >
+                Explore Festive Sarees
+              </Link>
+              <Link
+                href="/category/women-lehengas"
+                className="px-5 py-2.5 rounded-full bg-white/15 text-white border border-white/30 font-bold text-xs hover:bg-white/25 transition-all"
+              >
+                Explore Designer Lehengas
+              </Link>
+              <Link
+                href="/category/men-shirts"
+                className="px-5 py-2.5 rounded-full bg-white/15 text-white border border-white/30 font-bold text-xs hover:bg-white/25 transition-all"
+              >
+                Explore Men&apos;s Shirts
+              </Link>
+              <Link
+                href="/category"
+                className="px-5 py-2.5 rounded-full bg-orange text-white font-extrabold text-xs shadow-md shadow-orange/20 hover:bg-orange/90 transition-all"
+              >
+                Browse All Categories
+              </Link>
+            </div>
           </div>
-          <Link
-            href="/seller/register"
-            className="inline-flex items-center gap-2 px-6 py-3.5 bg-orange hover:bg-[#d94817] text-white text-xs font-black rounded-2xl shadow-lg shrink-0 transition-all hover:scale-105"
-          >
-            <span>Register as a Seller</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+
+          <div className="bg-gradient-to-r from-amber-500/10 via-orange/10 to-amber-500/10 border border-amber-300/80 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+            <div className="space-y-2 text-center md:text-left">
+              <span className="text-[11px] font-black uppercase tracking-wider text-orange bg-orange/10 px-3 py-1 rounded-full">
+                Boutique Merchants Wanted
+              </span>
+              <h3 className="text-lg sm:text-xl font-extrabold text-navy font-heading">
+                Are you a boutique seller or designer in {category.name}?
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 max-w-xl">
+                Partner with JiivaaKart to showcase your collections to thousands of fashion
+                shoppers across India. Enjoy 0% listing fee, pan-India express courier pickup, and
+                guaranteed weekly payouts.
+              </p>
+            </div>
+            <Link
+              href="/become-seller"
+              className="inline-flex items-center gap-2 px-6 py-3.5 bg-orange hover:bg-[#d94817] text-white text-xs font-black rounded-2xl shadow-lg shrink-0 transition-all hover:scale-105"
+            >
+              <span>Register as a Seller</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Gender Quick Switcher (All | Men | Women | Unisex) & Visual Sub-Categories */}
+      {genderAndSubcatStrip}
+
       {/* Top Filter & Sort Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-xs">
         <div className="flex items-center gap-2 sm:gap-3">
@@ -742,6 +1426,18 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
           <span className="text-xs font-black text-orange flex items-center gap-1.5 shrink-0">
             <Filter className="w-3.5 h-3.5 text-orange" /> Active Filters ({activeFilterCount}):
           </span>
+
+          {selectedGender !== 'all' && (
+            <button
+              onClick={() => handleGenderChange('all')}
+              className="inline-flex items-center gap-1 px-2.5 py-1 bg-navy text-white font-bold text-[11px] rounded-full shadow-2xs hover:bg-navy/90 transition-colors cursor-pointer"
+            >
+              <span>
+                Gender: {selectedGender.charAt(0).toUpperCase() + selectedGender.slice(1)}
+              </span>
+              <X className="w-3 h-3 text-orange-300" />
+            </button>
+          )}
 
           {selectedProductTypes.map((id) => (
             <button
@@ -882,6 +1578,67 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
                 </div>
               )}
             </div>
+
+            {/* 0. GENDER FILTER (Footwear, Accessories & Mixed Hubs) */}
+            {showGenderFilter && (
+              <div className="border-b border-slate-100 pb-4">
+                <button
+                  type="button"
+                  onClick={() => toggleSection('gender')}
+                  className="w-full flex items-center justify-between text-left cursor-pointer group py-1"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center text-xs shrink-0 group-hover:scale-105 transition-transform">
+                      <Sparkles className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="text-xs sm:text-sm font-extrabold text-navy tracking-tight group-hover:text-orange transition-colors">
+                      Gender
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                      expandedSections.gender ? 'rotate-180 text-navy' : ''
+                    }`}
+                  />
+                </button>
+
+                {expandedSections.gender && (
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {(
+                      [
+                        { id: 'all', label: 'All', count: genderCounts.all },
+                        { id: 'men', label: 'Men', count: genderCounts.men },
+                        { id: 'women', label: 'Women', count: genderCounts.women },
+                        { id: 'unisex', label: 'Unisex', count: genderCounts.unisex },
+                      ] as const
+                    ).map((opt) => {
+                      const active = selectedGender === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => handleGenderChange(opt.id)}
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                            active
+                              ? 'bg-navy text-white border-navy shadow-xs'
+                              : 'bg-slate-50/70 text-slate-700 border-slate-200 hover:border-orange hover:text-orange'
+                          }`}
+                        >
+                          <span>{opt.label}</span>
+                          <span
+                            className={`text-[10px] font-extrabold ${
+                              active ? 'text-orange-300' : 'text-slate-400'
+                            }`}
+                          >
+                            {opt.count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 1. PRODUCT TYPE (Reference UI Image 1 & 4) */}
             <div className="border-b border-slate-100 pb-4">
@@ -1885,6 +2642,44 @@ export function CategoryFilteredView({ initialProducts, category }: CategoryFilt
 
             {/* Right Pane Filter Options */}
             <div className="flex-1 bg-white p-4 overflow-y-auto">
+              {/* 0. GENDER */}
+              {mobileActiveTab === 'gender' && (
+                <div className="space-y-3">
+                  <h4 className="text-xs font-extrabold text-navy uppercase tracking-wider mb-2">
+                    Shop By Gender
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {(
+                      [
+                        { id: 'all', label: 'All (Men & Women)', count: genderCounts.all },
+                        { id: 'men', label: 'Men', count: genderCounts.men },
+                        { id: 'women', label: 'Women', count: genderCounts.women },
+                        { id: 'unisex', label: 'Unisex', count: genderCounts.unisex },
+                      ] as const
+                    ).map((opt) => {
+                      const active = selectedGender === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => handleGenderChange(opt.id)}
+                          className={`flex items-center justify-between p-3 rounded-xl border text-xs font-bold transition-all ${
+                            active
+                              ? 'bg-navy text-white border-navy shadow-xs'
+                              : 'bg-slate-50 text-slate-700 border-slate-200'
+                          }`}
+                        >
+                          <span>{opt.label}</span>
+                          <span className={active ? 'text-orange-300' : 'text-slate-400'}>
+                            {opt.count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* 1. PRODUCT TYPE */}
               {mobileActiveTab === 'product_type' && (
                 <div className="space-y-3">

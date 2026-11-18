@@ -7,7 +7,14 @@ export interface RankedCategoryCandidate {
   score: number;
   matchPercentage: number;
   suggestedProductType: string;
-  departmentGroup: 'group_men' | 'group_women' | 'group_kids' | 'group_spotlight' | 'group_shops';
+  departmentGroup:
+    | 'group_men'
+    | 'group_women'
+    | 'group_kids'
+    | 'group_footwear'
+    | 'group_accessories'
+    | 'group_spotlight'
+    | 'group_shops';
   deptId: 'dept_women' | 'dept_men' | 'dept_kids';
   subId: string;
   reasons: string[];
@@ -38,7 +45,14 @@ export interface AutoCategorizeResult {
   matchedLabels: string[];
   matchedRules: string[];
   suggestedProductType?: string;
-  departmentGroup?: 'group_men' | 'group_women' | 'group_kids' | 'group_spotlight' | 'group_shops';
+  departmentGroup?:
+    | 'group_men'
+    | 'group_women'
+    | 'group_kids'
+    | 'group_footwear'
+    | 'group_accessories'
+    | 'group_spotlight'
+    | 'group_shops';
   topCandidates: RankedCategoryCandidate[];
   spotlightCurations: SpotlightCurationItem[];
   extractedAttributes: ExtractedAttributes;
@@ -81,6 +95,16 @@ const SYNONYM_DICTIONARY: [RegExp, string][] = [
   [/\b(anarkly|anarkali\s*suit|anarkali\s*set)\b/gi, 'anarkali set'],
   // Nighty
   [/\b(nighty|nightie|nightsuit|night\s*suit)\b/gi, 'nightwear'],
+  // Footwear Hinglish Synonyms
+  [/\b(jooti|jootis|juti|jutis|juttis|punjabi\s*jutti)\b/gi, 'jutti'],
+  [/\b(mojari|mojaris|mojri|mojris|nagra|nagras)\b/gi, 'mojari'],
+  [/\b(chappal|chappals|chapal|slipers|slippers|flipflops|flip\s*flops)\b/gi, 'slipper'],
+  [/\b(joota|joote|juta|jute|sneekers|sneakers)\b/gi, 'sneaker'],
+  // Accessories Hinglish Synonyms
+  [/\b(chashma|goggles|shades|sunglass|sunglasses)\b/gi, 'sunglasses'],
+  [/\b(ghadi|wristwatch|wrist\s*watch)\b/gi, 'watch'],
+  [/\b(batua|purse|card\s*holder)\b/gi, 'wallet'],
+  [/\b(jhumka|jhumkas|bali|balis|kan\s*ki\s*bali)\b/gi, 'earring'],
 ];
 
 function normalizeText(input: string): string {
@@ -109,7 +133,8 @@ interface CategoryRuleDef {
   deptId: 'dept_women' | 'dept_men' | 'dept_kids';
   subId: string;
   productType: string;
-  departmentGroup: 'group_women' | 'group_men' | 'group_kids';
+  departmentGroup:
+    'group_women' | 'group_men' | 'group_kids' | 'group_footwear' | 'group_accessories';
   parentCategoryIds: string[];
   primaryTerms: { term: string | RegExp; weight: number; reason: string }[];
   contextTerms: { term: string | RegExp; weight: number; reason: string }[];
@@ -117,6 +142,222 @@ interface CategoryRuleDef {
 }
 
 const CATEGORY_RULES: CategoryRuleDef[] = [
+  // ===========================================================================
+  // FOOTWEAR RULES (MEN & WOMEN)
+  // ===========================================================================
+  {
+    categoryId: 'cat_fw_men_casual',
+    name: "Men's Casual Shoes & Sneakers",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_footwear_men',
+    productType: 'men_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      { term: /\bsneaker\b/i, weight: 90, reason: 'Matched Sneaker' },
+      { term: /\bcasual\s*shoes?\b/i, weight: 90, reason: 'Matched Casual Shoes' },
+    ],
+    contextTerms: [
+      {
+        term: /\b(men|mens|boys|lace|canvas|leather|white)\b/i,
+        weight: 25,
+        reason: 'Men Sneaker Context',
+      },
+    ],
+    negativeTerms: [/\b(women|ladies|girls|heel|stiletto|ballerina)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_men_sports',
+    name: "Men's Sports & Running Shoes",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_footwear_men',
+    productType: 'men_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(running|sports?|gym|training|jogging)\s*shoes?\b/i,
+        weight: 95,
+        reason: 'Matched Sports Shoes',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(mesh|eva|cushion|lightweight|men)\b/i,
+        weight: 25,
+        reason: 'Sports Shoe Context',
+      },
+    ],
+    negativeTerms: [/\b(women|ladies|girls)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_men_formal',
+    name: "Men's Formal Shoes",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_footwear_men',
+    productType: 'men_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(formal\s*shoes?|oxford|derby|brogue|monk\s*strap)\b/i,
+        weight: 95,
+        reason: 'Matched Formal Shoes',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(leather|office|black|brown|tan|men)\b/i,
+        weight: 25,
+        reason: 'Formal Shoe Context',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_fw_men_loafers',
+    name: "Men's Loafers & Moccasins",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_footwear_men',
+    productType: 'men_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(loafer|loafers|moccasin|moccasins|driving\s*shoe)\b/i,
+        weight: 95,
+        reason: 'Matched Loafers',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(suede|slip-?on|leather|men)\b/i, weight: 20, reason: 'Loafer Context' },
+    ],
+  },
+  {
+    categoryId: 'cat_fw_men_ethnic',
+    name: "Men's Ethnic Juttis & Mojaris",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_footwear_men',
+    productType: 'men_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(mojari|men.?s?\s*jutti|sherwani\s*shoe|groom\s*jutti)\b/i,
+        weight: 95,
+        reason: 'Matched Men Ethnic Footwear',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(men|groom|sherwani|kurta|wedding|kolhapuri)\b/i,
+        weight: 30,
+        reason: 'Men Ethnic Footwear Context',
+      },
+    ],
+    negativeTerms: [/\b(women|bridal|ladies|heel)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_women_heels',
+    name: "Women's Heels & Wedges",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_footwear_women',
+    productType: 'women_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(heels?|wedges?|stiletto|block\s*heel|kitten\s*heel|platform\s*heel)\b/i,
+        weight: 95,
+        reason: 'Matched Women Heels',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(women|party|bridal|gold|metallic|strap)\b/i,
+        weight: 25,
+        reason: 'Heels Context',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_fw_women_flats',
+    name: "Women's Flats & Ballerinas",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_footwear_women',
+    productType: 'women_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(ballerina|belly|bellies|mule|mules|women.?s?\s*flats?|kolhapuri\s*flat)\b/i,
+        weight: 92,
+        reason: 'Matched Women Flats',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(women|ladies|flat|daily|comfort|sandal)\b/i,
+        weight: 25,
+        reason: 'Flats Context',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_fw_women_juttis',
+    name: "Women's Ethnic Juttis & Mojaris",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_footwear_women',
+    productType: 'women_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(jutti|bridal\s*jutti|phulkari\s*jutti|embroidered\s*jutti)\b/i,
+        weight: 95,
+        reason: 'Matched Women Ethnic Juttis',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(women|bridal|mirror|zari|handcrafted|punjabi|ethnic|festive)\b/i,
+        weight: 25,
+        reason: 'Women Jutti Context',
+      },
+    ],
+    negativeTerms: [/\b(men|mens|groom|sherwani)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_women_sneakers',
+    name: "Women's Sneakers & Casual Shoes",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_footwear_women',
+    productType: 'women_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(women.?s?\s*sneaker|girls?\s*sneaker|women.?s?\s*casual\s*shoe)\b/i,
+        weight: 95,
+        reason: 'Matched Women Sneakers',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(women|ladies|pink|white|chunky|sneaker)\b/i,
+        weight: 25,
+        reason: 'Women Sneaker Context',
+      },
+    ],
+  },
   // ===========================================================================
   // WOMEN CATEGORIES
   // ===========================================================================
@@ -1801,7 +2042,13 @@ export function autoCategorizeProduct(
   let suggestedProductType =
     gender === 'kids' ? 'kids_boys_clothing' : gender === 'men' ? 'men_shirts' : 'women_sarees';
   let departmentGroup:
-    'group_men' | 'group_women' | 'group_kids' | 'group_spotlight' | 'group_shops' =
+    | 'group_men'
+    | 'group_women'
+    | 'group_kids'
+    | 'group_footwear'
+    | 'group_accessories'
+    | 'group_spotlight'
+    | 'group_shops' =
     gender === 'men' ? 'group_men' : gender === 'kids' ? 'group_kids' : 'group_women';
 
   if (topCandidates.length > 0) {

@@ -80,17 +80,20 @@ export async function GET(request: NextRequest) {
   // Decode & verify state parameter for CSRF mitigation
   let redirectTarget = '/';
   let receivedNonce: string | null = null;
+  let isMobile = false;
   if (state) {
     try {
       const decodedState = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'));
       receivedNonce = decodedState?.nonce || null;
       redirectTarget = sanitizeRedirectTarget(decodedState?.redirect);
+      isMobile = Boolean(decodedState?.isMobile);
     } catch {
       redirectTarget = '/';
     }
   }
 
-  if (!cookieNonce || !receivedNonce || cookieNonce !== receivedNonce) {
+  // Enforce CSRF nonce validation (relaxed only if mobile custom tab didn't persist cookie, but receivedNonce required)
+  if (!receivedNonce || (!isMobile && (!cookieNonce || cookieNonce !== receivedNonce))) {
     console.error('❌ [GOOGLE_OAUTH_CSRF_ERROR] State nonce mismatch or cookie expired.');
     return createErrorRedirect('InvalidOAuthState');
   }
@@ -218,19 +221,117 @@ export async function GET(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || 'Google OAuth Browser';
     const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1';
 
-    await createUserSession(
+    const sessionResult = await createUserSession(
       {
         id: user.id,
         email: user.email,
         phone: user.mobile,
         role: user.role,
+        name: user.name,
       },
       {
-        device: 'Google OAuth Sign-In',
+        device: isMobile ? 'JiivaaKart Mobile App' : 'Google OAuth Sign-In',
         userAgent,
         ipAddress,
       },
     );
+
+    // If request originates from JiivaaKart Mobile App (Android/iOS), deep link back into the app
+    if (isMobile) {
+      const mobileDeepLink = `jiivaakart://auth?token=${encodeURIComponent(sessionResult.token)}&userId=${encodeURIComponent(user.id)}&name=${encodeURIComponent(user.name || '')}&email=${encodeURIComponent(user.email || '')}&role=${encodeURIComponent(user.role || 'USER')}&avatar=${encodeURIComponent(user.avatar || '')}`;
+
+      return new NextResponse(
+        `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JiivaaKart Luxury - Sign In Successful</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0F172A;
+      color: #F8FAFC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      text-align: center;
+    }
+    .card {
+      background: #1E293B;
+      padding: 36px 28px;
+      border-radius: 28px;
+      max-width: 400px;
+      width: 100%;
+      border: 1px solid #334155;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .sparkle {
+      font-size: 44px;
+      margin-bottom: 16px;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      font-weight: 800;
+      color: #F8FAFC;
+    }
+    p {
+      color: #94A3B8;
+      font-size: 14px;
+      margin: 0;
+      line-height: 1.5;
+    }
+    .user-pill {
+      display: inline-block;
+      margin: 14px 0;
+      padding: 6px 14px;
+      background: rgba(234, 88, 12, 0.15);
+      border: 1px solid rgba(234, 88, 12, 0.3);
+      color: #FB923C;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .btn {
+      display: block;
+      background: #EA580C;
+      color: #FFFFFF;
+      font-weight: 800;
+      text-decoration: none;
+      padding: 15px 24px;
+      border-radius: 16px;
+      margin-top: 22px;
+      font-size: 15px;
+      box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="sparkle">✨</div>
+    <h2>Welcome to JiivaaKart!</h2>
+    <div class="user-pill">${user.name || user.email}</div>
+    <p>Signing in via Google... Returning to your JiivaaKart app now.</p>
+    <a href="${mobileDeepLink}" class="btn">Open JiivaaKart App</a>
+  </div>
+  <script>
+    setTimeout(function() {
+      window.location.href = "${mobileDeepLink}";
+    }, 200);
+  </script>
+</body>
+</html>`,
+        {
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+          },
+        },
+      );
+    }
 
     // Destination defaults to normal user storefront / requested destination (never admin)
     let destination = redirectTarget;

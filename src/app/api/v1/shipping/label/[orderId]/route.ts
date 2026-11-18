@@ -136,63 +136,63 @@ function renderThermalShippingLabelHtml(data: {
     }
     .barcode-section {
       text-align: center;
-      padding: 6px 0 4px 0;
+      padding: 3px 0 2px 0;
       border-bottom: 2px solid #000;
     }
     .barcode-graphic {
       font-family: monospace;
-      font-size: 22px;
+      font-size: 20px;
       letter-spacing: 2px;
       font-weight: 900;
       line-height: 1;
     }
     .awb-label {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
       letter-spacing: 1.2px;
-      margin-top: 3px;
+      margin-top: 2px;
     }
     .routing-row {
       display: flex;
       justify-content: space-between;
-      padding: 4px 0;
+      padding: 3px 0;
       border-bottom: 1.5px solid #000;
-      font-size: 9.5px;
+      font-size: 9px;
       font-weight: 800;
     }
     .section-title {
-      font-size: 8.5px;
+      font-size: 8px;
       font-weight: 900;
       color: #475569;
       text-transform: uppercase;
       margin-bottom: 1px;
     }
     .address-box {
-      padding: 5px 0;
+      padding: 3px 0;
       border-bottom: 1.5px solid #000;
     }
     .person-name {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
       margin-bottom: 1px;
     }
     .address-text {
-      font-size: 10px;
-      line-height: 1.25;
+      font-size: 9.5px;
+      line-height: 1.2;
       color: #1e293b;
     }
     .phone-text {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
-      margin-top: 2px;
+      margin-top: 1px;
     }
     .meta-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 4px;
-      padding: 5px 0;
+      gap: 3px;
+      padding: 3px 0;
       border-bottom: 1.5px solid #000;
-      font-size: 9.5px;
+      font-size: 9px;
     }
     .meta-item strong {
       font-weight: 800;
@@ -201,34 +201,43 @@ function renderThermalShippingLabelHtml(data: {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 5px 0 3px 0;
+      padding: 3px 0 2px 0;
     }
     .payment-pill {
-      font-size: 9.5px;
+      font-size: 9px;
       font-weight: 900;
       border: 1.5px solid #000;
       padding: 2px 6px;
       text-transform: uppercase;
     }
     .amount-text {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 900;
     }
     .footer-note {
-      font-size: 7.5px;
+      font-size: 7px;
       color: #64748b;
       text-align: center;
-      margin-top: 4px;
-      line-height: 1.25;
+      margin-top: 3px;
+      line-height: 1.2;
       border-top: 1px dashed #94a3b8;
-      padding-top: 4px;
+      padding-top: 2px;
+    }
+    @page {
+      size: auto;
+      margin: 0;
     }
     @media print {
       html, body {
         background: #fff !important;
-        padding: 4mm 0 !important;
+        padding: 0 !important;
         margin: 0 !important;
-        height: auto !important;
+        height: 100% !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
       }
       .print-controls {
         display: none !important;
@@ -236,12 +245,14 @@ function renderThermalShippingLabelHtml(data: {
       .label-wrapper {
         box-shadow: none !important;
         border: 2px solid #000 !important;
-        width: 360px !important;
+        width: 340px !important;
+        max-width: 95vw !important;
         margin: 0 auto !important;
+        padding: 6px 8px !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+        page-break-before: avoid !important;
         page-break-after: avoid !important;
-        break-after: avoid !important;
       }
     }
   </style>

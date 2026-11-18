@@ -192,7 +192,98 @@ async function buildCategoryConditions(
     matchingIds.add('cat_women_handbags');
     matchingIds.add('cat_women_clutches');
     matchingIds.add('cat_women_sling_bags');
+    matchingIds.add('cat_women_shoulder_bags');
     matchingIds.add('cat_women_tote_bags');
+  }
+
+  // Footwear Group Resolution (Men's & Women's Footwear)
+  const isFootwearHub =
+    cleanSlug === 'footwear' ||
+    cleanSlug === 'all-footwear' ||
+    cleanSlug === 'footwear-new-arrivals' ||
+    cleanSlug === 'footwear-under-999' ||
+    cleanSlug === 'footwear-wedding' ||
+    category?.id === 'group_footwear';
+
+  if (isFootwearHub) {
+    const fwIds = [
+      'group_footwear',
+      'cat_fw_men_casual',
+      'cat_fw_men_sports',
+      'cat_fw_men_formal',
+      'cat_fw_men_loafers',
+      'cat_fw_men_ethnic',
+      'cat_fw_men_sandals',
+      'cat_fw_men_slippers',
+      'cat_fw_men_boots',
+      'cat_fw_women_flats',
+      'cat_fw_women_heels',
+      'cat_fw_women_juttis',
+      'cat_fw_women_sneakers',
+      'cat_fw_women_sports',
+      'cat_fw_women_sandals',
+      'cat_fw_women_slippers',
+      'cat_fw_women_boots',
+      'cat_fw_new_arrivals',
+      'cat_fw_under_999',
+      'cat_fw_wedding',
+      'cat_fw_all',
+    ];
+    fwIds.forEach((id) => matchingIds.add(id));
+    const fwDesc = await getDescendantCategoryIds(prisma, 'footwear');
+    fwDesc.forEach((id) => matchingIds.add(id));
+    const fwDescStatic = await getDescendantCategoryIds(prisma, 'group_footwear');
+    fwDescStatic.forEach((id) => matchingIds.add(id));
+  }
+
+  // Accessories Group Resolution (Women's & Men's Accessories)
+  const isAccessoriesHub =
+    cleanSlug === 'accessories' ||
+    cleanSlug === 'all-accessories' ||
+    cleanSlug === 'accessories-gift-sets' ||
+    cleanSlug === 'accessories-under-499' ||
+    category?.id === 'group_accessories';
+
+  if (isAccessoriesHub) {
+    const accIds = [
+      'group_accessories',
+      'cat_women_acc_new_arrivals',
+      'cat_women_bags',
+      'cat_women_handbags',
+      'cat_women_sling_bags',
+      'cat_women_shoulder_bags',
+      'cat_women_tote_bags',
+      'cat_women_clutches',
+      'cat_women_jewellery',
+      'cat_women_watches',
+      'cat_women_sunglasses',
+      'cat_women_scarves_stoles',
+      'cat_women_wallets',
+      'cat_women_hair_acc',
+      'cat_women_belts',
+      'cat_women_all_accessories',
+      'cat_men_acc_new_arrivals',
+      'cat_men_wallets',
+      'cat_men_belts',
+      'cat_men_watches',
+      'cat_men_bags_backpacks',
+      'cat_men_travel_bags',
+      'cat_men_sunglasses',
+      'cat_men_caps_hats',
+      'cat_men_ties',
+      'cat_men_jewellery',
+      'cat_men_groom_acc',
+      'cat_men_fashion_acc',
+      'cat_men_all_accessories',
+      'cat_acc_gift_sets',
+      'cat_acc_under_499',
+      'cat_acc_all',
+    ];
+    accIds.forEach((id) => matchingIds.add(id));
+    const accDesc = await getDescendantCategoryIds(prisma, 'accessories');
+    accDesc.forEach((id) => matchingIds.add(id));
+    const accDescStatic = await getDescendantCategoryIds(prisma, 'group_accessories');
+    accDescStatic.forEach((id) => matchingIds.add(id));
   }
 
   const orConditions: any[] = [];
@@ -237,6 +328,101 @@ async function buildCategoryConditions(
     orConditions.push({ category: { parentId: 'group_women' } });
     orConditions.push({ category: { parent: { parentId: 'group_women' } } });
     orConditions.push({ category: { parent: { slug: 'women' } } });
+  } else if (isFootwearHub) {
+    const fwSlugs = [
+      'men-casual-shoes',
+      'men-sports-shoes',
+      'men-formal-shoes',
+      'men-loafers',
+      'men-ethnic-footwear',
+      'men-sandals',
+      'men-flip-flops',
+      'men-boots',
+      'women-flats',
+      'women-heels',
+      'women-juttis-mojaris',
+      'women-sneakers',
+      'women-sports-shoes',
+      'women-sandals',
+      'women-flip-flops',
+      'women-boots',
+      'footwear',
+    ];
+    orConditions.push({ category: { slug: { in: fwSlugs } } });
+    orConditions.push({ category: { parentId: 'group_footwear' } });
+    orConditions.push({ category: { parent: { slug: 'footwear' } } });
+    for (const kw of [
+      'shoe',
+      'sneaker',
+      'heel',
+      'jutti',
+      'mojari',
+      'loafer',
+      'sandal',
+      'slipper',
+      'boot',
+      'flat',
+    ]) {
+      orConditions.push({ name: { contains: kw, mode: 'insensitive' as const } });
+    }
+    if (cleanSlug === 'footwear-under-999') {
+      andConditions.push({ price: { lte: 999 } });
+    }
+  } else if (isAccessoriesHub) {
+    const accSlugs = [
+      'women-bags',
+      'women-handbags',
+      'women-sling-bags',
+      'women-shoulder-bags',
+      'women-tote-bags',
+      'women-clutches',
+      'women-jewellery',
+      'women-watches',
+      'women-sunglasses',
+      'women-scarves-stoles',
+      'women-wallets',
+      'women-hair-accessories',
+      'women-belts',
+      'men-wallets',
+      'men-belts',
+      'men-watches',
+      'men-bags-backpacks',
+      'men-travel-bags',
+      'men-sunglasses',
+      'men-caps-hats',
+      'men-ties',
+      'men-jewellery',
+      'men-groom-accessories',
+      'men-fashion-accessories',
+      'accessories',
+    ];
+    orConditions.push({ category: { slug: { in: accSlugs } } });
+    orConditions.push({ category: { parentId: 'group_accessories' } });
+    orConditions.push({ category: { parent: { slug: 'accessories' } } });
+    for (const kw of [
+      'watch',
+      'wallet',
+      'belt',
+      'sunglass',
+      'handbag',
+      'clutch',
+      'potli',
+      'sling bag',
+      'tote',
+      'jewellery',
+      'earring',
+      'jhumka',
+      'necklace',
+      'bangle',
+      'scarf',
+      'stole',
+      'backpack',
+    ]) {
+      orConditions.push({ name: { contains: kw, mode: 'insensitive' as const } });
+    }
+    if (cleanSlug === 'accessories-under-499') {
+      andConditions.push({ price: { lte: 499 } });
+    }
   } else if (cleanSlug === 'baby-fashion') {
     orConditions.push({ category: { slug: { startsWith: 'baby-' } } });
     orConditions.push({ categoryId: 'cat_baby_boys' });
@@ -490,6 +676,7 @@ async function buildCategoryConditions(
 
 type Props = {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ gender?: string }>;
 };
 
 export const revalidate = 300; // Incremental Static Revalidation (ISR) every 5 minutes
@@ -660,8 +847,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function CategoryPage({ params }: Props) {
+export default async function CategoryPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const rawGender = (resolvedSearchParams.gender || '').toLowerCase().trim();
+  const initialGender: 'all' | 'men' | 'women' | 'unisex' =
+    rawGender === 'men' || rawGender === 'women' || rawGender === 'unisex' ? rawGender : 'all';
   const cleanSlug = (slug || '').toLowerCase().trim();
 
   if (CATEGORY_ALIAS_MAP[cleanSlug]) {
@@ -977,6 +1168,39 @@ export default async function CategoryPage({ params }: Props) {
   const normName = (category.name || '').toLowerCase();
 
   if (
+    normSlug.includes('footwear') ||
+    normParent.includes('footwear') ||
+    normSlug.includes('shoe') ||
+    normSlug.includes('sneaker') ||
+    normSlug.includes('heel') ||
+    normSlug.includes('flat') ||
+    normSlug.includes('jutti') ||
+    normSlug.includes('mojari') ||
+    normSlug.includes('loafer') ||
+    normSlug.includes('sandal') ||
+    normSlug.includes('flip-flop') ||
+    normSlug.includes('boot')
+  ) {
+    groupParam = 'footwear';
+  } else if (
+    normSlug.includes('accessories') ||
+    normParent.includes('accessories') ||
+    normSlug.includes('wallet') ||
+    normSlug.includes('belt') ||
+    normSlug.includes('watch') ||
+    normSlug.includes('sunglass') ||
+    normSlug.includes('jewellery') ||
+    normSlug.includes('bag') ||
+    normSlug.includes('clutch') ||
+    normSlug.includes('scarf') ||
+    normSlug.includes('stole') ||
+    normSlug.includes('caps-hats') ||
+    normSlug.includes('ties') ||
+    normSlug.includes('hair-acc') ||
+    normSlug.includes('groom-acc')
+  ) {
+    groupParam = 'accessories';
+  } else if (
     normSlug.startsWith('women') ||
     normParent.startsWith('women') ||
     normSlug.includes('saree') ||
@@ -1117,7 +1341,11 @@ export default async function CategoryPage({ params }: Props) {
         )}
 
         {/* Main Category Filtered View with Faceted Sidebar & Mobile Dual-Pane Drawer */}
-        <CategoryFilteredView initialProducts={allProducts} category={category} />
+        <CategoryFilteredView
+          initialProducts={allProducts}
+          category={category}
+          initialGender={initialGender}
+        />
       </div>
     </div>
   );

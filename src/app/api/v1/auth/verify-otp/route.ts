@@ -66,6 +66,7 @@ export async function POST(request: Request) {
           message: result.message,
           user: result.user,
           isNewUser: Boolean(result.isNewUser),
+          token: sessionResult?.token,
         },
         { status: 200 },
       );
