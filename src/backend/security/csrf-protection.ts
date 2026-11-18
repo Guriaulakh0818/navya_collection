@@ -4,6 +4,7 @@ const WEBHOOK_EXEMPT_ROUTES = [
   '/api/v1/auth/google/mobile',
   '/api/v1/admin/marketing/notifications/cadence',
   '/api/v1/admin/finance/settlements/cron',
+  '/api/v1/admin/categories/sync',
 ];
 
 const ALLOWED_DOMAINS = ['localhost', 'jiivaakart.com', 'navyacollection.store', 'vercel.app'];

@@ -42,6 +42,7 @@ const PUBLIC_API_EXCEPTIONS = [
   '/api/v1/admin/auth/set-password',
   '/api/v1/admin/marketing/notifications/cadence',
   '/api/v1/admin/finance/settlements/cron',
+  '/api/v1/admin/categories/sync',
   '/api/auth/send-otp',
   '/api/auth/verify-otp',
   '/api/v1/webhooks/',
