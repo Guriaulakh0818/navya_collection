@@ -2,15 +2,16 @@ import { jwtVerify } from 'jose';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import {
-  checkRateLimit,
-  logSecurityEvent,
-  RATE_LIMIT_POLICIES,
-  validateCsrfOrigin,
-} from '@/backend/security';
+import { logSecurityEvent } from '@/backend/security/audit-logger';
+import { validateCsrfOrigin } from '@/backend/security/csrf-protection';
+import { checkRateLimit, RATE_LIMIT_POLICIES } from '@/backend/security/rate-limiter';
 
 const SESSION_COOKIE_NAME = 'navya_session';
 const ADMIN_COOKIE = 'navya_admin_session';
+
+const STORE_ORIGIN = 'https://jiivaakart.com';
+const ADMIN_ORIGIN = 'https://admin.jiivaakart.com';
+const SELLER_ORIGIN = 'https://seller.jiivaakart.com';
 
 const CUSTOMER_PROTECTED_PREFIXES = [
   '/account',
@@ -36,13 +37,21 @@ const PROTECTED_API_PREFIXES = [
 const PUBLIC_API_EXCEPTIONS = [
   '/api/v1/auth/send-otp',
   '/api/v1/auth/verify-otp',
+  '/api/v1/auth/google',
   '/api/v1/admin/auth/login',
+  '/api/v1/admin/auth/set-password',
+  '/api/v1/admin/marketing/notifications/cadence',
+  '/api/v1/admin/finance/settlements/cron',
   '/api/auth/send-otp',
   '/api/auth/verify-otp',
-  '/api/v1/webhooks/razorpay',
+  '/api/v1/webhooks/',
+  '/api/v1/seller/auth/login-password',
   '/api/v1/seller/register',
   '/api/v1/seller/status',
+  '/api/v1/seller/verify',
 ];
+
+const ADMIN_PUBLIC_PAGES = ['/admin/login', '/admin/set-password', '/admin/unauthorized'];
 
 function getJwtSecretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET;
@@ -77,12 +86,9 @@ export default async function middleware(req: NextRequest) {
     'https'
   ).toLowerCase();
 
-  // 2. WWW CANONICALIZATION (legacy www.navyacollection.store)
-  if (currentHost === 'www.navyacollection.store') {
-    const canonicalUrl = new URL(
-      `${pathname}${req.nextUrl.search}`,
-      'https://navyacollection.store',
-    );
+  // 2. WWW CANONICALIZATION (www.jiivaakart.com & legacy www.navyacollection.store -> jiivaakart.com)
+  if (currentHost === 'www.jiivaakart.com' || currentHost === 'www.navyacollection.store') {
+    const canonicalUrl = new URL(`${pathname}${req.nextUrl.search}`, STORE_ORIGIN);
     return NextResponse.redirect(canonicalUrl, 308);
   }
 
@@ -106,27 +112,34 @@ export default async function middleware(req: NextRequest) {
   }
 
   const isAdminSubdomain =
-    currentHost === 'admin.navyacollection.store' || currentHost.startsWith('admin.');
+    currentHost === 'admin.jiivaakart.com' ||
+    currentHost === 'admin.navyacollection.store' ||
+    currentHost.startsWith('admin.');
 
   const isSellerSubdomain =
-    currentHost === 'seller.navyacollection.store' || currentHost.startsWith('seller.');
+    currentHost === 'seller.jiivaakart.com' ||
+    currentHost === 'seller.navyacollection.store' ||
+    currentHost.startsWith('seller.');
 
   // 5. PRODUCTION SUBDOMAIN CANONICAL REDIRECTIONS:
-  // Only redirect from canonical primary domain (navyacollection.store).
-  // Exclude Vercel preview domains (*.vercel.app) and local development to prevent network errors / cross-origin breakage.
+  // Only redirect from canonical primary storefront domains (jiivaakart.com / navyacollection.store).
+  // Exclude Vercel preview domains (*.vercel.app) and local development to prevent cross-origin breakage.
   const isVercelOrLocal =
     currentHost.endsWith('.vercel.app') ||
     currentHost.includes('localhost') ||
     currentHost.includes('127.0.0.1');
   const isCanonicalCustomerDomain =
-    currentHost === 'navyacollection.store' || currentHost === 'www.navyacollection.store';
+    currentHost === 'jiivaakart.com' ||
+    currentHost === 'www.jiivaakart.com' ||
+    currentHost === 'navyacollection.store' ||
+    currentHost === 'www.navyacollection.store';
 
   // Universal redirect for legacy or email /sellers links to /admin/sellers
   if (pathname === '/sellers' || pathname.startsWith('/sellers/')) {
     const adminPath = `/admin${pathname}`;
     const targetUrl =
       process.env.NODE_ENV === 'production' && !isVercelOrLocal
-        ? new URL(adminPath, 'https://admin.navyacollection.store')
+        ? new URL(adminPath, ADMIN_ORIGIN)
         : new URL(adminPath, req.url);
     req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
     return NextResponse.redirect(targetUrl, 307);
@@ -140,14 +153,14 @@ export default async function middleware(req: NextRequest) {
     !isVercelOrLocal
   ) {
     if (pathname === '/admin' || pathname.startsWith('/admin/')) {
-      const targetUrl = new URL(pathname, 'https://admin.navyacollection.store');
+      const targetUrl = new URL(pathname, ADMIN_ORIGIN);
       req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
       return NextResponse.redirect(targetUrl, 307);
     }
 
     if (pathname === '/seller' || pathname.startsWith('/seller/')) {
       const subPath = pathname.replace(/^\/seller/, '') || '/';
-      const targetUrl = new URL(subPath, 'https://seller.navyacollection.store');
+      const targetUrl = new URL(subPath, SELLER_ORIGIN);
       req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
       return NextResponse.redirect(targetUrl, 307);
     }
@@ -165,6 +178,11 @@ export default async function middleware(req: NextRequest) {
       req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
       return NextResponse.redirect(targetUrl, 307);
     }
+    if (pathname === '/set-password') {
+      const targetUrl = new URL('/admin/set-password', req.url);
+      req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
+      return NextResponse.redirect(targetUrl, 307);
+    }
     if (!pathname.startsWith('/admin') && !pathname.startsWith('/api')) {
       const targetUrl = new URL(`/admin${pathname}`, req.url);
       req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
@@ -174,7 +192,7 @@ export default async function middleware(req: NextRequest) {
 
   if (isSellerSubdomain) {
     if (pathname === '/home') {
-      const targetUrl = new URL('/', 'https://navyacollection.store');
+      const targetUrl = new URL('/', STORE_ORIGIN);
       req.nextUrl.searchParams.forEach((val, key) => targetUrl.searchParams.set(key, val));
       return NextResponse.redirect(targetUrl, 307);
     }
@@ -208,6 +226,7 @@ export default async function middleware(req: NextRequest) {
     } else if (
       !pathname.startsWith('/seller') &&
       !pathname.startsWith('/become-seller') &&
+      !pathname.startsWith('/seller-agreement') &&
       !pathname.startsWith('/api')
     ) {
       rewriteUrl.pathname = `/seller${pathname}`;
@@ -216,12 +235,13 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 5. CSRF Origin Verification on state-mutating requests
+  // 7. CSRF Origin Verification on state-mutating requests
   const isCsrfValid = validateCsrfOrigin(
     effectivePathname,
     req.method,
     req.headers.get('origin'),
     req.headers.get('referer'),
+    req.headers.get('authorization'),
   );
 
   if (!isCsrfValid) {
@@ -236,7 +256,7 @@ export default async function middleware(req: NextRequest) {
     );
   }
 
-  // 6. Rate Limiting Checks for sensitive endpoints
+  // 8. Rate Limiting Checks for sensitive endpoints
   if (effectivePathname.includes('/auth/send-otp')) {
     const rateCheck = checkRateLimit(
       `otp:${ip}`,
@@ -338,12 +358,20 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 7. Edge JWT Verification (Separate cookies for Admin and Customer)
+  // 9. Edge JWT Verification (Supports Bearer token for Mobile App + separate cookies for Admin/Customer)
   const isAdminPath =
     effectivePathname.startsWith('/admin') || effectivePathname.startsWith('/api/v1/admin');
-  const token = isAdminPath
-    ? req.cookies.get(ADMIN_COOKIE)?.value || req.cookies.get(SESSION_COOKIE_NAME)?.value
-    : req.cookies.get(SESSION_COOKIE_NAME)?.value;
+  const authHeader = req.headers.get('authorization');
+  const bearerToken =
+    authHeader && authHeader.toLowerCase().startsWith('bearer ')
+      ? authHeader.slice(7).trim()
+      : undefined;
+
+  const token =
+    bearerToken ||
+    (isAdminPath
+      ? req.cookies.get(ADMIN_COOKIE)?.value || req.cookies.get(SESSION_COOKIE_NAME)?.value
+      : req.cookies.get(SESSION_COOKIE_NAME)?.value);
 
   let isAuthenticated = false;
   let userRole = 'USER';
@@ -364,7 +392,7 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 8. API Route Protection
+  // 10. API Route Protection
   const isProtectedApi = PROTECTED_API_PREFIXES.some((prefix) =>
     effectivePathname.startsWith(prefix),
   );
@@ -459,7 +487,8 @@ export default async function middleware(req: NextRequest) {
     if (
       effectivePathname.startsWith('/api/v1/seller') &&
       !effectivePathname.startsWith('/api/v1/seller/register') &&
-      !effectivePathname.startsWith('/api/v1/seller/status')
+      !effectivePathname.startsWith('/api/v1/seller/status') &&
+      !effectivePathname.startsWith('/api/v1/seller/verify')
     ) {
       const validSellerRoles = ['SELLER', 'OWNER', 'ADMIN', 'SUPER_ADMIN'];
       if (!validSellerRoles.includes(userRole)) {
@@ -475,7 +504,7 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 9. Admin Page Protection
+  // 11. Admin Page Protection
   if (effectivePathname.startsWith('/admin')) {
     const allowedIpsEnv = process.env.ADMIN_ALLOWED_IPS;
     const isIpRestrictionEnabled = process.env.ENABLE_ADMIN_IP_RESTRICTION === 'true';
@@ -500,7 +529,8 @@ export default async function middleware(req: NextRequest) {
       }
     }
 
-    if (effectivePathname !== '/admin/login') {
+    const isAdminPublicPage = ADMIN_PUBLIC_PAGES.some((p) => effectivePathname.startsWith(p));
+    if (!isAdminPublicPage) {
       if (!isAuthenticated) {
         const loginUrl = new URL('/admin/login', req.url);
         const targetRedirect = effectivePathname.startsWith('/admin')
@@ -523,7 +553,7 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 10. Seller Page Protection
+  // 12. Seller Page Protection
   if (effectivePathname.startsWith('/seller')) {
     if (!isAuthenticated) {
       const loginUrl = new URL('/login', req.url);
@@ -543,7 +573,7 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // 11. Customer Protected Page Protection
+  // 13. Customer Protected Page Protection
   const isCustomerProtected = CUSTOMER_PROTECTED_PREFIXES.some((prefix) =>
     effectivePathname.startsWith(prefix),
   );
@@ -554,7 +584,7 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 12. Build Final Response & Security Headers
+  // 14. Build Final Response & Security Headers
   const requestHeaders = new Headers(req.headers);
   if (isAuthenticated) {
     requestHeaders.set('x-user-id', userId);
@@ -580,13 +610,13 @@ export default async function middleware(req: NextRequest) {
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   response.headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+  response.headers.set('Cross-Origin-Resource-Policy', 'cross-origin');
 
   const cspHeader = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms https://checkout.razorpay.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://*.razorpay.com",
+    "img-src 'self' data: blob: https: http:",
     "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self' https://www.google-analytics.com https://www.clarity.ms https://api.razorpay.com https://lumberjack.razorpay.com",
     "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
