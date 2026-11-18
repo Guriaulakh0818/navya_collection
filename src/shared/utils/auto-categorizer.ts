@@ -137,7 +137,7 @@ interface CategoryRuleDef {
     'group_women' | 'group_men' | 'group_kids' | 'group_footwear' | 'group_accessories';
   parentCategoryIds: string[];
   primaryTerms: { term: string | RegExp; weight: number; reason: string }[];
-  contextTerms: { term: string | RegExp; weight: number; reason: string }[];
+  contextTerms?: { term: string | RegExp; weight: number; reason: string }[];
   negativeTerms?: (string | RegExp)[];
 }
 
@@ -247,19 +247,82 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
     parentCategoryIds: ['group_footwear'],
     primaryTerms: [
       {
-        term: /\b(mojari|men.?s?\s*jutti|sherwani\s*shoe|groom\s*jutti)\b/i,
+        term: /\b(mojari|mojris?|juttis?|nagra|sherwani\s*shoes?|groom\s*juttis?|kolhapuri)\b/i,
         weight: 95,
         reason: 'Matched Men Ethnic Footwear',
       },
     ],
     contextTerms: [
       {
-        term: /\b(men|groom|sherwani|kurta|wedding|kolhapuri)\b/i,
-        weight: 30,
+        term: /\b(groom|sherwani|embroidered\s*jutti|ethnic\s*footwear)\b/i,
+        weight: 20,
         reason: 'Men Ethnic Footwear Context',
       },
     ],
-    negativeTerms: [/\b(women|bridal|ladies|heel)\b/i],
+    negativeTerms: [/\b(women|bridal|ladies|heel|wallet|belt)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_men_sandals',
+    name: "Men's Sandals & Floaters",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_footwear_men',
+    productType: 'men_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(sandals?|floaters?|gladiator\s*sandals?)\b/i,
+        weight: 95,
+        reason: 'Matched Men Sandals',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(men|strap|buckle|outdoor)\b/i, weight: 20, reason: 'Sandal Context' },
+    ],
+    negativeTerms: [/\b(women|ladies|heels?|wedges?)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_men_slippers',
+    name: "Men's Slippers & Flip-Flops",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_footwear_men',
+    productType: 'men_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(flip[\s-]*flops?|slippers?|slides?|chappals?)\b/i,
+        weight: 95,
+        reason: 'Matched Men Flip-Flops & Slippers',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(men|eva|rubber|daily|comfort)\b/i, weight: 20, reason: 'Slipper Context' },
+    ],
+    negativeTerms: [/\b(women|ladies|heels?)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_men_boots',
+    name: "Men's Boots",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_footwear_men',
+    productType: 'men_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(boots?|chelsea\s*boots?|ankle\s*boots?|leather\s*boots?)\b/i,
+        weight: 95,
+        reason: 'Matched Men Boots',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(men|leather|suede|winter|high\s*top)\b/i, weight: 20, reason: 'Boot Context' },
+    ],
+    negativeTerms: [/\b(women|ladies|heels?)\b/i],
   },
   {
     categoryId: 'cat_fw_women_heels',
@@ -284,6 +347,7 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
         reason: 'Heels Context',
       },
     ],
+    negativeTerms: [/\b(men|mens|groom|handbag|clutch)\b/i],
   },
   {
     categoryId: 'cat_fw_women_flats',
@@ -308,6 +372,7 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
         reason: 'Flats Context',
       },
     ],
+    negativeTerms: [/\b(men|mens|groom)\b/i],
   },
   {
     categoryId: 'cat_fw_women_juttis',
@@ -357,6 +422,475 @@ const CATEGORY_RULES: CategoryRuleDef[] = [
         reason: 'Women Sneaker Context',
       },
     ],
+    negativeTerms: [/\b(men|mens|boys)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_women_sports',
+    name: "Women's Sports & Walking Shoes",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_footwear_women',
+    productType: 'women_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(women.?s?\s*sports\s*shoes?|women.?s?\s*running\s*shoes?|women.?s?\s*walking\s*shoes?)\b/i,
+        weight: 95,
+        reason: 'Matched Women Sports Shoes',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(women|gym|running|walking|lightweight|athletic)\b/i,
+        weight: 25,
+        reason: 'Sports Shoe Context',
+      },
+    ],
+    negativeTerms: [/\b(men|mens|boys)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_women_sandals',
+    name: "Women's Sandals",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_footwear_women',
+    productType: 'women_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(women.?s?\s*sandals?|ladies\s*sandals?|strappy\s*sandals?)\b/i,
+        weight: 95,
+        reason: 'Matched Women Sandals',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(women|strap|buckle|open\s*toe)\b/i, weight: 20, reason: 'Sandal Context' },
+    ],
+    negativeTerms: [/\b(men|mens|boys)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_women_slippers',
+    name: "Women's Slippers & Flip-Flops",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_footwear_women',
+    productType: 'women_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(women.?s?\s*flip[\s-]*flops?|women.?s?\s*slippers?|women.?s?\s*slides?)\b/i,
+        weight: 95,
+        reason: 'Matched Women Flip-Flops & Slippers',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(women|eva|daily|soft|comfort)\b/i, weight: 20, reason: 'Slipper Context' },
+    ],
+    negativeTerms: [/\b(men|mens|boys)\b/i],
+  },
+  {
+    categoryId: 'cat_fw_women_boots',
+    name: "Women's Boots",
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_footwear_women',
+    productType: 'women_footwear_general',
+    departmentGroup: 'group_footwear',
+    parentCategoryIds: ['group_footwear'],
+    primaryTerms: [
+      {
+        term: /\b(women.?s?\s*boots?|ladies\s*boots?|heeled\s*boots?|knee\s*high\s*boots?)\b/i,
+        weight: 95,
+        reason: 'Matched Women Boots',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(women|leather|suede|winter)\b/i, weight: 20, reason: 'Boot Context' },
+    ],
+    negativeTerms: [/\b(men|mens|boys)\b/i],
+  },
+
+  // ===========================================================================
+  // ACCESSORIES RULES (WOMEN & MEN)
+  // ===========================================================================
+  {
+    categoryId: 'cat_women_handbags',
+    name: 'Handbags',
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_women_accessories',
+    productType: 'women_handbags',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories', 'cat_women_bags'],
+    primaryTerms: [
+      {
+        term: /\b(handbag|handbags|tote\s*bag|satchel|shoulder\s*bag)\b/i,
+        weight: 95,
+        reason: 'Matched Handbag',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(women|ladies|leather|zipper|compartment|purse)\b/i,
+        weight: 20,
+        reason: 'Handbag Context',
+      },
+    ],
+    negativeTerms: [/\b(men|mens|boys)\b/i],
+  },
+  {
+    categoryId: 'cat_women_sling_bags',
+    name: 'Sling Bags',
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_women_accessories',
+    productType: 'women_handbags',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories', 'cat_women_bags'],
+    primaryTerms: [
+      {
+        term: /\b(sling\s*bag|crossbody|cross-body)\b/i,
+        weight: 95,
+        reason: 'Matched Sling Bag',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(women|chain|strap|stylish)\b/i, weight: 20, reason: 'Sling Bag Context' },
+    ],
+    negativeTerms: [/\b(men|mens|boys)\b/i],
+  },
+  {
+    categoryId: 'cat_women_clutches',
+    name: 'Clutches & Potlis',
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_women_accessories',
+    productType: 'women_handbags',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories', 'cat_women_bags'],
+    primaryTerms: [
+      {
+        term: /\b(clutch|clutches|potli|potlis|evening\s*purse|party\s*purse)\b/i,
+        weight: 95,
+        reason: 'Matched Clutch or Potli',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(bridal|wedding|embroidered|sequin|ethnic|silk)\b/i,
+        weight: 20,
+        reason: 'Clutch Context',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_women_jewellery',
+    name: 'Fashion & Ethnic Jewellery',
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_women_accessories',
+    productType: 'women_jewellery',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(jewellery|jewelry|necklace|jhumka|jhumkas|earring|earrings|bangle|bangles|maang\s*tikka|choker|kundan|polki|anklet|payal|bali|balis|pendant|jewellery\s*set)\b/i,
+        weight: 95,
+        reason: 'Matched Jewellery',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(gold\s*plated|silver|bridal|festive|traditional|kundan|cz)\b/i,
+        weight: 20,
+        reason: 'Jewellery Context',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_women_watches',
+    name: 'Watches',
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_women_accessories',
+    productType: 'women_accessories_general',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(watch|watches|wristwatch|wrist\s*watch)\b/i,
+        weight: 95,
+        reason: 'Matched Women Watch',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(analog|rosegold|rose\s*gold|watch|dial|strap)\b/i,
+        weight: 20,
+        reason: 'Women Watch Context',
+      },
+    ],
+    negativeTerms: [/\b(men|mens|gents)\b/i],
+  },
+  {
+    categoryId: 'cat_women_sunglasses',
+    name: 'Sunglasses & Eyewear',
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_women_accessories',
+    productType: 'women_accessories_general',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(sunglass|sunglasses|shades|goggles|cat\s*eye|oversized\s*glasses)\b/i,
+        weight: 95,
+        reason: 'Matched Women Sunglasses',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(sunglasses|shades|uv\s*protection|oversized)\b/i,
+        weight: 20,
+        reason: 'Sunglasses Context',
+      },
+    ],
+    negativeTerms: [/\b(men|mens|gents)\b/i],
+  },
+  {
+    categoryId: 'cat_women_wallets',
+    name: 'Wallets & Cardholders',
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_women_accessories',
+    productType: 'men_wallets',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(wallet|wallets|cardholder|card\s*holder|purse)\b/i,
+        weight: 95,
+        reason: 'Matched Women Wallet',
+      },
+    ],
+    negativeTerms: [/\b(men|mens|gents)\b/i],
+  },
+  {
+    categoryId: 'cat_women_belts',
+    name: 'Belts & Kamarbandh',
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_women_accessories',
+    productType: 'women_belts',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(belt|belts|kamarbandh|waist\s*belt|saree\s*belt)\b/i,
+        weight: 95,
+        reason: 'Matched Women Belt & Kamarbandh',
+      },
+    ],
+    negativeTerms: [/\b(men|mens|gents)\b/i],
+  },
+  {
+    categoryId: 'cat_women_hair_acc',
+    name: 'Hair Accessories',
+    department: 'women',
+    deptId: 'dept_women',
+    subId: 'sec_women_accessories',
+    productType: 'women_accessories_general',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(hair\s*band|scrunchies?|scrunchy|hair\s*clip|hair\s*pin|hair\s*accessories)\b/i,
+        weight: 95,
+        reason: 'Matched Hair Accessories',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_men_wallets',
+    name: 'Wallets & Cardholders',
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_men_accessories',
+    productType: 'men_wallets',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(wallet|wallets|cardholder|card\s*holder|bifold|leather\s*wallet)\b/i,
+        weight: 95,
+        reason: 'Matched Men Wallet',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(men|mens|leather|rfid|pocket)\b/i, weight: 20, reason: 'Wallet Context' },
+    ],
+    negativeTerms: [/\b(women|ladies|girls)\b/i],
+  },
+  {
+    categoryId: 'cat_men_belts',
+    name: 'Belts',
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_men_accessories',
+    productType: 'men_belts',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(belt|belts|leather\s*belt|formal\s*belt)\b/i,
+        weight: 95,
+        reason: 'Matched Men Belt',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(men|mens|buckle|reversible|leather)\b/i, weight: 20, reason: 'Belt Context' },
+    ],
+    negativeTerms: [/\b(women|ladies|girls|kamarbandh)\b/i],
+  },
+  {
+    categoryId: 'cat_men_watches',
+    name: 'Watches',
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_men_accessories',
+    productType: 'men_accessories_general',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(watch|watches|wristwatch|wrist\s*watch|chronograph|analog\s*watch)\b/i,
+        weight: 95,
+        reason: 'Matched Men Watch',
+      },
+    ],
+    contextTerms: [
+      {
+        term: /\b(men|mens|quartz|dial|stainless\s*steel)\b/i,
+        weight: 20,
+        reason: 'Watch Context',
+      },
+    ],
+    negativeTerms: [/\b(women|ladies|girls)\b/i],
+  },
+  {
+    categoryId: 'cat_men_sunglasses',
+    name: 'Sunglasses & Eyewear',
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_men_accessories',
+    productType: 'men_accessories_general',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(sunglass|sunglasses|shades|goggles|aviator|wayfarer)\b/i,
+        weight: 95,
+        reason: 'Matched Men Sunglasses',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(men|mens|polarized|uv)\b/i, weight: 20, reason: 'Sunglasses Context' },
+    ],
+    negativeTerms: [/\b(women|ladies|girls)\b/i],
+  },
+  {
+    categoryId: 'cat_men_bags_backpacks',
+    name: 'Backpacks & Laptop Bags',
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_men_accessories',
+    productType: 'men_bags_backpacks',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(backpack|backpacks|laptop\s*bag|rucksack)\b/i,
+        weight: 95,
+        reason: 'Matched Backpack',
+      },
+    ],
+    contextTerms: [
+      { term: /\b(men|laptop|office|waterproof)\b/i, weight: 20, reason: 'Backpack Context' },
+    ],
+    negativeTerms: [/\b(women|ladies|girls)\b/i],
+  },
+  {
+    categoryId: 'cat_men_travel_bags',
+    name: 'Travel & Duffle Bags',
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_men_accessories',
+    productType: 'men_bags_backpacks',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(travel\s*bag|duffle|duffel|gym\s*bag|weekender)\b/i,
+        weight: 95,
+        reason: 'Matched Travel Bag',
+      },
+    ],
+    negativeTerms: [/\b(women|ladies|girls)\b/i],
+  },
+  {
+    categoryId: 'cat_men_caps_hats',
+    name: 'Caps & Hats',
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_men_accessories',
+    productType: 'men_accessories_general',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(cap|caps|hat|hats|baseball\s*cap|beanie)\b/i,
+        weight: 95,
+        reason: 'Matched Cap / Hat',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_men_ties',
+    name: 'Ties, Bow Ties & Cufflinks',
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_men_accessories',
+    productType: 'men_accessories_general',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(tie|ties|necktie|bow\s*tie|cufflinks|pocket\s*square)\b/i,
+        weight: 95,
+        reason: 'Matched Tie / Cufflinks',
+      },
+    ],
+  },
+  {
+    categoryId: 'cat_men_jewellery',
+    name: "Men's Jewellery",
+    department: 'men',
+    deptId: 'dept_men',
+    subId: 'sec_men_accessories',
+    productType: 'women_jewellery',
+    departmentGroup: 'group_accessories',
+    parentCategoryIds: ['group_accessories'],
+    primaryTerms: [
+      {
+        term: /\b(men.?s?\s*chain|men.?s?\s*bracelet|men.?s?\s*ring|men.?s?\s*kada|kada)\b/i,
+        weight: 95,
+        reason: 'Matched Men Jewellery',
+      },
+    ],
+    negativeTerms: [/\b(women|bridal|mangalsutra|payal|bangles)\b/i],
   },
   // ===========================================================================
   // WOMEN CATEGORIES
@@ -1851,13 +2385,46 @@ function extractAttributesFromText(text: string, price: number): ExtractedAttrib
     result.suggestedGstRate = price <= 1000 ? 5 : 12;
   }
 
-  // Suggest HSN
-  if (/\b(saree|sari|kurta|kurti|lehenga|suit)\b/i.test(text)) {
+  // Suggest HSN & GST
+  if (
+    /\b(shoe|shoes|sneaker|sneakers|heel|heels|flat|flats|jutti|juttis|mojari|mojaris|loafer|loafers|sandal|sandals|slipper|slippers|boot|boots|footwear)\b/i.test(
+      text,
+    )
+  ) {
+    result.suggestedHsnCode = '6404'; // Footwear
+    result.suggestedGstRate = price <= 1000 ? 5 : 12;
+  } else if (
+    /\b(bag|bags|handbag|handbags|tote|sling|backpack|backpacks|wallet|wallets|purse|cardholder)\b/i.test(
+      text,
+    )
+  ) {
+    result.suggestedHsnCode = '4202'; // Travel goods, handbags, wallets
+    result.suggestedGstRate = 18;
+  } else if (/\b(belt|belts|kamarbandh)\b/i.test(text)) {
+    result.suggestedHsnCode = '4203'; // Belts & accessories
+    result.suggestedGstRate = 18;
+  } else if (/\b(watch|watches|wristwatch)\b/i.test(text)) {
+    result.suggestedHsnCode = '9102'; // Wristwatches
+    result.suggestedGstRate = 18;
+  } else if (/\b(sunglass|sunglasses|shades|goggles|eyewear)\b/i.test(text)) {
+    result.suggestedHsnCode = '9004'; // Sunglasses & eyewear
+    result.suggestedGstRate = 18;
+  } else if (
+    /\b(jewel|jewellery|jewelry|necklace|earring|earrings|jhumka|jhumkas|bangle|bangles|bracelet|ring|rings|pendant|choker|anklet|payal)\b/i.test(
+      text,
+    )
+  ) {
+    result.suggestedHsnCode = '7117'; // Imitation Jewellery
+    result.suggestedGstRate = 3;
+  } else if (/\b(saree|sari|kurta|kurti|lehenga|suit)\b/i.test(text)) {
     result.suggestedHsnCode = '6204'; // Women Suits, Ensembles, Dresses
+    result.suggestedGstRate = price <= 1000 ? 5 : 12;
   } else if (/\b(t-?shirt|tee|polo)\b/i.test(text)) {
     result.suggestedHsnCode = '6109'; // T-Shirts, singlets, knitted
+    result.suggestedGstRate = price <= 1000 ? 5 : 12;
   } else if (/\b(shirt|trousers|jeans|blazer)\b/i.test(text)) {
     result.suggestedHsnCode = '6203'; // Men Suits, Ensembles, Trousers, Shirts
+    result.suggestedGstRate = price <= 1000 ? 5 : 12;
   }
 
   return result;
@@ -1912,7 +2479,7 @@ export function autoCategorizeProduct(
     } else if (
       hasWord(
         title,
-        /\b(women|woman|womens|women's|women’s|ladies|female|mrs|miss|saree|sari|saris|sarees|lehenga|lehengas|kurti|kurtis|anarkali|choli|ghagra|dupatta|dupattas|bra|bras|pantie|panties|lingerie|camisole|petticoat|frock|shapewear|body\s*shaper|tummy\s*tucker)\b/i,
+        /\b(women|woman|womens|women's|women’s|ladies|female|mrs|miss|saree|sari|saris|sarees|lehenga|lehengas|kurti|kurtis|anarkali|choli|ghagra|dupatta|dupattas|bra|bras|pantie|panties|lingerie|camisole|petticoat|frock|shapewear|body\s*shaper|tummy\s*tucker|jewellery|jewelry|necklace|jhumka|earring|earrings|bangle|bangles|maang\s*tikka|choker|mangalsutra|payal|anklet|handbag|handbags|clutch|clutches|potli|potlis|heels?|wedges?|stiletto)\b/i,
       )
     ) {
       gender = 'women';
@@ -1935,7 +2502,7 @@ export function autoCategorizeProduct(
       } else if (
         hasWord(
           fullText,
-          /\b(women|woman|womens|women's|women’s|ladies|female|mrs|miss|saree|sari|saris|sarees|lehenga|lehengas|kurti|kurtis|anarkali|choli|ghagra|dupatta|dupattas|bra|bras|pantie|panties|lingerie|camisole|petticoat|frock|shapewear|body\s*shaper|tummy\s*tucker)\b/i,
+          /\b(women|woman|womens|women's|women’s|ladies|female|mrs|miss|saree|sari|saris|sarees|lehenga|lehengas|kurti|kurtis|anarkali|choli|ghagra|dupatta|dupattas|bra|bras|pantie|panties|lingerie|camisole|petticoat|frock|shapewear|body\s*shaper|tummy\s*tucker|jewellery|jewelry|necklace|jhumka|earring|earrings|bangle|bangles|maang\s*tikka|choker|mangalsutra|payal|anklet|handbag|handbags|clutch|clutches|potli|potlis|heels?|wedges?|stiletto)\b/i,
         )
       ) {
         gender = 'women';
@@ -1966,6 +2533,7 @@ export function autoCategorizeProduct(
     if (gender === 'women' && rule.department !== 'women') continue;
 
     let score = 0;
+    let hasPrimaryMatch = false;
     const reasons: string[] = [];
 
     // Gender boost or penalty
@@ -1984,26 +2552,29 @@ export function autoCategorizeProduct(
       }
     }
 
-    // Check primary terms (High weight 50-65)
+    // Check primary terms (High weight 50-95)
     for (const pt of rule.primaryTerms) {
       if (hasWord(normalizedTitle, pt.term)) {
         score += pt.weight;
         reasons.push(`${pt.reason} in title (+${pt.weight})`);
+        hasPrimaryMatch = true;
       } else if (hasWord(fullText, pt.term)) {
         score += Math.round(pt.weight * 0.7);
         reasons.push(`${pt.reason} in description (+${Math.round(pt.weight * 0.7)})`);
+        hasPrimaryMatch = true;
       }
     }
 
     // Check context / secondary terms (Weight 15-25)
-    for (const ct of rule.contextTerms) {
+    for (const ct of rule.contextTerms || []) {
       if (hasWord(fullText, ct.term)) {
         score += ct.weight;
         reasons.push(`${ct.reason} matched (+${ct.weight})`);
       }
     }
 
-    if (score > 15) {
+    // Candidate MUST have matched at least one primary product keyword to qualify
+    if (hasPrimaryMatch && score >= 40) {
       candidateScores.push({ rule, score, reasons });
     }
   }

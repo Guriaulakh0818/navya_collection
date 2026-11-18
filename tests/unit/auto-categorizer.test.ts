@@ -182,4 +182,85 @@ describe('Auto-Categorizer Production-Level Test Suite', () => {
     expect(womenRes.categoryIds).toContain('cat_women_tops_tees');
     verifyAllIdsValid(womenRes.categoryIds);
   });
+
+  it('correctly categorizes Men and Women Footwear with proper HSN codes', () => {
+    // 1. Men Casual Sneaker
+    const sneakerRes = autoCategorizeProduct({
+      name: 'Men White Air Mesh Sneaker Casual Shoes',
+      price: 1499,
+    });
+    expect(sneakerRes.categoryIds).toContain('cat_fw_men_casual');
+    expect(sneakerRes.departmentGroup).toBe('group_footwear');
+    expect(sneakerRes.suggestedProductType).toBe('men_footwear_general');
+    expect(sneakerRes.extractedAttributes?.suggestedHsnCode).toBe('6404');
+    expect(sneakerRes.extractedAttributes?.suggestedGstRate).toBe(12);
+    verifyAllIdsValid(sneakerRes.categoryIds);
+
+    // 2. Women Ethnic Jutti
+    const juttiRes = autoCategorizeProduct({
+      name: 'Women Handcrafted Golden Embroidered Punjabi Jutti',
+      price: 799,
+    });
+    expect(juttiRes.categoryIds).toContain('cat_fw_women_juttis');
+    expect(juttiRes.departmentGroup).toBe('group_footwear');
+    expect(juttiRes.suggestedProductType).toBe('women_footwear_general');
+    expect(juttiRes.extractedAttributes?.suggestedHsnCode).toBe('6404');
+    expect(juttiRes.extractedAttributes?.suggestedGstRate).toBe(5);
+    verifyAllIdsValid(juttiRes.categoryIds);
+
+    // 3. Women Heels
+    const heelsRes = autoCategorizeProduct({
+      name: 'Women Stylish Block Heels Sandal',
+      price: 1899,
+    });
+    expect(heelsRes.categoryIds).toContain('cat_fw_women_heels');
+    expect(heelsRes.departmentGroup).toBe('group_footwear');
+    verifyAllIdsValid(heelsRes.categoryIds);
+  });
+
+  it('correctly categorizes Men and Women Accessories with proper HSN codes', () => {
+    // 1. Men Wallet
+    const walletRes = autoCategorizeProduct({
+      name: 'Men Genuine Leather Bifold Wallet with Card Slots',
+      price: 999,
+    });
+    expect(walletRes.categoryIds).toContain('cat_men_wallets');
+    expect(walletRes.departmentGroup).toBe('group_accessories');
+    expect(walletRes.extractedAttributes?.suggestedHsnCode).toBe('4202');
+    expect(walletRes.extractedAttributes?.suggestedGstRate).toBe(18);
+    verifyAllIdsValid(walletRes.categoryIds);
+
+    // 2. Men Belt
+    const beltRes = autoCategorizeProduct({
+      name: 'Men Formal Black Leather Belt with Silver Buckle',
+      price: 899,
+    });
+    expect(beltRes.categoryIds).toContain('cat_men_belts');
+    expect(beltRes.departmentGroup).toBe('group_accessories');
+    expect(beltRes.extractedAttributes?.suggestedHsnCode).toBe('4203');
+    expect(beltRes.extractedAttributes?.suggestedGstRate).toBe(18);
+    verifyAllIdsValid(beltRes.categoryIds);
+
+    // 3. Women Handbag
+    const bagRes = autoCategorizeProduct({
+      name: 'Women Designer Leather Handbag Shoulder Tote Bag',
+      price: 2499,
+    });
+    expect(bagRes.categoryIds).toContain('cat_women_handbags');
+    expect(bagRes.departmentGroup).toBe('group_accessories');
+    expect(bagRes.extractedAttributes?.suggestedHsnCode).toBe('4202');
+    expect(bagRes.extractedAttributes?.suggestedGstRate).toBe(18);
+    verifyAllIdsValid(bagRes.categoryIds);
+
+    // 4. Women Jewellery
+    const jewelRes = autoCategorizeProduct({
+      name: 'Gold Plated Traditional Kundan Choker Necklace Set with Jhumkas',
+      price: 1299,
+    });
+    expect(jewelRes.categoryIds).toContain('cat_women_jewellery');
+    expect(jewelRes.departmentGroup).toBe('group_accessories');
+    expect(jewelRes.extractedAttributes?.suggestedHsnCode).toBe('7117');
+    expect(jewelRes.extractedAttributes?.suggestedGstRate).toBe(3);
+    verifyAllIdsValid(jewelRes.categoryIds);
+  });
 });

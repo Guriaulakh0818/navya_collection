@@ -1912,7 +1912,7 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
           {
             id: 'men_belts',
             name: 'Belts',
-            sizeSystemId: 'ACCESSORIES_ONE_SIZE',
+            sizeSystemId: 'BELT_WAIST_SIZE',
             attributes: [
               {
                 id: 'beltType',
@@ -4672,6 +4672,261 @@ export const CATEGORY_ENGINE_TAXONOMY: MainCategoryDefinition[] = [
       },
     ],
   },
+
+  // --------------------------------------------------------------------------
+  // DEPARTMENT 5: ACCESSORIES (WOMEN & MEN)
+  // --------------------------------------------------------------------------
+  {
+    id: 'group_accessories',
+    name: 'Accessories',
+    slug: 'accessories',
+    department: 'ACCESSORIES',
+    subCategories: [
+      {
+        id: 'sec_women_accessories',
+        name: "Women's Accessories",
+        slug: 'women-accessories',
+        productTypes: [
+          {
+            id: 'women_handbags',
+            name: 'Handbags, Totes & Sling Bags',
+            description: 'Handbags, Sling Bags, Shoulder Bags, Tote Bags & Satchels',
+            sizeSystemId: 'ACCESSORIES_ONE_SIZE',
+            attributes: [
+              {
+                id: 'bag_material',
+                label: 'Material',
+                type: 'select',
+                required: true,
+                options: [
+                  'PU / Vegan Leather',
+                  'Genuine Leather',
+                  'Canvas',
+                  'Jute / Straw',
+                  'Nylon',
+                  'Silk / Jacquard',
+                ],
+                group: 'Fabric & Material',
+              },
+              {
+                id: 'closure_type',
+                label: 'Closure Type',
+                type: 'select',
+                options: ['Zipper', 'Magnetic Snap', 'Flap / Buckle', 'Drawstring'],
+                group: 'Styling & Fit',
+              },
+              {
+                id: 'compartments',
+                label: 'No. of Compartments',
+                type: 'select',
+                options: [
+                  '1 Main Compartment',
+                  '2 Compartments',
+                  '3+ Compartments',
+                  'Multi-pocket Organizer',
+                ],
+                group: 'Styling & Fit',
+              },
+              {
+                id: 'occasion',
+                label: 'Occasion',
+                type: 'select',
+                options: ['Casual & Daily', 'Office & Work', 'Party & Evening', 'Travel'],
+                group: 'Care & Details',
+              },
+            ],
+          },
+          {
+            id: 'women_jewellery',
+            name: 'Fashion & Ethnic Jewellery',
+            description: 'Necklace Sets, Jhumkas, Bangles, Maangtikka, Rings & Bracelets',
+            sizeSystemId: 'ACCESSORIES_ONE_SIZE',
+            attributes: [
+              {
+                id: 'base_metal',
+                label: 'Base Metal & Plating',
+                type: 'select',
+                required: true,
+                options: [
+                  'Gold Plated Alloy',
+                  'Silver Plated / Oxidised',
+                  'Brass / Copper',
+                  'Kundan / Meenakari',
+                  'Beaded / Thread',
+                ],
+                group: 'Fabric & Material',
+              },
+              {
+                id: 'stone_type',
+                label: 'Stone / Embellishment',
+                type: 'select',
+                options: [
+                  'American Diamond / CZ',
+                  'Pearls',
+                  'Kundan / Polki',
+                  'Beads / Crystals',
+                  'Semi-Precious Gemstones',
+                  'No Stones (Plain)',
+                ],
+                group: 'Fabric & Material',
+              },
+              {
+                id: 'occasion',
+                label: 'Occasion',
+                type: 'select',
+                options: [
+                  'Wedding & Bridal',
+                  'Festive & Traditional',
+                  'Party & Cocktails',
+                  'Daily & Office Wear',
+                ],
+                group: 'Care & Details',
+              },
+            ],
+          },
+          {
+            id: 'women_belts',
+            name: "Women's Belts & Kamarbandh",
+            description: 'Waist Belts, Slim Belts, Statement Belts & Ethnic Kamarbandh',
+            sizeSystemId: 'BELT_WAIST_SIZE',
+            attributes: [
+              {
+                id: 'belt_material',
+                label: 'Belt Material',
+                type: 'select',
+                required: true,
+                options: [
+                  'Faux / PU Leather',
+                  'Genuine Leather',
+                  'Elasticated Stretch',
+                  'Metallic / Chain',
+                  'Embroidered Fabric',
+                ],
+                group: 'Fabric & Material',
+              },
+              {
+                id: 'buckle_type',
+                label: 'Buckle Type',
+                type: 'select',
+                options: ['Pin Buckle', 'Interlock / Ring', 'Hook & Eye (Kamarbandh)', 'Tie-Up'],
+                group: 'Styling & Fit',
+              },
+            ],
+          },
+          {
+            id: 'women_accessories_general',
+            name: "Women's Fashion Accessories",
+            description: 'Scarves, Stoles, Dupattas, Hair Accessories, Watches & Sunglasses',
+            sizeSystemId: 'ACCESSORIES_ONE_SIZE',
+            attributes: [
+              {
+                id: 'accessory_material',
+                label: 'Primary Material',
+                type: 'select',
+                options: [
+                  'Silk / Chiffon',
+                  'Cotton / Linen',
+                  'Metal Alloy',
+                  'Acrylic / Resin',
+                  'Leather',
+                ],
+                group: 'Fabric & Material',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'sec_men_accessories',
+        name: "Men's Accessories",
+        slug: 'men-accessories',
+        productTypes: [
+          {
+            id: 'men_wallets',
+            name: "Men's Wallets & Cardholders",
+            description: 'Bifold Wallets, Trifold Wallets & Slim RFID Cardholders',
+            sizeSystemId: 'ACCESSORIES_ONE_SIZE',
+            attributes: [
+              {
+                id: 'wallet_material',
+                label: 'Material',
+                type: 'select',
+                required: true,
+                options: ['Genuine Leather', 'PU / Vegan Leather', 'Carbon Fiber', 'Canvas'],
+                group: 'Fabric & Material',
+              },
+              {
+                id: 'card_slots',
+                label: 'Card Slots & Features',
+                type: 'select',
+                options: [
+                  '3-5 Card Slots',
+                  '6-8 Card Slots',
+                  '8+ Slots with Coin Pocket',
+                  'RFID Protected',
+                ],
+                group: 'Styling & Fit',
+              },
+            ],
+          },
+          {
+            id: 'men_bags_backpacks',
+            name: 'Backpacks & Travel Bags',
+            description: 'Laptop Backpacks, Office Briefcases, Duffle Bags & Gym Bags',
+            sizeSystemId: 'ACCESSORIES_ONE_SIZE',
+            attributes: [
+              {
+                id: 'bag_material',
+                label: 'Material',
+                type: 'select',
+                required: true,
+                options: [
+                  'Waterproof Polyester / Nylon',
+                  'Vegan Leather',
+                  'Genuine Leather',
+                  'Canvas',
+                ],
+                group: 'Fabric & Material',
+              },
+              {
+                id: 'laptop_compartment',
+                label: 'Laptop Sleeve Capacity',
+                type: 'select',
+                options: [
+                  'Fits up to 14 inch',
+                  'Fits up to 15.6 inch',
+                  'Fits up to 17 inch',
+                  'No Laptop Sleeve',
+                ],
+                group: 'Styling & Fit',
+              },
+            ],
+          },
+          {
+            id: 'men_accessories_general',
+            name: "Men's Fashion Accessories",
+            description: 'Caps, Hats, Ties, Bow Ties, Cufflinks, Groom Accessories & Sunglasses',
+            sizeSystemId: 'ACCESSORIES_ONE_SIZE',
+            attributes: [
+              {
+                id: 'accessory_material',
+                label: 'Primary Material',
+                type: 'select',
+                options: [
+                  'Genuine Leather',
+                  'Silk / Microfiber',
+                  'Cotton / Wool',
+                  'Stainless Steel / Brass',
+                  'Polycarbonate',
+                ],
+                group: 'Fabric & Material',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 // ============================================================================
@@ -4710,7 +4965,9 @@ export function resolveAttributeTemplate(
   }
 
   // 3. Exact Category Mappings
+  // Footwear Matching (Check before general keywords so "sports shoes" doesn't hit activewear)
   if (
+    normalized.startsWith('cat_fw_') ||
     normalized.includes('footwear') ||
     normalized.includes('shoe') ||
     normalized.includes('sneaker') ||
@@ -4721,6 +4978,7 @@ export function resolveAttributeTemplate(
     normalized.includes('loafer') ||
     normalized.includes('sandal') ||
     normalized.includes('flip-flop') ||
+    normalized.includes('flip_flop') ||
     normalized.includes('slipper') ||
     normalized.includes('boot')
   ) {
@@ -4733,6 +4991,80 @@ export function resolveAttributeTemplate(
       return resolveAttributeTemplate(undefined, 'women_footwear_general');
     }
     return resolveAttributeTemplate(undefined, 'men_footwear_general');
+  }
+
+  // Accessories Matching
+  if (normalized.includes('belt') || normalized.includes('kamarbandh')) {
+    if (normalized.includes('women')) {
+      return resolveAttributeTemplate(undefined, 'women_belts');
+    }
+    return resolveAttributeTemplate(undefined, 'men_belts');
+  }
+  if (
+    normalized.includes('handbag') ||
+    normalized.includes('tote') ||
+    normalized.includes('sling') ||
+    normalized.includes('clutch') ||
+    normalized.includes('potli') ||
+    normalized.includes('shoulder_bag') ||
+    normalized.includes('shoulder-bag') ||
+    normalized.includes('women_bag') ||
+    normalized.includes('women-bag') ||
+    normalized === 'cat_women_bags'
+  ) {
+    return resolveAttributeTemplate(undefined, 'women_handbags');
+  }
+  if (
+    normalized.includes('backpack') ||
+    normalized.includes('travel_bag') ||
+    normalized.includes('travel-bag') ||
+    normalized.includes('duffle') ||
+    normalized.includes('laptop_bag') ||
+    normalized.includes('laptop-bag') ||
+    normalized === 'cat_men_bags_backpacks' ||
+    normalized === 'cat_men_travel_bags'
+  ) {
+    return resolveAttributeTemplate(undefined, 'men_bags_backpacks');
+  }
+  if (normalized.includes('wallet') || normalized.includes('cardholder')) {
+    return resolveAttributeTemplate(undefined, 'men_wallets');
+  }
+  if (normalized.includes('watch')) {
+    if (normalized.includes('women')) return resolveAttributeTemplate(undefined, 'women_watches');
+    return resolveAttributeTemplate(undefined, 'men_watches');
+  }
+  if (normalized.includes('sunglass') || normalized.includes('eyewear')) {
+    return resolveAttributeTemplate(undefined, 'men_sunglasses');
+  }
+  if (
+    normalized.includes('jewel') ||
+    normalized.includes('bangle') ||
+    normalized.includes('necklace') ||
+    normalized.includes('earring')
+  ) {
+    return resolveAttributeTemplate(undefined, 'women_jewellery');
+  }
+  if (
+    normalized.includes('cap') ||
+    normalized.includes('hat') ||
+    normalized.includes('tie') ||
+    normalized.includes('bow') ||
+    normalized.includes('hair_acc') ||
+    normalized.includes('hair-acc') ||
+    normalized.includes('groom_acc') ||
+    normalized.includes('fashion_acc') ||
+    normalized.includes('scarf') ||
+    normalized.includes('scarves') ||
+    normalized.includes('stole') ||
+    normalized.includes('dupatta') ||
+    normalized.includes('acc_new_arrivals') ||
+    normalized.includes('accessories') ||
+    normalized.startsWith('cat_acc_')
+  ) {
+    if (normalized.includes('women')) {
+      return resolveAttributeTemplate(undefined, 'women_accessories_general');
+    }
+    return resolveAttributeTemplate(undefined, 'men_accessories_general');
   }
   if (normalized.includes('jean') || normalized.includes('denim')) {
     return resolveAttributeTemplate(undefined, 'men_jeans');

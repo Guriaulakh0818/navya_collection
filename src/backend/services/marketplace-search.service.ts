@@ -101,7 +101,13 @@ export class MarketplaceSearchService {
 
     if (options.category && options.category !== 'all') {
       productWhere.category = {
-        OR: [{ id: options.category }, { slug: options.category }],
+        OR: [
+          { id: options.category },
+          { slug: options.category },
+          { parentId: options.category },
+          { parent: { slug: options.category } },
+          { parent: { parentId: options.category } },
+        ],
       };
     }
 

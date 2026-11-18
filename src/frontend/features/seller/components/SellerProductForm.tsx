@@ -1126,6 +1126,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
       setActiveDeptId('dept_men');
     } else if (deptGroup === 'group_kids') {
       setActiveDeptId('dept_kids');
+    } else if (deptGroup === 'group_footwear') {
+      setActiveDeptId('group_footwear');
+    } else if (deptGroup === 'group_accessories') {
+      setActiveDeptId('group_accessories');
     } else {
       setActiveDeptId('dept_women');
     }
@@ -1141,7 +1145,15 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
 
     showToast(
       `Auto-detected ${res.categoryIds.length} categories for ${
-        deptGroup === 'group_men' ? 'Men' : deptGroup === 'group_kids' ? 'Kids' : 'Women'
+        deptGroup === 'group_men'
+          ? 'Men'
+          : deptGroup === 'group_kids'
+            ? 'Kids'
+            : deptGroup === 'group_footwear'
+              ? 'Footwear'
+              : deptGroup === 'group_accessories'
+                ? 'Accessories'
+                : 'Women'
       } & set template to "${res.matchedLabels[0] || 'Garment'}"`,
       'success',
     );
@@ -1234,6 +1246,24 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
     } else if (mainId === 'group_kids') {
       setActiveDeptId('dept_kids');
       const dept = CATEGORY_ENGINE_TAXONOMY.find((d) => d.id === 'dept_kids');
+      if (dept && dept.subCategories.length > 0) {
+        setActiveSubId(dept.subCategories[0].id);
+        if (dept.subCategories[0].productTypes.length > 0) {
+          handleProductTypeChange(dept.subCategories[0].productTypes[0].id, true);
+        }
+      }
+    } else if (mainId === 'group_footwear') {
+      setActiveDeptId('group_footwear');
+      const dept = CATEGORY_ENGINE_TAXONOMY.find((d) => d.id === 'group_footwear');
+      if (dept && dept.subCategories.length > 0) {
+        setActiveSubId(dept.subCategories[0].id);
+        if (dept.subCategories[0].productTypes.length > 0) {
+          handleProductTypeChange(dept.subCategories[0].productTypes[0].id, true);
+        }
+      }
+    } else if (mainId === 'group_accessories') {
+      setActiveDeptId('group_accessories');
+      const dept = CATEGORY_ENGINE_TAXONOMY.find((d) => d.id === 'group_accessories');
       if (dept && dept.subCategories.length > 0) {
         setActiveSubId(dept.subCategories[0].id);
         if (dept.subCategories[0].productTypes.length > 0) {
@@ -2341,7 +2371,13 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                       ? "Women's Collection"
                       : dept.name === 'Men'
                         ? "Men's Collection"
-                        : "Kids' Collection";
+                        : dept.name === 'Kids'
+                          ? "Kids' Collection"
+                          : dept.name === 'Footwear'
+                            ? 'Footwear Collection'
+                            : dept.name === 'Accessories'
+                              ? 'Accessories Collection'
+                              : `${dept.name} Collection`;
                   return (
                     <button
                       key={dept.id}
@@ -2359,6 +2395,10 @@ export function SellerProductForm({ productId, initialData }: ProductFormProps) 
                           setSelectedMainCat('group_men');
                         } else if (dept.id === 'dept_kids') {
                           setSelectedMainCat('group_kids');
+                        } else if (dept.id === 'group_footwear') {
+                          setSelectedMainCat('group_footwear');
+                        } else if (dept.id === 'group_accessories') {
+                          setSelectedMainCat('group_accessories');
                         } else {
                           setSelectedMainCat('group_women');
                         }
